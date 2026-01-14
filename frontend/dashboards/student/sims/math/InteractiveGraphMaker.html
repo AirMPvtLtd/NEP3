@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Graph Maker - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; font-size: 13px; }
+        .main { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .graph-area { background: #fff; border-radius: 6px; height: 500px; border: 1px solid #464647; position: relative; }
+        canvas { width: 100%; height: 100%; }
+        .chart-type-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; }
+        .chart-btn { padding: 15px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; cursor: pointer; text-align: center; transition: all 0.3s; }
+        .chart-btn.active { background: var(--accent); border-color: var(--accent); }
+        input[type="text"], input[type="number"] { width: 100%; background: #2d2d30; border: 2px solid #464647; padding: 10px; border-radius: 6px; color: #fff; margin: 5px 0; }
+        input:focus { outline: none; border-color: var(--accent); }
+        .data-entry { background: #2d2d30; padding: 10px; border-radius: 6px; margin: 5px 0; display: flex; gap: 10px; align-items: center; }
+        .color-picker { width: 40px; height: 40px; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-chart-line"></i> Interactive Graph Maker</h1><p style="color: #888;">Math Lab • Grade 7-9</p></div>
+            <div style="display: flex; gap: 15px;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">Graph Canvas</h2>
+                
+                <div class="graph-area">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <input type="text" id="titleInput" placeholder="Graph Title" oninput="updateGraph()">
+                    <input type="text" id="xLabel" placeholder="X-Axis Label" oninput="updateGraph()">
+                    <input type="text" id="yLabel" placeholder="Y-Axis Label" oninput="updateGraph()">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px;">
+                    <button class="btn" onclick="exportGraph()"><i class="fas fa-download"></i> Export</button>
+                    <button class="btn" onclick="clearData()"><i class="fas fa-trash"></i> Clear</button>
+                    <button class="btn" onclick="randomData()"><i class="fas fa-random"></i> Random</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-chart-bar"></i> Chart Type</h2>
+                
+                <div class="chart-type-grid">
+                    <div class="chart-btn active" onclick="selectChart('bar')">
+                        <i class="fas fa-chart-bar" style="font-size: 28px;"></i>
+                        <div style="margin-top: 8px; font-size: 12px;">Bar Chart</div>
+                    </div>
+                    <div class="chart-btn" onclick="selectChart('line')">
+                        <i class="fas fa-chart-line" style="font-size: 28px;"></i>
+                        <div style="margin-top: 8px; font-size: 12px;">Line Chart</div>
+                    </div>
+                    <div class="chart-btn" onclick="selectChart('pie')">
+                        <i class="fas fa-chart-pie" style="font-size: 28px;"></i>
+                        <div style="margin-top: 8px; font-size: 12px;">Pie Chart</div>
+                    </div>
+                    <div class="chart-btn" onclick="selectChart('scatter')">
+                        <i class="fas fa-braille" style="font-size: 28px;"></i>
+                        <div style="margin-top: 8px; font-size: 12px;">Scatter</div>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Data Points</h3>
+                <div id="dataList" style="max-height: 250px; overflow-y: auto;">
+                    <!-- Dynamic data entries -->
+                </div>
+                
+                <button class="btn" style="width: 100%; margin-top: 10px;" onclick="addDataPoint()">
+                    <i class="fas fa-plus"></i> Add Data Point
+                </button>
+                
+                <h3 style="margin: 20px 0 10px;">Graph Color</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="color" class="color-picker" id="colorPicker" value="#007acc" onchange="updateGraph()">
+                    <span id="colorLabel">#007acc</span>
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statGraphs">0</div>
+                        <div style="font-size: 12px; color: #888;">Graphs</div>
+                    </div>
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statPoints">0</div>
+                        <div style="font-size: 12px; color: #888;">Data Points</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now(), canvas, ctx;
+        
+        let chartType = 'bar', graphColor = '#007acc';
+        let dataPoints = [
+            { label: 'A', value: 25 },
+            { label: 'B', value: 40 },
+            { label: 'C', value: 35 },
+            { label: 'D', value: 50 }
+        ];
+        
+        let interactionData = {
+            actions_count: 0, time_seconds: 0, total_parameter_space: 120,
+            tool_usage: {}, graphs_created: 0, data_points_added: 0,
+            chart_types_used: new Set(['bar'])
+        };
+        
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, toolId: 'interactive-graph-maker', toolType: 'LAB', interactionData })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {}
+            }
+            
+            renderDataList();
+            updateGraph();
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            setInterval(saveProgress, 30000);
+        }
+        
+        function selectChart(type) {
+            chartType = type;
+            document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            interactionData.chart_types_used.add(type);
+            interactionData.actions_count++;
+            updateGraph();
+            updateStats();
+        }
+        
+        function addDataPoint() {
+            const label = String.fromCharCode(65 + dataPoints.length);
+            dataPoints.push({ label, value: Math.floor(Math.random() * 50) + 10 });
+            interactionData.data_points_added++;
+            interactionData.actions_count++;
+            renderDataList();
+            updateGraph();
+            updateStats();
+        }
+        
+        function removeDataPoint(index) {
+            dataPoints.splice(index, 1);
+            renderDataList();
+            updateGraph();
+        }
+        
+        function updateDataPoint(index, field, value) {
+            dataPoints[index][field] = field === 'value' ? parseFloat(value) || 0 : value;
+            interactionData.actions_count++;
+            updateGraph();
+        }
+        
+        function renderDataList() {
+            const list = document.getElementById('dataList');
+            list.innerHTML = dataPoints.map((dp, i) => `
+                <div class="data-entry">
+                    <input type="text" value="${dp.label}" style="flex: 1;" 
+                           onchange="updateDataPoint(${i}, 'label', this.value)">
+                    <input type="number" value="${dp.value}" style="width: 80px;"
+                           onchange="updateDataPoint(${i}, 'value', this.value)">
+                    <button class="btn" style="background: #e74c3c; padding: 8px 12px;" 
+                            onclick="removeDataPoint(${i})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        function clearData() {
+            dataPoints = [];
+            renderDataList();
+            updateGraph();
+        }
+        
+        function randomData() {
+            const count = Math.floor(Math.random() * 5) + 3;
+            dataPoints = [];
+            for (let i = 0; i < count; i++) {
+                dataPoints.push({
+                    label: String.fromCharCode(65 + i),
+                    value: Math.floor(Math.random() * 80) + 20
+                });
+            }
+            renderDataList();
+            updateGraph();
+            interactionData.graphs_created++;
+            updateStats();
+        }
+        
+        function updateGraph() {
+            graphColor = document.getElementById('colorPicker').value;
+            document.getElementById('colorLabel').textContent = graphColor;
+            
+            const title = document.getElementById('titleInput').value || 'Graph Title';
+            const xLabel = document.getElementById('xLabel').value || 'X-Axis';
+            const yLabel = document.getElementById('yLabel').value || 'Y-Axis';
+            
+            interactionData.graphs_created++;
+            updateStats();
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (chartType === 'bar') drawBarChart(title, xLabel, yLabel);
+            else if (chartType === 'line') drawLineChart(title, xLabel, yLabel);
+            else if (chartType === 'pie') drawPieChart(title);
+            else if (chartType === 'scatter') drawScatterChart(title, xLabel, yLabel);
+        }
+        
+        function drawBarChart(title, xLabel, yLabel) {
+            const padding = 60;
+            const width = canvas.width - padding * 2;
+            const height = canvas.height - padding * 2;
+            const maxValue = Math.max(...dataPoints.map(d => d.value));
+            const barWidth = width / dataPoints.length;
+            
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(title, canvas.width / 2, 30);
+            
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, canvas.height - padding);
+            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.stroke();
+            
+            ctx.fillStyle = '#666';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(xLabel, canvas.width / 2, canvas.height - 10);
+            ctx.save();
+            ctx.translate(15, canvas.height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText(yLabel, 0, 0);
+            ctx.restore();
+            
+            dataPoints.forEach((dp, i) => {
+                const barHeight = (dp.value / maxValue) * height;
+                const x = padding + i * barWidth + barWidth * 0.1;
+                const y = canvas.height - padding - barHeight;
+                const w = barWidth * 0.8;
+                
+                ctx.fillStyle = graphColor;
+                ctx.fillRect(x, y, w, barHeight);
+                
+                ctx.fillStyle = '#000';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(dp.label, x + w / 2, canvas.height - padding + 20);
+                ctx.fillText(dp.value, x + w / 2, y - 5);
+            });
+        }
+        
+        function drawLineChart(title, xLabel, yLabel) {
+            const padding = 60;
+            const width = canvas.width - padding * 2;
+            const height = canvas.height - padding * 2;
+            const maxValue = Math.max(...dataPoints.map(d => d.value));
+            
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(title, canvas.width / 2, 30);
+            
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, canvas.height - padding);
+            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.stroke();
+            
+            ctx.strokeStyle = graphColor;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            dataPoints.forEach((dp, i) => {
+                const x = padding + (width / (dataPoints.length - 1)) * i;
+                const y = canvas.height - padding - (dp.value / maxValue) * height;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            
+            ctx.fillStyle = graphColor;
+            dataPoints.forEach((dp, i) => {
+                const x = padding + (width / (dataPoints.length - 1)) * i;
+                const y = canvas.height - padding - (dp.value / maxValue) * height;
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#000';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(dp.label, x, canvas.height - padding + 20);
+                ctx.fillStyle = graphColor;
+            });
+        }
+        
+        function drawPieChart(title) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2 + 20;
+            const radius = Math.min(canvas.width, canvas.height) / 3;
+            const total = dataPoints.reduce((sum, dp) => sum + dp.value, 0);
+            
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(title, centerX, 30);
+            
+            let startAngle = -Math.PI / 2;
+            const colors = ['#007acc', '#e74c3c', '#f39c12', '#27ae60', '#9b59b6', '#1abc9c'];
+            
+            dataPoints.forEach((dp, i) => {
+                const sliceAngle = (dp.value / total) * Math.PI * 2;
+                const endAngle = startAngle + sliceAngle;
+                
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fill();
+                
+                const midAngle = startAngle + sliceAngle / 2;
+                const labelX = centerX + Math.cos(midAngle) * radius * 0.7;
+                const labelY = centerY + Math.sin(midAngle) * radius * 0.7;
+                
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(dp.label, labelX, labelY);
+                ctx.font = '12px Arial';
+                ctx.fillText(Math.round((dp.value / total) * 100) + '%', labelX, labelY + 15);
+                
+                startAngle = endAngle;
+            });
+        }
+        
+        function drawScatterChart(title, xLabel, yLabel) {
+            const padding = 60;
+            const width = canvas.width - padding * 2;
+            const height = canvas.height - padding * 2;
+            const maxValue = Math.max(...dataPoints.map(d => d.value));
+            
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(title, canvas.width / 2, 30);
+            
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, canvas.height - padding);
+            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.stroke();
+            
+            ctx.fillStyle = graphColor;
+            dataPoints.forEach((dp, i) => {
+                const x = padding + (i / dataPoints.length) * width;
+                const y = canvas.height - padding - (dp.value / maxValue) * height;
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+        
+        function exportGraph() {
+            const link = document.createElement('a');
+            link.download = 'graph.png';
+            link.href = canvas.toDataURL();
+            link.click();
+            interactionData.actions_count++;
+        }
+        
+        function updateStats() {
+            document.getElementById('statGraphs').textContent = interactionData.chart_types_used.size;
+            document.getElementById('statPoints').textContent = dataPoints.length;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            interactionData.chart_types_used = Array.from(interactionData.chart_types_used);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactionData })
+                });
+            } catch (err) {}
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('Session completed!');
+            window.location.href = '/dashboard';
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+    </script>
+</body>
+</html>

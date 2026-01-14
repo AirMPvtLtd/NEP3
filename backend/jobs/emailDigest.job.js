@@ -1,0 +1,1 @@
+// jobs/emailDigest.job.js

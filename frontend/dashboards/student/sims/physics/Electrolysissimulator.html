@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electrolysis Simulator - NEP Workbench</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
+        body { background: var(--bg); color: #fff; overflow-x: hidden; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { 
+            background: #333; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            background: var(--accent); 
+            color: white; 
+            font-size: 13px; 
+            transition: all 0.3s;
+        }
+        .btn:hover { background: #005a9e; }
+        .btn:disabled { background: #555; cursor: not-allowed; }
+        .main { 
+            display: grid; 
+            grid-template-columns: 1fr 380px; 
+            gap: 20px; 
+        }
+        @media (max-width: 1024px) {
+            .main { grid-template-columns: 1fr; }
+        }
+        .panel { 
+            background: var(--panel); 
+            border-radius: 8px; 
+            padding: 20px; 
+            border: 1px solid #464647;
+        }
+        .cell-area { 
+            background: #000; 
+            border-radius: 6px; 
+            height: 500px; 
+            border: 1px solid #464647; 
+            position: relative;
+        }
+        canvas { width: 100%; height: 100%; display: block; }
+        input[type="range"] { 
+            width: 100%; 
+            height: 8px; 
+            background: #2d2d30; 
+            border-radius: 4px; 
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; 
+            width: 20px; 
+            height: 20px; 
+            background: var(--accent); 
+            border-radius: 50%; 
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb { 
+            width: 20px; 
+            height: 20px; 
+            background: var(--accent); 
+            border-radius: 50%; 
+            cursor: pointer; 
+            border: none;
+        }
+        .solution-card { 
+            padding: 12px; 
+            background: #2d2d30; 
+            border: 2px solid #464647; 
+            border-radius: 6px; 
+            margin: 8px 0; 
+            cursor: pointer; 
+            transition: all 0.3s;
+        }
+        .solution-card:hover { 
+            border-color: var(--accent); 
+            background: #3d3d40;
+        }
+        .solution-card.active { 
+            background: var(--accent); 
+            border-color: var(--accent);
+        }
+        .stat-box {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-box .value {
+            font-size: 24px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .stat-box .label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        .info-box {
+            background: rgba(0, 122, 204, 0.1);
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+        .measurements-box {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .measurement-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #464647;
+        }
+        .measurement-item:last-child {
+            border-bottom: none;
+        }
+        .equations-box {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-bolt"></i> Electrolysis Simulator</h1>
+                <p style="color: #888; margin-top: 5px;">Physics Lab • Grade 11-12</p>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                <span style="display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-clock"></i> 
+                    <span id="timer">00:00</span>
+                </span>
+                <button class="btn" onclick="saveProgress()">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <button class="btn" style="background: #00b894;" onclick="complete()">
+                    <i class="fas fa-check"></i> Complete
+                </button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <!-- Left Panel - Simulation -->
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">Electrolytic Cell</h2>
+                
+                <div class="cell-area">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <!-- Voltage Control -->
+                <div style="margin-top: 15px;">
+                    <label style="display: block; margin-bottom: 10px; color: #888;">
+                        Voltage: <span id="voltageDisplay">5.0</span> V
+                    </label>
+                    <input type="range" id="voltageSlider" min="1.0" max="12.0" step="0.5" value="5.0" oninput="updateVoltage()">
+                </div>
+                
+                <!-- Current Control -->
+                <div style="margin-top: 15px;">
+                    <label style="display: block; margin-bottom: 10px; color: #888;">
+                        Current: <span id="currentDisplay">2.0</span> A
+                    </label>
+                    <input type="range" id="currentSlider" min="0.5" max="5.0" step="0.5" value="2.0" oninput="updateCurrent()">
+                </div>
+                
+                <!-- Control Buttons -->
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px;">
+                    <button class="btn" onclick="startElectrolysis()" id="startBtn">
+                        <i class="fas fa-play"></i> Start
+                    </button>
+                    <button class="btn" style="background: #e74c3c;" onclick="resetElectrolysis()">
+                        <i class="fas fa-undo"></i> Reset
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Right Panel - Controls & Info -->
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">
+                    <i class="fas fa-flask"></i> Solutions
+                </h2>
+                
+                <!-- Solution Cards -->
+                <div class="solution-card active" onclick="selectSolution('water')">
+                    <strong>Water (H₂O)</strong>
+                    <div style="font-size: 11px; color: #888; margin-top: 5px;">
+                        Produces H₂ + O₂
+                    </div>
+                </div>
+                
+                <div class="solution-card" onclick="selectSolution('nacl')">
+                    <strong>Sodium Chloride (NaCl)</strong>
+                    <div style="font-size: 11px; color: #888; margin-top: 5px;">
+                        Produces Cl₂ + H₂ + NaOH
+                    </div>
+                </div>
+                
+                <div class="solution-card" onclick="selectSolution('cuso4')">
+                    <strong>Copper Sulfate (CuSO₄)</strong>
+                    <div style="font-size: 11px; color: #888; margin-top: 5px;">
+                        Produces Cu + O₂
+                    </div>
+                </div>
+                
+                <!-- Measurements -->
+                <h3 style="margin: 20px 0 10px;">Measurements</h3>
+                <div class="measurements-box">
+                    <div class="measurement-item">
+                        <span>Voltage:</span>
+                        <strong id="voltageVal">5.0 V</strong>
+                    </div>
+                    <div class="measurement-item">
+                        <span>Current:</span>
+                        <strong id="currentVal">2.0 A</strong>
+                    </div>
+                    <div class="measurement-item">
+                        <span>Time Elapsed:</span>
+                        <strong id="timeElapsed">0.0 s</strong>
+                    </div>
+                    <div class="measurement-item">
+                        <span>Charge (Q):</span>
+                        <strong id="chargeVal" style="color: var(--accent);">0.0 C</strong>
+                    </div>
+                    <div class="measurement-item">
+                        <span>Gas Produced:</span>
+                        <strong id="gasProduced">0.0000 mol</strong>
+                    </div>
+                </div>
+                
+                <!-- Equations -->
+                <h3 style="margin: 20px 0 10px;">Equations</h3>
+                <div class="equations-box">
+                    <div>Q = I × t</div>
+                    <div>n = Q / (z × F)</div>
+                    <div>F = 96485 C/mol</div>
+                </div>
+                
+                <!-- Info Box -->
+                <div class="info-box">
+                    <strong style="color: var(--accent);">Electrolysis:</strong><br>
+                    • Uses electrical energy<br>
+                    • Splits compounds<br>
+                    • Anode: oxidation (+ pole)<br>
+                    • Cathode: reduction (- pole)
+                </div>
+                
+                <!-- Statistics -->
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div class="stat-box">
+                        <div class="value" id="statRuns">0</div>
+                        <div class="label">Runs</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="value" id="statSolutions">1</div>
+                        <div class="label">Solutions</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ============================================================================
+         ✅ CHALLENGE WIDGET INTEGRATION
+         
+         Path Structure:
+         frontend/
+         ├── components/
+         │   └── challengewidget.js
+         └── dashboards/
+             └── student/
+                 └── sims/
+                     └── physics/
+                         └── Electrolysissimulator.html (THIS FILE)
+         
+         Relative path from this file to challengewidget.js:
+         ../../../../components/challengewidget.js
+         ============================================================================ -->
+    <script src="../../../../components/challengewidget.js"></script>
+    
+    <script>
+        // ============================================================================
+        // CONFIGURATION
+        // ============================================================================
+        
+        const API_BASE_URL = 'http://localhost:3000/api';
+        let eventId = null;
+        let sessionStart = null;
+        let authToken = null;
+        let studentId = null;
+        
+        // Canvas
+        let canvas, ctx;
+        
+        // Simulation State
+        let solution = 'water';
+        let voltage = 5.0;
+        let current = 2.0;
+        let isRunning = false;
+        let animationId = null;
+        let elapsedTime = 0;
+        let startTime = 0;
+        let bubbles = [];
+        
+        // Interaction Data
+        let interactionData = {
+            // Universal fields
+            actions_count: 0,
+            time_seconds: 0,
+            unique_tools_used: 0,
+            correct_attempts: 0,
+            incorrect_attempts: 0,
+            retry_count: 0,
+            unique_parameters_tried: 0,
+            total_parameter_space: 160, // 23 voltages × 10 currents × 3 solutions / 4
+            tool_usage: {},
+            
+            // Electrolysis-specific tracking
+            voltage_changes: 0,
+            current_changes: 0,
+            electrolyte_changes: 0,
+            reactions_observed: 0,
+            gas_collected: 0,
+            runs_completed: 0,
+            solutions_tested: new Set(['water']),
+            total_charge_passed: 0,
+            max_voltage_used: 5.0,
+            max_current_used: 2.0,
+            parameter_changes: 0
+        };
+        
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+        
+        async function init() {
+            // ✅ Set sessionStart FIRST (timer will work)
+            sessionStart = Date.now();
+            
+            // Setup canvas
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            resizeCanvas();
+            
+            console.log('Canvas initialized:', canvas.width, 'x', canvas.height);
+            
+            // Initialize event tracking
+            await initEventTracking();
+            
+            // Start auto-save
+            startAutoSave();
+            
+            // Start timer
+            startTimer();
+            
+            // Initial draw
+            updateMeasurements();
+            draw();
+            
+            // Resize handler
+            window.addEventListener('resize', handleResize);
+            
+            console.log('✅ Electrolysis Simulator initialized');
+        }
+        
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        
+        function handleResize() {
+            resizeCanvas();
+            draw();
+        }
+        
+        // ============================================================================
+        // EVENT TRACKING
+        // ============================================================================
+        
+        async function initEventTracking() {
+            // ✅ ALWAYS set sessionStart first
+            sessionStart = Date.now();
+            
+            try {
+                authToken = localStorage.getItem('authToken');
+                
+                if (!authToken) {
+                    console.warn('No auth token found. Event tracking disabled. Timer still running.');
+                    return;
+                }
+                
+                const payload = JSON.parse(atob(authToken.split('.')[1]));
+                studentId = payload.userId;
+                
+                const res = await fetch(`${API_BASE_URL}/student/event`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        studentId: studentId,
+                        toolId: 'electrolysis-simulator',
+                        toolType: 'LAB',
+                        interactionData: interactionData
+                    })
+                });
+                
+                if (!res.ok) {
+                    throw new Error(`Failed to create event: ${res.status}`);
+                }
+                
+                const data = await res.json();
+                eventId = data.data._id;
+                
+                console.log('✅ Event tracking initialized:', eventId);
+                
+            } catch (error) {
+                console.error('Error initializing event tracking:', error);
+                console.log('⏱️ Timer continues to run in offline mode');
+            }
+        }
+        
+        function startAutoSave() {
+            setInterval(saveProgress, 30000);
+            window.addEventListener('beforeunload', saveProgress);
+        }
+        
+        async function saveProgress() {
+            if (!eventId || !authToken) return;
+            
+            try {
+                interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+                
+                // Convert Set to Array for JSON
+                const dataToSend = {
+                    ...interactionData,
+                    solutions_tested: Array.from(interactionData.solutions_tested)
+                };
+                
+                const res = await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        interactionData: dataToSend
+                    })
+                });
+                
+                if (res.ok) {
+                    console.log('✅ Progress saved');
+                }
+                
+            } catch (error) {
+                console.error('Error saving progress:', error);
+            }
+        }
+        
+        async function complete() {
+            await saveProgress();
+            
+            if (!eventId || !authToken) {
+                alert('✅ Session completed!\nRuns: ' + interactionData.runs_completed);
+                window.location.href = '../../StudentWorkbench.html';
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_BASE_URL}/student/event/${eventId}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (res.ok) {
+                    alert('✅ Session completed successfully!\nRuns: ' + interactionData.runs_completed + '\nGas Collected: ' + interactionData.gas_collected + ' bubbles');
+                    window.location.href = '../../StudentWorkbench.html';
+                }
+                
+            } catch (error) {
+                console.error('Error completing session:', error);
+                alert('✅ Session completed!');
+                window.location.href = '../../StudentWorkbench.html';
+            }
+        }
+        
+        function startTimer() {
+            setInterval(() => {
+                if (!sessionStart) return;
+                const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('timer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+        
+        // ============================================================================
+        // SIMULATION CONTROLS
+        // ============================================================================
+        
+        function selectSolution(sol) {
+            solution = sol;
+            
+            // Track interaction
+            interactionData.solutions_tested.add(sol);
+            interactionData.electrolyte_changes++;
+            interactionData.actions_count++;
+            
+            if (!interactionData.tool_usage['select_solution']) {
+                interactionData.tool_usage['select_solution'] = 0;
+                interactionData.unique_tools_used++;
+            }
+            interactionData.tool_usage['select_solution']++;
+            
+            // Update UI
+            document.querySelectorAll('.solution-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            console.log('Solution selected:', sol);
+            updateStats();
+            draw();
+        }
+        
+        function updateVoltage() {
+            voltage = parseFloat(document.getElementById('voltageSlider').value);
+            
+            // Update displays
+            document.getElementById('voltageDisplay').textContent = voltage.toFixed(1);
+            document.getElementById('voltageVal').textContent = voltage.toFixed(1) + ' V';
+            
+            // Track interaction
+            interactionData.voltage_changes++;
+            interactionData.parameter_changes++;
+            interactionData.actions_count++;
+            
+            if (!interactionData.tool_usage['voltage_control']) {
+                interactionData.tool_usage['voltage_control'] = 0;
+                interactionData.unique_tools_used++;
+            }
+            interactionData.tool_usage['voltage_control']++;
+            
+            // Track max voltage
+            if (voltage > interactionData.max_voltage_used) {
+                interactionData.max_voltage_used = voltage;
+            }
+            
+            draw();
+        }
+        
+        function updateCurrent() {
+            current = parseFloat(document.getElementById('currentSlider').value);
+            
+            // Update displays
+            document.getElementById('currentDisplay').textContent = current.toFixed(1);
+            document.getElementById('currentVal').textContent = current.toFixed(1) + ' A';
+            
+            // Track interaction
+            interactionData.current_changes++;
+            interactionData.parameter_changes++;
+            interactionData.actions_count++;
+            
+            if (!interactionData.tool_usage['current_control']) {
+                interactionData.tool_usage['current_control'] = 0;
+                interactionData.unique_tools_used++;
+            }
+            interactionData.tool_usage['current_control']++;
+            
+            // Track max current
+            if (current > interactionData.max_current_used) {
+                interactionData.max_current_used = current;
+            }
+        }
+        
+        function startElectrolysis() {
+            if (isRunning) return;
+            
+            isRunning = true;
+            startTime = Date.now();
+            document.getElementById('startBtn').disabled = true;
+            
+            // Track interaction
+            interactionData.runs_completed++;
+            interactionData.reactions_observed++;
+            interactionData.actions_count++;
+            
+            if (!interactionData.tool_usage['start_electrolysis']) {
+                interactionData.tool_usage['start_electrolysis'] = 0;
+                interactionData.unique_tools_used++;
+            }
+            interactionData.tool_usage['start_electrolysis']++;
+            
+            console.log('Electrolysis started');
+            animate();
+            updateStats();
+        }
+        
+        function resetElectrolysis() {
+            isRunning = false;
+            elapsedTime = 0;
+            startTime = 0;
+            bubbles = [];
+            document.getElementById('startBtn').disabled = false;
+            
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            
+            // Track interaction
+            interactionData.actions_count++;
+            
+            if (!interactionData.tool_usage['reset']) {
+                interactionData.tool_usage['reset'] = 0;
+                interactionData.unique_tools_used++;
+            }
+            interactionData.tool_usage['reset']++;
+            
+            console.log('Electrolysis reset');
+            updateMeasurements();
+            draw();
+        }
+        
+        // ============================================================================
+        // ANIMATION
+        // ============================================================================
+        
+        function animate() {
+            if (!isRunning) return;
+            
+            // Calculate elapsed time
+            elapsedTime = (Date.now() - startTime) / 1000;
+            
+            // Generate bubbles based on current
+            const bubbleRate = current * 0.05;
+            
+            // Cathode bubbles (Hydrogen - red)
+            if (Math.random() < bubbleRate) {
+                bubbles.push({
+                    x: canvas.width * 0.35 + Math.random() * 20 - 10,
+                    y: canvas.height * 0.7,
+                    vy: -2 - Math.random(),
+                    radius: 3 + Math.random() * 3,
+                    electrode: 'cathode',
+                    color: 'rgba(255, 100, 100, 0.7)'
+                });
+                interactionData.gas_collected++;
+            }
+            
+            // Anode bubbles (Oxygen - blue)
+            if (Math.random() < bubbleRate) {
+                bubbles.push({
+                    x: canvas.width * 0.65 + Math.random() * 20 - 10,
+                    y: canvas.height * 0.7,
+                    vy: -2 - Math.random(),
+                    radius: 3 + Math.random() * 3,
+                    electrode: 'anode',
+                    color: 'rgba(100, 200, 255, 0.7)'
+                });
+                interactionData.gas_collected++;
+            }
+            
+            // Update bubble positions
+            bubbles.forEach(b => {
+                b.y += b.vy;
+                b.vy -= 0.02; // Acceleration upward
+            });
+            
+            // Remove bubbles that reached top
+            bubbles = bubbles.filter(b => b.y > 50);
+            
+            // Track total charge
+            interactionData.total_charge_passed = current * elapsedTime;
+            
+            updateMeasurements();
+            draw();
+            
+            if (isRunning) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+        
+        // ============================================================================
+        // MEASUREMENTS
+        // ============================================================================
+        
+        function updateMeasurements() {
+            const charge = current * elapsedTime; // Q = I × t
+            const faraday = 96485; // Faraday constant (C/mol)
+            const z = 2; // Electrons transferred
+            const moles = charge / (z * faraday); // n = Q / (z × F)
+            
+            document.getElementById('timeElapsed').textContent = elapsedTime.toFixed(1) + ' s';
+            document.getElementById('chargeVal').textContent = charge.toFixed(1) + ' C';
+            document.getElementById('gasProduced').textContent = moles.toFixed(4) + ' mol';
+        }
+        
+        // ============================================================================
+        // DRAWING
+        // ============================================================================
+        
+        function draw() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Draw beaker
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(width * 0.2, height * 0.3);
+            ctx.lineTo(width * 0.2, height * 0.8);
+            ctx.lineTo(width * 0.8, height * 0.8);
+            ctx.lineTo(width * 0.8, height * 0.3);
+            ctx.stroke();
+            
+            // Draw solution
+            const solutionColors = {
+                water: 'rgba(100, 150, 200, 0.3)',
+                nacl: 'rgba(150, 200, 150, 0.3)',
+                cuso4: 'rgba(100, 150, 255, 0.4)'
+            };
+            ctx.fillStyle = solutionColors[solution] || solutionColors.water;
+            ctx.fillRect(width * 0.2, height * 0.5, width * 0.6, height * 0.3);
+            
+            // Draw cathode (negative, left)
+            ctx.fillStyle = '#888';
+            ctx.fillRect(width * 0.35 - 10, height * 0.2, 20, height * 0.5);
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(width * 0.35 - 10, height * 0.2, 20, height * 0.5);
+            
+            ctx.fillStyle = '#e74c3c';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('-', width * 0.35, height * 0.15);
+            ctx.fillText('Cathode', width * 0.35, height * 0.9);
+            
+            // Draw anode (positive, right)
+            ctx.fillStyle = '#888';
+            ctx.fillRect(width * 0.65 - 10, height * 0.2, 20, height * 0.5);
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(width * 0.65 - 10, height * 0.2, 20, height * 0.5);
+            
+            ctx.fillStyle = '#3498db';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('+', width * 0.65, height * 0.15);
+            ctx.fillText('Anode', width * 0.65, height * 0.9);
+            
+            // Draw wires
+            ctx.strokeStyle = '#f39c12';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(width * 0.35, height * 0.2);
+            ctx.lineTo(width * 0.35, height * 0.05);
+            ctx.lineTo(width * 0.45, height * 0.05);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(width * 0.55, height * 0.05);
+            ctx.lineTo(width * 0.65, height * 0.05);
+            ctx.lineTo(width * 0.65, height * 0.2);
+            ctx.stroke();
+            
+            // Draw battery
+            ctx.fillStyle = '#2d2d30';
+            ctx.fillRect(width * 0.45, height * 0.02, width * 0.1, height * 0.06);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(width * 0.45, height * 0.02, width * 0.1, height * 0.06);
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(voltage.toFixed(1) + 'V', width * 0.5, height * 0.055);
+            
+            // Draw bubbles
+            bubbles.forEach(b => {
+                ctx.fillStyle = b.color;
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Bubble highlight
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            });
+            
+            // Current indicator
+            if (isRunning) {
+                ctx.fillStyle = '#27ae60';
+                ctx.beginPath();
+                ctx.arc(width * 0.5, height * 0.05, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // ============================================================================
+        // STATISTICS
+        // ============================================================================
+        
+        function updateStats() {
+            document.getElementById('statRuns').textContent = interactionData.runs_completed;
+            document.getElementById('statSolutions').textContent = interactionData.solutions_tested.size;
+        }
+        
+        // ============================================================================
+        // INITIALIZATION CALL
+        // ============================================================================
+        
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

@@ -1,0 +1,2382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Geometry Shape Builder & Measurer - NEP Workbench</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary-bg: #1e1e1e;
+            --secondary-bg: #2d2d30;
+            --panel-bg: #252526;
+            --header-bg: #333337;
+            --border-color: #464647;
+            --accent-color: #007acc;
+            --error-color: #ff4444;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-muted: #888888;
+            --grid-color: #2a2a2a;
+        }
+        
+        body {
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+        
+        /* Simulation Container */
+        .simulation-container {
+            background: var(--secondary-bg);
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 1600px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: auto;
+            min-height: 95vh;
+            max-height: 95vh;
+            border: 1px solid var(--border-color);
+        }
+        
+        /* HEADER */
+        .main-header {
+            background: var(--header-bg);
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .header-title {
+            font-size: clamp(20px, 2vw, 24px);
+            font-weight: 600;
+            color: var(--accent-color);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .header-btn {
+            padding: 8px 15px;
+            background: #3c3c3c;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: clamp(12px, 1.2vw, 14px);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .header-btn:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: var(--text-primary);
+        }
+        
+        .header-btn.danger {
+            background: rgba(255, 68, 68, 0.2);
+            border-color: var(--error-color);
+            color: var(--error-color);
+        }
+        
+        .header-btn.danger:hover {
+            background: var(--error-color);
+            color: var(--text-primary);
+        }
+        
+        .header-btn.success {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+        
+        .header-btn.success:hover {
+            background: var(--success-color);
+            color: var(--text-primary);
+        }
+        
+        .session-timer {
+            background: rgba(0, 122, 204, 0.2);
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            font-size: clamp(12px, 1.2vw, 14px);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            padding: 8px;
+            background: #3c3c3c;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        
+        /* Left Panel - Drawing Area */
+        .drawing-panel {
+            flex: 3;
+            background: var(--panel-bg);
+            padding: 20px;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            overflow: hidden;
+        }
+        
+        .drawing-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .drawing-title {
+            font-size: clamp(18px, 1.8vw, 20px);
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        
+        .drawing-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .mode-indicator {
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: clamp(11px, 1vw, 13px);
+            font-weight: 600;
+            background: #3c3c3c;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        
+        .mode-indicator.drawing {
+            background: rgba(0, 122, 204, 0.2);
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        
+        .mode-indicator.measuring {
+            background: rgba(255, 68, 68, 0.2);
+            color: var(--error-color);
+            border-color: var(--error-color);
+        }
+        
+        .tool-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .tool-btn {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: #3c3c3c;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: clamp(12px, 1.2vw, 14px);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .tool-btn:hover {
+            border-color: var(--accent-color);
+            background: #3e3e42;
+        }
+        
+        .tool-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: var(--text-primary);
+        }
+        
+        .tool-btn.secondary {
+            background: var(--header-bg);
+            color: var(--text-muted);
+        }
+        
+        /* Canvas Container */
+        .canvas-container {
+            flex: 1;
+            background: var(--primary-bg);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            position: relative;
+            min-height: 400px;
+        }
+        
+        #drawing-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: crosshair;
+        }
+        
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+        
+        .coordinate-display {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: clamp(11px, 1.2vw, 13px);
+            pointer-events: none;
+            z-index: 10;
+            border: 1px solid var(--border-color);
+        }
+        
+        /* Right Panel - Controls */
+        .controls-panel {
+            flex: 2;
+            min-width: 320px;
+            max-width: 450px;
+            padding: 20px;
+            background: var(--panel-bg);
+            overflow-y: auto;
+            border-left: 1px solid var(--border-color);
+        }
+        
+        .control-section {
+            background: var(--header-bg);
+            border-radius: 6px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            font-size: clamp(16px, 1.5vw, 18px);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .section-title i {
+            color: var(--accent-color);
+            font-size: clamp(14px, 1.3vw, 16px);
+        }
+        
+        /* Shape Tools */
+        .shape-tools {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .shape-tool {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--secondary-bg);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .shape-tool:hover {
+            border-color: var(--accent-color);
+            background: #3c3c3c;
+            transform: translateY(-2px);
+        }
+        
+        .shape-tool.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: var(--text-primary);
+        }
+        
+        .shape-preview {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+        }
+        
+        .shape-name {
+            font-size: clamp(12px, 1.2vw, 14px);
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        /* Custom Shape Previews */
+        .triangle-preview {
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 26px solid currentColor;
+        }
+        
+        .square-preview {
+            width: 25px;
+            height: 25px;
+            background: currentColor;
+        }
+        
+        .circle-preview {
+            width: 25px;
+            height: 25px;
+            background: currentColor;
+            border-radius: 50%;
+        }
+        
+        .rectangle-preview {
+            width: 35px;
+            height: 22px;
+            background: currentColor;
+        }
+        
+        .line-preview {
+            width: 30px;
+            height: 2px;
+            background: currentColor;
+            margin: 19px 0;
+        }
+        
+        .polygon-preview {
+            width: 25px;
+            height: 25px;
+            background: currentColor;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        
+        /* Angle Controls */
+        .angle-controls {
+            margin-top: 15px;
+        }
+        
+        .angle-slider {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(to right, var(--header-bg), var(--accent-color));
+            border-radius: 3px;
+            outline: none;
+            margin: 10px 0;
+        }
+        
+        .angle-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            border: 2px solid var(--secondary-bg);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .angle-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: #005a99;
+        }
+        
+        .angle-display {
+            text-align: center;
+            font-size: clamp(20px, 2vw, 24px);
+            font-weight: 600;
+            color: var(--accent-color);
+            margin: 10px 0;
+        }
+        
+        /* Measurement Tools */
+        .measurement-tools {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .measurement-btn {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: #3c3c3c;
+            color: var(--text-secondary);
+            font-size: clamp(13px, 1.3vw, 14px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
+        }
+        
+        .measurement-btn:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+        
+        .measurement-btn.secondary {
+            background: var(--header-bg);
+            color: var(--text-muted);
+        }
+        
+        .measurement-btn.secondary:hover {
+            background: #3e3e42;
+            border-color: var(--border-color);
+        }
+        
+        /* Shape Properties */
+        .properties-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+        
+        .property-item {
+            background: var(--secondary-bg);
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .property-label {
+            font-size: clamp(11px, 1.2vw, 13px);
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        
+        .property-value {
+            font-size: clamp(16px, 2vw, 20px);
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+        
+        .property-unit {
+            font-size: clamp(10px, 1.1vw, 12px);
+            color: var(--text-muted);
+            margin-left: 2px;
+        }
+        
+        /* Points List */
+        .points-list {
+            max-height: 180px;
+            overflow-y: auto;
+            background: var(--secondary-bg);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            margin-top: 10px;
+        }
+        
+        .point-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: clamp(12px, 1.2vw, 14px);
+        }
+        
+        .point-item:last-child {
+            border-bottom: none;
+        }
+        
+        .point-coords {
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+        
+        /* Challenge Section */
+        .challenge-section {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .challenge-title {
+            color: var(--success-color);
+        }
+        
+        .challenge-problem {
+            background: var(--secondary-bg);
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border: 1px solid var(--border-color);
+            font-size: clamp(13px, 1.3vw, 14px);
+            color: var(--text-secondary);
+        }
+        
+        .challenge-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: clamp(13px, 1.3vw, 14px);
+            margin: 10px 0;
+            background: var(--secondary-bg);
+            color: var(--text-primary);
+        }
+        
+        .challenge-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        
+        .challenge-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background: var(--success-color);
+            color: var(--text-primary);
+            font-size: clamp(14px, 1.4vw, 16px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .challenge-btn:hover {
+            background: #0da271;
+            transform: translateY(-1px);
+        }
+        
+        /* STATUS BAR */
+        .status-bar {
+            background: var(--accent-color);
+            padding: 8px 15px;
+            font-size: clamp(11px, 1.2vw, 13px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .status-left, .status-right, .status-center {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        
+        .status-value {
+            font-weight: 600;
+        }
+        
+        .view-options {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .view-option {
+            padding: 3px 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            font-size: clamp(10px, 1.1vw, 12px);
+            white-space: nowrap;
+        }
+        
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            text-align: center;
+            color: var(--text-primary);
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: var(--accent-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Animation */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .animate-pulse {
+            animation: pulse 0.5s ease;
+        }
+        
+        /* RESPONSIVE - Mobile First Approach */
+        @media (max-width: 767px) {
+            body {
+                padding: 0;
+            }
+            
+            .simulation-container {
+                border-radius: 0;
+                min-height: 100vh;
+                max-height: 100vh;
+            }
+            
+            .main-content {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+            
+            .drawing-panel {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                min-height: 50vh;
+                padding: 12px;
+            }
+            
+            .controls-panel {
+                max-width: 100%;
+                min-width: 0;
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+                padding: 12px;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .shape-tools {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="simulation-container">
+        <!-- HEADER -->
+        <div class="main-header">
+            <div class="header-title">
+                <i class="fas fa-shapes"></i>
+                Geometry Shape Builder
+            </div>
+            <div class="session-timer">
+                <i class="fas fa-clock"></i>
+                <span id="session-timer">00:00</span>
+            </div>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="header-controls">
+                <button class="header-btn" onclick="saveProgress()">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <button class="header-btn success" onclick="completeActivity()">
+                    <i class="fas fa-check"></i> Complete
+                </button>
+                <button class="header-btn danger" onclick="exitSimulation()">
+                    <i class="fas fa-times"></i> Exit
+                </button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <!-- Left Panel: Drawing Area -->
+            <div class="drawing-panel">
+                <div class="drawing-header">
+                    <div class="drawing-title">Drawing Workspace</div>
+                    <div class="drawing-info">
+                        <div class="mode-indicator drawing" id="mode-indicator">Mode: Drawing</div>
+                        <div class="tool-buttons">
+                            <button class="tool-btn active" id="draw-btn" onclick="setMode('draw')">
+                                <i class="fas fa-pencil-alt"></i> Draw
+                            </button>
+                            <button class="tool-btn secondary" id="measure-btn" onclick="setMode('measure')">
+                                <i class="fas fa-ruler-combined"></i> Measure
+                            </button>
+                            <button class="tool-btn secondary" onclick="clearCanvas()">
+                                <i class="fas fa-trash-alt"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="canvas-container">
+                    <canvas id="drawing-canvas"></canvas>
+                    <div class="grid-overlay"></div>
+                    <div class="coordinate-display" id="coordinate-display">X: 0.0 cm, Y: 0.0 cm</div>
+                </div>
+            </div>
+            
+            <!-- Right Panel: Controls -->
+            <div class="controls-panel">
+                <!-- Shape Tools -->
+                <div class="control-section">
+                    <div class="section-title">
+                        <i class="fas fa-shapes"></i> Shape Tools
+                    </div>
+                    <div class="shape-tools">
+                        <div class="shape-tool active" onclick="selectTool('line')" data-tool="line">
+                            <div class="shape-preview">
+                                <div class="line-preview"></div>
+                            </div>
+                            <div class="shape-name">Line</div>
+                        </div>
+                        <div class="shape-tool" onclick="selectTool('triangle')" data-tool="triangle">
+                            <div class="shape-preview">
+                                <div class="triangle-preview"></div>
+                            </div>
+                            <div class="shape-name">Triangle</div>
+                        </div>
+                        <div class="shape-tool" onclick="selectTool('square')" data-tool="square">
+                            <div class="shape-preview">
+                                <div class="square-preview"></div>
+                            </div>
+                            <div class="shape-name">Square</div>
+                        </div>
+                        <div class="shape-tool" onclick="selectTool('rectangle')" data-tool="rectangle">
+                            <div class="shape-preview">
+                                <div class="rectangle-preview"></div>
+                            </div>
+                            <div class="shape-name">Rectangle</div>
+                        </div>
+                        <div class="shape-tool" onclick="selectTool('circle')" data-tool="circle">
+                            <div class="shape-preview">
+                                <div class="circle-preview"></div>
+                            </div>
+                            <div class="shape-name">Circle</div>
+                        </div>
+                        <div class="shape-tool" onclick="selectTool('polygon')" data-tool="polygon">
+                            <div class="shape-preview">
+                                <div class="polygon-preview"></div>
+                            </div>
+                            <div class="shape-name">Polygon</div>
+                        </div>
+                    </div>
+                    
+                    <div class="angle-controls" id="angle-controls" style="margin-top: 15px; display: none;">
+                        <div class="section-title">
+                            <i class="fas fa-angle-right"></i> Angle Control
+                        </div>
+                        <input type="range" id="angle-slider" class="angle-slider" min="0" max="360" value="60" oninput="updateAngle(this.value)">
+                        <div class="angle-display" id="angle-display">60°</div>
+                    </div>
+                </div>
+                
+                <!-- Measurement Tools -->
+                <div class="control-section">
+                    <div class="section-title">
+                        <i class="fas fa-ruler"></i> Measurement Tools
+                    </div>
+                    <div class="measurement-tools">
+                        <button class="measurement-btn" onclick="measureDistance()">
+                            <i class="fas fa-ruler"></i> Distance
+                        </button>
+                        <button class="measurement-btn secondary" onclick="measureAngle()">
+                            <i class="fas fa-angle-right"></i> Angle
+                        </button>
+                        <button class="measurement-btn secondary" onclick="calculateArea()">
+                            <i class="fas fa-border-all"></i> Area
+                        </button>
+                        <button class="measurement-btn secondary" onclick="calculatePerimeter()">
+                            <i class="fas fa-draw-polygon"></i> Perimeter
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Shape Properties -->
+                <div class="control-section">
+                    <div class="section-title">
+                        <i class="fas fa-info-circle"></i> Shape Properties
+                    </div>
+                    <div class="properties-grid">
+                        <div class="property-item">
+                            <div class="property-label">Area</div>
+                            <div class="property-value">
+                                <span id="area-value">0.00</span>
+                                <span class="property-unit">cm²</span>
+                            </div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Perimeter</div>
+                            <div class="property-value">
+                                <span id="perimeter-value">0.00</span>
+                                <span class="property-unit">cm</span>
+                            </div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Distance</div>
+                            <div class="property-value">
+                                <span id="distance-value">0.00</span>
+                                <span class="property-unit">cm</span>
+                            </div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Angle</div>
+                            <div class="property-value">
+                                <span id="angle-value">0.00</span>
+                                <span class="property-unit">°</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Points List -->
+                <div class="control-section">
+                    <div class="section-title">
+                        <i class="fas fa-map-marker-alt"></i> Points List
+                    </div>
+                    <div class="points-list" id="points-list">
+                        <div class="point-item">
+                            <span>No points drawn yet</span>
+                            <span class="point-coords">0,0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Challenge Section -->
+                <div class="control-section challenge-section">
+                    <div class="section-title challenge-title">
+                        <i class="fas fa-puzzle-piece"></i> Geometry Challenge
+                    </div>
+                    <div class="challenge-problem" id="challenge-problem">
+                        Draw a triangle with exactly 60° angles
+                    </div>
+                    <input type="text" class="challenge-input" id="challenge-answer" placeholder="Your answer...">
+                    <button class="challenge-btn" onclick="checkChallenge()">
+                        <i class="fas fa-check"></i> Check Answer
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- STATUS BAR -->
+        <div class="status-bar">
+            <div class="status-left">
+                <div class="status-item">
+                    <i class="fas fa-shapes"></i>
+                    <span>Shape: <span class="status-value" id="status-shape">Line</span></span>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Actions: <span class="status-value" id="actions-count">0</span></span>
+                </div>
+            </div>
+            
+            <div class="status-center">
+                <div class="view-options">
+                    <div class="view-option">Grid: On</div>
+                    <div class="view-option">Connected</div>
+                </div>
+            </div>
+            
+            <div class="status-right">
+                <div class="status-item">
+                    <i class="fas fa-save"></i>
+                    <span id="save-status">Auto-saving...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div id="loading-text">Connecting to NEP Workbench...</div>
+        </div>
+    </div>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        // ============================================================================
+        // BACKEND INTEGRATION LAYER
+        // ============================================================================
+        
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:3000/api';
+        let authToken = null;
+        let currentStudent = null;
+        let currentEventId = null;
+        
+        // Session tracking
+        let sessionStartTime = Date.now();
+        let sessionTimer = null;
+        let autoSaveInterval = null;
+        
+        // Interaction data tracking (for backend)
+        let interactionData = {
+            actions_count: 0,
+            unique_tools_used: new Set(),
+            correct_attempts: 0,
+            incorrect_attempts: 0,
+            retry_count: 0,
+            time_seconds: 0,
+            unique_parameters_tried: new Set(),
+            total_parameter_space: 360, // degrees for angle control
+            shapes_drawn: 0,
+            measurements_taken: 0,
+            challenges_attempted: 0,
+            challenges_completed: 0,
+            tool_usage: {}
+        };
+        
+        // ============================================================================
+        // AUTHENTICATION & INITIALIZATION
+        // ============================================================================
+        
+        async function initializeBackendConnection() {
+            showLoading('Connecting to NEP Workbench...');
+            
+            try {
+                // Get auth token from localStorage or URL params
+                authToken = localStorage.getItem('authToken') || getUrlParameter('token');
+                
+                if (!authToken) {
+                    showError('Authentication required. Redirecting to login...');
+                    setTimeout(() => {
+                        window.location.href = '/login.html';
+                    }, 2000);
+                    return false;
+                }
+                
+                // Decode JWT to get student info
+                const payload = JSON.parse(atob(authToken.split('.')[1]));
+                currentStudent = {
+                    id: payload.userId,
+                    role: payload.role
+                };
+                
+                if (currentStudent.role !== 'student') {
+                    showError('Access denied. This is a student simulation.');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                    return false;
+                }
+                
+                // Create event in backend
+                await createLearningEvent();
+                
+                // Start session tracking
+                startSessionTracking();
+                
+                hideLoading();
+                showMessage('Connected to NEP Workbench successfully!');
+                
+                return true;
+                
+            } catch (error) {
+                console.error('Backend initialization error:', error);
+                showError('Failed to connect to NEP Workbench. Running in offline mode.');
+                hideLoading();
+                return false;
+            }
+        }
+        
+        // Get URL parameter
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+        
+        // ============================================================================
+        // API CALLS
+        // ============================================================================
+        
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                }
+            };
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+                
+                if (response.status === 401) {
+                    localStorage.removeItem('authToken');
+                    window.location.href = '/login.html';
+                    return null;
+                }
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.message || 'API call failed');
+                }
+                
+                return result.data;
+                
+            } catch (error) {
+                console.error('API Error:', error);
+                updateConnectionStatus(false);
+                return null;
+            }
+        }
+        
+        // Create learning event
+        async function createLearningEvent() {
+            try {
+                const eventData = {
+                    studentId: currentStudent.id,
+                    toolId: 'shape-builder-measurer',
+                    toolType: 'LAB',
+                    interactionData: {
+                        ...getInteractionDataSnapshot(),
+                        session_start: new Date().toISOString()
+                    }
+                };
+                
+                const event = await apiCall('/student/event', 'POST', eventData);
+                
+                if (event) {
+                    currentEventId = event._id;
+                    console.log('Learning event created:', currentEventId);
+                    return event;
+                }
+                
+            } catch (error) {
+                console.error('Error creating learning event:', error);
+                return null;
+            }
+        }
+        
+        // Update learning event
+        async function updateLearningEvent() {
+            if (!currentEventId) return;
+            
+            try {
+                const snapshot = getInteractionDataSnapshot();
+                
+                await apiCall(`/student/event/${currentEventId}`, 'PATCH', {
+                    interactionData: snapshot
+                });
+                
+                updateSaveStatus('Saved');
+                
+            } catch (error) {
+                console.error('Error updating learning event:', error);
+                updateSaveStatus('Error');
+            }
+        }
+        
+        // Complete activity
+        async function completeActivity() {
+            if (!confirm('Are you sure you want to complete this activity? Your progress will be submitted for evaluation.')) {
+                return;
+            }
+            
+            showLoading('Submitting your work...');
+            
+            try {
+                // Final update with completion flag
+                const finalData = {
+                    ...getInteractionDataSnapshot(),
+                    completed: true,
+                    completion_time: new Date().toISOString()
+                };
+                
+                await apiCall(`/student/event/${currentEventId}`, 'PATCH', {
+                    interactionData: finalData
+                });
+                
+                showSuccess('Activity completed successfully! Redirecting to workbench...');
+                
+                // Send message to parent window (if in iframe)
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'complete',
+                        eventId: currentEventId,
+                        data: finalData
+                    }, '*');
+                }
+                
+                setTimeout(() => {
+                    returnToWorkbench();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error completing activity:', error);
+                showError('Failed to submit your work. Please try again.');
+                hideLoading();
+            }
+        }
+        
+        // Get interaction data snapshot
+        function getInteractionDataSnapshot() {
+            return {
+                actions_count: interactionData.actions_count,
+                unique_tools_used: Array.from(interactionData.unique_tools_used).length,
+                correct_attempts: interactionData.correct_attempts,
+                incorrect_attempts: interactionData.incorrect_attempts,
+                retry_count: interactionData.retry_count,
+                time_seconds: Math.floor((Date.now() - sessionStartTime) / 1000),
+                unique_parameters_tried: Array.from(interactionData.unique_parameters_tried).length,
+                total_parameter_space: interactionData.total_parameter_space,
+                shapes_drawn: interactionData.shapes_drawn,
+                measurements_taken: interactionData.measurements_taken,
+                challenges_attempted: interactionData.challenges_attempted,
+                challenges_completed: interactionData.challenges_completed,
+                tool_usage: interactionData.tool_usage
+            };
+        }
+        
+        // Track action
+        function trackAction(actionType, details = {}) {
+            interactionData.actions_count++;
+            
+            // Update actions count display
+            document.getElementById('actions-count').textContent = interactionData.actions_count;
+            
+            // Track specific action types
+            switch(actionType) {
+                case 'tool_select':
+                    interactionData.unique_tools_used.add(details.tool);
+                    if (!interactionData.tool_usage[details.tool]) {
+                        interactionData.tool_usage[details.tool] = 0;
+                    }
+                    interactionData.tool_usage[details.tool]++;
+                    break;
+                    
+                case 'shape_drawn':
+                    interactionData.shapes_drawn++;
+                    break;
+                    
+                case 'measurement_taken':
+                    interactionData.measurements_taken++;
+                    break;
+                    
+                case 'challenge_attempt':
+                    interactionData.challenges_attempted++;
+                    if (details.correct) {
+                        interactionData.correct_attempts++;
+                        interactionData.challenges_completed++;
+                    } else {
+                        interactionData.incorrect_attempts++;
+                    }
+                    break;
+                    
+                case 'parameter_change':
+                    interactionData.unique_parameters_tried.add(details.value);
+                    break;
+                    
+                case 'retry':
+                    interactionData.retry_count++;
+                    break;
+            }
+            
+            // Send to parent window for real-time tracking
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'interaction',
+                    data: getInteractionDataSnapshot()
+                }, '*');
+            }
+        }
+        
+        // ============================================================================
+        // SESSION MANAGEMENT
+        // ============================================================================
+        
+        function startSessionTracking() {
+            // Update session timer every second
+            sessionTimer = setInterval(() => {
+                const elapsed = Date.now() - sessionStartTime;
+                const minutes = Math.floor(elapsed / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                document.getElementById('session-timer').textContent = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }, 1000);
+            
+            // Auto-save every 30 seconds
+            autoSaveInterval = setInterval(() => {
+                saveProgress();
+            }, 30000);
+            
+            // Handle page unload
+            window.addEventListener('beforeunload', handlePageUnload);
+        }
+        
+        function stopSessionTracking() {
+            if (sessionTimer) clearInterval(sessionTimer);
+            if (autoSaveInterval) clearInterval(autoSaveInterval);
+            window.removeEventListener('beforeunload', handlePageUnload);
+        }
+        
+        function handlePageUnload(e) {
+            // Auto-save before leaving
+            saveProgress();
+            
+            // Show confirmation dialog
+            e.preventDefault();
+            e.returnValue = '';
+        }
+        
+        async function saveProgress() {
+            updateSaveStatus('Saving...');
+            await updateLearningEvent();
+        }
+        
+        function updateSaveStatus(status) {
+            const statusEl = document.getElementById('save-status');
+            statusEl.textContent = status;
+            
+            if (status === 'Saved') {
+                setTimeout(() => {
+                    statusEl.textContent = 'Auto-saving...';
+                }, 2000);
+            }
+        }
+        
+        // ============================================================================
+        // UI HELPERS
+        // ============================================================================
+        
+        function showLoading(message = 'Loading...') {
+            document.getElementById('loading-text').textContent = message;
+            document.getElementById('loading-overlay').style.display = 'flex';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+        
+        function showMessage(message, type = 'info') {
+            const existingMsg = document.querySelector('.toast-message');
+            if (existingMsg) existingMsg.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast-message';
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: ${type === 'error' ? '#ff4444' : type === 'success' ? '#10b981' : '#007acc'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 6px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+                z-index: 10000;
+                max-width: 300px;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        function showError(message) {
+            showMessage(message, 'error');
+        }
+        
+        function showSuccess(message) {
+            showMessage(message, 'success');
+        }
+        
+        function updateConnectionStatus(connected) {
+            const statusOptions = document.querySelectorAll('.view-option');
+            if (statusOptions.length > 1) {
+                statusOptions[1].textContent = connected ? 'Connected' : 'Offline';
+                statusOptions[1].style.background = connected ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 68, 68, 0.3)';
+            }
+        }
+        
+        function exitSimulation() {
+            if (!confirm('Are you sure you want to exit? Your progress will be saved.')) {
+                return;
+            }
+            
+            saveProgress();
+            returnToWorkbench();
+        }
+        
+        function returnToWorkbench() {
+            // Clean up
+            stopSessionTracking();
+            
+            // Return to parent or main workbench
+            if (window.parent !== window) {
+                window.parent.postMessage({ type: 'exit' }, '*');
+            } else {
+                window.location.href = '/student-workbench.html';
+            }
+        }
+        
+        // ============================================================================
+        // CANVAS AND DRAWING STATE (Original simulation code)
+        // ============================================================================
+        
+        let canvas, ctx;
+        let currentTool = 'line';
+        let currentMode = 'draw';
+        let points = [];
+        let shapes = [];
+        let isDrawing = false;
+        let startX, startY;
+        let currentAngle = 60;
+        let currentPolygonSides = 5;
+        let measurementActive = false;
+        let measurementType = '';
+        let selectedPoints = [];
+        let mobileMenuOpen = false;
+        let controlsPanel;
+        
+        // Challenge problems
+        const challenges = [
+            "Draw a right triangle (one 90° angle)",
+            "Draw a square with 4cm sides",
+            "Draw a circle with radius 50px",
+            "Draw an equilateral triangle",
+            "Draw a rectangle with area 12cm²"
+        ];
+        
+        // Initialize the simulation
+        async function initialize() {
+            // Initialize backend connection first
+            const connected = await initializeBackendConnection();
+            
+            // Initialize canvas
+            canvas = document.getElementById('drawing-canvas');
+            ctx = canvas.getContext('2d');
+            controlsPanel = document.querySelector('.controls-panel');
+            
+            // Set canvas size
+            resizeCanvas();
+            window.addEventListener('resize', handleResize);
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Set random challenge
+            setRandomChallenge();
+            
+            // Draw initial grid
+            drawGrid();
+            
+            // Update status
+            updateStatusBar();
+            
+            // Track initial tool selection
+            trackAction('tool_select', { tool: currentTool });
+        }
+        
+        // Handle window resize
+        function handleResize() {
+            resizeCanvas();
+            redrawShapes();
+        }
+        
+        // Resize canvas to fit container
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            drawGrid();
+        }
+        
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            mobileMenuOpen = !mobileMenuOpen;
+            
+            if (mobileMenuOpen) {
+                controlsPanel.style.display = 'block';
+                controlsPanel.style.position = 'absolute';
+                controlsPanel.style.top = '60px';
+                controlsPanel.style.right = '0';
+                controlsPanel.style.zIndex = '1000';
+                controlsPanel.style.maxHeight = '70vh';
+                controlsPanel.style.width = '100%';
+                controlsPanel.style.border = '1px solid var(--border-color)';
+                controlsPanel.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+            } else {
+                controlsPanel.style = '';
+            }
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('mouseleave', handleMouseLeave);
+            
+            canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+            canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+            canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+            
+            canvas.addEventListener('contextmenu', e => e.preventDefault());
+            canvas.addEventListener('mousemove', updateCoordinateDisplay);
+        }
+        
+        // Handle mouse down
+        function handleMouseDown(e) {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            
+            trackAction('canvas_click', { x, y });
+            
+            if (currentMode === 'draw') {
+                startDrawing(x, y);
+            } else if (currentMode === 'measure') {
+                startMeasurement(x, y);
+            }
+        }
+        
+        function handleMouseMove(e) {
+            if (!isDrawing) return;
+            
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            
+            continueDrawing(x, y);
+        }
+        
+        function handleMouseUp(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            finishDrawing();
+        }
+        
+        function handleMouseLeave() {
+            if (isDrawing) {
+                finishDrawing();
+            }
+        }
+        
+        function handleTouchStart(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+            
+            trackAction('canvas_touch', { x, y });
+            
+            if (currentMode === 'draw') {
+                startDrawing(x, y);
+            } else if (currentMode === 'measure') {
+                startMeasurement(x, y);
+            }
+        }
+        
+        function handleTouchMove(e) {
+            if (!isDrawing) return;
+            
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+            
+            continueDrawing(x, y);
+        }
+        
+        function handleTouchEnd(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            finishDrawing();
+        }
+        
+        function startDrawing(x, y) {
+            isDrawing = true;
+            startX = x;
+            startY = y;
+            
+            points.push({x, y, type: 'start'});
+            updatePointsList();
+            
+            redrawShapes();
+        }
+        
+        function continueDrawing(currentX, currentY) {
+            if (!isDrawing) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
+            redrawShapes();
+            
+            drawTemporaryShape(currentX, currentY);
+        }
+        
+        function finishDrawing() {
+            if (!isDrawing) return;
+            
+            isDrawing = false;
+            
+            const shape = createShape();
+            if (shape) {
+                shapes.push(shape);
+                calculateShapeProperties(shape);
+                
+                // Track shape drawn
+                trackAction('shape_drawn', { type: currentTool });
+            }
+            
+            points = [];
+            updatePointsList();
+            redrawShapes();
+            updateStatusBar();
+        }
+        
+        function createShape() {
+            if (points.length < 2) return null;
+            
+            return {
+                type: currentTool,
+                points: [...points],
+                color: '#007acc',
+                lineWidth: 2,
+                fill: false,
+                angle: currentAngle,
+                sides: currentPolygonSides
+            };
+        }
+        
+        function drawTemporaryShape(currentX, currentY) {
+            ctx.save();
+            ctx.strokeStyle = '#007acc';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            
+            switch(currentTool) {
+                case 'line':
+                    drawLine(startX, startY, currentX, currentY);
+                    break;
+                case 'triangle':
+                    drawTriangle(startX, startY, currentX, currentY);
+                    break;
+                case 'square':
+                    drawSquare(startX, startY, currentX, currentY);
+                    break;
+                case 'rectangle':
+                    drawRectangle(startX, startY, currentX, currentY);
+                    break;
+                case 'circle':
+                    drawCircle(startX, startY, currentX, currentY);
+                    break;
+                case 'polygon':
+                    drawPolygon(startX, startY, currentX, currentY);
+                    break;
+            }
+            
+            ctx.restore();
+        }
+        
+        function drawLine(x1, y1, x2, y2) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            
+            drawPoint(x1, y1, 'start');
+            drawPoint(x2, y2, 'end');
+            
+            const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            const cmDistance = (distance / 20).toFixed(2);
+            
+            ctx.fillStyle = '#ff4444';
+            ctx.font = '12px Arial';
+            ctx.fillText(`${cmDistance} cm`, (x1 + x2) / 2, (y1 + y2) / 2 - 10);
+        }
+        
+        function drawTriangle(x1, y1, x2, y2) {
+            const angle = currentAngle * Math.PI / 180;
+            const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            const x3 = x1 + length * Math.cos(angle);
+            const y3 = y1 + length * Math.sin(angle);
+            
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.lineTo(x3, y3);
+            ctx.closePath();
+            ctx.stroke();
+            
+            drawPoint(x1, y1, 'start');
+            drawPoint(x2, y2, 'point');
+            drawPoint(x3, y3, 'point');
+            
+            drawAngleMarker(x1, y1, x2, y2, x3, y3);
+        }
+        
+        function drawSquare(x1, y1, x2, y2) {
+            const size = Math.abs(x2 - x1);
+            const y2_adj = y1 + (x2 > x1 ? size : -size);
+            
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y1);
+            ctx.lineTo(x2, y2_adj);
+            ctx.lineTo(x1, y2_adj);
+            ctx.closePath();
+            ctx.stroke();
+            
+            drawPoint(x1, y1, 'start');
+            drawPoint(x2, y1, 'point');
+            drawPoint(x2, y2_adj, 'point');
+            drawPoint(x1, y2_adj, 'point');
+        }
+        
+        function drawRectangle(x1, y1, x2, y2) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y1);
+            ctx.lineTo(x2, y2);
+            ctx.lineTo(x1, y2);
+            ctx.closePath();
+            ctx.stroke();
+            
+            drawPoint(x1, y1, 'start');
+            drawPoint(x2, y1, 'point');
+            drawPoint(x2, y2, 'point');
+            drawPoint(x1, y2, 'point');
+        }
+        
+        function drawCircle(x1, y1, x2, y2) {
+            const radius = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            
+            ctx.beginPath();
+            ctx.arc(x1, y1, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            drawPoint(x1, y1, 'center');
+            
+            ctx.fillStyle = '#10b981';
+            ctx.font = '12px Arial';
+            const cmRadius = (radius / 20).toFixed(2);
+            ctx.fillText(`r = ${cmRadius} cm`, x1 + radius/2, y1);
+        }
+        
+        function drawPolygon(x1, y1, x2, y2) {
+            const radius = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            const sides = currentPolygonSides;
+            
+            ctx.beginPath();
+            for (let i = 0; i <= sides; i++) {
+                const angle = (i * 2 * Math.PI / sides) - Math.PI / 2;
+                const x = x1 + radius * Math.cos(angle);
+                const y = y1 + radius * Math.sin(angle);
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.closePath();
+            ctx.stroke();
+            
+            for (let i = 0; i < sides; i++) {
+                const angle = (i * 2 * Math.PI / sides) - Math.PI / 2;
+                const x = x1 + radius * Math.cos(angle);
+                const y = y1 + radius * Math.sin(angle);
+                drawPoint(x, y, 'point');
+            }
+            
+            drawPoint(x1, y1, 'center');
+        }
+        
+        function drawPoint(x, y, type) {
+            ctx.save();
+            ctx.fillStyle = type === 'start' ? '#ff4444' : 
+                           type === 'end' ? '#10b981' : 
+                           type === 'center' ? '#f59e0b' : '#007acc';
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        function drawAngleMarker(x1, y1, x2, y2, x3, y3) {
+            const angle = calculateAngle(x1, y1, x2, y2, x3, y3);
+            
+            ctx.save();
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 1;
+            
+            const radius = 30;
+            ctx.beginPath();
+            ctx.arc(x1, y1, radius, 
+                   Math.atan2(y2 - y1, x2 - x1),
+                   Math.atan2(y3 - y1, x3 - x1));
+            ctx.stroke();
+            
+            ctx.fillStyle = '#3b82f6';
+            ctx.font = '12px Arial';
+            ctx.fillText(`${angle.toFixed(1)}°`, x1 + 20, y1 - 10);
+            
+            ctx.restore();
+        }
+        
+        function calculateAngle(x1, y1, x2, y2, x3, y3) {
+            const v1 = {x: x2 - x1, y: y2 - y1};
+            const v2 = {x: x3 - x1, y: y3 - y1};
+            
+            const dot = v1.x * v2.x + v1.y * v2.y;
+            const mag1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+            const mag2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+            
+            const angle = Math.acos(dot / (mag1 * mag2)) * (180 / Math.PI);
+            return angle;
+        }
+        
+        function redrawShapes() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
+            
+            shapes.forEach(shape => {
+                drawShape(shape);
+            });
+        }
+        
+        function drawShape(shape) {
+            ctx.save();
+            ctx.strokeStyle = shape.color;
+            ctx.lineWidth = shape.lineWidth;
+            
+            if (shape.fill) {
+                ctx.fillStyle = shape.color + '40';
+            }
+            
+            switch(shape.type) {
+                case 'line':
+                    if (shape.points.length >= 2) {
+                        drawLine(shape.points[0].x, shape.points[0].y, 
+                                shape.points[1].x, shape.points[1].y);
+                    }
+                    break;
+                case 'triangle':
+                    if (shape.points.length >= 2) {
+                        drawTriangle(shape.points[0].x, shape.points[0].y,
+                                    shape.points[1].x, shape.points[1].y);
+                    }
+                    break;
+                case 'square':
+                    if (shape.points.length >= 2) {
+                        drawSquare(shape.points[0].x, shape.points[0].y,
+                                  shape.points[1].x, shape.points[1].y);
+                    }
+                    break;
+                case 'rectangle':
+                    if (shape.points.length >= 2) {
+                        drawRectangle(shape.points[0].x, shape.points[0].y,
+                                     shape.points[1].x, shape.points[1].y);
+                    }
+                    break;
+                case 'circle':
+                    if (shape.points.length >= 2) {
+                        drawCircle(shape.points[0].x, shape.points[0].y,
+                                  shape.points[1].x, shape.points[1].y);
+                    }
+                    break;
+                case 'polygon':
+                    if (shape.points.length >= 2) {
+                        drawPolygon(shape.points[0].x, shape.points[0].y,
+                                   shape.points[1].x, shape.points[1].y);
+                    }
+                    break;
+            }
+            
+            if (shape.fill) {
+                ctx.fill();
+            }
+            
+            ctx.restore();
+        }
+        
+        function drawGrid() {
+            ctx.save();
+            ctx.strokeStyle = '#2a2a2a';
+            ctx.lineWidth = 1;
+            
+            for (let x = 0; x < canvas.width; x += 20) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let y = 0; y < canvas.height; y += 20) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            ctx.restore();
+        }
+        
+        function setMode(mode) {
+            currentMode = mode;
+            measurementActive = false;
+            selectedPoints = [];
+            
+            trackAction('mode_change', { mode });
+            
+            const drawBtn = document.getElementById('draw-btn');
+            const measureBtn = document.getElementById('measure-btn');
+            const modeIndicator = document.getElementById('mode-indicator');
+            
+            if (mode === 'draw') {
+                drawBtn.classList.remove('secondary');
+                drawBtn.classList.add('active');
+                measureBtn.classList.remove('active');
+                measureBtn.classList.add('secondary');
+                modeIndicator.textContent = 'Mode: Drawing';
+                modeIndicator.className = 'mode-indicator drawing';
+            } else {
+                drawBtn.classList.remove('active');
+                drawBtn.classList.add('secondary');
+                measureBtn.classList.remove('secondary');
+                measureBtn.classList.add('active');
+                modeIndicator.textContent = 'Mode: Measuring';
+                modeIndicator.className = 'mode-indicator measuring';
+            }
+            
+            updateStatusBar();
+            closeMobileMenu();
+        }
+        
+        function selectTool(tool) {
+            currentTool = tool;
+            
+            trackAction('tool_select', { tool });
+            
+            document.querySelectorAll('.shape-tool').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            const angleControls = document.getElementById('angle-controls');
+            if (tool === 'triangle' || tool === 'polygon') {
+                angleControls.style.display = 'block';
+            } else {
+                angleControls.style.display = 'none';
+            }
+            
+            updateStatusBar();
+            closeMobileMenu();
+        }
+        
+        function closeMobileMenu() {
+            if (mobileMenuOpen) {
+                toggleMobileMenu();
+            }
+        }
+        
+        function updateAngle(value) {
+            currentAngle = parseInt(value);
+            document.getElementById('angle-display').textContent = `${currentAngle}°`;
+            document.getElementById('angle-value').textContent = currentAngle.toFixed(1);
+            
+            trackAction('parameter_change', { parameter: 'angle', value: currentAngle });
+            
+            if (isDrawing && (currentTool === 'triangle' || currentTool === 'polygon')) {
+                redrawShapes();
+            }
+        }
+        
+        function startMeasurement(x, y) {
+            if (!measurementActive) return;
+            
+            selectedPoints.push({x, y});
+            
+            if (selectedPoints.length === 1) {
+                drawPoint(x, y, 'start');
+                showMessage("Select second point for measurement");
+            } else if (selectedPoints.length === 2) {
+                if (measurementType === 'distance') {
+                    measureSelectedDistance();
+                } else if (measurementType === 'angle') {
+                    showMessage("Select third point to measure angle");
+                }
+            } else if (selectedPoints.length === 3 && measurementType === 'angle') {
+                measureSelectedAngle();
+            }
+        }
+        
+        function measureDistance() {
+            measurementActive = true;
+            measurementType = 'distance';
+            selectedPoints = [];
+            
+            trackAction('measurement_start', { type: 'distance' });
+            
+            showMessage("Click two points to measure distance");
+            closeMobileMenu();
+        }
+        
+        function measureSelectedDistance() {
+            if (selectedPoints.length < 2) return;
+            
+            const p1 = selectedPoints[0];
+            const p2 = selectedPoints[1];
+            const distance = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+            const cmDistance = (distance / 20).toFixed(2);
+            
+            document.getElementById('distance-value').textContent = cmDistance;
+            
+            ctx.save();
+            ctx.strokeStyle = '#ff4444';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+            
+            drawPoint(p1.x, p1.y, 'start');
+            drawPoint(p2.x, p2.y, 'end');
+            
+            ctx.fillStyle = '#ff4444';
+            ctx.font = '14px Arial';
+            ctx.fillText(`${cmDistance} cm`, (p1.x + p2.x) / 2, (p1.y + p2.y) / 2 - 10);
+            
+            ctx.restore();
+            
+            trackAction('measurement_taken', { type: 'distance', value: cmDistance });
+            
+            showSuccess(`Distance: ${cmDistance} cm`);
+            measurementActive = false;
+            selectedPoints = [];
+        }
+        
+        function measureAngle() {
+            measurementActive = true;
+            measurementType = 'angle';
+            selectedPoints = [];
+            
+            trackAction('measurement_start', { type: 'angle' });
+            
+            showMessage("Click three points to measure angle");
+            closeMobileMenu();
+        }
+        
+        function measureSelectedAngle() {
+            if (selectedPoints.length < 3) return;
+            
+            const p1 = selectedPoints[0];
+            const p2 = selectedPoints[1];
+            const p3 = selectedPoints[2];
+            const angle = calculateAngle(p2.x, p2.y, p1.x, p1.y, p3.x, p3.y);
+            
+            document.getElementById('angle-value').textContent = angle.toFixed(1);
+            
+            drawAngleMarker(p2.x, p2.y, p1.x, p1.y, p3.x, p3.y);
+            
+            drawPoint(p1.x, p1.y, 'point');
+            drawPoint(p2.x, p2.y, 'center');
+            drawPoint(p3.x, p3.y, 'point');
+            
+            trackAction('measurement_taken', { type: 'angle', value: angle });
+            
+            showSuccess(`Angle: ${angle.toFixed(1)}°`);
+            measurementActive = false;
+            selectedPoints = [];
+        }
+        
+        function calculateArea() {
+            if (shapes.length === 0) {
+                showMessage("Draw a shape first to calculate area");
+                return;
+            }
+            
+            const shape = shapes[shapes.length - 1];
+            let area = 0;
+            
+            switch(shape.type) {
+                case 'square':
+                case 'rectangle':
+                    if (shape.points.length >= 2) {
+                        const width = Math.abs(shape.points[1].x - shape.points[0].x);
+                        const height = Math.abs(shape.points[1].y - shape.points[0].y);
+                        area = width * height;
+                    }
+                    break;
+                case 'circle':
+                    if (shape.points.length >= 2) {
+                        const radius = Math.sqrt(
+                            Math.pow(shape.points[1].x - shape.points[0].x, 2) +
+                            Math.pow(shape.points[1].y - shape.points[0].y, 2)
+                        );
+                        area = Math.PI * radius * radius;
+                    }
+                    break;
+                case 'triangle':
+                    if (shape.points.length >= 2) {
+                        const x1 = shape.points[0].x, y1 = shape.points[0].y;
+                        const x2 = shape.points[1].x, y2 = shape.points[1].y;
+                        const angle = shape.angle * Math.PI / 180;
+                        const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                        const x3 = x1 + length * Math.cos(angle);
+                        const y3 = y1 + length * Math.sin(angle);
+                        area = Math.abs((x1*(y2-y3) + x2*(y3-y1) + x3*(y1-y2)) / 2);
+                    }
+                    break;
+                case 'polygon':
+                    if (shape.points.length >= 2) {
+                        const radius = Math.sqrt(
+                            Math.pow(shape.points[1].x - shape.points[0].x, 2) +
+                            Math.pow(shape.points[1].y - shape.points[0].y, 2)
+                        );
+                        const sides = shape.sides || 5;
+                        area = (sides * radius * radius) / (4 * Math.tan(Math.PI / sides));
+                    }
+                    break;
+            }
+            
+            const cmArea = (area / 400).toFixed(2);
+            document.getElementById('area-value').textContent = cmArea;
+            
+            trackAction('measurement_taken', { type: 'area', value: cmArea });
+            
+            showSuccess(`Area: ${cmArea} cm²`);
+            closeMobileMenu();
+        }
+        
+        function calculatePerimeter() {
+            if (shapes.length === 0) {
+                showMessage("Draw a shape first to calculate perimeter");
+                return;
+            }
+            
+            const shape = shapes[shapes.length - 1];
+            let perimeter = 0;
+            
+            switch(shape.type) {
+                case 'square':
+                case 'rectangle':
+                    if (shape.points.length >= 2) {
+                        const width = Math.abs(shape.points[1].x - shape.points[0].x);
+                        const height = Math.abs(shape.points[1].y - shape.points[0].y);
+                        perimeter = 2 * (width + height);
+                    }
+                    break;
+                case 'circle':
+                    if (shape.points.length >= 2) {
+                        const radius = Math.sqrt(
+                            Math.pow(shape.points[1].x - shape.points[0].x, 2) +
+                            Math.pow(shape.points[1].y - shape.points[0].y, 2)
+                        );
+                        perimeter = 2 * Math.PI * radius;
+                    }
+                    break;
+                case 'triangle':
+                    if (shape.points.length >= 2) {
+                        const x1 = shape.points[0].x, y1 = shape.points[0].y;
+                        const x2 = shape.points[1].x, y2 = shape.points[1].y;
+                        const angle = shape.angle * Math.PI / 180;
+                        const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                        const x3 = x1 + length * Math.cos(angle);
+                        const y3 = y1 + length * Math.sin(angle);
+                        
+                        const d1 = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                        const d2 = Math.sqrt(Math.pow(x3 - x2, 2) + Math.pow(y3 - y2, 2));
+                        const d3 = Math.sqrt(Math.pow(x1 - x3, 2) + Math.pow(y1 - y3, 2));
+                        perimeter = d1 + d2 + d3;
+                    }
+                    break;
+                case 'polygon':
+                    if (shape.points.length >= 2) {
+                        const radius = Math.sqrt(
+                            Math.pow(shape.points[1].x - shape.points[0].x, 2) +
+                            Math.pow(shape.points[1].y - shape.points[0].y, 2)
+                        );
+                        const sides = shape.sides || 5;
+                        perimeter = 2 * sides * radius * Math.sin(Math.PI / sides);
+                    }
+                    break;
+                case 'line':
+                    if (shape.points.length >= 2) {
+                        perimeter = Math.sqrt(
+                            Math.pow(shape.points[1].x - shape.points[0].x, 2) +
+                            Math.pow(shape.points[1].y - shape.points[0].y, 2)
+                        );
+                    }
+                    break;
+            }
+            
+            const cmPerimeter = (perimeter / 20).toFixed(2);
+            document.getElementById('perimeter-value').textContent = cmPerimeter;
+            
+            trackAction('measurement_taken', { type: 'perimeter', value: cmPerimeter });
+            
+            showSuccess(`Perimeter: ${cmPerimeter} cm`);
+            closeMobileMenu();
+        }
+        
+        function calculateShapeProperties(shape) {
+            calculateArea();
+            calculatePerimeter();
+        }
+        
+        function updatePointsList() {
+            const pointsList = document.getElementById('points-list');
+            pointsList.innerHTML = '';
+            
+            if (points.length === 0) {
+                pointsList.innerHTML = '<div class="point-item"><span>No points drawn yet</span><span class="point-coords">0,0</span></div>';
+                return;
+            }
+            
+            points.forEach((point, index) => {
+                const pointItem = document.createElement('div');
+                pointItem.className = 'point-item';
+                pointItem.innerHTML = `
+                    <span>Point ${index + 1} (${point.type})</span>
+                    <span class="point-coords">${Math.round(point.x)}, ${Math.round(point.y)}</span>
+                `;
+                pointsList.appendChild(pointItem);
+            });
+        }
+        
+        function clearCanvas() {
+            if (shapes.length > 0) {
+                if (!confirm('Are you sure you want to clear all shapes?')) {
+                    return;
+                }
+            }
+            
+            shapes = [];
+            points = [];
+            selectedPoints = [];
+            measurementActive = false;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
+            
+            document.getElementById('area-value').textContent = '0.00';
+            document.getElementById('perimeter-value').textContent = '0.00';
+            document.getElementById('distance-value').textContent = '0.00';
+            document.getElementById('angle-value').textContent = '0.00';
+            
+            trackAction('canvas_clear');
+            
+            updatePointsList();
+            updateStatusBar();
+            showMessage("Canvas cleared");
+            closeMobileMenu();
+        }
+        
+        function setRandomChallenge() {
+            const randomIndex = Math.floor(Math.random() * challenges.length);
+            document.getElementById('challenge-problem').textContent = challenges[randomIndex];
+        }
+        
+        function checkChallenge() {
+            const answer = document.getElementById('challenge-answer').value;
+            const problem = document.getElementById('challenge-problem').textContent;
+            
+            let isCorrect = false;
+            let feedback = '';
+            
+            if (problem.includes("right triangle")) {
+                isCorrect = answer.toLowerCase().includes("90") || answer.includes("right angle");
+                feedback = isCorrect ? "Correct! A right triangle has one 90° angle." 
+                                   : "Not quite. A right triangle has exactly one 90° angle.";
+            } else if (problem.includes("square")) {
+                isCorrect = answer.includes("4") || answer.includes("four") || answer.includes("equal");
+                feedback = isCorrect ? "Correct! A square has 4 equal sides." 
+                                   : "Try again. A square has 4 equal sides.";
+            } else if (problem.includes("circle")) {
+                isCorrect = answer.includes("radius") || answer.includes("round");
+                feedback = isCorrect ? "Correct! A circle is defined by its radius." 
+                                   : "Remember: A circle is defined by its radius from the center.";
+            } else if (problem.includes("equilateral")) {
+                isCorrect = answer.includes("equal") || answer.includes("60") || answer.includes("same");
+                feedback = isCorrect ? "Correct! An equilateral triangle has all sides and angles equal." 
+                                   : "An equilateral triangle has all sides equal and all angles 60°.";
+            } else if (problem.includes("area")) {
+                isCorrect = answer.includes("12") || answer.includes("3") || answer.includes("4");
+                feedback = isCorrect ? "Good thinking! Area = length × width." 
+                                   : "For rectangle, area = length × width.";
+            }
+            
+            trackAction('challenge_attempt', { 
+                problem, 
+                answer, 
+                correct: isCorrect 
+            });
+            
+            if (isCorrect) {
+                showSuccess(feedback);
+                setTimeout(setRandomChallenge, 2000);
+            } else {
+                showMessage(feedback);
+            }
+            
+            document.getElementById('challenge-answer').value = '';
+            closeMobileMenu();
+        }
+        
+        function updateCoordinateDisplay(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            
+            const cmX = (x / 20).toFixed(1);
+            const cmY = (y / 20).toFixed(1);
+            
+            document.getElementById('coordinate-display').textContent = `X: ${cmX} cm, Y: ${cmY} cm`;
+        }
+        
+        function updateStatusBar() {
+            document.getElementById('status-shape').textContent = 
+                currentTool.charAt(0).toUpperCase() + currentTool.slice(1);
+        }
+        
+        // Add animation keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initialize);
+    </script>
+</body>
+</html>

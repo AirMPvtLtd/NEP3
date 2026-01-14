@@ -1,0 +1,7 @@
+cat <<EOF >> .gitignore
+node_modules/
+backend/node_modules/
+backend/coverage/
+*.log
+.cache/
+EOF

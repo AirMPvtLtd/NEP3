@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probability Simulator - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; font-size: 13px; }
+        .main { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .sim-area { background: #000; border-radius: 6px; height: 450px; border: 1px solid #464647; position: relative; overflow: hidden; }
+        canvas { width: 100%; height: 100%; }
+        .experiment-card { padding: 15px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; cursor: pointer; margin: 8px 0; transition: all 0.3s; }
+        .experiment-card:hover { border-color: var(--accent); background: #3a3a3c; }
+        .experiment-card.active { background: var(--accent); border-color: var(--accent); }
+        input[type="range"] { width: 100%; height: 8px; background: #2d2d30; border-radius: 4px; }
+        input[type="range"]::-webkit-slider-thumb { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+        .result-bar { height: 25px; background: #2d2d30; border-radius: 4px; margin: 8px 0; overflow: hidden; position: relative; }
+        .result-fill { height: 100%; background: var(--accent); transition: width 0.3s; display: flex; align-items: center; padding: 0 10px; font-size: 12px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-dice"></i> Probability Simulator</h1><p style="color: #888;">Math Lab • Grade 10-11</p></div>
+            <div style="display: flex; gap: 15px;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">Probability Visualization</h2>
+                
+                <div class="sim-area">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <label style="display: block; margin-bottom: 10px; color: #888;">Trials: <span id="trialsDisplay">100</span></label>
+                    <input type="range" id="trialsSlider" min="10" max="1000" step="10" value="100" oninput="updateTrials()">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px;">
+                    <button class="btn" onclick="runSimulation()"><i class="fas fa-play"></i> Run</button>
+                    <button class="btn" onclick="runMultiple()"><i class="fas fa-forward"></i> Run 10x</button>
+                    <button class="btn" style="background: #e74c3c;" onclick="resetSim()"><i class="fas fa-undo"></i> Reset</button>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Results Distribution</h3>
+                <div id="resultsDisplay" style="background: #2d2d30; padding: 15px; border-radius: 6px; max-height: 200px; overflow-y: auto;">
+                    <!-- Dynamic results -->
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-flask"></i> Experiments</h2>
+                
+                <div class="experiment-card active" onclick="selectExperiment('coin')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-coins" style="font-size: 24px;"></i>
+                        <div>
+                            <strong>Coin Flip</strong>
+                            <div style="font-size: 12px; color: #888;">P(H) = 0.5</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="experiment-card" onclick="selectExperiment('dice')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-dice-six" style="font-size: 24px;"></i>
+                        <div>
+                            <strong>Dice Roll</strong>
+                            <div style="font-size: 12px; color: #888;">P(1-6) = 1/6</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="experiment-card" onclick="selectExperiment('cards')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-clone" style="font-size: 24px;"></i>
+                        <div>
+                            <strong>Card Draw</strong>
+                            <div style="font-size: 12px; color: #888;">P(suit) = 1/4</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="experiment-card" onclick="selectExperiment('spinner')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-circle-notch" style="font-size: 24px;"></i>
+                        <div>
+                            <strong>Spinner</strong>
+                            <div style="font-size: 12px; color: #888;">Custom sectors</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Statistics</h3>
+                <div style="background: #2d2d30; padding: 15px; border-radius: 6px;">
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Total Trials:</span>
+                        <strong id="totalTrials">0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Theoretical P:</span>
+                        <strong id="theoreticalP">0.500</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                        <span>Experimental P:</span>
+                        <strong id="experimentalP" style="color: var(--accent);">0.000</strong>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(0, 122, 204, 0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 12px; line-height: 1.8;">
+                    <strong style="color: var(--accent);">Law of Large Numbers:</strong><br>
+                    As trials increase, experimental probability converges to theoretical probability<br><br>
+                    P(event) = favorable / total
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statSims">0</div>
+                        <div style="font-size: 12px; color: #888;">Simulations</div>
+                    </div>
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statExperiments">1</div>
+                        <div style="font-size: 12px; color: #888;">Experiments</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now(), canvas, ctx;
+        
+        let experiment = 'coin', trials = 100, results = {};
+        let totalTrialsRun = 0;
+        
+        let interactionData = {
+            actions_count: 0, time_seconds: 0, total_parameter_space: 150,
+            tool_usage: {}, simulations_run: 0, experiments_tested: new Set(['coin']),
+            trial_sizes: new Set()
+        };
+        
+        const experiments = {
+            coin: {
+                name: 'Coin Flip',
+                outcomes: ['Heads', 'Tails'],
+                probabilities: [0.5, 0.5],
+                icon: '🪙'
+            },
+            dice: {
+                name: 'Dice Roll',
+                outcomes: ['1', '2', '3', '4', '5', '6'],
+                probabilities: [1/6, 1/6, 1/6, 1/6, 1/6, 1/6],
+                icon: '🎲'
+            },
+            cards: {
+                name: 'Card Draw',
+                outcomes: ['Hearts', 'Diamonds', 'Clubs', 'Spades'],
+                probabilities: [0.25, 0.25, 0.25, 0.25],
+                icon: '🃏'
+            },
+            spinner: {
+                name: 'Spinner',
+                outcomes: ['Red', 'Blue', 'Green', 'Yellow'],
+                probabilities: [0.3, 0.3, 0.2, 0.2],
+                icon: '🎯'
+            }
+        };
+        
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, toolId: 'probability-simulator', toolType: 'LAB', interactionData })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {}
+            }
+            
+            resetSim();
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            setInterval(saveProgress, 30000);
+        }
+        
+        function selectExperiment(exp) {
+            experiment = exp;
+            document.querySelectorAll('.experiment-card').forEach(card => card.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            interactionData.experiments_tested.add(exp);
+            interactionData.actions_count++;
+            resetSim();
+            updateStats();
+        }
+        
+        function updateTrials() {
+            trials = parseInt(document.getElementById('trialsSlider').value);
+            document.getElementById('trialsDisplay').textContent = trials;
+            interactionData.trial_sizes.add(Math.floor(trials / 100) * 100);
+            interactionData.actions_count++;
+        }
+        
+        function runSimulation() {
+            const exp = experiments[experiment];
+            results = {};
+            
+            exp.outcomes.forEach(outcome => results[outcome] = 0);
+            
+            for (let i = 0; i < trials; i++) {
+                const rand = Math.random();
+                let cumulative = 0;
+                
+                for (let j = 0; j < exp.outcomes.length; j++) {
+                    cumulative += exp.probabilities[j];
+                    if (rand < cumulative) {
+                        results[exp.outcomes[j]]++;
+                        break;
+                    }
+                }
+            }
+            
+            totalTrialsRun += trials;
+            interactionData.simulations_run++;
+            interactionData.actions_count++;
+            
+            updateDisplay();
+            draw();
+            updateStats();
+        }
+        
+        function runMultiple() {
+            for (let i = 0; i < 10; i++) {
+                runSimulation();
+            }
+        }
+        
+        function resetSim() {
+            const exp = experiments[experiment];
+            results = {};
+            exp.outcomes.forEach(outcome => results[outcome] = 0);
+            totalTrialsRun = 0;
+            updateDisplay();
+            draw();
+        }
+        
+        function updateDisplay() {
+            const exp = experiments[experiment];
+            const resultsDiv = document.getElementById('resultsDisplay');
+            
+            resultsDiv.innerHTML = exp.outcomes.map(outcome => {
+                const count = results[outcome] || 0;
+                const percent = totalTrialsRun > 0 ? (count / totalTrialsRun * 100).toFixed(1) : 0;
+                const width = totalTrialsRun > 0 ? (count / totalTrialsRun * 100) : 0;
+                
+                return `
+                    <div style="margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px;">
+                            <span>${outcome}</span>
+                            <span>${count} (${percent}%)</span>
+                        </div>
+                        <div class="result-bar">
+                            <div class="result-fill" style="width: ${width}%;">
+                                ${width > 15 ? percent + '%' : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('totalTrials').textContent = totalTrialsRun;
+            document.getElementById('theoreticalP').textContent = exp.probabilities[0].toFixed(3);
+            
+            const firstOutcome = exp.outcomes[0];
+            const experimentalProb = totalTrialsRun > 0 ? (results[firstOutcome] / totalTrialsRun) : 0;
+            document.getElementById('experimentalP').textContent = experimentalProb.toFixed(3);
+        }
+        
+        function draw() {
+            const exp = experiments[experiment];
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+            
+            if (experiment === 'coin') {
+                drawCoinFlip();
+            } else if (experiment === 'dice') {
+                drawDice();
+            } else if (experiment === 'cards') {
+                drawCards();
+            } else if (experiment === 'spinner') {
+                drawSpinner();
+            }
+        }
+        
+        function drawCoinFlip() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            ctx.fillStyle = '#ffd700';
+            ctx.beginPath();
+            ctx.arc(centerX - 80, centerY, 60, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('H', centerX - 80, centerY);
+            
+            ctx.fillStyle = '#c0c0c0';
+            ctx.beginPath();
+            ctx.arc(centerX + 80, centerY, 60, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#000';
+            ctx.fillText('T', centerX + 80, centerY);
+            
+            const headsCount = results['Heads'] || 0;
+            const tailsCount = results['Tails'] || 0;
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = '16px Arial';
+            ctx.fillText(`${headsCount}`, centerX - 80, centerY + 90);
+            ctx.fillText(`${tailsCount}`, centerX + 80, centerY + 90);
+        }
+        
+        function drawDice() {
+            const exp = experiments.dice;
+            const width = canvas.width / 3;
+            const height = canvas.height / 2;
+            
+            exp.outcomes.forEach((outcome, i) => {
+                const x = (i % 3) * width + width / 2;
+                const y = Math.floor(i / 3) * height + height / 2;
+                
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(x - 40, y - 40, 80, 80);
+                
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 32px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(outcome, x, y);
+                
+                const count = results[outcome] || 0;
+                ctx.font = '14px Arial';
+                ctx.fillText(count, x, y + 60);
+            });
+        }
+        
+        function drawCards() {
+            const suits = ['♥', '♦', '♣', '♠'];
+            const colors = ['#e74c3c', '#e74c3c', '#2c3e50', '#2c3e50'];
+            const labels = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
+            
+            suits.forEach((suit, i) => {
+                const x = (i % 2) * canvas.width / 2 + canvas.width / 4;
+                const y = Math.floor(i / 2) * canvas.height / 2 + canvas.height / 4;
+                
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(x - 50, y - 70, 100, 140);
+                
+                ctx.fillStyle = colors[i];
+                ctx.font = 'bold 48px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(suit, x, y);
+                
+                const count = results[labels[i]] || 0;
+                ctx.font = '14px Arial';
+                ctx.fillText(count, x, y + 90);
+            });
+        }
+        
+        function drawSpinner() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 120;
+            const exp = experiments.spinner;
+            
+            let startAngle = -Math.PI / 2;
+            const colors = ['#e74c3c', '#3498db', '#27ae60', '#f39c12'];
+            
+            exp.outcomes.forEach((outcome, i) => {
+                const sliceAngle = exp.probabilities[i] * Math.PI * 2;
+                const endAngle = startAngle + sliceAngle;
+                
+                ctx.fillStyle = colors[i];
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fill();
+                
+                const midAngle = startAngle + sliceAngle / 2;
+                const labelX = centerX + Math.cos(midAngle) * radius * 0.7;
+                const labelY = centerY + Math.sin(midAngle) * radius * 0.7;
+                
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(outcome, labelX, labelY);
+                
+                const count = results[outcome] || 0;
+                ctx.font = '12px Arial';
+                ctx.fillText(count, labelX, labelY + 15);
+                
+                startAngle = endAngle;
+            });
+            
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 15, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function updateStats() {
+            document.getElementById('statSims').textContent = interactionData.simulations_run;
+            document.getElementById('statExperiments').textContent = interactionData.experiments_tested.size;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            interactionData.experiments_tested = Array.from(interactionData.experiments_tested);
+            interactionData.trial_sizes = Array.from(interactionData.trial_sizes);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactionData })
+                });
+            } catch (err) {}
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('Session completed!');
+            window.location.href = '/dashboard';
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+    </script>
+</body>
+</html>

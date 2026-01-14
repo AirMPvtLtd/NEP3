@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenge System - NEP Workbench</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d30 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        /* ============================================================ */
+        /* HEADER */
+        /* ============================================================ */
+        .header {
+            background: #333337;
+            border-bottom: 1px solid #464647;
+            padding: 15px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-button {
+            padding: 10px 20px;
+            background: #464647;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .back-button:hover {
+            background: #3e3e42;
+        }
+
+        /* ============================================================ */
+        /* MAIN CONTAINER */
+        /* ============================================================ */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ============================================================ */
+        /* COMMON STYLES */
+        /* ============================================================ */
+        .page-title {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .page-title h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .page-subtitle {
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .panel {
+            background: #2d2d30;
+            border: 1px solid #464647;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 122, 204, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 122, 204, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #464647;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #3e3e42;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 0.85rem;
+        }
+
+        /* ============================================================ */
+        /* MATH SCRATCHPAD BUTTON */
+        /* ============================================================ */
+        .math-scratchpad-hint {
+            background: rgba(0, 122, 204, 0.1);
+            border: 1px solid #007acc;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: #00d4ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ============================================================ */
+        /* SECTION 1: GENERATE CHALLENGE (Existing styles) */
+        /* ============================================================ */
+        .limits-banner {
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 122, 204, 0.3);
+        }
+
+        .limit-item {
+            text-align: center;
+        }
+
+        .limit-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .limit-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #00d4ff;
+        }
+
+        .required {
+            color: #ff4444;
+            margin-left: 4px;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 12px 15px;
+            background: #1e1e1e;
+            border: 1px solid #464647;
+            border-radius: 6px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #007acc;
+            box-shadow: 0 0 0 3px rgba(0, 122, 204, 0.1);
+        }
+
+        .form-hint {
+            display: block;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .difficulty-selector,
+        .question-selector {
+            display: grid;
+            gap: 15px;
+        }
+
+        .difficulty-selector {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .question-selector {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .difficulty-option,
+        .question-option {
+            padding: 20px;
+            background: #1e1e1e;
+            border: 2px solid #464647;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .difficulty-option:hover,
+        .question-option:hover {
+            border-color: #007acc;
+            transform: translateY(-2px);
+        }
+
+        .difficulty-option.selected,
+        .question-option.selected {
+            border-color: #007acc;
+            background: rgba(0, 122, 204, 0.2);
+        }
+
+        .difficulty-option input,
+        .question-option input {
+            display: none;
+        }
+
+        /* ============================================================ */
+        /* SECTION 2: ATTEMPT CHALLENGE */
+        /* ============================================================ */
+        .challenge-header {
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .challenge-info h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .challenge-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9rem;
+        }
+
+        .timer-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .timer-warning {
+            color: #ff4444;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .progress-bar-container {
+            background: #1e1e1e;
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007acc, #00d4ff);
+            transition: width 0.3s ease;
+        }
+
+        .question-navigation {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .question-nav-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            border: 2px solid #464647;
+            background: #2d2d30;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .question-nav-btn:hover {
+            border-color: #007acc;
+        }
+
+        .question-nav-btn.active {
+            background: #007acc;
+            border-color: #007acc;
+        }
+
+        .question-nav-btn.answered {
+            background: #28a745;
+            border-color: #28a745;
+        }
+
+        .question-container {
+            background: #2d2d30;
+            border: 1px solid #464647;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #464647;
+        }
+
+        .question-number {
+            font-size: 1.3rem;
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .question-points {
+            background: rgba(0, 122, 204, 0.2);
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+
+        .answer-section {
+            margin-bottom: 30px;
+        }
+
+        .answer-label {
+            font-size: 1.1rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 15px;
+            background: #1e1e1e;
+            border: 2px solid #464647;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #007acc;
+            box-shadow: 0 0 0 4px rgba(0, 122, 204, 0.1);
+        }
+
+        .answer-textarea {
+            min-height: 150px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .char-counter {
+            text-align: right;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .char-counter.warning {
+            color: #ffc107;
+        }
+
+        .char-counter.success {
+            color: #28a745;
+        }
+
+        .mcq-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .mcq-option {
+            padding: 15px 20px;
+            background: #1e1e1e;
+            border: 2px solid #464647;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .mcq-option:hover {
+            border-color: #007acc;
+            background: rgba(0, 122, 204, 0.1);
+        }
+
+        .mcq-option.selected {
+            border-color: #007acc;
+            background: rgba(0, 122, 204, 0.2);
+        }
+
+        .mcq-option input {
+            display: none;
+        }
+
+        .mcq-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #464647;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .mcq-option.selected .mcq-radio {
+            border-color: #007acc;
+            background: #007acc;
+            box-shadow: inset 0 0 0 4px #2d2d30;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .auto-save-indicator {
+            text-align: center;
+            padding: 10px;
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid #28a745;
+            border-radius: 6px;
+            color: #28a745;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .auto-save-indicator.visible {
+            display: block;
+        }
+
+        /* ============================================================ */
+        /* SECTION 3: RESULTS */
+        /* ============================================================ */
+        .results-banner {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .results-banner.failed {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 3rem;
+            font-weight: bold;
+        }
+
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .result-stat {
+            background: #2d2d30;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .result-stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #007acc;
+            margin-bottom: 5px;
+        }
+
+        .result-stat-label {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .question-review {
+            background: #2d2d30;
+            border: 1px solid #464647;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #464647;
+        }
+
+        .review-question {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .answer-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .answer-box {
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid;
+        }
+
+        .your-answer {
+            border-color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .correct-answer {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .answer-box-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-feedback {
+            background: rgba(0, 122, 204, 0.1);
+            border: 1px solid #007acc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .feedback-section {
+            margin-bottom: 15px;
+        }
+
+        .feedback-title {
+            font-weight: 600;
+            color: #00d4ff;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feedback-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .feedback-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .feedback-list li:before {
+            content: "•";
+            position: absolute;
+            left: 8px;
+            color: #007acc;
+        }
+
+        /* ============================================================ */
+        /* LOADING OVERLAY */
+        /* ============================================================ */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #007acc;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ============================================================ */
+        /* RESPONSIVE */
+        /* ============================================================ */
+        @media (max-width: 768px) {
+            .form-grid,
+            .answer-comparison,
+            .result-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .difficulty-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .question-selector {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .limits-banner {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .navigation-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            NEP Workbench
+        </div>
+        <a href="dashboard.html" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Back to Dashboard
+        </a>
+    </header>
+
+    <div class="container">
+        <!-- ============================================================ -->
+        <!-- SECTION 1: GENERATE CHALLENGE -->
+        <!-- ============================================================ -->
+        <div id="generateSection" class="page-section active">
+            <div class="page-title">
+                <h1><i class="fas fa-brain"></i> Generate AI Challenge</h1>
+            </div>
+            <p class="page-subtitle">Create personalized challenges based on simulations or custom topics</p>
+
+            <div class="limits-banner">
+                <div class="limit-item">
+                    <i class="fas fa-calendar-day" style="font-size: 1.5rem; margin-bottom: 10px;"></i>
+                    <span class="limit-value" id="dailyRemaining">--</span>
+                    <span class="limit-label">Daily Challenges Left</span>
+                </div>
+                <div class="limit-item">
+                    <i class="fas fa-trophy" style="font-size: 1.5rem; margin-bottom: 10px;"></i>
+                    <span class="limit-value" id="totalCompleted">--</span>
+                    <span class="limit-label">Total Completed</span>
+                </div>
+                <div class="limit-item">
+                    <i class="fas fa-fire" style="font-size: 1.5rem; margin-bottom: 10px;"></i>
+                    <span class="limit-value" id="currentStreak">--</span>
+                    <span class="limit-label">Day Streak</span>
+                </div>
+            </div>
+
+            <div class="panel">
+                <form id="challengeForm">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label class="form-label">
+                                <i class="fas fa-book"></i> Step 1: Select Subject
+                                <span class="required">*</span>
+                            </label>
+                            <select id="subjectSelect" class="form-select" required onchange="loadSimulations()">
+                                <option value="">-- Choose a Subject --</option>
+                                <option value="physics">Physics (19 simulations)</option>
+                                <option value="mathematics">Mathematics (17 simulations)</option>
+                                <option value="chemistry" disabled>Chemistry (Coming Soon)</option>
+                                <option value="biology" disabled>Biology (Coming Soon)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="simulationGroup" style="display: none;">
+                            <label class="form-label">
+                                <i class="fas fa-flask"></i> Step 2: Select Simulation
+                            </label>
+                            <select id="simulationSelect" class="form-select" onchange="onSimulationChange()">
+                                <option value="">-- Choose a Simulation --</option>
+                            </select>
+                            <span class="form-hint">
+                                <i class="fas fa-info-circle"></i>
+                                Select a simulation or use custom topic below
+                            </span>
+                        </div>
+
+                        <div class="form-group" id="customTopicGroup" style="display: none;">
+                            <label class="form-label">
+                                <i class="fas fa-lightbulb"></i> Or Enter Custom Topic
+                            </label>
+                            <input 
+                                type="text" 
+                                id="customTopic" 
+                                class="form-input"
+                                placeholder="e.g., Thermodynamics, Quadratic Equations"
+                                oninput="onCustomTopicChange()">
+                            <span class="form-hint">
+                                <i class="fas fa-magic"></i>
+                                AI will generate questions on any topic you specify
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label">
+                            <i class="fas fa-chart-line"></i> Step 3: Select Difficulty Level
+                            <span class="required">*</span>
+                        </label>
+                        <div class="difficulty-selector">
+                            <label class="difficulty-option" for="diff-easy">
+                                <input type="radio" name="difficulty" value="easy" id="diff-easy" required>
+                                <span style="font-size: 2rem; color: #28a745; display: block; margin-bottom: 10px;">
+                                    <i class="fas fa-star"></i>
+                                </span>
+                                <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 5px;">Easy</div>
+                                <div style="font-size: 0.8rem; color: #888;">Basic concepts</div>
+                            </label>
+
+                            <label class="difficulty-option selected" for="diff-medium">
+                                <input type="radio" name="difficulty" value="medium" id="diff-medium" checked>
+                                <span style="font-size: 2rem; color: #ffc107; display: block; margin-bottom: 10px;">
+                                    <i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                </span>
+                                <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 5px;">Medium</div>
+                                <div style="font-size: 0.8rem; color: #888;">Moderate challenge</div>
+                            </label>
+
+                            <label class="difficulty-option" for="diff-hard">
+                                <input type="radio" name="difficulty" value="hard" id="diff-hard">
+                                <span style="font-size: 2rem; color: #dc3545; display: block; margin-bottom: 10px;">
+                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                </span>
+                                <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 5px;">Hard</div>
+                                <div style="font-size: 0.8rem; color: #888;">Advanced concepts</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label">
+                            <i class="fas fa-list-ol"></i> Step 4: Number of Questions
+                        </label>
+                        <div class="question-selector">
+                            <label class="question-option" for="q-3">
+                                <input type="radio" name="questionCount" value="3" id="q-3">
+                                <span style="font-size: 1.5rem; font-weight: bold; display: block; color: #007acc;">3</span>
+                                <span style="font-size: 0.75rem; color: #888;">~5 min</span>
+                            </label>
+
+                            <label class="question-option selected" for="q-5">
+                                <input type="radio" name="questionCount" value="5" id="q-5" checked>
+                                <span style="font-size: 1.5rem; font-weight: bold; display: block; color: #007acc;">5</span>
+                                <span style="font-size: 0.75rem; color: #888;">~10 min</span>
+                            </label>
+
+                            <label class="question-option" for="q-7">
+                                <input type="radio" name="questionCount" value="7" id="q-7">
+                                <span style="font-size: 1.5rem; font-weight: bold; display: block; color: #007acc;">7</span>
+                                <span style="font-size: 0.75rem; color: #888;">~15 min</span>
+                            </label>
+
+                            <label class="question-option" for="q-10">
+                                <input type="radio" name="questionCount" value="10" id="q-10">
+                                <span style="font-size: 1.5rem; font-weight: bold; display: block; color: #007acc;">10</span>
+                                <span style="font-size: 0.75rem; color: #888;">~20 min</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()" style="margin-right: 15px;">
+                            <i class="fas fa-redo"></i>
+                            Reset Form
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="generateBtn">
+                            <i class="fas fa-brain"></i>
+                            Generate Challenge
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- SECTION 2: ATTEMPT CHALLENGE -->
+        <!-- ============================================================ -->
+        <div id="attemptSection" class="page-section">
+            <!-- Challenge Header -->
+            <div class="challenge-header">
+                <div class="challenge-info">
+                    <h2 id="attemptChallengeTitle">Challenge Title</h2>
+                    <div class="challenge-meta">
+                        <span><i class="fas fa-book"></i> <span id="attemptSubject">Subject</span></span>
+                        <span><i class="fas fa-layer-group"></i> <span id="attemptDifficulty">Difficulty</span></span>
+                        <span><i class="fas fa-question-circle"></i> <span id="attemptQuestionCount">5 Questions</span></span>
+                    </div>
+                </div>
+                <div class="timer-display" id="timerDisplay">
+                    <i class="fas fa-clock"></i>
+                    <span id="timerValue">10:00</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progressBarFill" style="width: 0%"></div>
+            </div>
+
+            <!-- Auto-save Indicator -->
+            <div class="auto-save-indicator" id="autoSaveIndicator">
+                <i class="fas fa-check-circle"></i> Draft saved automatically
+            </div>
+
+            <!-- Question Navigation -->
+            <div class="question-navigation" id="questionNavigation"></div>
+
+            <!-- Question Container -->
+            <div class="question-container" id="questionContainer"></div>
+
+            <!-- Navigation Buttons -->
+            <div class="navigation-buttons">
+                <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <button class="btn btn-secondary" onclick="saveDraftManual()">
+                    <i class="fas fa-save"></i> Save Draft
+                </button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="btn btn-success" id="submitBtn" onclick="submitChallenge()" style="display: none;">
+                    <i class="fas fa-paper-plane"></i> Submit Challenge
+                </button>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- SECTION 3: RESULTS -->
+        <!-- ============================================================ -->
+        <div id="resultsSection" class="page-section">
+            <div class="results-banner" id="resultsBanner">
+                <div class="score-circle" id="scoreCircle">--</div>
+                <h2 id="resultsTitle">Challenge Completed!</h2>
+                <p id="resultsSubtitle">Your performance summary</p>
+            </div>
+
+            <div class="result-stats">
+                <div class="result-stat">
+                    <div class="result-stat-value" id="resultTotalScore">--</div>
+                    <div class="result-stat-label">Total Score</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value" id="resultCorrect">--</div>
+                    <div class="result-stat-label">Correct Answers</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value" id="resultTimeSpent">--</div>
+                    <div class="result-stat-label">Time Spent</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value" id="resultStatus">--</div>
+                    <div class="result-stat-label">Status</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2 style="margin-bottom: 20px; color: #00d4ff;"><i class="fas fa-list-check"></i> Question Review</h2>
+                <div id="questionReviewContainer"></div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-primary" onclick="goToGenerate()">
+                    <i class="fas fa-plus"></i> Generate New Challenge
+                </button>
+                <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'" style="margin-left: 15px;">
+                    <i class="fas fa-home"></i> Back to Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOADING OVERLAY -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div style="font-size: 1.2rem; color: #00d4ff; margin-bottom: 10px;" id="loadingText">Loading...</div>
+            <div style="color: #888; font-size: 0.9rem;" id="loadingSubtext"></div>
+        </div>
+    </div>
+
+    <script>
+        // ================================================================
+        // CONFIGURATION & STATE
+        // ================================================================
+        const API_BASE_URL = 'http://localhost:3000/api';
+        let authToken = localStorage.getItem('studentToken');
+        
+        let currentSection = 'generate';
+        let currentChallenge = null;
+        let currentQuestionIndex = 0;
+        let studentAnswers = [];
+        let autoSaveInterval = null;
+        let timerInterval = null;
+        let remainingTime = 0;
+        
+        const SIMULATION_MAP = {
+            physics: [
+                { id: 'motion-classifier-sim', name: 'Motion Classifier Simulation' },
+                { id: 'measurement-skills-sim', name: 'Measurement Skills Simulation' },
+                { id: 'projectile-motion-simulator', name: 'Projectile Motion Simulator' },
+                { id: 'circuit-builder', name: 'Circuit Builder' },
+                { id: 'force-visualizer', name: 'Force Visualizer' },
+                { id: 'gravity-simulator', name: 'Gravity Simulator' },
+                { id: 'light-path-visualizer', name: 'Light Path Visualizer' },
+                { id: 'newtons-laws-demonstrator', name: "Newton's Laws Demonstrator" },
+                { id: 'heat-flow-simulator', name: 'Heat Flow Simulator' },
+                { id: 'sound-wave-generator', name: 'Sound Wave Generator' },
+                { id: 'magnetic-field-visualizer', name: 'Magnetic Field Visualizer' },
+                { id: 'electric-field-mapper', name: 'Electric Field Mapper' },
+                { id: 'ray-diagram-builder', name: 'Ray Diagram Builder' },
+                { id: 'energy-transformation-visualizer', name: 'Energy Transformation Visualizer' },
+                { id: 'gas-properties-simulator', name: 'Gas Properties Simulator' },
+                { id: 'electrolysis-simulator', name: 'Electrolysis Simulator' },
+                { id: 'weather-system-model', name: 'Weather System Model' },
+                { id: 'shadow-formation-simulator', name: 'Shadow Formation Simulator' },
+                { id: 'advanced-circuit-simulator', name: 'Advanced Circuit Simulator' }
+            ],
+            mathematics: [
+                { id: 'shape-builder-measurer', name: 'Shape Builder & Measurer' },
+                { id: 'fraction-pie-visualizer', name: 'Fraction Pie Visualizer' },
+                { id: 'equation-solver-with-steps', name: 'Equation Solver with Steps' },
+                { id: 'data-set-analyzer', name: 'Data Set Analyzer' },
+                { id: 'unit-circle-simulator', name: 'Unit Circle Simulator' },
+                { id: 'three-d-vector-visualizer', name: '3D Vector Visualizer' },
+                { id: 'polynomial-grapher', name: 'Polynomial Grapher' },
+                { id: 'quadratic-explorer', name: 'Quadratic Explorer' },
+                { id: 'coordinate-plotter', name: 'Coordinate Plotter' },
+                { id: 'equation-balancer', name: 'Equation Balancer' },
+                { id: 'geometric-proof-builder', name: 'Geometric Proof Builder' },
+                { id: 'calculus-visualizer', name: 'Calculus Visualizer' },
+                { id: 'trigonometry-visualizer', name: 'Trigonometry Visualizer' },
+                { id: 'probability-simulator', name: 'Probability Simulator' },
+                { id: 'interactive-graph-maker', name: 'Interactive Graph Maker' },
+                { id: 'ratio-visualizer', name: 'Ratio Visualizer' },
+                { id: 'symmetry-explorer', name: 'Symmetry Explorer' }
+            ]
+        };
+
+        // ================================================================
+        // UTILITY FUNCTIONS
+        // ================================================================
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`,
+                        ...options.headers
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'API request failed');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('API Error:', error);
+                if (error.message.includes('401') || error.message.includes('token')) {
+                    alert('Session expired. Please login again.');
+                    window.location.href = '/login.html';
+                }
+                throw error;
+            }
+        }
+
+        function showLoading(text = 'Loading...', subtext = '') {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loadingSubtext').textContent = subtext;
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function switchSection(section) {
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`${section}Section`).classList.add('active');
+            currentSection = section;
+            
+            // Stop timers when leaving attempt section
+            if (section !== 'attempt') {
+                stopTimer();
+                stopAutoSave();
+            }
+        }
+
+        // ================================================================
+        // SECTION 1: GENERATE CHALLENGE
+        // ================================================================
+        function loadSimulations() {
+            const subject = document.getElementById('subjectSelect').value;
+            const simulationGroup = document.getElementById('simulationGroup');
+            const customTopicGroup = document.getElementById('customTopicGroup');
+            const simulationSelect = document.getElementById('simulationSelect');
+            
+            if (!subject) {
+                simulationGroup.style.display = 'none';
+                customTopicGroup.style.display = 'none';
+                return;
+            }
+            
+            simulationGroup.style.display = 'block';
+            customTopicGroup.style.display = 'block';
+            
+            simulationSelect.innerHTML = '<option value="">-- Choose a Simulation --</option>';
+            
+            const simulations = SIMULATION_MAP[subject] || [];
+            
+            if (simulations.length === 0) {
+                simulationSelect.innerHTML = '<option value="">No simulations available</option>';
+                simulationSelect.disabled = true;
+            } else {
+                simulationSelect.disabled = false;
+                simulations.forEach(sim => {
+                    const option = document.createElement('option');
+                    option.value = sim.id;
+                    option.textContent = sim.name;
+                    simulationSelect.appendChild(option);
+                });
+            }
+        }
+
+        function onSimulationChange() {
+            const simulationSelect = document.getElementById('simulationSelect');
+            const customTopic = document.getElementById('customTopic');
+            
+            if (simulationSelect.value) {
+                customTopic.value = '';
+                customTopic.disabled = true;
+            } else {
+                customTopic.disabled = false;
+            }
+        }
+
+        function onCustomTopicChange() {
+            const customTopic = document.getElementById('customTopic');
+            const simulationSelect = document.getElementById('simulationSelect');
+            
+            if (customTopic.value.trim()) {
+                simulationSelect.value = '';
+                simulationSelect.disabled = true;
+            } else {
+                simulationSelect.disabled = false;
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('challengeForm').reset();
+            document.getElementById('simulationGroup').style.display = 'none';
+            document.getElementById('customTopicGroup').style.display = 'none';
+            document.getElementById('simulationSelect').disabled = false;
+            document.getElementById('customTopic').disabled = false;
+            
+            document.querySelectorAll('.difficulty-option').forEach(o => o.classList.remove('selected'));
+            document.querySelector('.difficulty-option:nth-child(2)').classList.add('selected');
+            
+            document.querySelectorAll('.question-option').forEach(o => o.classList.remove('selected'));
+            document.querySelector('.question-option:nth-child(2)').classList.add('selected');
+        }
+
+        document.querySelectorAll('.difficulty-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.difficulty-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                this.querySelector('input[type="radio"]').checked = true;
+            });
+        });
+
+        document.querySelectorAll('.question-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.question-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                this.querySelector('input[type="radio"]').checked = true;
+            });
+        });
+
+        document.getElementById('challengeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const subject = document.getElementById('subjectSelect').value;
+            const simulationType = document.getElementById('simulationSelect').value;
+            const customTopic = document.getElementById('customTopic').value.trim();
+            const difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+            const numberOfQuestions = parseInt(document.querySelector('input[name="questionCount"]:checked').value);
+            
+            if (!subject) {
+                alert('⚠️ Please select a subject');
+                return;
+            }
+            
+            if (!simulationType && !customTopic) {
+                alert('⚠️ Please select a simulation or enter a custom topic');
+                return;
+            }
+            
+            showLoading('Generating Challenge...', 'AI is creating personalized questions');
+            
+            try {
+                const requestData = {
+                    subject,
+                    simulationType: simulationType || null,
+                    customTopic: customTopic || null,
+                    difficulty,
+                    numberOfQuestions
+                };
+                
+                const response = await apiCall('/student/challenges/generate', {
+                    method: 'POST',
+                    body: JSON.stringify(requestData)
+                });
+                
+                hideLoading();
+                
+                alert(`✅ Challenge generated successfully!\n\nChallenge ID: ${response.data.challenge.challengeId}\n\nClick OK to start the challenge.`);
+                
+                // Load challenge for attempt
+                await loadChallengeForAttempt(response.data.challenge.challengeId);
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Challenge generation error:', error);
+                alert('❌ ' + error.message);
+            }
+        });
+
+        async function loadChallengeLimits() {
+            try {
+                const data = await apiCall('/student/challenges/limits');
+                document.getElementById('dailyRemaining').textContent = data.data.daily.remaining || 0;
+                document.getElementById('totalCompleted').textContent = data.data.daily.used || 0;
+                
+                const dashboard = await apiCall('/student/dashboard');
+                document.getElementById('currentStreak').textContent = dashboard.data.stats.currentStreak || 0;
+                
+            } catch (error) {
+                console.error('Error loading limits:', error);
+            }
+        }
+
+        // ================================================================
+        // SECTION 2: ATTEMPT CHALLENGE
+        // ================================================================
+        async function loadChallengeForAttempt(challengeId) {
+            showLoading('Loading Challenge...', 'Preparing questions');
+            
+            try {
+                // Start the challenge
+                await apiCall(`/student/challenges/${challengeId}/start`, {
+                    method: 'POST'
+                });
+                
+                // Get challenge data
+                const response = await apiCall(`/student/challenges/${challengeId}/attempt`);
+                currentChallenge = response.data.challenge;
+                
+                // Initialize answers array
+                studentAnswers = currentChallenge.questions.map(q => ({
+                    questionId: q.questionId,
+                    studentAnswer: '',
+                    studentReasoning: ''
+                }));
+                
+                // Load saved draft if exists
+                if (response.data.savedDraft && response.data.savedDraft.answers) {
+                    response.data.savedDraft.answers.forEach(savedAnswer => {
+                        const index = studentAnswers.findIndex(a => a.questionId === savedAnswer.questionId);
+                        if (index !== -1) {
+                            studentAnswers[index] = savedAnswer;
+                        }
+                    });
+                }
+                
+                // Setup attempt UI
+                setupAttemptUI();
+                
+                // Switch to attempt section
+                switchSection('attempt');
+                
+                // Start timer and auto-save
+                startTimer();
+                startAutoSave();
+                
+                hideLoading();
+                
+            } catch (error) {
+                hideLoading();
+                alert('Error loading challenge: ' + error.message);
+            }
+        }
+
+        function setupAttemptUI() {
+            // Set header info
+            document.getElementById('attemptChallengeTitle').textContent = currentChallenge.title || currentChallenge.challengeId;
+            document.getElementById('attemptSubject').textContent = currentChallenge.subject || 'N/A';
+            document.getElementById('attemptDifficulty').textContent = currentChallenge.difficulty;
+            document.getElementById('attemptQuestionCount').textContent = currentChallenge.questions.length + ' Questions';
+            
+            // Setup timer
+            remainingTime = currentChallenge.estimatedTime * 60; // Convert to seconds
+            
+            // Setup question navigation
+            const navContainer = document.getElementById('questionNavigation');
+            navContainer.innerHTML = '';
+            currentChallenge.questions.forEach((q, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'question-nav-btn';
+                btn.textContent = index + 1;
+                btn.onclick = () => goToQuestion(index);
+                navContainer.appendChild(btn);
+            });
+            
+            // Show first question
+            currentQuestionIndex = 0;
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            const question = currentChallenge.questions[currentQuestionIndex];
+            const answer = studentAnswers[currentQuestionIndex];
+            
+            // Update navigation highlights
+            document.querySelectorAll('.question-nav-btn').forEach((btn, index) => {
+                btn.classList.remove('active', 'answered');
+                if (index === currentQuestionIndex) {
+                    btn.classList.add('active');
+                } else if (studentAnswers[index].studentAnswer && studentAnswers[index].studentReasoning) {
+                    btn.classList.add('answered');
+                }
+            });
+            
+            // Update progress bar
+            const answeredCount = studentAnswers.filter(a => a.studentAnswer && a.studentReasoning).length;
+            const progress = (answeredCount / currentChallenge.questions.length) * 100;
+            document.getElementById('progressBarFill').style.width = progress + '%';
+            
+            // Build question HTML
+            let answerHTML = '';
+            
+            if (question.type === 'mcq' || question.type === 'MCQ') {
+                answerHTML = `
+                    <div class="answer-section">
+                        <div class="answer-label">
+                            <i class="fas fa-check-square"></i>
+                            Select Your Answer
+                        </div>
+                        <div class="mcq-options">
+                            ${question.options.map((opt, idx) => `
+                                <label class="mcq-option ${answer.studentAnswer === opt ? 'selected' : ''}" for="opt-${idx}">
+                                    <input type="radio" name="mcq-answer" id="opt-${idx}" value="${opt}" ${answer.studentAnswer === opt ? 'checked' : ''}>
+                                    <span class="mcq-radio"></span>
+                                    <span>${opt}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (question.type === 'numerical' || question.type === 'NUMERICAL') {
+                answerHTML = `
+                    <div class="answer-section">
+                        <div class="answer-label">
+                            <i class="fas fa-calculator"></i>
+                            Enter Your Answer
+                        </div>
+                        <input type="text" 
+                               class="answer-input" 
+                               id="numericalAnswer"
+                               placeholder="e.g., 50 N, 9.8 m/s², 100 kg"
+                               value="${answer.studentAnswer || ''}"
+                               onchange="saveCurrentAnswer()">
+                    </div>
+                `;
+            } else {
+                answerHTML = `
+                    <div class="answer-section">
+                        <div class="answer-label">
+                            <i class="fas fa-edit"></i>
+                            Write Your Answer
+                        </div>
+                        <textarea 
+                            class="answer-input answer-textarea" 
+                            id="shortAnswer"
+                            placeholder="Write your detailed answer here..."
+                            onchange="saveCurrentAnswer()">${answer.studentAnswer || ''}</textarea>
+                    </div>
+                `;
+            }
+            
+            const questionHTML = `
+                <div class="question-header">
+                    <div class="question-number">
+                        <i class="fas fa-question-circle"></i>
+                        Question ${currentQuestionIndex + 1} of ${currentChallenge.questions.length}
+                    </div>
+                    <div class="question-points">
+                        <i class="fas fa-star"></i>
+                        ${question.points} Points
+                    </div>
+                </div>
+                
+                <div class="question-text">
+                    ${question.question}
+                </div>
+                
+                ${answerHTML}
+                
+                <div class="answer-section">
+                    <div class="answer-label">
+                        <i class="fas fa-lightbulb"></i>
+                        Explain Your Reasoning <span class="required">*</span>
+                        <button 
+                            type="button"
+                            class="btn btn-secondary btn-sm" 
+                            onclick="openMathScratchpad()"
+                            style="margin-left: auto; padding: 8px 15px; font-size: 0.85rem;">
+                            <i class="fas fa-calculator"></i>
+                            Math Scratchpad
+                        </button>
+                    </div>
+                    <textarea 
+                        class="answer-input answer-textarea" 
+                        id="reasoning"
+                        placeholder="Explain your thought process, show your work, mention formulas used..."
+                        onchange="saveCurrentAnswer()"
+                        oninput="updateCharCount()">${answer.studentReasoning || ''}</textarea>
+                    <div class="char-counter" id="charCounter">
+                        ${answer.studentReasoning ? answer.studentReasoning.length : 0} characters (min 50 required)
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('questionContainer').innerHTML = questionHTML;
+            
+            // Setup MCQ listeners
+            if (question.type === 'mcq' || question.type === 'MCQ') {
+                document.querySelectorAll('.mcq-option').forEach(opt => {
+                    opt.addEventListener('click', function() {
+                        document.querySelectorAll('.mcq-option').forEach(o => o.classList.remove('selected'));
+                        this.classList.add('selected');
+                        this.querySelector('input').checked = true;
+                        saveCurrentAnswer();
+                    });
+                });
+            }
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').style.display = currentQuestionIndex === 0 ? 'none' : 'inline-flex';
+            document.getElementById('nextBtn').style.display = currentQuestionIndex === currentChallenge.questions.length - 1 ? 'none' : 'inline-flex';
+            document.getElementById('submitBtn').style.display = currentQuestionIndex === currentChallenge.questions.length - 1 ? 'inline-flex' : 'none';
+            
+            updateCharCount();
+        }
+
+        function saveCurrentAnswer() {
+            const question = currentChallenge.questions[currentQuestionIndex];
+            let answer = '';
+            
+            if (question.type === 'mcq' || question.type === 'MCQ') {
+                const selected = document.querySelector('input[name="mcq-answer"]:checked');
+                answer = selected ? selected.value : '';
+            } else if (question.type === 'numerical' || question.type === 'NUMERICAL') {
+                answer = document.getElementById('numericalAnswer').value;
+            } else {
+                answer = document.getElementById('shortAnswer').value;
+            }
+            
+            const reasoning = document.getElementById('reasoning').value;
+            
+            studentAnswers[currentQuestionIndex] = {
+                questionId: question.questionId,
+                studentAnswer: answer,
+                studentReasoning: reasoning
+            };
+        }
+
+        function updateCharCount() {
+            const reasoning = document.getElementById('reasoning').value;
+            const counter = document.getElementById('charCounter');
+            const length = reasoning.length;
+            
+            counter.textContent = `${length} characters (min 50 required)`;
+            
+            if (length < 50) {
+                counter.className = 'char-counter warning';
+            } else {
+                counter.className = 'char-counter success';
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                saveCurrentAnswer();
+                currentQuestionIndex--;
+                displayQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < currentChallenge.questions.length - 1) {
+                saveCurrentAnswer();
+                currentQuestionIndex++;
+                displayQuestion();
+            }
+        }
+
+        function goToQuestion(index) {
+            saveCurrentAnswer();
+            currentQuestionIndex = index;
+            displayQuestion();
+        }
+
+        async function saveDraftManual() {
+            saveCurrentAnswer();
+            await saveDraft();
+            
+            // Show indicator
+            const indicator = document.getElementById('autoSaveIndicator');
+            indicator.classList.add('visible');
+            setTimeout(() => {
+                indicator.classList.remove('visible');
+            }, 2000);
+        }
+
+        async function saveDraft() {
+            try {
+                await apiCall(`/student/challenges/${currentChallenge.challengeId}/save-draft`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        answers: studentAnswers
+                    })
+                });
+            } catch (error) {
+                console.error('Draft save error:', error);
+            }
+        }
+
+        function startAutoSave() {
+            autoSaveInterval = setInterval(() => {
+                saveCurrentAnswer();
+                saveDraft();
+            }, 30000); // Every 30 seconds
+        }
+
+        function stopAutoSave() {
+            if (autoSaveInterval) {
+                clearInterval(autoSaveInterval);
+                autoSaveInterval = null;
+            }
+        }
+
+        function startTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                remainingTime--;
+                updateTimerDisplay();
+                
+                if (remainingTime <= 120) {
+                    document.getElementById('timerDisplay').classList.add('timer-warning');
+                }
+                
+                if (remainingTime <= 0) {
+                    stopTimer();
+                    alert('⏰ Time is up! Auto-submitting your challenge.');
+                    submitChallenge();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+            document.getElementById('timerValue').textContent = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        async function submitChallenge() {
+            saveCurrentAnswer();
+            
+            // Validate all questions answered
+            const unanswered = studentAnswers.filter(a => !a.studentAnswer || !a.studentReasoning);
+            if (unanswered.length > 0) {
+                alert(`⚠️ Please answer all questions and provide reasoning.\n\nUnanswered: ${unanswered.length} question(s)`);
+                return;
+            }
+            
+            // Validate reasoning length
+            const shortReasoning = studentAnswers.filter(a => a.studentReasoning.length < 50);
+            if (shortReasoning.length > 0) {
+                alert('⚠️ Please provide detailed reasoning (minimum 50 characters) for all questions.');
+                return;
+            }
+            
+            if (!confirm('🚀 Are you sure you want to submit?\n\nYou cannot change your answers after submission.')) {
+                return;
+            }
+            
+            stopTimer();
+            stopAutoSave();
+            
+            showLoading('Submitting Challenge...', 'AI is evaluating your answers');
+            
+            try {
+                await apiCall(`/student/challenges/${currentChallenge.challengeId}/submit`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        answers: studentAnswers
+                    })
+                });
+                
+                // Wait for evaluation (poll every 3 seconds)
+                await waitForEvaluation();
+                
+            } catch (error) {
+                hideLoading();
+                alert('Error submitting challenge: ' + error.message);
+            }
+        }
+
+        async function waitForEvaluation() {
+            let attempts = 0;
+            const maxAttempts = 30; // 90 seconds max
+            
+            const checkInterval = setInterval(async () => {
+                attempts++;
+                
+                try {
+                    const response = await apiCall(`/student/challenges/${currentChallenge.challengeId}`);
+                    
+                    if (response.data.challenge.status === 'evaluated') {
+                        clearInterval(checkInterval);
+                        hideLoading();
+                        await loadResults(response.data.challenge);
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(checkInterval);
+                        hideLoading();
+                        alert('⏰ Evaluation is taking longer than expected.\n\nPlease check back in a few minutes from your dashboard.');
+                        window.location.href = 'dashboard.html';
+                    }
+                } catch (error) {
+                    clearInterval(checkInterval);
+                    hideLoading();
+                    alert('Error checking evaluation status: ' + error.message);
+                }
+            }, 3000);
+        }
+
+        // ================================================================
+        // SECTION 3: RESULTS
+        // ================================================================
+        async function loadResults(challenge) {
+            currentChallenge = challenge;
+            
+            const results = challenge.results;
+            const passed = results.passed;
+            
+            // Update banner
+            const banner = document.getElementById('resultsBanner');
+            banner.className = 'results-banner ' + (passed ? '' : 'failed');
+            
+            document.getElementById('scoreCircle').textContent = results.totalScore.toFixed(0) + '%';
+            document.getElementById('resultsTitle').textContent = passed ? 'Congratulations! 🎉' : 'Keep Practicing! 💪';
+            document.getElementById('resultsSubtitle').textContent = passed ? 'You passed the challenge!' : 'You can do better next time';
+            
+            // Update stats
+            document.getElementById('resultTotalScore').textContent = results.totalScore.toFixed(1) + '%';
+            document.getElementById('resultCorrect').textContent = `${results.correctAnswers}/${results.totalQuestions}`;
+            document.getElementById('resultTimeSpent').textContent = formatTime(results.timeSpent);
+            document.getElementById('resultStatus').textContent = passed ? 'PASS' : 'FAIL';
+            
+            // Display question reviews
+            displayQuestionReviews(challenge);
+            
+            // Switch to results section
+            switchSection('results');
+        }
+
+        function displayQuestionReviews(challenge) {
+            const container = document.getElementById('questionReviewContainer');
+            
+            container.innerHTML = challenge.questions.map((question, index) => {
+                const studentAnswer = challenge.answers[index];
+                const aiEval = studentAnswer.aiEvaluation;
+                
+                return `
+                    <div class="question-review">
+                        <div class="review-header">
+                            <div class="question-number">Question ${index + 1}</div>
+                            <div class="question-points">
+                                Score: ${studentAnswer.finalScore.toFixed(1)}/100
+                            </div>
+                        </div>
+                        
+                        <div class="review-question">
+                            ${question.question}
+                        </div>
+                        
+                        <div class="answer-comparison">
+                            <div class="answer-box your-answer">
+                                <div class="answer-box-title">
+                                    <i class="fas fa-user"></i> Your Answer
+                                </div>
+                                <div><strong>${studentAnswer.studentAnswer}</strong></div>
+                                <div style="margin-top: 10px; font-size: 0.9rem; color: #ccc;">
+                                    ${studentAnswer.studentReasoning}
+                                </div>
+                            </div>
+                            
+                            <div class="answer-box correct-answer">
+                                <div class="answer-box-title">
+                                    <i class="fas fa-check-circle"></i> Correct Answer
+                                </div>
+                                <div><strong>${question.correctAnswer}</strong></div>
+                                <div style="margin-top: 10px; font-size: 0.9rem; color: #ccc;">
+                                    ${question.explanation}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="ai-feedback">
+                            <div class="feedback-section">
+                                <div class="feedback-title">
+                                    <i class="fas fa-robot"></i> AI Evaluation
+                                </div>
+                                <p>${aiEval.feedback}</p>
+                            </div>
+                            
+                            ${aiEval.strengths && aiEval.strengths.length > 0 ? `
+                                <div class="feedback-section">
+                                    <div class="feedback-title">
+                                        <i class="fas fa-thumbs-up"></i> Strengths
+                                    </div>
+                                    <ul class="feedback-list">
+                                        ${aiEval.strengths.map(s => `<li>${s}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                            
+                            ${aiEval.improvements && aiEval.improvements.length > 0 ? `
+                                <div class="feedback-section">
+                                    <div class="feedback-title">
+                                        <i class="fas fa-lightbulb"></i> Areas for Improvement
+                                    </div>
+                                    <ul class="feedback-list">
+                                        ${aiEval.improvements.map(i => `<li>${i}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${minutes}m ${secs}s`;
+        }
+
+        function goToGenerate() {
+            switchSection('generate');
+            loadChallengeLimits();
+        }
+
+        // ================================================================
+        // MATH SCRATCHPAD
+        // ================================================================
+        function openMathScratchpad() {
+            // Open Math Scratchpad in new window
+            const scratchpadWindow = window.open(
+                'MathScratchpad.html', 
+                'MathScratchpad', 
+                'width=1400,height=900,resizable=yes,scrollbars=yes'
+            );
+            
+            if (!scratchpadWindow) {
+                alert('⚠️ Please allow popups for this site to use Math Scratchpad.\n\nOr open MathScratchpad.html manually in a new tab.');
+            } else {
+                // Show hint
+                const reasoning = document.getElementById('reasoning');
+                if (reasoning && !reasoning.value.includes('Math Scratchpad')) {
+                    setTimeout(() => {
+                        if (confirm('💡 Tip: After working in Math Scratchpad, click "Copy to Clipboard" and paste your work here in the reasoning field.\n\nClick OK to continue.')) {
+                            reasoning.focus();
+                        }
+                    }, 1000);
+                }
+            }
+        }
+
+        // ================================================================
+        // INITIALIZATION
+        // ================================================================
+        async function init() {
+            if (!authToken) {
+                alert('Please login first');
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            await loadChallengeLimits();
+            
+            // Check if redirected with challengeId
+            const urlParams = new URLSearchParams(window.location.search);
+            const challengeId = urlParams.get('id');
+            
+            if (challengeId) {
+                await loadChallengeForAttempt(challengeId);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

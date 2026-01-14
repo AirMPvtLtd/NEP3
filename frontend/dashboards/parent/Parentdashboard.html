@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Dashboard - NEP Workbench</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        /* ================================================================ */
+        /* CSS VARIABLES - Dark Theme Matching Index Page */
+        /* ================================================================ */
+        :root {
+            /* Colors - Dark Theme */
+            --primary: #007acc;
+            --primary-dark: #005a9e;
+            --secondary: #00d4ff;
+            --accent: #569cd6;
+            --success: #4ec9b0;
+            --warning: #dcdcaa;
+            --danger: #f48771;
+            
+            /* Backgrounds */
+            --bg-main: #1e1e1e;
+            --bg-card: #2d2d30;
+            --bg-sidebar: #333337;
+            --bg-hover: #3e3e42;
+            
+            /* Text Colors */
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-light: #888888;
+            --text-inverse: #ffffff;
+            
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, #007acc 0%, #00d4ff 100%);
+            --gradient-secondary: linear-gradient(135deg, #4ec9b0 0%, #2d796c 100%);
+            --gradient-card: linear-gradient(135deg, #2d2d30 0%, #252526 100%);
+            
+            /* Shadows */
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+            
+            /* Borders */
+            --border-color: #464647;
+            
+            /* Typography */
+            --font-body: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            
+            /* Spacing */
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 1.5rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+            
+            /* Border Radius */
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            
+            /* Transitions */
+            --transition-fast: 0.2s ease;
+            --transition-base: 0.3s ease;
+            --transition-slow: 0.5s ease;
+        }
+        
+        /* ================================================================ */
+        /* RESET & BASE STYLES */
+        /* ================================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* ================================================================ */
+        /* LAYOUT */
+        /* ================================================================ */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            padding: var(--spacing-lg) var(--spacing-md);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform var(--transition-base);
+            border-right: 1px solid var(--border-color);
+        }
+        
+        .sidebar-header {
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-accent {
+            color: var(--secondary);
+            -webkit-text-fill-color: var(--secondary);
+        }
+        
+        .sidebar-nav {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-sm);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            font-weight: 500;
+        }
+        
+        .nav-link:hover,
+        .nav-link.active {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            transform: translateX(4px);
+        }
+        
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: var(--spacing-lg);
+        }
+        
+        /* ================================================================ */
+        /* HEADER */
+        /* ================================================================ */
+        .header {
+            background: var(--bg-card);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--spacing-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+        
+        .header-left h1 {
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xs);
+            background: linear-gradient(135deg, #ffffff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .breadcrumb {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .notification-badge {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .notification-icon {
+            width: 24px;
+            height: 24px;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+        
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            cursor: pointer;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            transition: background var(--transition-fast);
+        }
+        
+        .user-profile:hover {
+            background: var(--bg-hover);
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .user-role {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        /* ================================================================ */
+        /* CARDS & COMPONENTS */
+        /* ================================================================ */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-base);
+            border: 1px solid var(--border-color);
+            height: 100%;
+        }
+        
+        .card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .card-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* ================================================================ */
+        /* GRID LAYOUTS */
+        /* ================================================================ */
+        .grid {
+            display: grid;
+            gap: var(--spacing-lg);
+        }
+        
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        .grid-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        
+        /* ================================================================ */
+        /* STAT CARDS */
+        /* ================================================================ */
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 120px;
+            height: 120px;
+            background: var(--gradient-primary);
+            opacity: 0.1;
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            margin-top: var(--spacing-sm);
+            font-size: 0.85rem;
+            justify-content: center;
+        }
+        
+        .trend-up {
+            color: var(--success);
+        }
+        
+        .trend-down {
+            color: var(--danger);
+        }
+        
+        /* ================================================================ */
+        /* STUDENT CARD */
+        /* ================================================================ */
+        .student-card {
+            background: var(--gradient-primary);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .student-card::after {
+            content: '🎓';
+            position: absolute;
+            font-size: 10rem;
+            right: -20px;
+            bottom: -40px;
+            opacity: 0.1;
+        }
+        
+        .student-avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .student-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .student-details {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+        
+        .student-detail-item {
+            background: rgba(255, 255, 255, 0.15);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+        }
+        
+        /* ================================================================ */
+        /* PERFORMANCE BADGE */
+        /* ================================================================ */
+        .performance-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-xl);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .badge-a {
+            background: linear-gradient(135deg, #4ec9b0 0%, #2d796c 100%);
+            color: white;
+        }
+        
+        .badge-b {
+            background: linear-gradient(135deg, #569cd6 0%, #2d5a9e 100%);
+            color: white;
+        }
+        
+        .badge-c {
+            background: linear-gradient(135deg, #dcdcaa 0%, #b8b854 100%);
+            color: var(--text-primary);
+        }
+        
+        .badge-d {
+            background: linear-gradient(135deg, #f48771 0%, #d64528 100%);
+            color: white;
+        }
+        
+        /* ================================================================ */
+        /* CHARTS */
+        /* ================================================================ */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: var(--spacing-md);
+        }
+        
+        .chart-container-small {
+            height: 200px;
+        }
+        
+        /* ================================================================ */
+        /* TABLES */
+        /* ================================================================ */
+        .table-container {
+            overflow-x: auto;
+            margin-top: var(--spacing-md);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+        }
+        
+        thead {
+            background: var(--bg-sidebar);
+        }
+        
+        th {
+            padding: var(--spacing-sm) var(--spacing-md);
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        td {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        
+        tbody tr {
+            transition: background var(--transition-fast);
+        }
+        
+        tbody tr:hover {
+            background: var(--bg-hover);
+        }
+        
+        /* ================================================================ */
+        /* STATUS BADGES */
+        /* ================================================================ */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: var(--radius-xl);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-evaluated {
+            background: rgba(78, 201, 176, 0.1);
+            color: var(--success);
+        }
+        
+        .status-submitted {
+            background: rgba(86, 156, 214, 0.1);
+            color: var(--accent);
+        }
+        
+        .status-generated {
+            background: rgba(220, 220, 170, 0.1);
+            color: var(--warning);
+        }
+        
+        .status-in-progress {
+            background: rgba(136, 136, 136, 0.1);
+            color: var(--text-light);
+        }
+        
+        /* ================================================================ */
+        /* BUTTONS */
+        /* ================================================================ */
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all var(--transition-fast);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            text-decoration: none;
+            font-family: var(--font-body);
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(0, 122, 204, 0.1);
+        }
+        
+        .btn-sm {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: 0.85rem;
+        }
+        
+        select.btn {
+            appearance: none;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 32px 8px 12px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2300d4ff' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+        
+        /* ================================================================ */
+        /* FORM ELEMENTS */
+        /* ================================================================ */
+        input, textarea, select {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-family: var(--font-body);
+            width: 100%;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+        }
+        
+        /* ================================================================ */
+        /* LOADING STATE */
+        /* ================================================================ */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 30, 30, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(0, 122, 204, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* ================================================================ */
+        /* RESPONSIVE */
+        /* ================================================================ */
+        @media (max-width: 1024px) {
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .grid-3 { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .grid-4,
+            .grid-3,
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: var(--spacing-md);
+                text-align: center;
+            }
+            
+            .header-right {
+                justify-content: center;
+            }
+        }
+        
+        /* ================================================================ */
+        /* ANIMATIONS */
+        /* ================================================================ */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        
+        .fade-in-delay-1 { animation-delay: 0.1s; animation-fill-mode: backwards; }
+        .fade-in-delay-2 { animation-delay: 0.2s; animation-fill-mode: backwards; }
+        .fade-in-delay-3 { animation-delay: 0.3s; animation-fill-mode: backwards; }
+        .fade-in-delay-4 { animation-delay: 0.4s; animation-fill-mode: backwards; }
+        
+        /* ================================================================ */
+        /* UTILITIES */
+        /* ================================================================ */
+        .mt-1 { margin-top: var(--spacing-sm); }
+        .mt-2 { margin-top: var(--spacing-md); }
+        .mt-3 { margin-top: var(--spacing-lg); }
+        
+        .mb-1 { margin-bottom: var(--spacing-sm); }
+        .mb-2 { margin-bottom: var(--spacing-md); }
+        .mb-3 { margin-bottom: var(--spacing-lg); }
+        
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+    
+    <div class="app-container">
+        <!-- ============================================================ -->
+        <!-- SIDEBAR -->
+        <!-- ============================================================ -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    NEP <span class="logo-accent">Parent</span>
+                </div>
+            </div>
+            
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a href="#overview" class="nav-link active" data-page="overview">
+                        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                        Overview
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#performance" class="nav-link" data-page="performance">
+                        <span class="nav-icon"><i class="fas fa-trophy"></i></span>
+                        Performance
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#competencies" class="nav-link" data-page="competencies">
+                        <span class="nav-icon"><i class="fas fa-bullseye"></i></span>
+                        Competencies
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#challenges" class="nav-link" data-page="challenges">
+                        <span class="nav-icon"><i class="fas fa-gamepad"></i></span>
+                        Challenges
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#reports" class="nav-link" data-page="reports">
+                        <span class="nav-icon"><i class="fas fa-file-alt"></i></span>
+                        Reports
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#teacher" class="nav-link" data-page="teacher">
+                        <span class="nav-icon"><i class="fas fa-chalkboard-teacher"></i></span>
+                        Teacher
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#settings" class="nav-link" data-page="settings">
+                        <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+        </aside>
+        
+        <!-- ============================================================ -->
+        <!-- MAIN CONTENT -->
+        <!-- ============================================================ -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1>Parent Dashboard</h1>
+                    <div class="breadcrumb">
+                        <span id="currentPage">Overview</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="notification-badge">
+                        <span class="notification-icon"><i class="fas fa-bell"></i></span>
+                        <span class="badge" id="notificationCount">0</span>
+                    </div>
+                    <div class="user-profile">
+                        <div class="user-avatar" id="userAvatar">P</div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName">Loading...</div>
+                            <div class="user-role">Parent</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- ============================================================ -->
+            <!-- OVERVIEW PAGE -->
+            <!-- ============================================================ -->
+            <div id="overviewPage" class="page-content">
+                <!-- Student Card & Stats -->
+                <div class="grid grid-3 mb-3">
+                    <!-- Student Card -->
+                    <div class="card student-card fade-in">
+                        <div class="student-avatar-large" id="studentAvatar">S</div>
+                        <div class="student-name" id="studentName">Loading...</div>
+                        <div class="student-details">
+                            <span class="student-detail-item">Class <span id="studentClass">-</span></span>
+                            <span class="student-detail-item">Section <span id="studentSection">-</span></span>
+                            <span class="performance-badge badge-a" id="studentGrade">A</span>
+                        </div>
+                        <div class="mt-2">
+                            <div style="font-size: 0.85rem; opacity: 0.9;">Performance Index</div>
+                            <div class="stat-value" style="color: white; font-size: 2rem;" id="studentPI">85.5</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stat Cards -->
+                    <div class="card stat-card fade-in fade-in-delay-1">
+                        <div class="stat-value" id="totalChallenges">0</div>
+                        <div class="stat-label">Total Challenges</div>
+                        <div class="stat-trend trend-up">
+                            <span><i class="fas fa-arrow-up"></i></span>
+                            <span id="challengeTrend">+5 this week</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card stat-card fade-in fade-in-delay-2">
+                        <div class="stat-value" id="passRate">0%</div>
+                        <div class="stat-label">Pass Rate</div>
+                        <div class="stat-trend trend-up">
+                            <span><i class="fas fa-arrow-up"></i></span>
+                            <span id="passRateTrend">+3% this month</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- More Stats -->
+                <div class="grid grid-4 mb-3">
+                    <div class="card stat-card fade-in fade-in-delay-3">
+                        <div class="stat-value" id="avgScore">0</div>
+                        <div class="stat-label">Avg Score</div>
+                    </div>
+                    
+                    <div class="card stat-card fade-in fade-in-delay-4">
+                        <div class="stat-value" id="currentStreak">0</div>
+                        <div class="stat-label">Current Streak</div>
+                    </div>
+                    
+                    <div class="card stat-card fade-in">
+                        <div class="stat-value" id="classRank">-</div>
+                        <div class="stat-label">Class Rank</div>
+                    </div>
+                    
+                    <div class="card stat-card fade-in">
+                        <div class="stat-value" id="percentile">0%</div>
+                        <div class="stat-label">Percentile</div>
+                    </div>
+                </div>
+                
+                <!-- Charts Row -->
+                <div class="grid grid-2 mb-3">
+                    <!-- Performance Trend -->
+                    <div class="card fade-in">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Performance Trend</div>
+                                <div class="card-subtitle">Last 20 challenges</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Competency Radar -->
+                    <div class="card fade-in fade-in-delay-1">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">NEP Competencies</div>
+                                <div class="card-subtitle">12 core skills</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="competencyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Challenges & Teacher Info -->
+                <div class="grid grid-2">
+                    <!-- Recent Challenges -->
+                    <div class="card fade-in">
+                        <div class="card-header">
+                            <div class="card-title">Recent Challenges</div>
+                            <button class="btn btn-secondary btn-sm" onclick="switchPage('challenges')">View All</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Difficulty</th>
+                                        <th>Score</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentChallengesTable">
+                                    <tr>
+                                        <td colspan="4" class="text-center">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Teacher Card -->
+                    <div class="card fade-in fade-in-delay-1">
+                        <div class="card-header">
+                            <div class="card-title">Teacher Information</div>
+                            <button class="btn btn-secondary btn-sm" onclick="switchPage('teacher')">Contact</button>
+                        </div>
+                        <div id="teacherInfo">
+                            <div class="text-center" style="padding: 2rem;">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ============================================================ -->
+            <!-- PERFORMANCE PAGE -->
+            <!-- ============================================================ -->
+            <div id="performancePage" class="page-content hidden">
+                <div class="grid grid-3 mb-3">
+                    <div class="card">
+                        <div class="card-title">Total Completed</div>
+                        <div class="stat-value" id="perfTotalChallenges">0</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Pass Rate</div>
+                        <div class="stat-value" id="perfPassRate">0%</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Average Score</div>
+                        <div class="stat-value" id="perfAvgScore">0</div>
+                    </div>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-title">Performance Over Time</div>
+                    <div class="chart-container">
+                        <canvas id="performanceDetailChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Competency Breakdown</div>
+                    <div id="competencyList"></div>
+                </div>
+            </div>
+            
+            <!-- ============================================================ -->
+            <!-- COMPETENCIES PAGE -->
+            <!-- ============================================================ -->
+            <div id="competenciesPage" class="page-content hidden">
+                <div class="card mb-3">
+                    <div class="card-title">Competency Analysis</div>
+                    <div class="chart-container">
+                        <canvas id="competencyDetailChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-title">Strong Areas</div>
+                        <div id="strongCompetencies"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Areas for Improvement</div>
+                        <div id="weakCompetencies"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ============================================================ -->
+            <!-- CHALLENGES PAGE -->
+            <!-- ============================================================ -->
+            <div id="challengesPage" class="page-content hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">All Challenges</div>
+                        <div>
+                            <select id="challengeFilter" class="btn btn-secondary btn-sm">
+                                <option value="">All Status</option>
+                                <option value="evaluated">Evaluated</option>
+                                <option value="submitted">Submitted</option>
+                                <option value="generated">Generated</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Challenge ID</th>
+                                    <th>Type</th>
+                                    <th>Difficulty</th>
+                                    <th>Score</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allChallengesTable">
+                                <tr>
+                                    <td colspan="6" class="text-center">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ============================================================ -->
+            <!-- REPORTS PAGE -->
+            <!-- ============================================================ -->
+            <div id="reportsPage" class="page-content hidden">
+                <div class="grid grid-3 mb-3">
+                    <div class="card">
+                        <div class="card-title">Weekly Report</div>
+                        <button class="btn btn-primary mt-2" onclick="loadWeeklyReport()">View Report</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Monthly Report</div>
+                        <button class="btn btn-primary mt-2" onclick="loadMonthlyReport()">View Report</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">NEP Reports</div>
+                        <button class="btn btn-primary mt-2" onclick="loadNEPReports()">View Reports</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Report History</div>
+                    <div id="reportsList"></div>
+                </div>
+            </div>
+            
+            <!-- ============================================================ -->
+            <!-- TEACHER PAGE -->
+            <!-- ============================================================ -->
+            <div id="teacherPage" class="page-content hidden">
+                <div class="grid grid-2 mb-3">
+                    <div class="card">
+                        <div class="card-title">Teacher Details</div>
+                        <div id="teacherDetails">Loading...</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Send Message</div>
+                        <form id="messageForm" onsubmit="sendMessage(event)">
+                            <div class="mb-2">
+                                <input type="text" id="messageSubject" placeholder="Subject" required>
+                            </div>
+                            <div class="mb-2">
+                                <textarea id="messageBody" placeholder="Your message..." rows="5" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Communication History</div>
+                    <div id="messageHistory"></div>
+                </div>
+            </div>
+            
+            <!-- ============================================================ -->
+            <!-- SETTINGS PAGE -->
+            <!-- ============================================================ -->
+            <div id="settingsPage" class="page-content hidden">
+                <div class="card">
+                    <div class="card-title">Notification Preferences</div>
+                    <div id="notificationSettings"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // ================================================================
+        // CONFIGURATION
+        // ================================================================
+        const API_BASE_URL = 'http://localhost:3000/api';
+        let authToken = localStorage.getItem('parentToken');
+        let dashboardData = null;
+        let performanceChartInstance = null;
+        let competencyChartInstance = null;
+        
+        // ================================================================
+        // API HELPER
+        // ================================================================
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`,
+                        ...options.headers
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'API request failed');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('API Error:', error);
+                if (error.message.includes('401') || error.message.includes('token')) {
+                    // Redirect to login
+                    window.location.href = '/login.html';
+                }
+                throw error;
+            }
+        }
+        
+        // ================================================================
+        // NAVIGATION
+        // ================================================================
+        function switchPage(pageName) {
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.add('hidden');
+            });
+            
+            // Show selected page
+            const targetPage = document.getElementById(`${pageName}Page`);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+            }
+            
+            // Update nav active state
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            const activeLink = document.querySelector(`[data-page="${pageName}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+            
+            // Update breadcrumb
+            document.getElementById('currentPage').textContent = 
+                pageName.charAt(0).toUpperCase() + pageName.slice(1);
+            
+            // Load page-specific data
+            loadPageData(pageName);
+        }
+        
+        // Add click handlers to nav links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageName = link.dataset.page;
+                switchPage(pageName);
+            });
+        });
+        
+        // ================================================================
+        // LOAD PAGE DATA
+        // ================================================================
+        async function loadPageData(pageName) {
+            showLoading();
+            
+            try {
+                switch(pageName) {
+                    case 'overview':
+                        await loadDashboard();
+                        break;
+                    case 'performance':
+                        await loadPerformanceData();
+                        break;
+                    case 'competencies':
+                        await loadCompetencies();
+                        break;
+                    case 'challenges':
+                        await loadAllChallenges();
+                        break;
+                    case 'reports':
+                        await loadReports();
+                        break;
+                    case 'teacher':
+                        await loadTeacherInfo();
+                        break;
+                    case 'settings':
+                        await loadSettings();
+                        break;
+                }
+            } catch (error) {
+                console.error('Error loading page data:', error);
+                alert('Error loading data: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // ================================================================
+        // DASHBOARD - OVERVIEW
+        // ================================================================
+        async function loadDashboard() {
+            const data = await apiCall('/parent/dashboard');
+            dashboardData = data.data;
+            
+            // Update user info
+            document.getElementById('userName').textContent = dashboardData.parent.name;
+            document.getElementById('userAvatar').textContent = 
+                dashboardData.parent.name.charAt(0).toUpperCase();
+            
+            // Update student card
+            const student = dashboardData.student;
+            document.getElementById('studentName').textContent = student.name;
+            document.getElementById('studentClass').textContent = student.class;
+            document.getElementById('studentSection').textContent = student.section;
+            document.getElementById('studentPI').textContent = student.performanceIndex.toFixed(1);
+            document.getElementById('studentGrade').textContent = student.grade;
+            document.getElementById('studentAvatar').textContent = student.name.charAt(0).toUpperCase();
+            
+            // Set grade badge class
+            const gradeBadge = document.getElementById('studentGrade');
+            gradeBadge.className = `performance-badge badge-${student.grade.toLowerCase()}`;
+            
+            // Update statistics
+            const stats = dashboardData.statistics;
+            document.getElementById('totalChallenges').textContent = stats.totalChallenges;
+            document.getElementById('passRate').textContent = stats.passRate.toFixed(1) + '%';
+            document.getElementById('avgScore').textContent = stats.averageScore.toFixed(1);
+            document.getElementById('currentStreak').textContent = stats.currentStreak;
+            
+            // Update notifications
+            document.getElementById('notificationCount').textContent = dashboardData.notifications || 0;
+            
+            // Load comparison data
+            await loadComparisonData();
+            
+            // Update recent challenges table
+            updateRecentChallengesTable(dashboardData.recentChallenges);
+            
+            // Update teacher card
+            if (dashboardData.teacher) {
+                updateTeacherCard(dashboardData.teacher);
+            }
+            
+            // Load and render charts
+            await loadPerformanceChart();
+            await loadCompetencyChart();
+        }
+        
+        // ================================================================
+        // COMPARISON DATA
+        // ================================================================
+        async function loadComparisonData() {
+            try {
+                const data = await apiCall('/parent/child/reports/comparison');
+                const comparison = data.data.comparison;
+                
+                document.getElementById('classRank').textContent = comparison.classRank;
+                document.getElementById('percentile').textContent = 
+                    comparison.percentile.toFixed(1) + '%';
+            } catch (error) {
+                console.error('Error loading comparison:', error);
+            }
+        }
+        
+        // ================================================================
+        // PERFORMANCE CHART
+        // ================================================================
+        async function loadPerformanceChart() {
+            try {
+                const data = await apiCall('/parent/child/performance');
+                const trend = data.data.trend;
+                
+                const ctx = document.getElementById('performanceChart').getContext('2d');
+                
+                // Destroy existing chart
+                if (performanceChartInstance) {
+                    performanceChartInstance.destroy();
+                }
+                
+                performanceChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: trend.map(t => new Date(t.date).toLocaleDateString()),
+                        datasets: [{
+                            label: 'Score',
+                            data: trend.map(t => t.score),
+                            borderColor: '#00d4ff',
+                            backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#007acc',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#cccccc'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#cccccc'
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading performance chart:', error);
+            }
+        }
+        
+        // ================================================================
+        // COMPETENCY CHART
+        // ================================================================
+        async function loadCompetencyChart() {
+            try {
+                const data = await apiCall('/parent/child/competencies');
+                const competencies = data.data.competencies;
+                
+                const ctx = document.getElementById('competencyChart').getContext('2d');
+                
+                // Destroy existing chart
+                if (competencyChartInstance) {
+                    competencyChartInstance.destroy();
+                }
+                
+                const labels = Object.keys(competencies).map(key => 
+                    key.replace(/([A-Z])/g, ' $1').trim()
+                );
+                const scores = Object.values(competencies).map(comp => comp.currentScore);
+                
+                competencyChartInstance = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Score',
+                            data: scores,
+                            borderColor: '#4ec9b0',
+                            backgroundColor: 'rgba(78, 201, 176, 0.2)',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#4ec9b0'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                angleLines: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                pointLabels: {
+                                    color: '#cccccc'
+                                },
+                                ticks: {
+                                    color: '#cccccc',
+                                    backdropColor: 'transparent'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading competency chart:', error);
+            }
+        }
+        
+        // ================================================================
+        // RECENT CHALLENGES TABLE
+        // ================================================================
+        function updateRecentChallengesTable(challenges) {
+            const tbody = document.getElementById('recentChallengesTable');
+            
+            if (!challenges || challenges.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">No challenges yet</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = challenges.map(challenge => `
+                <tr>
+                    <td>${challenge.simulationType}</td>
+                    <td>${challenge.difficulty}</td>
+                    <td>${challenge.results?.totalScore || 'N/A'}</td>
+                    <td><span class="status-badge status-${challenge.status}">${challenge.status}</span></td>
+                </tr>
+            `).join('');
+        }
+        
+        // ================================================================
+        // TEACHER CARD
+        // ================================================================
+        function updateTeacherCard(teacher) {
+            const html = `
+                <div style="padding: 1rem;">
+                    <h3 style="margin-bottom: 0.5rem; color: var(--secondary);">${teacher.name}</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                        ${teacher.subjects.join(', ')}
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div><i class="fas fa-envelope"></i> ${teacher.email}</div>
+                        <div><i class="fas fa-phone"></i> ${teacher.phone}</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('teacherInfo').innerHTML = html;
+        }
+        
+        // ================================================================
+        // PERFORMANCE PAGE
+        // ================================================================
+        async function loadPerformanceData() {
+            const data = await apiCall('/parent/child/performance');
+            const perf = data.data.performance;
+            
+            document.getElementById('perfTotalChallenges').textContent = perf.totalChallenges;
+            document.getElementById('perfPassRate').textContent = perf.passRate.toFixed(1) + '%';
+            document.getElementById('perfAvgScore').textContent = perf.averageScore.toFixed(1);
+            
+            // Load detailed performance chart
+            const trend = data.data.trend;
+            const ctx = document.getElementById('performanceDetailChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: trend.map(t => new Date(t.date).toLocaleDateString()),
+                    datasets: [{
+                        label: 'Score',
+                        data: trend.map(t => t.score),
+                        borderColor: '#00d4ff',
+                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#cccccc'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#cccccc'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Display competency list
+            const competencies = data.data.competencies.all;
+            const competencyHTML = Object.entries(competencies).map(([key, value]) => `
+                <div style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid var(--border-color);">
+                    <span>${key}</span>
+                    <span style="font-weight: 600; color: var(--secondary);">${value}</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('competencyList').innerHTML = competencyHTML;
+        }
+        
+        // ================================================================
+        // COMPETENCIES PAGE
+        // ================================================================
+        async function loadCompetencies() {
+            const data = await apiCall('/parent/child/competencies');
+            const competencies = data.data.competencies;
+            
+            // Load detail chart
+            const ctx = document.getElementById('competencyDetailChart').getContext('2d');
+            
+            const labels = Object.keys(competencies);
+            const scores = Object.values(competencies).map(c => c.currentScore);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Score',
+                        data: scores,
+                        backgroundColor: '#007acc',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#cccccc'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#cccccc'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Display strong competencies
+            const strong = data.data.strong;
+            const strongHTML = strong.map(comp => `
+                <div style="padding: 1rem; border-bottom: 1px solid var(--border-color);">
+                    <div style="font-weight: 600; color: var(--success);">${comp}</div>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Score: ${competencies[comp].currentScore}
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('strongCompetencies').innerHTML = strongHTML || 'No data';
+            
+            // Display weak competencies
+            const weak = data.data.weak;
+            const weakHTML = weak.map(comp => `
+                <div style="padding: 1rem; border-bottom: 1px solid var(--border-color);">
+                    <div style="font-weight: 600; color: var(--danger);">${comp}</div>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Score: ${competencies[comp].currentScore}
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('weakCompetencies').innerHTML = weakHTML || 'No data';
+        }
+        
+        // ================================================================
+        // ALL CHALLENGES
+        // ================================================================
+        async function loadAllChallenges() {
+            const filter = document.getElementById('challengeFilter').value;
+            const endpoint = filter ? `/parent/child/challenges?status=${filter}` : '/parent/child/challenges';
+            
+            const data = await apiCall(endpoint);
+            const challenges = data.data.challenges;
+            
+            const tbody = document.getElementById('allChallengesTable');
+            
+            if (!challenges || challenges.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No challenges found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = challenges.map(challenge => `
+                <tr>
+                    <td>${challenge.challengeId}</td>
+                    <td>${challenge.simulationType}</td>
+                    <td>${challenge.difficulty}</td>
+                    <td>${challenge.results?.totalScore || 'N/A'}</td>
+                    <td><span class="status-badge status-${challenge.status}">${challenge.status}</span></td>
+                    <td>${new Date(challenge.generatedAt).toLocaleDateString()}</td>
+                </tr>
+            `).join('');
+        }
+        
+        // Add change handler for filter
+        document.getElementById('challengeFilter').addEventListener('change', loadAllChallenges);
+        
+        // ================================================================
+        // REPORTS
+        // ================================================================
+        async function loadReports() {
+            try {
+                const data = await apiCall('/parent/child/reports/nep');
+                const reports = data.data.reports;
+                
+                const html = reports.map(report => `
+                    <div style="padding: 1rem; border-bottom: 1px solid var(--border-color);">
+                        <div style="font-weight: 600; color: var(--secondary);">${report.reportId}</div>
+                        <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                            ${report.reportType} - ${new Date(report.generatedAt).toLocaleDateString()}
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('reportsList').innerHTML = html || 'No reports available';
+            } catch (error) {
+                document.getElementById('reportsList').innerHTML = 'Error loading reports';
+            }
+        }
+        
+        async function loadWeeklyReport() {
+            const data = await apiCall('/parent/child/reports/weekly');
+            alert(JSON.stringify(data.data, null, 2));
+        }
+        
+        async function loadMonthlyReport() {
+            const data = await apiCall('/parent/child/reports/monthly');
+            alert(JSON.stringify(data.data, null, 2));
+        }
+        
+        async function loadNEPReports() {
+            switchPage('reports');
+        }
+        
+        // ================================================================
+        // TEACHER INFO & MESSAGING
+        // ================================================================
+        async function loadTeacherInfo() {
+            const data = await apiCall('/parent/teacher');
+            const teacher = data.data.teacher;
+            
+            const html = `
+                <div style="padding: 1rem;">
+                    <h3 style="margin-bottom: 1rem; color: var(--secondary);">${teacher.name}</h3>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <strong>Subjects:</strong> ${teacher.subjects.join(', ')}
+                        </div>
+                        <div>
+                            <strong>Email:</strong> ${teacher.email}
+                        </div>
+                        <div>
+                            <strong>Phone:</strong> ${teacher.phone}
+                        </div>
+                        <div>
+                            <strong>Qualification:</strong> ${teacher.qualification}
+                        </div>
+                        <div>
+                            <strong>Experience:</strong> ${teacher.experience} years
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('teacherDetails').innerHTML = html;
+            
+            // Load message history
+            const messages = await apiCall('/parent/teacher/messages');
+            const messageHTML = messages.data.messages.map(msg => `
+                <div style="padding: 1rem; border-bottom: 1px solid var(--border-color);">
+                    <div style="font-weight: 600;">${msg.subject}</div>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                        ${new Date(msg.createdAt).toLocaleDateString()} - 
+                        <span class="status-badge status-${msg.status}">${msg.status}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('messageHistory').innerHTML = messageHTML || 'No messages yet';
+        }
+        
+        async function sendMessage(event) {
+            event.preventDefault();
+            
+            const subject = document.getElementById('messageSubject').value;
+            const message = document.getElementById('messageBody').value;
+            
+            try {
+                await apiCall('/parent/teacher/message', {
+                    method: 'POST',
+                    body: JSON.stringify({ subject, message })
+                });
+                
+                alert('Message sent successfully!');
+                document.getElementById('messageForm').reset();
+                loadTeacherInfo();
+            } catch (error) {
+                alert('Error sending message: ' + error.message);
+            }
+        }
+        
+        // ================================================================
+        // SETTINGS
+        // ================================================================
+        async function loadSettings() {
+            const data = await apiCall('/parent/settings/notifications');
+            const prefs = data.data.preferences;
+            
+            const html = `
+                <div style="padding: 1rem;">
+                    <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+                        <input type="checkbox" id="enabled" ${prefs.enabled ? 'checked' : ''} onchange="updateSetting('enabled', this.checked)" style="width: auto;">
+                        <label for="enabled">Enable Notifications</label>
+                    </div>
+                    <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+                        <input type="checkbox" id="email" ${prefs.email ? 'checked' : ''} onchange="updateSetting('email', this.checked)" style="width: auto;">
+                        <label for="email">Email Notifications</label>
+                    </div>
+                    <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+                        <input type="checkbox" id="challengeCompleted" ${prefs.challengeCompleted ? 'checked' : ''} onchange="updateSetting('challengeCompleted', this.checked)" style="width: auto;">
+                        <label for="challengeCompleted">Challenge Completed</label>
+                    </div>
+                    <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+                        <input type="checkbox" id="weeklyReport" ${prefs.weeklyReport ? 'checked' : ''} onchange="updateSetting('weeklyReport', this.checked)" style="width: auto;">
+                        <label for="weeklyReport">Weekly Report</label>
+                    </div>
+                    <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+                        <input type="checkbox" id="monthlyReport" ${prefs.monthlyReport ? 'checked' : ''} onchange="updateSetting('monthlyReport', this.checked)" style="width: auto;">
+                        <label for="monthlyReport">Monthly Report</label>
+                    </div>
+                    <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+                        <input type="checkbox" id="performanceAlert" ${prefs.performanceAlert ? 'checked' : ''} onchange="updateSetting('performanceAlert', this.checked)" style="width: auto;">
+                        <label for="performanceAlert">Performance Alerts</label>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('notificationSettings').innerHTML = html;
+        }
+        
+        async function updateSetting(key, value) {
+            try {
+                await apiCall('/parent/settings/notifications', {
+                    method: 'PUT',
+                    body: JSON.stringify({ [key]: value })
+                });
+            } catch (error) {
+                alert('Error updating setting: ' + error.message);
+            }
+        }
+        
+        // ================================================================
+        // LOADING STATE
+        // ================================================================
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+        
+        // ================================================================
+        // INITIALIZATION
+        // ================================================================
+        async function init() {
+            // Check if user is logged in
+            if (!authToken) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // Load initial page
+            await loadDashboard();
+            hideLoading();
+        }
+        
+        // Start application
+        init();
+    </script>
+</body>
+</html>

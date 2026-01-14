@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Light Path Visualizer - NEP Workbench</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root {
+            --bg: #1e1e1e; --panel: #252526; --header: #333337; --border: #464647;
+            --accent: #007acc; --success: #00b894; --error: #ff4444; --text: #ffffff;
+        }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: var(--header); border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .subtitle { font-size: 14px; color: #888; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn:hover { transform: translateY(-2px); }
+        .main { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .workspace, .sidebar { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid var(--border); }
+        .canvas-container { 
+            background: #000; 
+            border-radius: 6px; 
+            height: 500px; 
+            position: relative; 
+            border: 1px solid var(--border); 
+            margin: 20px 0; 
+        }
+        canvas { width: 100%; height: 100%; display: block; }
+        .controls { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
+        .control-group { display: flex; flex-direction: column; gap: 8px; }
+        label { font-size: 13px; color: #888; }
+        input, select { padding: 10px; background: #2d2d30; border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 14px; }
+        input:focus, select:focus { outline: none; border-color: var(--accent); }
+        input[type="range"] { -webkit-appearance: none; height: 8px; background: #2d2d30; border-radius: 4px; padding: 0; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+        input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; border: none; }
+        .tool-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+        .tool-btn { padding: 15px; background: #2d2d30; border: 2px solid var(--border); border-radius: 6px; cursor: pointer; text-align: center; transition: all 0.3s; }
+        .tool-btn:hover { border-color: var(--accent); background: #3d3d40; }
+        .tool-btn.active { background: var(--accent); border-color: var(--accent); }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
+        .stat { background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center; }
+        .stat-value { font-size: 24px; font-weight: 600; color: var(--accent); }
+        .stat-label { font-size: 12px; color: #888; margin-top: 5px; }
+        @media (max-width: 1024px) { .main { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-lightbulb"></i> Light Path Visualizer</h1>
+                <div class="subtitle">Physics Lab • Grade 7-8 • Ray Optics</div>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <span><i class="fas fa-mouse-pointer"></i> <span id="actions">0</span></span>
+                <button class="btn btn-primary" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn btn-success" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="workspace">
+                <h2 style="margin-bottom: 15px;">Ray Optics Workspace</h2>
+                
+                <div class="tool-grid">
+                    <div class="tool-btn active" onclick="selectTool('mirror')" id="tool-mirror">
+                        <i class="fas fa-mirror" style="font-size: 24px; display: block; margin-bottom: 8px;"></i>
+                        Mirror
+                    </div>
+                    <div class="tool-btn" onclick="selectTool('lens')" id="tool-lens">
+                        <i class="fas fa-circle" style="font-size: 24px; display: block; margin-bottom: 8px;"></i>
+                        Lens
+                    </div>
+                    <div class="tool-btn" onclick="selectTool('prism')" id="tool-prism">
+                        <i class="fas fa-shapes" style="font-size: 24px; display: block; margin-bottom: 8px;"></i>
+                        Prism
+                    </div>
+                </div>
+                
+                <div class="canvas-container">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Light Source Angle</label>
+                        <input type="range" min="0" max="90" value="45" id="angle" oninput="updateAngle()">
+                        <span id="angleVal" style="color: var(--accent); font-weight: 600;">45°</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Refractive Index</label>
+                        <input type="number" min="1" max="2.5" step="0.1" value="1.5" id="refIndex" oninput="update()">
+                    </div>
+                    <div class="control-group">
+                        <label>Object Type</label>
+                        <select id="objType" onchange="changeType()">
+                            <option value="plane">Plane</option>
+                            <option value="concave">Concave</option>
+                            <option value="convex">Convex</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="traceRay()">
+                            <i class="fas fa-play"></i> Trace Ray
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-lightbulb"></i> Properties</h2>
+                <div style="background: #2d2d30; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                    <div><strong>Incident Angle:</strong> <span id="incidentAngle">45°</span></div>
+                    <div style="margin-top: 10px;"><strong>Reflected Angle:</strong> <span id="reflectedAngle">45°</span></div>
+                    <div style="margin-top: 10px;"><strong>Refracted Angle:</strong> <span id="refractedAngle">28.1°</span></div>
+                    <div style="margin-top: 10px;"><strong>Total Rays:</strong> <span id="rayCount">0</span></div>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Laws Applied</h3>
+                <div style="background: #2d2d30; padding: 15px; border-radius: 6px; font-size: 13px; line-height: 1.6;">
+                    <div><i class="fas fa-check" style="color: var(--success);"></i> Law of Reflection</div>
+                    <div style="margin-top: 8px;"><i class="fas fa-check" style="color: var(--success);"></i> Snell's Law</div>
+                    <div style="margin-top: 8px;"><i class="fas fa-info-circle" style="color: var(--accent);"></i> θᵢ = θᵣ</div>
+                    <div style="margin-top: 8px;"><i class="fas fa-info-circle" style="color: var(--accent);"></i> n₁sinθ₁ = n₂sinθ₂</div>
+                </div>
+                
+                <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="reset()">
+                    <i class="fas fa-redo"></i> Reset Simulation
+                </button>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat"><div class="stat-value" id="statRays">0</div><div class="stat-label">Rays Traced</div></div>
+            <div class="stat"><div class="stat-value" id="statTools">0</div><div class="stat-label">Tools Used</div></div>
+            <div class="stat"><div class="stat-value" id="statAngles">0</div><div class="stat-label">Angles Tested</div></div>
+            <div class="stat"><div class="stat-value" id="statIndex">0</div><div class="stat-label">Index Changes</div></div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        
+        let eventId = null, sessionStart = Date.now();
+        let canvas, ctx, currentTool = 'mirror', currentType = 'plane';
+        let angle = 45, refractiveIndex = 1.5, rayCount = 0;
+        let rays = []; // Store traced rays
+        
+        let interactionData = {
+            actions_count: 0,
+            unique_tools_used: 0,
+            correct_attempts: 0,
+            incorrect_attempts: 0,
+            retry_count: 0,
+            time_seconds: 0,
+            unique_parameters_tried: 0,
+            total_parameter_space: 270,
+            tool_usage: {},
+            rays_traced: 0,
+            tools_used: [],
+            angles_tested: [],
+            refractive_indices: []
+        };
+        
+        let usedTools = new Set(), usedAngles = new Set(), usedIndices = new Set();
+        
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            
+            // FIXED: Proper canvas sizing
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            
+            console.log('Canvas initialized:', canvas.width, 'x', canvas.height);
+            
+            await initSession();
+            draw();
+            
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            
+            setInterval(saveProgress, 30000);
+            
+            console.log('✅ Light Path Visualizer initialized');
+        }
+        
+        async function initSession() {
+            if (!authToken) return;
+            try {
+                const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                const res = await fetch(`${API_BASE_URL}/student/event`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        studentId, 
+                        toolId: 'light-path-visualizer', 
+                        toolType: 'LAB', 
+                        interactionData 
+                    })
+                });
+                if (res.ok) eventId = (await res.json()).data._id;
+            } catch (err) { 
+                console.log('Event tracking not available');
+            }
+        }
+        
+        function selectTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tool-' + tool).classList.add('active');
+            
+            track('select_tool', tool);
+            usedTools.add(tool);
+            if (!interactionData.tools_used.includes(tool)) interactionData.tools_used.push(tool);
+            
+            console.log('Tool selected:', tool);
+            draw();
+        }
+        
+        function changeType() {
+            currentType = document.getElementById('objType').value;
+            track('change_type', currentType);
+            console.log('Type changed:', currentType);
+            draw();
+        }
+        
+        function updateAngle() {
+            angle = parseInt(document.getElementById('angle').value);
+            document.getElementById('angleVal').textContent = angle + '°';
+            document.getElementById('incidentAngle').textContent = angle + '°';
+            document.getElementById('reflectedAngle').textContent = angle + '°';
+            
+            // Calculate refracted angle using Snell's law
+            const n1 = 1.0; // Air
+            const n2 = refractiveIndex;
+            const theta1 = angle * Math.PI / 180;
+            
+            const sinTheta2 = (n1 * Math.sin(theta1)) / n2;
+            if (sinTheta2 <= 1) {
+                const theta2 = Math.asin(sinTheta2);
+                document.getElementById('refractedAngle').textContent = (theta2 * 180 / Math.PI).toFixed(1) + '°';
+            } else {
+                document.getElementById('refractedAngle').textContent = 'Total Internal Reflection';
+            }
+            
+            usedAngles.add(angle);
+            interactionData.angles_tested = Array.from(usedAngles);
+            track('adjust_angle');
+            draw();
+        }
+        
+        function update() {
+            refractiveIndex = parseFloat(document.getElementById('refIndex').value);
+            usedIndices.add(refractiveIndex);
+            interactionData.refractive_indices = Array.from(usedIndices);
+            track('change_index');
+            updateAngle();
+        }
+        
+        function draw() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const cx = width / 2;
+            const cy = height / 2;
+            
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Draw reference lines
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            
+            // Normal line
+            ctx.beginPath();
+            ctx.moveTo(cx - 100, 0);
+            ctx.lineTo(cx - 100, height);
+            ctx.stroke();
+            
+            ctx.setLineDash([]);
+            
+            // Draw optical object
+            ctx.strokeStyle = '#00d4ff';
+            ctx.lineWidth = 4;
+            
+            if (currentTool === 'mirror') {
+                if (currentType === 'plane') {
+                    // Plane mirror
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 100, cy - 150);
+                    ctx.lineTo(cx - 100, cy + 150);
+                    ctx.stroke();
+                    
+                    // Reflective backing
+                    ctx.strokeStyle = '#888';
+                    ctx.lineWidth = 6;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 105, cy - 150);
+                    ctx.lineTo(cx - 105, cy + 150);
+                    ctx.stroke();
+                    
+                } else if (currentType === 'concave') {
+                    // Concave mirror
+                    ctx.beginPath();
+                    ctx.arc(cx - 200, cy, 150, -0.5, 0.5);
+                    ctx.stroke();
+                    
+                } else if (currentType === 'convex') {
+                    // Convex mirror
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 150, Math.PI - 0.5, Math.PI + 0.5);
+                    ctx.stroke();
+                }
+                
+            } else if (currentTool === 'lens') {
+                // Lens
+                ctx.strokeStyle = '#00d4ff';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(cx - 120, cy, 100, -0.4, 0.4);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(cx - 80, cy, 100, Math.PI - 0.4, Math.PI + 0.4);
+                ctx.stroke();
+                
+                // Center line
+                ctx.strokeStyle = '#007acc';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(cx - 100, cy - 100);
+                ctx.lineTo(cx - 100, cy + 100);
+                ctx.stroke();
+                
+            } else if (currentTool === 'prism') {
+                // Prism
+                ctx.strokeStyle = '#00d4ff';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(cx - 150, cy - 80);
+                ctx.lineTo(cx - 50, cy + 100);
+                ctx.lineTo(cx - 250, cy + 100);
+                ctx.closePath();
+                ctx.stroke();
+                
+                ctx.fillStyle = 'rgba(0, 212, 255, 0.1)';
+                ctx.fill();
+            }
+            
+            // Draw light source
+            ctx.fillStyle = '#ffeb3b';
+            ctx.beginPath();
+            ctx.arc(cx + 150, cy - 100, 12, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Glow effect
+            ctx.strokeStyle = 'rgba(255, 235, 59, 0.5)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(cx + 150, cy - 100, 18, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Light rays from source
+            for (let i = 0; i < 8; i++) {
+                const a = (i / 8) * Math.PI * 2;
+                ctx.strokeStyle = 'rgba(255, 235, 59, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(cx + 150, cy - 100);
+                ctx.lineTo(cx + 150 + Math.cos(a) * 25, cy - 100 + Math.sin(a) * 25);
+                ctx.stroke();
+            }
+            
+            // Draw traced rays
+            rays.forEach(ray => {
+                // Incident ray
+                ctx.strokeStyle = '#ff4444';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(ray.sourceX, ray.sourceY);
+                ctx.lineTo(ray.hitX, ray.hitY);
+                ctx.stroke();
+                
+                // Reflected/Refracted ray
+                ctx.strokeStyle = ray.type === 'reflected' ? '#00ff00' : '#4444ff';
+                ctx.beginPath();
+                ctx.moveTo(ray.hitX, ray.hitY);
+                ctx.lineTo(ray.endX, ray.endY);
+                ctx.stroke();
+            });
+        }
+        
+        function traceRay() {
+            rayCount++;
+            interactionData.rays_traced++;
+            document.getElementById('rayCount').textContent = rayCount;
+            track('trace_ray', 'trace_button');
+            
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const angleRad = angle * Math.PI / 180;
+            
+            // Source position
+            const sourceX = cx + 150;
+            const sourceY = cy - 100;
+            
+            // Hit point (on object)
+            const hitX = cx - 100;
+            const hitY = cy;
+            
+            // Reflected ray calculation
+            const reflectedAngleRad = angleRad;
+            const reflectedX = hitX - 150 * Math.sin(reflectedAngleRad);
+            const reflectedY = hitY - 150 * Math.cos(reflectedAngleRad);
+            
+            rays.push({
+                sourceX,
+                sourceY,
+                hitX,
+                hitY,
+                endX: reflectedX,
+                endY: reflectedY,
+                type: 'reflected',
+                angle
+            });
+            
+            console.log('Ray traced:', rays.length);
+            draw();
+            updateStats();
+        }
+        
+        function reset() {
+            rays = [];
+            rayCount = 0;
+            document.getElementById('rayCount').textContent = 0;
+            track('reset');
+            console.log('Simulation reset');
+            draw();
+        }
+        
+        function track(action, tool = null) {
+            interactionData.actions_count++;
+            document.getElementById('actions').textContent = interactionData.actions_count;
+            if (tool) interactionData.tool_usage[tool] = (interactionData.tool_usage[tool] || 0) + 1;
+        }
+        
+        function updateStats() {
+            document.getElementById('statRays').textContent = interactionData.rays_traced;
+            document.getElementById('statTools').textContent = usedTools.size;
+            document.getElementById('statAngles').textContent = usedAngles.size;
+            document.getElementById('statIndex').textContent = usedIndices.size;
+            interactionData.unique_tools_used = usedTools.size;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`, 
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify({ interactionData })
+                });
+                console.log('Progress saved');
+            } catch (err) { 
+                console.log('Save failed:', err);
+            }
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('✅ Session completed!\nRays traced: ' + interactionData.rays_traced);
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+        
+        // Resize handler
+        window.addEventListener('resize', () => {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            draw();
+        });
+    </script>
+</body>
+</html>

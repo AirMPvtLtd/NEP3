@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symmetry Explorer - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; }
+        .main { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .canvas-area { background: #fff; border-radius: 6px; height: 550px; border: 1px solid #464647; position: relative; }
+        canvas { width: 100%; height: 100%; }
+        .shape-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
+        .shape-card { padding: 20px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; cursor: pointer; text-align: center; transition: all 0.3s; }
+        .shape-card.active { background: var(--accent); border-color: var(--accent); }
+        .toggle-btn { padding: 12px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; cursor: pointer; margin: 8px 0; transition: all 0.3s; text-align: center; }
+        .toggle-btn.active { background: var(--accent); border-color: var(--accent); }
+        input[type="color"] { width: 50px; height: 50px; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-snowflake"></i> Symmetry Explorer</h1><p style="color: #888;">Math Lab • Grade 6-7</p></div>
+            <div style="display: flex; gap: 15px;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">Symmetry Canvas</h2>
+                
+                <div class="canvas-area">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px;">
+                    <button class="btn" onclick="clearCanvas()"><i class="fas fa-eraser"></i> Clear</button>
+                    <button class="btn" onclick="mirrorX()"><i class="fas fa-arrows-alt-v"></i> Mirror X</button>
+                    <button class="btn" onclick="mirrorY()"><i class="fas fa-arrows-alt-h"></i> Mirror Y</button>
+                    <button class="btn" onclick="rotate90()"><i class="fas fa-redo"></i> Rotate</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-shapes"></i> Shapes</h2>
+                
+                <div class="shape-grid">
+                    <div class="shape-card active" onclick="selectShape('triangle')">
+                        <i class="fas fa-play" style="font-size: 32px; transform: rotate(-30deg);"></i>
+                        <div style="font-size: 11px; margin-top: 8px;">Triangle</div>
+                    </div>
+                    <div class="shape-card" onclick="selectShape('square')">
+                        <i class="fas fa-square" style="font-size: 32px;"></i>
+                        <div style="font-size: 11px; margin-top: 8px;">Square</div>
+                    </div>
+                    <div class="shape-card" onclick="selectShape('circle')">
+                        <i class="fas fa-circle" style="font-size: 32px;"></i>
+                        <div style="font-size: 11px; margin-top: 8px;">Circle</div>
+                    </div>
+                    <div class="shape-card" onclick="selectShape('hexagon')">
+                        <i class="fas fa-stop" style="font-size: 32px;"></i>
+                        <div style="font-size: 11px; margin-top: 8px;">Hexagon</div>
+                    </div>
+                    <div class="shape-card" onclick="selectShape('star')">
+                        <i class="fas fa-star" style="font-size: 32px;"></i>
+                        <div style="font-size: 11px; margin-top: 8px;">Star</div>
+                    </div>
+                    <div class="shape-card" onclick="selectShape('heart')">
+                        <i class="fas fa-heart" style="font-size: 32px;"></i>
+                        <div style="font-size: 11px; margin-top: 8px;">Heart</div>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Color</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="color" id="colorPicker" value="#e74c3c" onchange="updateColor()">
+                    <span id="colorLabel">#e74c3c</span>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Symmetry Type</h3>
+                <div class="toggle-btn active" onclick="toggleSymmetry('reflection')">
+                    <i class="fas fa-arrows-alt-v"></i> Reflection Symmetry
+                </div>
+                <div class="toggle-btn" onclick="toggleSymmetry('rotation')">
+                    <i class="fas fa-sync"></i> Rotational Symmetry
+                </div>
+                <div class="toggle-btn" onclick="toggleSymmetry('both')">
+                    <i class="fas fa-snowflake"></i> Both Types
+                </div>
+                
+                <div style="background: rgba(0, 122, 204, 0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 12px; line-height: 1.8;">
+                    <strong style="color: var(--accent);">Symmetry Types:</strong><br>
+                    • Reflection: Mirror image across a line<br>
+                    • Rotational: Same after rotation<br>
+                    • Line of symmetry: Divides shape equally
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statShapes">0</div>
+                        <div style="font-size: 12px; color: #888;">Shapes</div>
+                    </div>
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statOps">0</div>
+                        <div style="font-size: 12px; color: #888;">Operations</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now(), canvas, ctx;
+        
+        let currentShape = 'triangle', currentColor = '#e74c3c', symmetryType = 'reflection';
+        let shapes = [];
+        
+        let interactionData = {
+            actions_count: 0, time_seconds: 0, total_parameter_space: 120,
+            tool_usage: {}, shapes_drawn: 0, symmetry_operations: 0,
+            shape_types_used: new Set(['triangle']), symmetry_types_used: new Set(['reflection'])
+        };
+        
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            
+            canvas.addEventListener('click', handleCanvasClick);
+            
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, toolId: 'symmetry-explorer', toolType: 'LAB', interactionData })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {}
+            }
+            
+            drawGrid();
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            setInterval(saveProgress, 30000);
+        }
+        
+        function selectShape(shape) {
+            currentShape = shape;
+            document.querySelectorAll('.shape-card').forEach(card => card.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            interactionData.shape_types_used.add(shape);
+            interactionData.actions_count++;
+        }
+        
+        function updateColor() {
+            currentColor = document.getElementById('colorPicker').value;
+            document.getElementById('colorLabel').textContent = currentColor;
+            interactionData.actions_count++;
+        }
+        
+        function toggleSymmetry(type) {
+            symmetryType = type;
+            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            interactionData.symmetry_types_used.add(type);
+            interactionData.actions_count++;
+            redraw();
+        }
+        
+        function handleCanvasClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            shapes.push({
+                x: x,
+                y: y,
+                shape: currentShape,
+                color: currentColor,
+                size: 40
+            });
+            
+            interactionData.shapes_drawn++;
+            interactionData.actions_count++;
+            updateStats();
+            redraw();
+        }
+        
+        function clearCanvas() {
+            shapes = [];
+            redraw();
+            interactionData.actions_count++;
+        }
+        
+        function mirrorX() {
+            const mirrored = shapes.map(s => ({
+                ...s,
+                y: canvas.height - s.y
+            }));
+            shapes.push(...mirrored);
+            interactionData.symmetry_operations++;
+            interactionData.actions_count++;
+            updateStats();
+            redraw();
+        }
+        
+        function mirrorY() {
+            const mirrored = shapes.map(s => ({
+                ...s,
+                x: canvas.width - s.x
+            }));
+            shapes.push(...mirrored);
+            interactionData.symmetry_operations++;
+            interactionData.actions_count++;
+            updateStats();
+            redraw();
+        }
+        
+        function rotate90() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            const rotated = shapes.map(s => {
+                const dx = s.x - centerX;
+                const dy = s.y - centerY;
+                return {
+                    ...s,
+                    x: centerX - dy,
+                    y: centerY + dx
+                };
+            });
+            
+            shapes.push(...rotated);
+            interactionData.symmetry_operations++;
+            interactionData.actions_count++;
+            updateStats();
+            redraw();
+        }
+        
+        function drawGrid() {
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Grid lines
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Center lines (symmetry axes)
+            ctx.strokeStyle = '#007acc';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            
+            if (symmetryType === 'reflection' || symmetryType === 'both') {
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2, 0);
+                ctx.lineTo(canvas.width / 2, canvas.height);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height / 2);
+                ctx.lineTo(canvas.width, canvas.height / 2);
+                ctx.stroke();
+            }
+            
+            ctx.setLineDash([]);
+        }
+        
+        function redraw() {
+            drawGrid();
+            shapes.forEach(shape => drawShape(shape));
+        }
+        
+        function drawShape(shape) {
+            ctx.fillStyle = shape.color;
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            
+            const s = shape.size;
+            
+            if (shape.shape === 'triangle') {
+                ctx.beginPath();
+                ctx.moveTo(shape.x, shape.y - s);
+                ctx.lineTo(shape.x + s, shape.y + s);
+                ctx.lineTo(shape.x - s, shape.y + s);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            } else if (shape.shape === 'square') {
+                ctx.fillRect(shape.x - s, shape.y - s, s * 2, s * 2);
+                ctx.strokeRect(shape.x - s, shape.y - s, s * 2, s * 2);
+            } else if (shape.shape === 'circle') {
+                ctx.beginPath();
+                ctx.arc(shape.x, shape.y, s, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            } else if (shape.shape === 'hexagon') {
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = (Math.PI / 3) * i;
+                    const x = shape.x + s * Math.cos(angle);
+                    const y = shape.y + s * Math.sin(angle);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            } else if (shape.shape === 'star') {
+                ctx.beginPath();
+                for (let i = 0; i < 10; i++) {
+                    const angle = (Math.PI / 5) * i;
+                    const radius = i % 2 === 0 ? s : s / 2;
+                    const x = shape.x + radius * Math.cos(angle - Math.PI / 2);
+                    const y = shape.y + radius * Math.sin(angle - Math.PI / 2);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            } else if (shape.shape === 'heart') {
+                ctx.beginPath();
+                ctx.moveTo(shape.x, shape.y + s / 4);
+                ctx.bezierCurveTo(shape.x, shape.y, shape.x - s / 2, shape.y - s / 2, shape.x - s, shape.y + s / 3);
+                ctx.bezierCurveTo(shape.x - s, shape.y + s, shape.x, shape.y + s * 1.3, shape.x, shape.y + s * 1.3);
+                ctx.bezierCurveTo(shape.x, shape.y + s * 1.3, shape.x + s, shape.y + s, shape.x + s, shape.y + s / 3);
+                ctx.bezierCurveTo(shape.x + s / 2, shape.y - s / 2, shape.x, shape.y, shape.x, shape.y + s / 4);
+                ctx.fill();
+                ctx.stroke();
+            }
+        }
+        
+        function updateStats() {
+            document.getElementById('statShapes').textContent = interactionData.shapes_drawn;
+            document.getElementById('statOps').textContent = interactionData.symmetry_operations;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            interactionData.shape_types_used = Array.from(interactionData.shape_types_used);
+            interactionData.symmetry_types_used = Array.from(interactionData.symmetry_types_used);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactionData })
+                });
+            } catch (err) {}
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('Session completed!');
+            window.location.href = '/dashboard';
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+    </script>
+</body>
+</html>

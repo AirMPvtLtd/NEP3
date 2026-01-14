@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reflection Journal - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; --success: #00b894; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; margin-bottom: 20px; }
+        .prompt-card { background: #2d2d30; padding: 20px; border-radius: 6px; border-left: 4px solid var(--accent); margin: 15px 0; }
+        .prompt-title { font-weight: 600; margin-bottom: 10px; color: var(--accent); }
+        .prompt-text { color: #aaa; line-height: 1.6; font-size: 14px; }
+        textarea { width: 100%; padding: 15px; background: #2d2d30; border: 1px solid #464647; border-radius: 4px; color: #fff; min-height: 150px; font-size: 14px; line-height: 1.6; resize: vertical; font-family: 'Segoe UI', sans-serif; }
+        textarea:focus { outline: none; border-color: var(--accent); }
+        .entry-list { display: grid; gap: 15px; }
+        .entry-item { background: #2d2d30; padding: 15px; border-radius: 6px; border-left: 4px solid var(--success); }
+        .entry-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; color: #888; }
+        .entry-content { color: #ddd; line-height: 1.6; }
+        .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
+        .tag { background: var(--accent); padding: 6px 12px; border-radius: 15px; font-size: 12px; cursor: pointer; }
+        .mood-selector { display: flex; gap: 10px; justify-content: center; margin: 20px 0; }
+        .mood-btn { font-size: 32px; cursor: pointer; padding: 10px; border-radius: 50%; transition: all 0.3s; }
+        .mood-btn:hover { transform: scale(1.2); background: #2d2d30; }
+        .mood-btn.selected { background: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-book"></i> Reflection Journal</h1><p style="color: #888;">Cross-curricular • Self-Direction</p></div>
+            <div style="display: flex; gap: 15px;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2 style="margin-bottom: 15px;"><i class="fas fa-pen"></i> Daily Reflection</h2>
+            
+            <div class="prompt-card">
+                <div class="prompt-title">Today's Learning Prompt</div>
+                <div class="prompt-text" id="todayPrompt">What did you learn today that surprised you?</div>
+            </div>
+            
+            <h3 style="margin: 20px 0 10px; color: #888; font-size: 14px;">How are you feeling about your learning today?</h3>
+            <div class="mood-selector">
+                <div class="mood-btn" onclick="selectMood('excited')" title="Excited">😃</div>
+                <div class="mood-btn" onclick="selectMood('happy')" title="Happy">😊</div>
+                <div class="mood-btn" onclick="selectMood('neutral')" title="Neutral">😐</div>
+                <div class="mood-btn" onclick="selectMood('confused')" title="Confused">😕</div>
+                <div class="mood-btn" onclick="selectMood('frustrated')" title="Frustrated">😣</div>
+            </div>
+            
+            <h3 style="margin: 20px 0 10px; color: #888; font-size: 14px;">Your Reflection</h3>
+            <textarea id="reflectionText" placeholder="Write your thoughts here... What went well? What was challenging? What questions do you still have?"></textarea>
+            
+            <h3 style="margin: 20px 0 10px; color: #888; font-size: 14px;">Tags (optional)</h3>
+            <div class="tag-cloud">
+                <div class="tag" onclick="toggleTag('Physics')">Physics</div>
+                <div class="tag" onclick="toggleTag('Math')">Math</div>
+                <div class="tag" onclick="toggleTag('Science')">Science</div>
+                <div class="tag" onclick="toggleTag('Experiment')">Experiment</div>
+                <div class="tag" onclick="toggleTag('Question')">Question</div>
+                <div class="tag" onclick="toggleTag('Achievement')">Achievement</div>
+                <div class="tag" onclick="toggleTag('Challenge')">Challenge</div>
+            </div>
+            
+            <button class="btn" style="width: 100%; margin-top: 15px;" onclick="submitEntry()">
+                <i class="fas fa-check-circle"></i> Save Entry
+            </button>
+        </div>
+        
+        <div class="panel">
+            <h2 style="margin-bottom: 15px;"><i class="fas fa-history"></i> Previous Entries</h2>
+            <div class="entry-list" id="entryList">
+                <div style="text-align: center; color: #666; padding: 40px;">
+                    <i class="fas fa-book-open" style="font-size: 48px; margin-bottom: 15px;"></i>
+                    <p>No entries yet. Start your first reflection!</p>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+            <div style="background: var(--panel); padding: 15px; border-radius: 6px; text-align: center;">
+                <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statEntries">0</div>
+                <div style="font-size: 12px; color: #888;">Entries</div>
+            </div>
+            <div style="background: var(--panel); padding: 15px; border-radius: 6px; text-align: center;">
+                <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statStreak">0</div>
+                <div style="font-size: 12px; color: #888;">Day Streak</div>
+            </div>
+            <div style="background: var(--panel); padding: 15px; border-radius: 6px; text-align: center;">
+                <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statWords">0</div>
+                <div style="font-size: 12px; color: #888;">Total Words</div>
+            </div>
+            <div style="background: var(--panel); padding: 15px; border-radius: 6px; text-align: center;">
+                <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statTags">0</div>
+                <div style="font-size: 12px; color: #888;">Tags Used</div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now();
+        
+        const prompts = [
+            'What did you learn today that surprised you?',
+            'What was the most challenging part of today\'s learning?',
+            'How did you overcome a difficulty today?',
+            'What question do you still have after today?',
+            'What connections did you make today?',
+            'What would you like to explore more deeply?',
+            'How did you help a classmate or get help today?',
+            'What skill did you improve today?'
+        ];
+        
+        let selectedMood = null, selectedTags = [], entries = [];
+        let interactionData = {
+            actions_count: 0, time_seconds: 0, total_parameter_space: 100,
+            tool_usage: {}, entries_written: 0, words_written: 0, tags_used: new Set(), moods_selected: []
+        };
+        
+        async function init() {
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, toolId: 'reflection-journal', toolType: 'REFLECTION', interactionData })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {}
+            }
+            
+            document.getElementById('todayPrompt').textContent = prompts[Math.floor(Math.random() * prompts.length)];
+            loadEntries();
+            
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            setInterval(saveProgress, 30000);
+        }
+        
+        function selectMood(mood) {
+            document.querySelectorAll('.mood-btn').forEach(btn => btn.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            selectedMood = mood;
+            interactionData.moods_selected.push(mood);
+            interactionData.actions_count++;
+        }
+        
+        function toggleTag(tag) {
+            const index = selectedTags.indexOf(tag);
+            if (index > -1) {
+                selectedTags.splice(index, 1);
+                event.currentTarget.style.opacity = '1';
+            } else {
+                selectedTags.push(tag);
+                event.currentTarget.style.opacity = '0.6';
+                interactionData.tags_used.add(tag);
+            }
+            interactionData.actions_count++;
+        }
+        
+        function submitEntry() {
+            const text = document.getElementById('reflectionText').value.trim();
+            
+            if (!text) {
+                alert('Please write something in your reflection.');
+                return;
+            }
+            
+            const entry = {
+                text,
+                mood: selectedMood,
+                tags: [...selectedTags],
+                timestamp: new Date().toISOString(),
+                wordCount: text.split(/\s+/).length
+            };
+            
+            entries.unshift(entry);
+            interactionData.entries_written++;
+            interactionData.words_written += entry.wordCount;
+            interactionData.tool_usage['submit'] = (interactionData.tool_usage['submit'] || 0) + 1;
+            
+            // Save to localStorage
+            localStorage.setItem('journalEntries', JSON.stringify(entries));
+            
+            displayEntries();
+            updateStats();
+            
+            // Clear form
+            document.getElementById('reflectionText').value = '';
+            selectedMood = null;
+            selectedTags = [];
+            document.querySelectorAll('.mood-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelectorAll('.tag').forEach(tag => tag.style.opacity = '1');
+            
+            // New prompt
+            document.getElementById('todayPrompt').textContent = prompts[Math.floor(Math.random() * prompts.length)];
+        }
+        
+        function loadEntries() {
+            const stored = localStorage.getItem('journalEntries');
+            if (stored) {
+                entries = JSON.parse(stored);
+                displayEntries();
+                updateStats();
+            }
+        }
+        
+        function displayEntries() {
+            const list = document.getElementById('entryList');
+            
+            if (entries.length === 0) {
+                list.innerHTML = `
+                    <div style="text-align: center; color: #666; padding: 40px;">
+                        <i class="fas fa-book-open" style="font-size: 48px; margin-bottom: 15px;"></i>
+                        <p>No entries yet. Start your first reflection!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = entries.slice(0, 10).map((entry, i) => `
+                <div class="entry-item">
+                    <div class="entry-header">
+                        <span>${new Date(entry.timestamp).toLocaleString()}</span>
+                        <span>${entry.mood ? getMoodEmoji(entry.mood) : ''} ${entry.wordCount} words</span>
+                    </div>
+                    <div class="entry-content">${entry.text}</div>
+                    ${entry.tags.length ? `<div style="margin-top: 10px; font-size: 12px; color: #888;">Tags: ${entry.tags.join(', ')}</div>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        function getMoodEmoji(mood) {
+            const moods = { excited: '😃', happy: '😊', neutral: '😐', confused: '😕', frustrated: '😣' };
+            return moods[mood] || '😐';
+        }
+        
+        function updateStats() {
+            document.getElementById('statEntries').textContent = interactionData.entries_written;
+            document.getElementById('statStreak').textContent = calculateStreak();
+            document.getElementById('statWords').textContent = interactionData.words_written;
+            document.getElementById('statTags').textContent = interactionData.tags_used.size;
+        }
+        
+        function calculateStreak() {
+            if (entries.length === 0) return 0;
+            
+            let streak = 1;
+            const today = new Date().toDateString();
+            
+            for (let i = 0; i < entries.length - 1; i++) {
+                const date1 = new Date(entries[i].timestamp).toDateString();
+                const date2 = new Date(entries[i + 1].timestamp).toDateString();
+                
+                const diff = (new Date(date1) - new Date(date2)) / (1000 * 60 * 60 * 24);
+                
+                if (diff <= 1) streak++;
+                else break;
+            }
+            
+            return streak;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            interactionData.tags_used = Array.from(interactionData.tags_used);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactionData })
+                });
+            } catch (err) {}
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('Session completed!');
+            window.location.href = '/dashboard';
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+    </script>
+</body>
+</html>

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magnetic Field Visualizer - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; font-size: 13px; }
+        .main { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .field-area { background: #000; border-radius: 6px; height: 550px; border: 1px solid #464647; position: relative; cursor: crosshair; }
+        canvas { width: 100%; height: 100%; }
+        input[type="range"] { width: 100%; height: 8px; background: #2d2d30; border-radius: 4px; }
+        input[type="range"]::-webkit-slider-thumb { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+        .config-card { padding: 15px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; margin: 10px 0; cursor: pointer; transition: all 0.3s; }
+        .config-card:hover { border-color: var(--accent); }
+        .config-card.active { background: var(--accent); border-color: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-magnet"></i> Magnetic Field Visualizer</h1><p style="color: #888;">Physics Lab • Grade 11-12</p></div>
+            <div style="display: flex; gap: 15px;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">Magnetic Field Display</h2>
+                
+                <div class="field-area">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <label style="display: block; margin-bottom: 10px; color: #888;">Field Strength: <span id="strengthDisplay">1.0</span> T</label>
+                    <input type="range" id="strengthSlider" min="0.1" max="5.0" step="0.1" value="1.0" oninput="updateStrength()">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px;">
+                    <button class="btn" onclick="toggleVectors()"><i class="fas fa-arrows-alt"></i> Vectors</button>
+                    <button class="btn" onclick="toggleFieldLines()"><i class="fas fa-wave-square"></i> Lines</button>
+                    <button class="btn" style="background: #e74c3c;" onclick="clearMagnets()"><i class="fas fa-trash"></i> Clear</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-cog"></i> Configuration</h2>
+                
+                <div class="config-card active" onclick="selectConfig('bar')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-bars" style="font-size: 24px;"></i>
+                        <div>
+                            <strong>Bar Magnet</strong>
+                            <div style="font-size: 12px; color: #888;">North-South poles</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-card" onclick="selectConfig('horseshoe')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-shoe-prints" style="font-size: 24px;"></i>
+                        <div>
+                            <strong>Horseshoe Magnet</strong>
+                            <div style="font-size: 12px; color: #888;">U-shaped field</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-card" onclick="selectConfig('solenoid')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-circle-notch" style="font-size: 24px;"></i>
+                        <div>
+                            <strong>Solenoid</strong>
+                            <div style="font-size: 12px; color: #888;">Current coil</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-card" onclick="selectConfig('earth')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-globe" style="font-size: 24px;"></i>
+                        <div>
+                            <strong>Earth's Field</strong>
+                            <div style="font-size: 12px; color: #888;">Planetary magnetism</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Field Properties</h3>
+                <div style="background: #2d2d30; padding: 15px; border-radius: 6px;">
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Strength:</span>
+                        <strong id="fieldStrength">1.0 T</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Configuration:</span>
+                        <strong id="configType">Bar Magnet</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                        <span>Field Lines:</span>
+                        <strong id="lineCount">24</strong>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(0, 122, 204, 0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 12px; line-height: 1.8;">
+                    <strong style="color: var(--accent);">Magnetism:</strong><br>
+                    • Field lines go from N to S<br>
+                    • B = μ₀I / 2πr (wire)<br>
+                    • B = μ₀nI (solenoid)<br>
+                    • Earth's field ≈ 50 μT
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statConfigs">1</div>
+                        <div style="font-size: 12px; color: #888;">Configs</div>
+                    </div>
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statInteractions">0</div>
+                        <div style="font-size: 12px; color: #888;">Interactions</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now(), canvas, ctx;
+        
+        let config = 'bar', strength = 1.0;
+        let showVectors = true, showFieldLines = true;
+        let magnets = [];
+        
+        let interactionData = {
+            actions_count: 0, time_seconds: 0, total_parameter_space: 180,
+            tool_usage: {}, configs_explored: new Set(['bar']),
+            strength_changes: 0, view_toggles: 0
+        };
+        
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, toolId: 'magnetic-field-visualizer', toolType: 'LAB', interactionData })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {}
+            }
+            
+            setupConfiguration();
+            draw();
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            setInterval(saveProgress, 30000);
+        }
+        
+        function selectConfig(type) {
+            config = type;
+            interactionData.configs_explored.add(type);
+            interactionData.actions_count++;
+            
+            document.querySelectorAll('.config-card').forEach(card => card.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            const names = {bar: 'Bar Magnet', horseshoe: 'Horseshoe Magnet', solenoid: 'Solenoid', earth: "Earth's Field"};
+            document.getElementById('configType').textContent = names[type];
+            
+            setupConfiguration();
+            draw();
+            updateStats();
+        }
+        
+        function setupConfiguration() {
+            magnets = [];
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            
+            if (config === 'bar') {
+                magnets.push({type: 'N', x: cx - 80, y: cy});
+                magnets.push({type: 'S', x: cx + 80, y: cy});
+            } else if (config === 'horseshoe') {
+                magnets.push({type: 'N', x: cx - 100, y: cy - 50});
+                magnets.push({type: 'N', x: cx - 100, y: cy + 50});
+                magnets.push({type: 'S', x: cx + 100, y: cy});
+            } else if (config === 'solenoid') {
+                for (let i = 0; i < 5; i++) {
+                    magnets.push({type: 'coil', x: cx - 150 + i * 75, y: cy});
+                }
+            } else if (config === 'earth') {
+                magnets.push({type: 'N', x: cx, y: cy - 150});
+                magnets.push({type: 'S', x: cx, y: cy + 150});
+            }
+        }
+        
+        function updateStrength() {
+            strength = parseFloat(document.getElementById('strengthSlider').value);
+            document.getElementById('strengthDisplay').textContent = strength.toFixed(1);
+            document.getElementById('fieldStrength').textContent = strength.toFixed(1) + ' T';
+            interactionData.strength_changes++;
+            interactionData.actions_count++;
+            draw();
+        }
+        
+        function toggleVectors() {
+            showVectors = !showVectors;
+            interactionData.view_toggles++;
+            interactionData.actions_count++;
+            draw();
+        }
+        
+        function toggleFieldLines() {
+            showFieldLines = !showFieldLines;
+            interactionData.view_toggles++;
+            interactionData.actions_count++;
+            draw();
+        }
+        
+        function clearMagnets() {
+            magnets = [];
+            interactionData.actions_count++;
+            draw();
+        }
+        
+        function draw() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+            
+            if (showFieldLines) drawFieldLines();
+            if (showVectors) drawVectors();
+            drawMagnets();
+        }
+        
+        function drawFieldLines() {
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.6)';
+            ctx.lineWidth = 2;
+            
+            magnets.forEach((magnet, i) => {
+                if (magnet.type === 'N' || magnet.type === 'coil') {
+                    for (let angle = 0; angle < 360; angle += 15) {
+                        const rad = angle * Math.PI / 180;
+                        let x = magnet.x;
+                        let y = magnet.y;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        
+                        for (let step = 0; step < 100; step++) {
+                            const field = getFieldAt(x, y);
+                            const magnitude = Math.sqrt(field.x ** 2 + field.y ** 2);
+                            
+                            if (magnitude < 0.01) break;
+                            
+                            x += (field.x / magnitude) * 3;
+                            y += (field.y / magnitude) * 3;
+                            
+                            ctx.lineTo(x, y);
+                            
+                            if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) break;
+                        }
+                        
+                        ctx.stroke();
+                    }
+                }
+            });
+        }
+        
+        function drawVectors() {
+            const gridSize = 40;
+            
+            for (let x = gridSize; x < canvas.width; x += gridSize) {
+                for (let y = gridSize; y < canvas.height; y += gridSize) {
+                    const field = getFieldAt(x, y);
+                    const magnitude = Math.sqrt(field.x ** 2 + field.y ** 2);
+                    
+                    if (magnitude > 0.01) {
+                        const scale = Math.min(magnitude * 15, 20);
+                        const nx = field.x / magnitude;
+                        const ny = field.y / magnitude;
+                        
+                        ctx.strokeStyle = `rgba(255, ${255 - magnitude * 50}, 0, 0.8)`;
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        ctx.lineTo(x + nx * scale, y + ny * scale);
+                        ctx.stroke();
+                        
+                        // Arrow head
+                        const angle = Math.atan2(ny, nx);
+                        ctx.fillStyle = ctx.strokeStyle;
+                        ctx.beginPath();
+                        ctx.moveTo(x + nx * scale, y + ny * scale);
+                        ctx.lineTo(x + nx * scale - 6 * Math.cos(angle - 0.3), y + ny * scale - 6 * Math.sin(angle - 0.3));
+                        ctx.lineTo(x + nx * scale - 6 * Math.cos(angle + 0.3), y + ny * scale - 6 * Math.sin(angle + 0.3));
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                }
+            }
+        }
+        
+        function getFieldAt(x, y) {
+            let fieldX = 0, fieldY = 0;
+            
+            magnets.forEach(magnet => {
+                const dx = x - magnet.x;
+                const dy = y - magnet.y;
+                const distSq = dx * dx + dy * dy + 100;
+                const dist = Math.sqrt(distSq);
+                
+                if (magnet.type === 'N') {
+                    fieldX += (dx / distSq) * strength;
+                    fieldY += (dy / distSq) * strength;
+                } else if (magnet.type === 'S') {
+                    fieldX -= (dx / distSq) * strength;
+                    fieldY -= (dy / distSq) * strength;
+                } else if (magnet.type === 'coil') {
+                    fieldY += 0.5 * strength / (dist + 1);
+                }
+            });
+            
+            return {x: fieldX, y: fieldY};
+        }
+        
+        function drawMagnets() {
+            magnets.forEach(magnet => {
+                if (magnet.type === 'N') {
+                    const gradient = ctx.createRadialGradient(magnet.x, magnet.y, 10, magnet.x, magnet.y, 30);
+                    gradient.addColorStop(0, '#e74c3c');
+                    gradient.addColorStop(1, '#c0392b');
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(magnet.x, magnet.y, 30, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 20px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('N', magnet.x, magnet.y);
+                } else if (magnet.type === 'S') {
+                    const gradient = ctx.createRadialGradient(magnet.x, magnet.y, 10, magnet.x, magnet.y, 30);
+                    gradient.addColorStop(0, '#3498db');
+                    gradient.addColorStop(1, '#2980b9');
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(magnet.x, magnet.y, 30, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 20px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('S', magnet.x, magnet.y);
+                } else if (magnet.type === 'coil') {
+                    ctx.strokeStyle = '#f39c12';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(magnet.x, magnet.y, 15, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = '#f39c12';
+                    ctx.beginPath();
+                    ctx.arc(magnet.x, magnet.y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        }
+        
+        function updateStats() {
+            document.getElementById('statConfigs').textContent = interactionData.configs_explored.size;
+            document.getElementById('statInteractions').textContent = interactionData.actions_count;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            interactionData.configs_explored = Array.from(interactionData.configs_explored);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactionData })
+                });
+            } catch (err) {}
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('Session completed!');
+            window.location.href = '/dashboard';
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+    </script>
+</body>
+</html>

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Circle Simulator - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; font-size: 13px; }
+        .main { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .circle-area { background: #000; border-radius: 6px; height: 550px; border: 1px solid #464647; position: relative; }
+        canvas { width: 100%; height: 100%; }
+        input[type="range"] { width: 100%; height: 8px; background: #2d2d30; border-radius: 4px; }
+        input[type="range"]::-webkit-slider-thumb { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+        .angle-card { padding: 12px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; margin: 8px 0; cursor: pointer; transition: all 0.3s; }
+        .angle-card:hover { border-color: var(--accent); }
+        .angle-card.active { background: var(--accent); border-color: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-circle"></i> Unit Circle Simulator</h1><p style="color: #888;">Math Lab • Grade 10-12</p></div>
+            <div style="display: flex; gap: 15px;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">Unit Circle</h2>
+                
+                <div class="circle-area">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <label style="display: block; margin-bottom: 10px; color: #888;">Angle: <span id="angleDisplay">0</span>° (<span id="radianDisplay">0.00</span> rad)</label>
+                    <input type="range" id="angleSlider" min="0" max="360" step="1" value="0" oninput="updateAngle()">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px;">
+                    <button class="btn" onclick="toggleAnimation()"><i class="fas fa-play"></i> <span id="animBtn">Animate</span></button>
+                    <button class="btn" onclick="toggleLabels()"><i class="fas fa-tags"></i> Labels</button>
+                    <button class="btn" onclick="resetCircle()"><i class="fas fa-undo"></i> Reset</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-calculator"></i> Values</h2>
+                
+                <div style="background: #2d2d30; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>sin(θ):</span>
+                        <strong id="sinValue" style="color: #e74c3c;">0.000</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>cos(θ):</span>
+                        <strong id="cosValue" style="color: #3498db;">1.000</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>tan(θ):</span>
+                        <strong id="tanValue" style="color: #27ae60;">0.000</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                        <span>Point:</span>
+                        <strong id="pointValue" style="color: var(--accent);">(1.00, 0.00)</strong>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Special Angles</h3>
+                
+                <div class="angle-card active" onclick="setAngle(0)">
+                    <strong>0° (0 rad)</strong>
+                    <div style="font-size: 12px; color: #888; margin-top: 5px;">cos=1, sin=0</div>
+                </div>
+                
+                <div class="angle-card" onclick="setAngle(30)">
+                    <strong>30° (π/6)</strong>
+                    <div style="font-size: 12px; color: #888; margin-top: 5px;">cos=√3/2, sin=1/2</div>
+                </div>
+                
+                <div class="angle-card" onclick="setAngle(45)">
+                    <strong>45° (π/4)</strong>
+                    <div style="font-size: 12px; color: #888; margin-top: 5px;">cos=√2/2, sin=√2/2</div>
+                </div>
+                
+                <div class="angle-card" onclick="setAngle(60)">
+                    <strong>60° (π/3)</strong>
+                    <div style="font-size: 12px; color: #888; margin-top: 5px;">cos=1/2, sin=√3/2</div>
+                </div>
+                
+                <div class="angle-card" onclick="setAngle(90)">
+                    <strong>90° (π/2)</strong>
+                    <div style="font-size: 12px; color: #888; margin-top: 5px;">cos=0, sin=1</div>
+                </div>
+                
+                <div style="background: rgba(0, 122, 204, 0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 12px; line-height: 1.8;">
+                    <strong style="color: var(--accent);">Unit Circle:</strong><br>
+                    • Radius = 1<br>
+                    • x = cos(θ)<br>
+                    • y = sin(θ)<br>
+                    • tan(θ) = sin/cos
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statAngles">0</div>
+                        <div style="font-size: 12px; color: #888;">Angles Explored</div>
+                    </div>
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statQuadrants">0</div>
+                        <div style="font-size: 12px; color: #888;">Quadrants</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now(), canvas, ctx;
+        
+        let angle = 0;
+        let showLabels = true;
+        let isAnimating = false, animationId = null;
+        
+        let interactionData = {
+            actions_count: 0, time_seconds: 0, total_parameter_space: 360,
+            tool_usage: {}, angles_explored: new Set([0]),
+            quadrants_visited: new Set([1]), special_angles_used: 0
+        };
+        
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, toolId: 'unit-circle-simulator', toolType: 'LAB', interactionData })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {}
+            }
+            
+            draw();
+            updateValues();
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            setInterval(saveProgress, 30000);
+        }
+        
+        function updateAngle() {
+            angle = parseInt(document.getElementById('angleSlider').value);
+            interactionData.angles_explored.add(Math.floor(angle / 15) * 15);
+            
+            const quadrant = getQuadrant(angle);
+            interactionData.quadrants_visited.add(quadrant);
+            
+            interactionData.actions_count++;
+            updateValues();
+            draw();
+            updateStats();
+        }
+        
+        function setAngle(deg) {
+            angle = deg;
+            document.getElementById('angleSlider').value = deg;
+            interactionData.special_angles_used++;
+            interactionData.angles_explored.add(deg);
+            interactionData.actions_count++;
+            
+            document.querySelectorAll('.angle-card').forEach(card => card.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            updateValues();
+            draw();
+            updateStats();
+        }
+        
+        function getQuadrant(deg) {
+            const normalized = deg % 360;
+            if (normalized >= 0 && normalized < 90) return 1;
+            if (normalized >= 90 && normalized < 180) return 2;
+            if (normalized >= 180 && normalized < 270) return 3;
+            return 4;
+        }
+        
+        function toggleAnimation() {
+            isAnimating = !isAnimating;
+            document.getElementById('animBtn').textContent = isAnimating ? 'Stop' : 'Animate';
+            
+            if (isAnimating) {
+                animate();
+            } else if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            
+            interactionData.actions_count++;
+        }
+        
+        function animate() {
+            if (!isAnimating) return;
+            
+            angle = (angle + 1) % 360;
+            document.getElementById('angleSlider').value = angle;
+            
+            updateValues();
+            draw();
+            
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        function toggleLabels() {
+            showLabels = !showLabels;
+            interactionData.actions_count++;
+            draw();
+        }
+        
+        function resetCircle() {
+            angle = 0;
+            document.getElementById('angleSlider').value = 0;
+            isAnimating = false;
+            document.getElementById('animBtn').textContent = 'Animate';
+            
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            
+            interactionData.actions_count++;
+            updateValues();
+            draw();
+        }
+        
+        function updateValues() {
+            const rad = angle * Math.PI / 180;
+            const sinVal = Math.sin(rad);
+            const cosVal = Math.cos(rad);
+            const tanVal = Math.abs(cosVal) < 0.001 ? '∞' : (sinVal / cosVal).toFixed(3);
+            
+            document.getElementById('angleDisplay').textContent = angle;
+            document.getElementById('radianDisplay').textContent = rad.toFixed(2);
+            document.getElementById('sinValue').textContent = sinVal.toFixed(3);
+            document.getElementById('cosValue').textContent = cosVal.toFixed(3);
+            document.getElementById('tanValue').textContent = tanVal;
+            document.getElementById('pointValue').textContent = `(${cosVal.toFixed(2)}, ${sinVal.toFixed(2)})`;
+        }
+        
+        function draw() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const cx = width / 2;
+            const cy = height / 2;
+            const radius = Math.min(width, height) / 2 - 60;
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Grid
+            ctx.strokeStyle = '#2d2d30';
+            ctx.lineWidth = 1;
+            for (let i = -5; i <= 5; i++) {
+                ctx.beginPath();
+                ctx.moveTo(cx + i * radius/5, 0);
+                ctx.lineTo(cx + i * radius/5, height);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(0, cy + i * radius/5);
+                ctx.lineTo(width, cy + i * radius/5);
+                ctx.stroke();
+            }
+            
+            // Axes
+            ctx.strokeStyle = '#464647';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, cy);
+            ctx.lineTo(width, cy);
+            ctx.moveTo(cx, 0);
+            ctx.lineTo(cx, height);
+            ctx.stroke();
+            
+            // Unit circle
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Quadrant labels
+            if (showLabels) {
+                ctx.fillStyle = '#888';
+                ctx.font = '14px Arial';
+                ctx.fillText('I', cx + radius/2, cy - radius/2);
+                ctx.fillText('II', cx - radius/2, cy - radius/2);
+                ctx.fillText('III', cx - radius/2, cy + radius/2);
+                ctx.fillText('IV', cx + radius/2, cy + radius/2);
+                
+                // Axis labels
+                ctx.fillText('0°', cx + radius + 10, cy + 5);
+                ctx.fillText('90°', cx - 5, cy - radius - 10);
+                ctx.fillText('180°', cx - radius - 30, cy + 5);
+                ctx.fillText('270°', cx - 5, cy + radius + 20);
+            }
+            
+            // Angle arc
+            const rad = angle * Math.PI / 180;
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius * 0.3, 0, -rad, true);
+            ctx.stroke();
+            
+            // Radius line
+            const px = cx + Math.cos(-rad) * radius;
+            const py = cy + Math.sin(-rad) * radius;
+            
+            ctx.strokeStyle = '#f39c12';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(px, py);
+            ctx.stroke();
+            
+            // Point on circle
+            ctx.fillStyle = '#f39c12';
+            ctx.beginPath();
+            ctx.arc(px, py, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // sin line (vertical)
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(px, cy);
+            ctx.lineTo(px, py);
+            ctx.stroke();
+            
+            // cos line (horizontal)
+            ctx.strokeStyle = '#3498db';
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(px, cy);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Labels
+            if (showLabels) {
+                const cosVal = Math.cos(-rad);
+                const sinVal = Math.sin(-rad);
+                
+                ctx.fillStyle = '#3498db';
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText('cos', cx + (px - cx)/2 - 20, cy - 10);
+                
+                ctx.fillStyle = '#e74c3c';
+                ctx.fillText('sin', px + 15, cy + (py - cy)/2);
+                
+                ctx.fillStyle = '#f39c12';
+                ctx.fillText(`(${cosVal.toFixed(2)}, ${sinVal.toFixed(2)})`, px + 15, py - 15);
+            }
+        }
+        
+        function updateStats() {
+            document.getElementById('statAngles').textContent = interactionData.angles_explored.size;
+            document.getElementById('statQuadrants').textContent = interactionData.quadrants_visited.size;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            interactionData.angles_explored = Array.from(interactionData.angles_explored);
+            interactionData.quadrants_visited = Array.from(interactionData.quadrants_visited);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactionData })
+                });
+            } catch (err) {}
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('Session completed!');
+            window.location.href = '/dashboard';
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+    </script>
+</body>
+</html>

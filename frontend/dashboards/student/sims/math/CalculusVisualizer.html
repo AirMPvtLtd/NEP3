@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculus Visualizer - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; --success: #00b894; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; transition: all 0.3s; }
+        .main { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .graph-area { background: var(--bg); border-radius: 6px; height: 500px; border: 1px solid #464647; position: relative; }
+        canvas { width: 100%; height: 100%; }
+        .mode-selector { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; }
+        .mode-btn { padding: 12px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; cursor: pointer; text-align: center; transition: all 0.3s; font-size: 14px; }
+        .mode-btn.active { background: var(--accent); border-color: var(--accent); }
+        .function-input { background: #2d2d30; border: 2px solid #464647; padding: 12px; border-radius: 6px; color: #fff; width: 100%; font-size: 14px; font-family: 'Courier New', monospace; }
+        .function-input:focus { outline: none; border-color: var(--accent); }
+        .result-box { background: #2d2d30; padding: 15px; border-radius: 6px; margin: 10px 0; min-height: 60px; }
+        .preset-functions { display: grid; grid-template-columns: 1fr; gap: 8px; }
+        .preset-btn { padding: 10px; background: #2d2d30; border: 1px solid #464647; border-radius: 6px; cursor: pointer; text-align: left; font-size: 12px; font-family: 'Courier New', monospace; transition: all 0.3s; }
+        .preset-btn:hover { background: var(--accent); }
+        .point-marker { background: #ff6b6b; padding: 8px 12px; border-radius: 6px; margin: 5px 0; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-infinity"></i> Calculus Visualizer</h1><p style="color: #888;">Math Lab • Grade 11-12</p></div>
+            <div style="display: flex; gap: 15px;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">Function & Visualization</h2>
+                
+                <div class="mode-selector">
+                    <div class="mode-btn active" onclick="setMode('derivative')">
+                        <i class="fas fa-chart-line"></i> Derivative
+                    </div>
+                    <div class="mode-btn" onclick="setMode('integral')">
+                        <i class="fas fa-fill"></i> Integral
+                    </div>
+                    <div class="mode-btn" onclick="setMode('limit')">
+                        <i class="fas fa-arrows-alt-h"></i> Limit
+                    </div>
+                    <div class="mode-btn" onclick="setMode('tangent')">
+                        <i class="fas fa-slash"></i> Tangent Line
+                    </div>
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display: block; margin-bottom: 8px; color: #888; font-size: 13px;">Function: f(x) =</label>
+                    <input type="text" class="function-input" id="functionInput" value="x^2" placeholder="e.g., x^2, sin(x), x^3-2x">
+                    <button class="btn" style="margin-top: 10px; width: 100%;" onclick="updateFunction()">
+                        <i class="fas fa-sync"></i> Update Graph
+                    </button>
+                </div>
+                
+                <div class="graph-area">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="btn" onclick="zoomIn()"><i class="fas fa-search-plus"></i> Zoom In</button>
+                    <button class="btn" onclick="zoomOut()"><i class="fas fa-search-minus"></i> Zoom Out</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-calculator"></i> Analysis</h2>
+                
+                <div id="analysisContent">
+                    <div class="result-box">
+                        <div style="color: #888; font-size: 13px; margin-bottom: 5px;">Derivative:</div>
+                        <div style="font-size: 16px; font-family: 'Courier New', monospace;" id="derivativeResult">f'(x) = 2x</div>
+                    </div>
+                    
+                    <div class="result-box">
+                        <div style="color: #888; font-size: 13px; margin-bottom: 5px;">At x = <input type="number" id="pointInput" value="2" style="background: var(--bg); border: 1px solid #464647; padding: 4px 8px; border-radius: 4px; color: #fff; width: 60px;" onchange="calculateAtPoint()"></div>
+                        <div style="font-size: 14px;" id="pointResult">f(2) = 4<br>f'(2) = 4</div>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Preset Functions</h3>
+                <div class="preset-functions">
+                    <div class="preset-btn" onclick="setFunction('x^2')">f(x) = x²</div>
+                    <div class="preset-btn" onclick="setFunction('x^3-3x')">f(x) = x³ - 3x</div>
+                    <div class="preset-btn" onclick="setFunction('sin(x)')">f(x) = sin(x)</div>
+                    <div class="preset-btn" onclick="setFunction('cos(x)')">f(x) = cos(x)</div>
+                    <div class="preset-btn" onclick="setFunction('e^x')">f(x) = eˣ</div>
+                    <div class="preset-btn" onclick="setFunction('1/x')">f(x) = 1/x</div>
+                </div>
+                
+                <div style="background: rgba(0, 122, 204, 0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 12px; line-height: 1.8;">
+                    <strong style="color: var(--accent);">Rules:</strong><br>
+                    d/dx[xⁿ] = nxⁿ⁻¹<br>
+                    ∫xⁿdx = xⁿ⁺¹/(n+1) + C<br>
+                    d/dx[sin(x)] = cos(x)
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statFunctions">0</div>
+                        <div style="font-size: 12px; color: #888;">Functions</div>
+                    </div>
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statCalculations">0</div>
+                        <div style="font-size: 12px; color: #888;">Calculations</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now(), canvas, ctx;
+        
+        let currentMode = 'derivative', currentFunction = 'x^2', zoom = 1, xPoint = 2;
+        let interactionData = {
+            actions_count: 0, time_seconds: 0, total_parameter_space: 300,
+            tool_usage: {}, functions_graphed: new Set(), calculations_performed: 0,
+            modes_used: new Set(['derivative']), derivatives_computed: 0, integrals_computed: 0
+        };
+        
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, toolId: 'calculus-visualizer', toolType: 'LAB', interactionData })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {}
+            }
+            
+            drawGraph();
+            calculateAtPoint();
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            setInterval(saveProgress, 30000);
+        }
+        
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            interactionData.modes_used.add(mode);
+            interactionData.actions_count++;
+            drawGraph();
+            updateAnalysis();
+        }
+        
+        function setFunction(func) {
+            document.getElementById('functionInput').value = func;
+            updateFunction();
+        }
+        
+        function updateFunction() {
+            currentFunction = document.getElementById('functionInput').value;
+            interactionData.functions_graphed.add(currentFunction);
+            interactionData.actions_count++;
+            drawGraph();
+            updateAnalysis();
+            updateStats();
+        }
+        
+        function evaluateFunction(x, func) {
+            try {
+                let expr = func.replace(/\^/g, '**')
+                    .replace(/e\*\*x/g, 'Math.exp(x)')
+                    .replace(/sin/g, 'Math.sin')
+                    .replace(/cos/g, 'Math.cos')
+                    .replace(/tan/g, 'Math.tan')
+                    .replace(/ln/g, 'Math.log');
+                return eval(expr.replace(/x/g, `(${x})`));
+            } catch (e) {
+                return NaN;
+            }
+        }
+        
+        function numericalDerivative(x, func) {
+            const h = 0.0001;
+            return (evaluateFunction(x + h, func) - evaluateFunction(x - h, func)) / (2 * h);
+        }
+        
+        function drawGraph() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const scale = 40 * zoom;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            // Grid
+            ctx.strokeStyle = '#2a2a2a';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < width; x += scale) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < height; y += scale) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+            
+            // Axes
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(width, centerY);
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, height);
+            ctx.stroke();
+            
+            // Function
+            ctx.strokeStyle = '#007acc';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            let started = false;
+            
+            for (let px = 0; px < width; px++) {
+                const x = (px - centerX) / scale;
+                const y = evaluateFunction(x, currentFunction);
+                const py = centerY - y * scale;
+                
+                if (!isNaN(y) && Math.abs(y) < 100) {
+                    if (!started) {
+                        ctx.moveTo(px, py);
+                        started = true;
+                    } else {
+                        ctx.lineTo(px, py);
+                    }
+                }
+            }
+            ctx.stroke();
+            
+            // Mode-specific overlays
+            if (currentMode === 'derivative') {
+                drawDerivative(centerX, centerY, scale);
+            } else if (currentMode === 'tangent') {
+                drawTangentLine(centerX, centerY, scale);
+            } else if (currentMode === 'integral') {
+                drawIntegral(centerX, centerY, scale);
+            }
+            
+            // Point marker
+            const px = centerX + xPoint * scale;
+            const py = centerY - evaluateFunction(xPoint, currentFunction) * scale;
+            ctx.fillStyle = '#ff6b6b';
+            ctx.beginPath();
+            ctx.arc(px, py, 6, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function drawDerivative(centerX, centerY, scale) {
+            ctx.strokeStyle = '#ff6b6b';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            let started = false;
+            
+            for (let px = 0; px < canvas.width; px++) {
+                const x = (px - centerX) / scale;
+                const dy = numericalDerivative(x, currentFunction);
+                const py = centerY - dy * scale;
+                
+                if (!isNaN(dy) && Math.abs(dy) < 50) {
+                    if (!started) {
+                        ctx.moveTo(px, py);
+                        started = true;
+                    } else {
+                        ctx.lineTo(px, py);
+                    }
+                }
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        function drawTangentLine(centerX, centerY, scale) {
+            const x = xPoint;
+            const y = evaluateFunction(x, currentFunction);
+            const slope = numericalDerivative(x, currentFunction);
+            
+            ctx.strokeStyle = '#4ecdc4';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            const x1 = -10;
+            const y1 = y + slope * (x1 - x);
+            const x2 = 10;
+            const y2 = y + slope * (x2 - x);
+            
+            ctx.moveTo(centerX + x1 * scale, centerY - y1 * scale);
+            ctx.lineTo(centerX + x2 * scale, centerY - y2 * scale);
+            ctx.stroke();
+        }
+        
+        function drawIntegral(centerX, centerY, scale) {
+            ctx.fillStyle = 'rgba(0, 122, 204, 0.3)';
+            ctx.beginPath();
+            
+            const x1 = -3;
+            const x2 = 3;
+            
+            ctx.moveTo(centerX + x1 * scale, centerY);
+            
+            for (let x = x1; x <= x2; x += 0.1) {
+                const y = evaluateFunction(x, currentFunction);
+                ctx.lineTo(centerX + x * scale, centerY - y * scale);
+            }
+            
+            ctx.lineTo(centerX + x2 * scale, centerY);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        function updateAnalysis() {
+            if (currentMode === 'derivative') {
+                const derivative = getSymbolicDerivative(currentFunction);
+                document.getElementById('derivativeResult').textContent = `f'(x) = ${derivative}`;
+                interactionData.derivatives_computed++;
+            } else if (currentMode === 'integral') {
+                const integral = getSymbolicIntegral(currentFunction);
+                document.getElementById('derivativeResult').textContent = `∫f(x)dx = ${integral} + C`;
+                interactionData.integrals_computed++;
+            }
+            interactionData.calculations_performed++;
+            updateStats();
+        }
+        
+        function getSymbolicDerivative(func) {
+            if (func === 'x^2') return '2x';
+            if (func === 'x^3-3x') return '3x² - 3';
+            if (func === 'sin(x)') return 'cos(x)';
+            if (func === 'cos(x)') return '-sin(x)';
+            if (func === 'e^x') return 'eˣ';
+            if (func === '1/x') return '-1/x²';
+            return 'Numerical approximation used';
+        }
+        
+        function getSymbolicIntegral(func) {
+            if (func === 'x^2') return 'x³/3';
+            if (func === 'x^3-3x') return 'x⁴/4 - 3x²/2';
+            if (func === 'sin(x)') return '-cos(x)';
+            if (func === 'cos(x)') return 'sin(x)';
+            if (func === 'e^x') return 'eˣ';
+            if (func === '1/x') return 'ln|x|';
+            return 'Numerical approximation';
+        }
+        
+        function calculateAtPoint() {
+            xPoint = parseFloat(document.getElementById('pointInput').value);
+            const y = evaluateFunction(xPoint, currentFunction);
+            const dy = numericalDerivative(xPoint, currentFunction);
+            
+            document.getElementById('pointResult').innerHTML = 
+                `f(${xPoint}) = ${y.toFixed(3)}<br>f'(${xPoint}) = ${dy.toFixed(3)}`;
+            
+            drawGraph();
+            interactionData.calculations_performed++;
+            interactionData.actions_count++;
+        }
+        
+        function zoomIn() {
+            zoom *= 1.2;
+            drawGraph();
+            interactionData.actions_count++;
+        }
+        
+        function zoomOut() {
+            zoom *= 0.8;
+            drawGraph();
+            interactionData.actions_count++;
+        }
+        
+        function updateStats() {
+            document.getElementById('statFunctions').textContent = interactionData.functions_graphed.size;
+            document.getElementById('statCalculations').textContent = interactionData.calculations_performed;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            interactionData.functions_graphed = Array.from(interactionData.functions_graphed);
+            interactionData.modes_used = Array.from(interactionData.modes_used);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactionData })
+                });
+            } catch (err) {}
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('Session completed!');
+            window.location.href = '/dashboard';
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+    </script>
+</body>
+</html>

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Transformation Visualizer - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; }
+        .main { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .sim-area { background: var(--bg); border-radius: 6px; height: 500px; border: 1px solid #464647; position: relative; overflow: hidden; }
+        canvas { width: 100%; height: 100%; }
+        .scenario-card { padding: 15px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; cursor: pointer; margin: 10px 0; transition: all 0.3s; }
+        .scenario-card:hover { border-color: var(--accent); background: #3a3a3c; }
+        .scenario-card.active { background: var(--accent); border-color: var(--accent); }
+        .energy-bar { height: 30px; border-radius: 15px; overflow: hidden; margin: 10px 0; display: flex; }
+        .energy-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; transition: all 0.5s; }
+        input[type="range"] { width: 100%; height: 8px; background: #2d2d30; border-radius: 4px; }
+        input[type="range"]::-webkit-slider-thumb { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-charging-station"></i> Energy Transformation Visualizer</h1><p style="color: #888;">Physics Lab • Grade 9-10</p></div>
+            <div style="display: flex; gap: 15px;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">Energy System Simulator</h2>
+                
+                <div class="sim-area">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Energy Distribution</h3>
+                <div class="energy-bar" id="energyBar"></div>
+                
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; font-size: 11px; text-align: center;">
+                    <div>
+                        <div style="color: #f39c12;">■</div>
+                        <div id="kePercent">0%</div>
+                        <div style="color: #888;">Kinetic</div>
+                    </div>
+                    <div>
+                        <div style="color: #3498db;">■</div>
+                        <div id="pePercent">0%</div>
+                        <div style="color: #888;">Potential</div>
+                    </div>
+                    <div>
+                        <div style="color: #e74c3c;">■</div>
+                        <div id="tePercent">0%</div>
+                        <div style="color: #888;">Thermal</div>
+                    </div>
+                    <div>
+                        <div style="color: #27ae60;">■</div>
+                        <div id="sePercent">0%</div>
+                        <div style="color: #888;">Spring</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <label style="display: block; margin-bottom: 10px; color: #888;">Initial Height: <span id="heightDisplay">5</span> m</label>
+                    <input type="range" id="heightSlider" min="1" max="10" step="0.5" value="5" oninput="updateParams()">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                    <button class="btn" onclick="startSim()" id="startBtn"><i class="fas fa-play"></i> Start</button>
+                    <button class="btn" style="background: #e74c3c;" onclick="resetSim()"><i class="fas fa-undo"></i> Reset</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-flask"></i> Scenarios</h2>
+                
+                <div class="scenario-card active" onclick="selectScenario('pendulum')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-circle" style="font-size: 24px;"></i>
+                        <div>
+                            <strong>Pendulum</strong>
+                            <div style="font-size: 12px; color: #888;">PE ⇄ KE</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="scenario-card" onclick="selectScenario('falling')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-arrow-down" style="font-size: 24px;"></i>
+                        <div>
+                            <strong>Free Fall</strong>
+                            <div style="font-size: 12px; color: #888;">PE → KE</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="scenario-card" onclick="selectScenario('spring')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-arrows-alt-v" style="font-size: 24px;"></i>
+                        <div>
+                            <strong>Spring System</strong>
+                            <div style="font-size: 12px; color: #888;">SE ⇄ KE</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="scenario-card" onclick="selectScenario('roller')">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-mountain" style="font-size: 24px;"></i>
+                        <div>
+                            <strong>Roller Coaster</strong>
+                            <div style="font-size: 12px; color: #888;">PE ⇄ KE + TE</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Energy Values</h3>
+                <div style="background: #2d2d30; padding: 15px; border-radius: 6px;">
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Kinetic Energy:</span>
+                        <strong id="keValue">0 J</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Potential Energy:</span>
+                        <strong id="peValue">0 J</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Thermal Energy:</span>
+                        <strong id="teValue">0 J</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                        <span>Total Energy:</span>
+                        <strong id="totalValue" style="color: var(--accent);">0 J</strong>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(0, 122, 204, 0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 12px; line-height: 1.8;">
+                    <strong style="color: var(--accent);">Conservation of Energy:</strong><br>
+                    E_total = KE + PE + TE + SE<br>
+                    KE = ½mv²<br>
+                    PE = mgh<br>
+                    Energy transforms but total remains constant
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statSims">0</div>
+                        <div style="font-size: 12px; color: #888;">Simulations</div>
+                    </div>
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statScenarios">0</div>
+                        <div style="font-size: 12px; color: #888;">Scenarios</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now(), canvas, ctx;
+        
+        const g = 9.8, mass = 1;
+        let scenario = 'pendulum', height = 5, running = false, animationId = null;
+        let position = 0, velocity = 0, time = 0;
+        let ke = 0, pe = 0, te = 0, se = 0, totalE = 0;
+        
+        let interactionData = {
+            actions_count: 0, time_seconds: 0, total_parameter_space: 150,
+            tool_usage: {}, simulations_run: 0, scenarios_tested: new Set(['pendulum']),
+            height_values: new Set()
+        };
+        
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, toolId: 'energy-transformation-visualizer', toolType: 'LAB', interactionData })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {}
+            }
+            
+            resetSim();
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            setInterval(saveProgress, 30000);
+        }
+        
+        function selectScenario(sc) {
+            scenario = sc;
+            document.querySelectorAll('.scenario-card').forEach(card => card.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            interactionData.scenarios_tested.add(sc);
+            interactionData.actions_count++;
+            resetSim();
+            updateStats();
+        }
+        
+        function updateParams() {
+            height = parseFloat(document.getElementById('heightSlider').value);
+            document.getElementById('heightDisplay').textContent = height.toFixed(1);
+            interactionData.height_values.add(Math.floor(height));
+            interactionData.actions_count++;
+            if (!running) resetSim();
+        }
+        
+        function startSim() {
+            if (running) return;
+            running = true;
+            time = 0;
+            document.getElementById('startBtn').innerHTML = '<i class="fas fa-pause"></i> Running';
+            interactionData.simulations_run++;
+            interactionData.actions_count++;
+            updateStats();
+            animate();
+        }
+        
+        function resetSim() {
+            running = false;
+            if (animationId) cancelAnimationFrame(animationId);
+            time = 0;
+            position = 0;
+            velocity = 0;
+            document.getElementById('startBtn').innerHTML = '<i class="fas fa-play"></i> Start';
+            
+            if (scenario === 'pendulum') {
+                position = height;
+                totalE = mass * g * height;
+                pe = totalE;
+                ke = 0;
+                te = 0;
+                se = 0;
+            } else if (scenario === 'falling') {
+                position = height;
+                totalE = mass * g * height;
+                pe = totalE;
+                ke = 0;
+                te = 0;
+                se = 0;
+            } else if (scenario === 'spring') {
+                position = 0;
+                totalE = 100;
+                se = totalE;
+                ke = 0;
+                pe = 0;
+                te = 0;
+            } else if (scenario === 'roller') {
+                position = height;
+                totalE = mass * g * height;
+                pe = totalE;
+                ke = 0;
+                te = 0;
+                se = 0;
+            }
+            
+            updateEnergy();
+            draw();
+        }
+        
+        function animate() {
+            if (!running) return;
+            
+            const dt = 0.016;
+            time += dt;
+            
+            if (scenario === 'pendulum') {
+                const omega = Math.sqrt(g / height);
+                position = height * Math.cos(omega * time);
+                velocity = -height * omega * Math.sin(omega * time);
+                
+                const currentHeight = height - Math.abs(position);
+                pe = mass * g * currentHeight;
+                ke = 0.5 * mass * velocity * velocity;
+                te = totalE * 0.01 * time;
+                se = 0;
+            } else if (scenario === 'falling') {
+                if (position > 0) {
+                    velocity += g * dt;
+                    position -= velocity * dt;
+                } else {
+                    position = 0;
+                    velocity = 0;
+                }
+                
+                pe = mass * g * Math.max(0, position);
+                ke = totalE - pe;
+                te = 0;
+                se = 0;
+            } else if (scenario === 'spring') {
+                const omega = 2;
+                position = 2 * Math.sin(omega * time);
+                velocity = 2 * omega * Math.cos(omega * time);
+                
+                se = 0.5 * 25 * position * position;
+                ke = 0.5 * mass * velocity * velocity;
+                pe = 0;
+                te = totalE * 0.005 * time;
+            } else if (scenario === 'roller') {
+                const angle = (time * 0.5) % (Math.PI * 2);
+                position = height * (1 + Math.cos(angle)) / 2;
+                velocity = Math.sqrt(2 * g * (height - position));
+                
+                pe = mass * g * position;
+                ke = 0.5 * mass * velocity * velocity;
+                te = totalE * 0.02 * time;
+                se = 0;
+            }
+            
+            updateEnergy();
+            draw();
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        function updateEnergy() {
+            const total = ke + pe + te + se;
+            
+            document.getElementById('keValue').textContent = ke.toFixed(1) + ' J';
+            document.getElementById('peValue').textContent = pe.toFixed(1) + ' J';
+            document.getElementById('teValue').textContent = te.toFixed(1) + ' J';
+            document.getElementById('totalValue').textContent = total.toFixed(1) + ' J';
+            
+            const keP = Math.max(0, (ke / totalE) * 100);
+            const peP = Math.max(0, (pe / totalE) * 100);
+            const teP = Math.max(0, (te / totalE) * 100);
+            const seP = Math.max(0, (se / totalE) * 100);
+            
+            document.getElementById('kePercent').textContent = keP.toFixed(0) + '%';
+            document.getElementById('pePercent').textContent = peP.toFixed(0) + '%';
+            document.getElementById('tePercent').textContent = teP.toFixed(0) + '%';
+            document.getElementById('sePercent').textContent = seP.toFixed(0) + '%';
+            
+            const bar = document.getElementById('energyBar');
+            bar.innerHTML = `
+                <div class="energy-segment" style="flex: ${keP}; background: #f39c12;">KE</div>
+                <div class="energy-segment" style="flex: ${peP}; background: #3498db;">PE</div>
+                <div class="energy-segment" style="flex: ${teP}; background: #e74c3c;">TE</div>
+                <div class="energy-segment" style="flex: ${seP}; background: #27ae60;">SE</div>
+            `;
+        }
+        
+        function draw() {
+            const width = canvas.width;
+            const height_px = canvas.height;
+            const centerX = width / 2;
+            const centerY = height_px / 2;
+            const scale = 40;
+            
+            ctx.clearRect(0, 0, width, height_px);
+            
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, width, height_px);
+            
+            if (scenario === 'pendulum') {
+                const pivotY = 100;
+                const length = height * scale;
+                const angle = position / height;
+                const bobX = centerX + length * Math.sin(angle);
+                const bobY = pivotY + length * Math.cos(angle);
+                
+                ctx.strokeStyle = '#666';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(centerX, pivotY);
+                ctx.lineTo(bobX, bobY);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#f39c12';
+                ctx.beginPath();
+                ctx.arc(centerX, pivotY, 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                const gradient = ctx.createRadialGradient(bobX, bobY, 0, bobX, bobY, 20);
+                gradient.addColorStop(0, ke > 10 ? '#ff6b6b' : '#3498db');
+                gradient.addColorStop(1, ke > 10 ? '#c0392b' : '#2980b9');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(bobX, bobY, 20, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (scenario === 'falling') {
+                const ballY = height_px - 100 - (position * scale);
+                
+                ctx.fillStyle = '#2d5016';
+                ctx.fillRect(0, height_px - 100, width, 100);
+                
+                const gradient = ctx.createRadialGradient(centerX, ballY, 0, centerX, ballY, 25);
+                gradient.addColorStop(0, velocity > 5 ? '#ff6b6b' : '#3498db');
+                gradient.addColorStop(1, velocity > 5 ? '#c0392b' : '#2980b9');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(centerX, ballY, 25, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (scenario === 'spring') {
+                const springY = centerY + position * scale;
+                
+                ctx.strokeStyle = '#27ae60';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                const coils = 15;
+                for (let i = 0; i <= coils; i++) {
+                    const y = 100 + (springY - 100) * i / coils;
+                    const x = centerX + (i % 2 === 0 ? -15 : 15);
+                    if (i === 0) ctx.moveTo(centerX, 100);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+                
+                ctx.fillStyle = '#3498db';
+                ctx.fillRect(centerX - 30, springY, 60, 40);
+            } else if (scenario === 'roller') {
+                ctx.strokeStyle = '#666';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                for (let x = 0; x < width; x += 5) {
+                    const angle = (x / width) * Math.PI * 2;
+                    const y = centerY - height * scale * Math.cos(angle) / 2;
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+                
+                const carX = (time * 50) % width;
+                const carAngle = (carX / width) * Math.PI * 2;
+                const carY = centerY - height * scale * Math.cos(carAngle) / 2;
+                
+                ctx.fillStyle = velocity > 8 ? '#ff6b6b' : '#3498db';
+                ctx.fillRect(carX - 15, carY - 10, 30, 20);
+                ctx.fillStyle = '#333';
+                ctx.beginPath();
+                ctx.arc(carX - 8, carY + 10, 5, 0, Math.PI * 2);
+                ctx.arc(carX + 8, carY + 10, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function updateStats() {
+            document.getElementById('statSims').textContent = interactionData.simulations_run;
+            document.getElementById('statScenarios').textContent = interactionData.scenarios_tested.size;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            interactionData.scenarios_tested = Array.from(interactionData.scenarios_tested);
+            interactionData.height_values = Array.from(interactionData.height_values);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactionData })
+                });
+            } catch (err) {}
+        }
+        
+        async function complete() {
+            running = false;
+            if (animationId) cancelAnimationFrame(animationId);
+            await saveProgress();
+            alert('Session completed!');
+            window.location.href = '/dashboard';
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', () => {
+            running = false;
+            if (animationId) cancelAnimationFrame(animationId);
+            saveProgress();
+        });
+    </script>
+</body>
+</html>

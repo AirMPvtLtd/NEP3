@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadratic Explorer - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; }
+        .main { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .graph-area { background: var(--bg); border-radius: 6px; height: 500px; border: 1px solid #464647; position: relative; }
+        canvas { width: 100%; height: 100%; }
+        input[type="range"] { width: 100%; height: 8px; background: #2d2d30; border-radius: 4px; }
+        input[type="range"]::-webkit-slider-thumb { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+        .param-box { background: #2d2d30; padding: 15px; border-radius: 6px; margin: 10px 0; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647; }
+        .info-row:last-child { border-bottom: none; }
+        .preset-btn { padding: 12px; background: #2d2d30; border: 1px solid #464647; border-radius: 6px; cursor: pointer; font-size: 13px; margin: 5px 0; transition: all 0.3s; font-family: 'Courier New', monospace; }
+        .preset-btn:hover { background: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-project-diagram"></i> Quadratic Explorer</h1><p style="color: #888;">Math Lab • Grade 9-10</p></div>
+            <div style="display: flex; gap: 15px;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">Parabola Grapher</h2>
+                
+                <div style="background: #2d2d30; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                    <div style="font-family: 'Courier New', monospace; font-size: 18px; text-align: center;">
+                        y = <span id="equationDisplay">x² + 0x + 0</span>
+                    </div>
+                </div>
+                
+                <div class="graph-area">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Coefficients</h3>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display: block; margin-bottom: 10px; color: #888;">a (opens): <span id="aDisplay">1</span></label>
+                    <input type="range" id="aSlider" min="-5" max="5" step="0.1" value="1" oninput="updateEquation()">
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display: block; margin-bottom: 10px; color: #888;">b (axis): <span id="bDisplay">0</span></label>
+                    <input type="range" id="bSlider" min="-10" max="10" step="0.5" value="0" oninput="updateEquation()">
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display: block; margin-bottom: 10px; color: #888;">c (y-intercept): <span id="cDisplay">0</span></label>
+                    <input type="range" id="cSlider" min="-10" max="10" step="0.5" value="0" oninput="updateEquation()">
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-calculator"></i> Properties</h2>
+                
+                <div class="param-box">
+                    <div class="info-row">
+                        <span>Vertex:</span>
+                        <strong id="vertex">(0, 0)</strong>
+                    </div>
+                    <div class="info-row">
+                        <span>Axis of Symmetry:</span>
+                        <strong id="axis">x = 0</strong>
+                    </div>
+                    <div class="info-row">
+                        <span>Y-Intercept:</span>
+                        <strong id="yIntercept">0</strong>
+                    </div>
+                    <div class="info-row">
+                        <span>Discriminant:</span>
+                        <strong id="discriminant">0</strong>
+                    </div>
+                    <div class="info-row">
+                        <span>Roots:</span>
+                        <strong id="roots">x = 0</strong>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Preset Parabolas</h3>
+                <div class="preset-btn" onclick="setCoeffs(1, 0, 0)">y = x²</div>
+                <div class="preset-btn" onclick="setCoeffs(1, 0, -4)">y = x² - 4</div>
+                <div class="preset-btn" onclick="setCoeffs(-1, 0, 9)">y = -x² + 9</div>
+                <div class="preset-btn" onclick="setCoeffs(1, -4, 4)">y = x² - 4x + 4</div>
+                <div class="preset-btn" onclick="setCoeffs(2, 4, -6)">y = 2x² + 4x - 6</div>
+                
+                <div style="background: rgba(0, 122, 204, 0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 12px; line-height: 1.8;">
+                    <strong style="color: var(--accent);">Quadratic Form:</strong><br>
+                    y = ax² + bx + c<br>
+                    Vertex: (-b/2a, f(-b/2a))<br>
+                    Discriminant: b² - 4ac
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statGraphs">0</div>
+                        <div style="font-size: 12px; color: #888;">Graphs</div>
+                    </div>
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statChanges">0</div>
+                        <div style="font-size: 12px; color: #888;">Changes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now(), canvas, ctx;
+        
+        let a = 1, b = 0, c = 0;
+        
+        let interactionData = {
+            actions_count: 0, time_seconds: 0, total_parameter_space: 200,
+            tool_usage: {}, graphs_created: 0, parameter_changes: 0,
+            presets_used: new Set(), unique_equations: new Set()
+        };
+        
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, toolId: 'quadratic-explorer', toolType: 'LAB', interactionData })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {}
+            }
+            
+            updateEquation();
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            setInterval(saveProgress, 30000);
+        }
+        
+        function setCoeffs(na, nb, nc) {
+            document.getElementById('aSlider').value = na;
+            document.getElementById('bSlider').value = nb;
+            document.getElementById('cSlider').value = nc;
+            interactionData.presets_used.add(`${na},${nb},${nc}`);
+            updateEquation();
+        }
+        
+        function updateEquation() {
+            a = parseFloat(document.getElementById('aSlider').value);
+            b = parseFloat(document.getElementById('bSlider').value);
+            c = parseFloat(document.getElementById('cSlider').value);
+            
+            document.getElementById('aDisplay').textContent = a.toFixed(1);
+            document.getElementById('bDisplay').textContent = b.toFixed(1);
+            document.getElementById('cDisplay').textContent = c.toFixed(1);
+            
+            const bStr = b >= 0 ? `+ ${Math.abs(b)}x` : `- ${Math.abs(b)}x`;
+            const cStr = c >= 0 ? `+ ${Math.abs(c)}` : `- ${Math.abs(c)}`;
+            document.getElementById('equationDisplay').textContent = 
+                `${a === 1 ? '' : a}x² ${bStr} ${cStr}`;
+            
+            interactionData.unique_equations.add(`${a.toFixed(1)},${b.toFixed(1)},${c.toFixed(1)}`);
+            interactionData.parameter_changes++;
+            interactionData.graphs_created++;
+            interactionData.actions_count++;
+            
+            calculateProperties();
+            drawGraph();
+            updateStats();
+        }
+        
+        function calculateProperties() {
+            const vertexX = -b / (2 * a);
+            const vertexY = a * vertexX * vertexX + b * vertexX + c;
+            document.getElementById('vertex').textContent = 
+                `(${vertexX.toFixed(2)}, ${vertexY.toFixed(2)})`;
+            
+            document.getElementById('axis').textContent = `x = ${vertexX.toFixed(2)}`;
+            document.getElementById('yIntercept').textContent = c.toFixed(2);
+            
+            const discriminant = b * b - 4 * a * c;
+            document.getElementById('discriminant').textContent = discriminant.toFixed(2);
+            
+            if (discriminant > 0) {
+                const root1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+                const root2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+                document.getElementById('roots').textContent = 
+                    `x = ${root1.toFixed(2)}, ${root2.toFixed(2)}`;
+            } else if (discriminant === 0) {
+                const root = -b / (2 * a);
+                document.getElementById('roots').textContent = `x = ${root.toFixed(2)}`;
+            } else {
+                document.getElementById('roots').textContent = 'No real roots';
+            }
+        }
+        
+        function drawGraph() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const scale = 30;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            // Grid
+            ctx.strokeStyle = '#2a2a2a';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < width; x += scale) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < height; y += scale) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+            
+            // Axes
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(width, centerY);
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, height);
+            ctx.stroke();
+            
+            // Parabola
+            ctx.strokeStyle = '#007acc';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            let started = false;
+            
+            for (let px = 0; px < width; px++) {
+                const x = (px - centerX) / scale;
+                const y = a * x * x + b * x + c;
+                const py = centerY - y * scale;
+                
+                if (!isNaN(y) && Math.abs(y) < 20) {
+                    if (!started) {
+                        ctx.moveTo(px, py);
+                        started = true;
+                    } else {
+                        ctx.lineTo(px, py);
+                    }
+                }
+            }
+            ctx.stroke();
+            
+            // Vertex
+            const vertexX = -b / (2 * a);
+            const vertexY = a * vertexX * vertexX + b * vertexX + c;
+            const vx = centerX + vertexX * scale;
+            const vy = centerY - vertexY * scale;
+            
+            ctx.fillStyle = '#ff6b6b';
+            ctx.beginPath();
+            ctx.arc(vx, vy, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Axis of symmetry
+            ctx.strokeStyle = '#4ecdc4';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(vx, 0);
+            ctx.lineTo(vx, height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        function updateStats() {
+            document.getElementById('statGraphs').textContent = interactionData.unique_equations.size;
+            document.getElementById('statChanges').textContent = interactionData.parameter_changes;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            interactionData.presets_used = Array.from(interactionData.presets_used);
+            interactionData.unique_equations = Array.from(interactionData.unique_equations);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactionData })
+                });
+            } catch (err) {}
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('Session completed!');
+            window.location.href = '/dashboard';
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+    </script>
+</body>
+</html>

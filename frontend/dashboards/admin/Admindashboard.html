@@ -1,0 +1,2309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - NEP Workbench</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d30 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: #333337;
+            border-right: 1px solid #464647;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #464647;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sidebar-nav {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: #ccc;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+        
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(0, 122, 204, 0.1);
+            color: #00d4ff;
+            transform: translateX(4px);
+        }
+        
+        .nav-icon {
+            width: 20px;
+            margin-right: 12px;
+            text-align: center;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 20px;
+        }
+        
+        .header {
+            background: #333337;
+            border: 1px solid #464647;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .header-left h1 {
+            font-size: 1.8rem;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+        
+        .breadcrumb {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .notification-badge {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .notification-icon {
+            font-size: 1.5rem;
+            color: #ccc;
+            transition: color 0.3s;
+        }
+        
+        .notification-icon:hover {
+            color: #00d4ff;
+        }
+        
+        .badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+        
+        .user-profile:hover {
+            background: rgba(0, 122, 204, 0.1);
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: #ffffff;
+        }
+        
+        .user-role {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        
+        .card {
+            background: #2d2d30;
+            border: 1px solid #464647;
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #007acc;
+            box-shadow: 0 10px 25px rgba(0, 122, 204, 0.2);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        
+        .card-subtitle {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .grid {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        .grid-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            opacity: 0.05;
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #00d4ff;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #aaa;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+        
+        .trend-up {
+            color: #4ade80;
+        }
+        
+        .trend-down {
+            color: #f87171;
+        }
+        
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 122, 204, 0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #007acc;
+            color: #00d4ff;
+        }
+        
+        .btn-outline:hover {
+            background: rgba(0, 122, 204, 0.1);
+        }
+        
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #16a34a, #4ade80);
+            color: white;
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+            color: white;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: #333337;
+        }
+        
+        th {
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #ffffff;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #464647;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #464647;
+            color: #ccc;
+        }
+        
+        tbody tr {
+            transition: background 0.3s;
+        }
+        
+        tbody tr:hover {
+            background: rgba(0, 122, 204, 0.05);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-pending {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+        
+        .status-approved {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+        
+        .status-rejected {
+            background: rgba(248, 113, 113, 0.2);
+            color: #f87171;
+        }
+        
+        .status-suspended {
+            background: rgba(156, 163, 175, 0.2);
+            color: #9ca3af;
+        }
+        
+        .status-active {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+        
+        .status-inactive {
+            background: rgba(156, 163, 175, 0.2);
+            color: #9ca3af;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 30, 30, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(0, 122, 204, 0.2);
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #2d2d30;
+            border: 1px solid #464647;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            color: #ffffff;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: #ccc;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .modal-close:hover {
+            color: #00d4ff;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            color: #ccc;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: #1e1e1e;
+            border: 1px solid #464647;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #007acc;
+            box-shadow: 0 0 0 3px rgba(0, 122, 204, 0.1);
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            background: #1e1e1e;
+            border: 1px solid #464647;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 0.95rem;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #007acc;
+        }
+        
+        .simple-chart {
+            display: flex;
+            align-items: flex-end;
+            height: 200px;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .bar {
+            flex: 1;
+            background: linear-gradient(to top, #007acc, #00d4ff);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            min-height: 10px;
+        }
+        
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #aaa;
+            font-size: 0.8rem;
+        }
+        
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #00d4ff;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 1024px) {
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .grid-3 { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .grid-4,
+            .grid-3,
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .fade-in-delay-1 { animation-delay: 0.1s; animation-fill-mode: backwards; }
+        .fade-in-delay-2 { animation-delay: 0.2s; animation-fill-mode: backwards; }
+        .fade-in-delay-3 { animation-delay: 0.3s; animation-fill-mode: backwards; }
+        .fade-in-delay-4 { animation-delay: 0.4s; animation-fill-mode: backwards; }
+        
+        .hidden { display: none; }
+        .text-center { text-align: center; }
+        .mt-1 { margin-top: 10px; }
+        .mt-2 { margin-top: 20px; }
+        .mt-3 { margin-top: 30px; }
+        .mb-1 { margin-bottom: 10px; }
+        .mb-2 { margin-bottom: 20px; }
+        .mb-3 { margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+    
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>NEP Admin</span>
+                </div>
+            </div>
+            
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a href="#overview" class="nav-link active" data-page="overview">
+                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                        Overview
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#teachers" class="nav-link" data-page="teachers">
+                        <i class="nav-icon fas fa-chalkboard-teacher"></i>
+                        Teachers
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#students" class="nav-link" data-page="students">
+                        <i class="nav-icon fas fa-user-graduate"></i>
+                        Students
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#classes" class="nav-link" data-page="classes">
+                        <i class="nav-icon fas fa-school"></i>
+                        Classes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#analytics" class="nav-link" data-page="analytics">
+                        <i class="nav-icon fas fa-chart-line"></i>
+                        Analytics
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#reports" class="nav-link" data-page="reports">
+                        <i class="nav-icon fas fa-file-alt"></i>
+                        Reports
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#activity" class="nav-link" data-page="activity">
+                        <i class="nav-icon fas fa-history"></i>
+                        Activity Logs
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#settings" class="nav-link" data-page="settings">
+                        <i class="nav-icon fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="logout()">
+                        <i class="nav-icon fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </li>
+            </ul>
+        </aside>
+        
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1>Admin Dashboard</h1>
+                    <div class="breadcrumb">
+                        <span id="currentPage">Overview</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="notification-badge" onclick="showNotifications()">
+                        <i class="notification-icon fas fa-bell"></i>
+                        <span class="badge" id="notificationCount">0</span>
+                    </div>
+                    <div class="user-profile">
+                        <div class="user-avatar" id="userAvatar">A</div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName">Loading...</div>
+                            <div class="user-role">Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- OVERVIEW PAGE -->
+            <div id="overviewPage" class="page-content">
+                <!-- Stats Cards -->
+                <div class="grid grid-4 mb-3">
+                    <div class="card stat-card fade-in">
+                        <div class="stat-icon">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                        <div class="stat-value" id="totalTeachers">0</div>
+                        <div class="stat-label">Total Teachers</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span id="teacherTrend">+0 this month</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card stat-card fade-in fade-in-delay-1">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div class="stat-value" id="totalStudents">0</div>
+                        <div class="stat-label">Total Students</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span id="studentTrend">+0 this month</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card stat-card fade-in fade-in-delay-2">
+                        <div class="stat-icon">
+                            <i class="fas fa-school"></i>
+                        </div>
+                        <div class="stat-value" id="totalClasses">0</div>
+                        <div class="stat-label">Total Classes</div>
+                        <div class="stat-trend">
+                            <i class="fas fa-minus"></i>
+                            <span id="classTrend">Stable</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card stat-card fade-in fade-in-delay-3">
+                        <div class="stat-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="stat-value" id="totalChallenges">0</div>
+                        <div class="stat-label">Total Challenges</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span id="challengeTrend">+0 this week</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts Row -->
+                <div class="grid grid-2 mb-3">
+                    <!-- Performance Distribution -->
+                    <div class="card fade-in">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Performance Distribution</div>
+                                <div class="card-subtitle">Students by performance range</div>
+                            </div>
+                        </div>
+                        <div class="simple-chart" id="performanceChart">
+                            <div class="bar" style="height: 20%">
+                                <div class="bar-value">5</div>
+                                <div class="bar-label">0-50</div>
+                            </div>
+                            <div class="bar" style="height: 40%">
+                                <div class="bar-value">12</div>
+                                <div class="bar-label">50-60</div>
+                            </div>
+                            <div class="bar" style="height: 60%">
+                                <div class="bar-value">25</div>
+                                <div class="bar-label">60-70</div>
+                            </div>
+                            <div class="bar" style="height: 80%">
+                                <div class="bar-value">45</div>
+                                <div class="bar-label">70-80</div>
+                            </div>
+                            <div class="bar" style="height: 70%">
+                                <div class="bar-value">38</div>
+                                <div class="bar-label">80-90</div>
+                            </div>
+                            <div class="bar" style="height: 50%">
+                                <div class="bar-value">15</div>
+                                <div class="bar-label">90-100</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Activity Timeline -->
+                    <div class="card fade-in fade-in-delay-1">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Activity Timeline</div>
+                                <div class="card-subtitle">Last 7 days</div>
+                            </div>
+                        </div>
+                        <div class="simple-chart" id="activityChart">
+                            <div class="bar" style="height: 45%">
+                                <div class="bar-value">45</div>
+                                <div class="bar-label">Mon</div>
+                            </div>
+                            <div class="bar" style="height: 52%">
+                                <div class="bar-value">52</div>
+                                <div class="bar-label">Tue</div>
+                            </div>
+                            <div class="bar" style="height: 48%">
+                                <div class="bar-value">48</div>
+                                <div class="bar-label">Wed</div>
+                            </div>
+                            <div class="bar" style="height: 65%">
+                                <div class="bar-value">65</div>
+                                <div class="bar-label">Thu</div>
+                            </div>
+                            <div class="bar" style="height: 70%">
+                                <div class="bar-value">70</div>
+                                <div class="bar-label">Fri</div>
+                            </div>
+                            <div class="bar" style="height: 58%">
+                                <div class="bar-value">58</div>
+                                <div class="bar-label">Sat</div>
+                            </div>
+                            <div class="bar" style="height: 42%">
+                                <div class="bar-value">42</div>
+                                <div class="bar-label">Sun</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions & Pending Items -->
+                <div class="grid grid-2">
+                    <!-- Pending Approvals -->
+                    <div class="card fade-in">
+                        <div class="card-header">
+                            <div class="card-title">Pending Teacher Approvals</div>
+                            <button class="btn btn-primary btn-sm" onclick="switchPage('teachers')">View All</button>
+                        </div>
+                        <div id="pendingTeachers">
+                            <p class="text-center" style="color: #aaa; padding: 20px;">No pending approvals</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Performers -->
+                    <div class="card fade-in fade-in-delay-1">
+                        <div class="card-header">
+                            <div class="card-title">Top Performers</div>
+                            <button class="btn btn-outline btn-sm" onclick="switchPage('students')">View All</button>
+                        </div>
+                        <div id="topPerformers">
+                            <div style="padding: 15px; border-bottom: 1px solid #464647;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #fff;">No data available</div>
+                                        <div style="color: #aaa; font-size: 0.85rem;">Waiting for student data</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TEACHERS PAGE -->
+            <div id="teachersPage" class="page-content hidden">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <div class="card-title">Teacher Management</div>
+                        <button class="btn btn-primary" onclick="openAddTeacherModal()">
+                            <i class="fas fa-plus"></i> Add Teacher
+                        </button>
+                    </div>
+                    
+                    <div class="search-bar">
+                        <input type="text" class="search-input" placeholder="Search teachers..." id="teacherSearch">
+                        <select class="form-select" id="teacherStatusFilter" onchange="filterTeachers()">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="suspended">Suspended</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Teacher ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Subjects</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teachersTable">
+                                <tr>
+                                    <td colspan="6" class="text-center">No teachers found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- STUDENTS PAGE -->
+            <div id="studentsPage" class="page-content hidden">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <div class="card-title">Student Management</div>
+                        <button class="btn btn-primary" onclick="openBulkUploadModal()">
+                            <i class="fas fa-upload"></i> Bulk Upload
+                        </button>
+                    </div>
+                    
+                    <div class="search-bar">
+                        <input type="text" class="search-input" placeholder="Search students..." id="studentSearch">
+                        <select class="form-select" id="classFilter" onchange="filterStudents()">
+                            <option value="">All Classes</option>
+                            <option value="1">Class 1</option>
+                            <option value="2">Class 2</option>
+                            <option value="3">Class 3</option>
+                            <option value="4">Class 4</option>
+                            <option value="5">Class 5</option>
+                            <option value="6">Class 6</option>
+                            <option value="7">Class 7</option>
+                            <option value="8">Class 8</option>
+                            <option value="9">Class 9</option>
+                            <option value="10">Class 10</option>
+                            <option value="11">Class 11</option>
+                            <option value="12">Class 12</option>
+                        </select>
+                        <select class="form-select" id="sectionFilter" onchange="filterStudents()">
+                            <option value="">All Sections</option>
+                            <option value="A">Section A</option>
+                            <option value="B">Section B</option>
+                            <option value="C">Section C</option>
+                            <option value="D">Section D</option>
+                        </select>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Name</th>
+                                    <th>Class</th>
+                                    <th>Section</th>
+                                    <th>Performance Index</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTable">
+                                <tr>
+                                    <td colspan="6" class="text-center">No students found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CLASSES PAGE -->
+            <div id="classesPage" class="page-content hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Class Sections</div>
+                        <button class="btn btn-primary" onclick="openAddClassModal()">
+                            <i class="fas fa-plus"></i> Add Class
+                        </button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Class</th>
+                                    <th>Section</th>
+                                    <th>Subject</th>
+                                    <th>Teacher</th>
+                                    <th>Students</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="classesTable">
+                                <tr>
+                                    <td colspan="6" class="text-center">No classes found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ANALYTICS PAGE -->
+            <div id="analyticsPage" class="page-content hidden">
+                <div class="grid grid-3 mb-3">
+                    <div class="card">
+                        <div class="card-title">Average Performance</div>
+                        <div class="stat-value" id="avgPerformance">0</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Pass Rate</div>
+                        <div class="stat-value" id="passRate">0%</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Active Users</div>
+                        <div class="stat-value" id="activeUsers">0</div>
+                    </div>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-title">Performance Analytics</div>
+                    <div class="simple-chart" id="analyticsChart">
+                        <div class="bar" style="height: 30%">
+                            <div class="bar-value">30</div>
+                            <div class="bar-label">Jan</div>
+                        </div>
+                        <div class="bar" style="height: 45%">
+                            <div class="bar-value">45</div>
+                            <div class="bar-label">Feb</div>
+                        </div>
+                        <div class="bar" style="height: 60%">
+                            <div class="bar-value">60</div>
+                            <div class="bar-label">Mar</div>
+                        </div>
+                        <div class="bar" style="height: 75%">
+                            <div class="bar-value">75</div>
+                            <div class="bar-label">Apr</div>
+                        </div>
+                        <div class="bar" style="height: 80%">
+                            <div class="bar-value">80</div>
+                            <div class="bar-label">May</div>
+                        </div>
+                        <div class="bar" style="height: 85%">
+                            <div class="bar-value">85</div>
+                            <div class="bar-label">Jun</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Class-wise Performance</div>
+                    <div id="classPerformance">
+                        <div style="padding: 15px; border-bottom: 1px solid #464647;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600; color: #fff;">Class 10A</div>
+                                    <div style="color: #aaa; font-size: 0.85rem;">Average: 78%</div>
+                                </div>
+                                <div class="status-badge status-approved">Top</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- REPORTS PAGE -->
+            <div id="reportsPage" class="page-content hidden">
+                <div class="grid grid-3 mb-3">
+                    <button class="btn btn-primary" onclick="generateReport('weekly')">
+                        <i class="fas fa-file-pdf"></i> Weekly Report
+                    </button>
+                    <button class="btn btn-info" onclick="generateReport('monthly')">
+                        <i class="fas fa-file-excel"></i> Monthly Report
+                    </button>
+                    <button class="btn btn-success" onclick="generateReport('institutional')">
+                        <i class="fas fa-file-alt"></i> Institutional Report
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Recent Reports</div>
+                        <button class="btn btn-outline btn-sm" onclick="refreshReports()">
+                            <i class="fas fa-sync"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Report Type</th>
+                                    <th>Period</th>
+                                    <th>Generated On</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportsTable">
+                                <tr>
+                                    <td colspan="5" class="text-center">No reports available</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ACTIVITY LOGS PAGE -->
+            <div id="activityPage" class="page-content hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Activity Logs</div>
+                        <div style="display: flex; gap: 10px;">
+                            <select class="form-select" style="width: 150px;" id="activityTypeFilter" onchange="loadActivityLogs()">
+                                <option value="">All Types</option>
+                                <option value="login">Login</option>
+                                <option value="registration">Registration</option>
+                                <option value="challenge">Challenge</option>
+                                <option value="assessment">Assessment</option>
+                                <option value="system">System</option>
+                            </select>
+                            <select class="form-select" style="width: 150px;" id="activityStatusFilter" onchange="loadActivityLogs()">
+                                <option value="">All Status</option>
+                                <option value="success">Success</option>
+                                <option value="failed">Failed</option>
+                            </select>
+                            <button class="btn btn-outline btn-sm" onclick="loadActivityLogs()">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityTable">
+                                <tr>
+                                    <td colspan="6" class="text-center">Loading activity logs...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SETTINGS PAGE -->
+            <div id="settingsPage" class="page-content hidden">
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-title">School Information</div>
+                        <form id="schoolForm" onsubmit="updateSchool(event)">
+                            <div class="form-group">
+                                <label class="form-label">School Name</label>
+                                <input type="text" class="form-input" id="schoolName" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Address</label>
+                                <input type="text" class="form-input" id="schoolAddress">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">City</label>
+                                <input type="text" class="form-input" id="schoolCity">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" class="form-input" id="schoolPhone">
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">System Settings</div>
+                        <form id="settingsForm" onsubmit="updateSettings(event)">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" id="enableEmail"> Enable Email Notifications
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" id="enableParent"> Enable Parent Access
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" id="enableAI"> Enable AI Evaluation
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Daily Challenge Limit</label>
+                                <input type="number" class="form-input" id="dailyLimit" min="1" max="10">
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Settings
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- MODALS -->
+    
+    <!-- Add Teacher Modal -->
+    <div id="addTeacherModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add New Teacher</h2>
+                <button class="modal-close" onclick="closeModal('addTeacherModal')">&times;</button>
+            </div>
+            <form id="addTeacherForm" onsubmit="addTeacher(event)">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-input" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" name="password" required minlength="8">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" class="form-input" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Subjects (comma-separated)</label>
+                    <input type="text" class="form-input" name="subjects" placeholder="e.g., Physics, Mathematics, English" required>
+                    <div class="field-help" id="subjectHelp">
+                        Valid subjects: Physics, Chemistry, Mathematics, Biology, Computer Science, English, Hindi, Social Science
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Teacher
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Add Class Modal -->
+    <div id="addClassModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add New Class</h2>
+                <button class="modal-close" onclick="closeModal('addClassModal')">&times;</button>
+            </div>
+            <form id="addClassForm" onsubmit="addClass(event)">
+                <div class="form-group">
+                    <label class="form-label">Class</label>
+                    <select class="form-select" name="class" required>
+                        <option value="">Select Class</option>
+                        <option value="6">Class 6</option>
+                        <option value="7">Class 7</option>
+                        <option value="8">Class 8</option>
+                        <option value="9">Class 9</option>
+                        <option value="10">Class 10</option>
+                        <option value="11">Class 11</option>
+                        <option value="12">Class 12</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Section</label>
+                    <select class="form-select" name="section" required>
+                        <option value="">Select Section</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Subject</label>
+                    <select class="form-select" name="subject" required>
+                        <option value="">Select Subject</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Biology">Biology</option>
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="English">English</option>
+                        <option value="Hindi">Hindi</option>
+                        <option value="Social Science">Social Science</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teacher ID</label>
+                    <input type="text" class="form-input" name="teacherId" placeholder="Enter teacher ID" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Maximum Students</label>
+                    <input type="number" class="form-input" name="maxStudents" value="30" min="1" max="50">
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Class
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Bulk Upload Modal -->
+    <div id="bulkUploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Bulk Upload Students</h2>
+                <button class="modal-close" onclick="closeModal('bulkUploadModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Upload CSV File</label>
+                <input type="file" class="form-input" id="csvFile" accept=".csv">
+            </div>
+            <div class="form-group">
+                <p style="color: #aaa; font-size: 0.9rem;">
+                    CSV format: name, email, class, section, teacherId, password
+                </p>
+            </div>
+            <button class="btn btn-primary" onclick="uploadCSV()">
+                <i class="fas fa-upload"></i> Upload
+            </button>
+        </div>
+    </div>
+    
+    <!-- Report Generation Modal -->
+    <div id="reportGenerationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Generate Report</h2>
+                <button class="modal-close" onclick="closeModal('reportGenerationModal')">&times;</button>
+            </div>
+            <div id="reportGenerationStatus">
+                <p>Preparing report...</p>
+                <div class="spinner" style="margin: 20px auto;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        let authToken = localStorage.getItem('authToken');
+        let schoolData = null;
+        
+        const TEACHER_STATUS = {
+            PENDING: 'pending',
+            APPROVED: 'approved', 
+            REJECTED: 'rejected',
+            SUSPENDED: 'suspended',
+            ACTIVE: 'active',
+            INACTIVE: 'inactive'
+        };
+        
+        const VALID_SUBJECTS = [
+            'Physics',
+            'Chemistry', 
+            'Mathematics',
+            'Biology',
+            'Computer Science',
+            'English',
+            'Hindi',
+            'Social Science'
+        ];
+        
+        let apiQueue = [];
+        let isProcessing = false;
+        const API_DELAY = 500;
+        
+        async function queuedApiCall(endpoint, options = {}) {
+            return new Promise((resolve, reject) => {
+                apiQueue.push({ endpoint, options, resolve, reject });
+                processQueue();
+            });
+        }
+        
+        async function processQueue() {
+            if (isProcessing || apiQueue.length === 0) return;
+            
+            isProcessing = true;
+            const task = apiQueue.shift();
+            
+            try {
+                const result = await apiCall(task.endpoint, task.options);
+                task.resolve(result);
+            } catch (error) {
+                task.reject(error);
+            }
+            
+            setTimeout(() => {
+                isProcessing = false;
+                processQueue();
+            }, API_DELAY);
+        }
+        
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`,
+                        ...options.headers
+                    }
+                });
+                
+                if (response.status === 429) {
+                    throw new Error('Rate limit exceeded. Please try again later.');
+                }
+                
+                if (response.status === 401 || response.status === 403) {
+                    localStorage.clear();
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'API request failed');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+        
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = '/login.html';
+            }
+        }
+        
+        function switchPage(pageName) {
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.add('hidden');
+            });
+            
+            const targetPage = document.getElementById(`${pageName}Page`);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+            }
+            
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            const activeLink = document.querySelector(`[data-page="${pageName}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+            
+            document.getElementById('currentPage').textContent = 
+                pageName.charAt(0).toUpperCase() + pageName.slice(1);
+            
+            loadPageData(pageName);
+        }
+        
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageName = link.dataset.page;
+                switchPage(pageName);
+            });
+        });
+        
+        async function loadPageData(pageName) {
+            showLoading();
+            
+            try {
+                switch(pageName) {
+                    case 'overview':
+                        await loadOverview();
+                        break;
+                    case 'teachers':
+                        await loadTeachers();
+                        break;
+                    case 'students':
+                        await loadStudents();
+                        break;
+                    case 'classes':
+                        await loadClasses();
+                        break;
+                    case 'analytics':
+                        await loadAnalytics();
+                        break;
+                    case 'reports':
+                        await loadReports();
+                        break;
+                    case 'activity':
+                        await loadActivityLogs();
+                        break;
+                    case 'settings':
+                        await loadSettings();
+                        break;
+                }
+            } catch (error) {
+                console.error('Error loading page:', error);
+                alert('Error loading data: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function loadOverview() {
+            try {
+                const stats = await queuedApiCall('/admin/school/statistics');
+                const overview = stats.data?.overview || stats.data || {};
+                
+                document.getElementById('totalTeachers').textContent = overview.totalTeachers || 0;
+                document.getElementById('totalStudents').textContent = overview.totalStudents || 0;
+                document.getElementById('totalClasses').textContent = overview.totalClasses || 0;
+                document.getElementById('totalChallenges').textContent = overview.totalChallenges || 0;
+                
+                try {
+                    const pending = await queuedApiCall('/admin/teachers/pending');
+                    displayPendingTeachers(pending.data?.teachers || []);
+                } catch (error) {
+                    console.error('Error loading pending teachers:', error);
+                }
+                
+            } catch (error) {
+                console.error('Error loading overview:', error);
+                setDefaultValues();
+            }
+        }
+        
+        function setDefaultValues() {
+            document.getElementById('totalTeachers').textContent = '0';
+            document.getElementById('totalStudents').textContent = '0';
+            document.getElementById('totalClasses').textContent = '0';
+            document.getElementById('totalChallenges').textContent = '0';
+        }
+        
+        async function loadTeachers() {
+            try {
+                const status = document.getElementById('teacherStatusFilter').value;
+                const data = await queuedApiCall('/admin/teachers');
+                let teachers = data.data?.teachers || [];
+                
+                if (status) {
+                    teachers = teachers.filter(t => 
+                        (t.status || 'pending') === status
+                    );
+                }
+                
+                displayTeachers(teachers);
+            } catch (error) {
+                console.error('Error loading teachers:', error);
+                document.getElementById('teachersTable').innerHTML = 
+                    '<tr><td colspan="6" class="text-center">Error loading teachers</td></tr>';
+            }
+        }
+        
+        function displayTeachers(teachers) {
+            const tbody = document.getElementById('teachersTable');
+            
+            if (!teachers || teachers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No teachers found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = teachers.slice(0, 10).map(teacher => {
+                const status = teacher.status || 'pending';
+                const statusDisplay = status.charAt(0).toUpperCase() + status.slice(1);
+                const statusClass = `status-${status.toLowerCase()}`;
+                
+                const subjectsDisplay = teacher.subjects ? 
+                    teacher.subjects.join(', ') : 'Not specified';
+                
+                return `
+                    <tr>
+                        <td>${teacher.teacherId || 'N/A'}</td>
+                        <td>${teacher.name || 'Unknown'}</td>
+                        <td>${teacher.email || 'N/A'}</td>
+                        <td>${subjectsDisplay}</td>
+                        <td><span class="status-badge ${statusClass}">${statusDisplay}</span></td>
+                        <td>
+                            <button class="btn btn-outline btn-sm" onclick="viewTeacher('${teacher.teacherId || ''}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${status === 'pending' ? `
+                            <button class="btn btn-success btn-sm" onclick="approveTeacher('${teacher.teacherId || ''}')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="rejectTeacher('${teacher.teacherId || ''}')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            ` : ''}
+                            <button class="btn btn-danger btn-sm" onclick="deleteTeacher('${teacher.teacherId || ''}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        async function approveTeacher(teacherId) {
+            if (!confirm('Approve this teacher?')) return;
+            
+            try {
+                await apiCall(`/admin/teachers/${teacherId}/approve`, {
+                    method: 'PUT'
+                });
+                alert('Teacher approved successfully');
+                loadTeachers();
+                if (document.getElementById('overviewPage').classList.contains('hidden') === false) {
+                    loadOverview();
+                }
+            } catch (error) {
+                try {
+                    await apiCall(`/admin/teachers/${teacherId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ status: 'approved' })
+                    });
+                    alert('Teacher approved successfully');
+                    loadTeachers();
+                    if (document.getElementById('overviewPage').classList.contains('hidden') === false) {
+                        loadOverview();
+                    }
+                } catch (error2) {
+                    alert('Error approving teacher: ' + error.message);
+                }
+            }
+        }
+        
+        async function rejectTeacher(teacherId) {
+            const reason = prompt('Enter rejection reason:');
+            if (!reason) return;
+            
+            try {
+                await apiCall(`/admin/teachers/${teacherId}/reject`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ reason })
+                });
+                alert('Teacher rejected');
+                loadTeachers();
+            } catch (error) {
+                try {
+                    await apiCall(`/admin/teachers/${teacherId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ 
+                            status: 'rejected',
+                            rejectedReason: reason 
+                        })
+                    });
+                    alert('Teacher rejected');
+                    loadTeachers();
+                } catch (error2) {
+                    alert('Error rejecting teacher: ' + error.message);
+                }
+            }
+        }
+        
+        function displayPendingTeachers(teachers) {
+            const container = document.getElementById('pendingTeachers');
+            
+            if (!teachers || teachers.length === 0) {
+                container.innerHTML = '<p class="text-center" style="color: #aaa; padding: 20px;">No pending approvals</p>';
+                return;
+            }
+            
+            container.innerHTML = teachers.slice(0, 5).map(teacher => `
+                <div style="padding: 15px; border-bottom: 1px solid #464647;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 600; color: #fff;">${teacher.name || 'Unknown'}</div>
+                            <div style="color: #aaa; font-size: 0.85rem;">${teacher.email || 'N/A'}</div>
+                            <div style="color: #aaa; font-size: 0.85rem; margin-top: 5px;">
+                                Subjects: ${teacher.subjects ? teacher.subjects.join(', ') : 'Not specified'}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-success btn-sm" onclick="approveTeacher('${teacher.teacherId || ''}')">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="rejectTeacher('${teacher.teacherId || ''}')">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function addTeacher(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData);
+            
+            const subjects = data.subjects.split(',')
+                .map(s => s.trim())
+                .map(s => {
+                    const words = s.toLowerCase().split(' ');
+                    const properCase = words.map(word => 
+                        word.charAt(0).toUpperCase() + word.slice(1)
+                    ).join(' ');
+                    
+                    const validSubject = VALID_SUBJECTS.find(
+                        valid => valid.toLowerCase() === properCase.toLowerCase()
+                    );
+                    
+                    return validSubject || properCase;
+                })
+                .filter(s => VALID_SUBJECTS.includes(s));
+            
+            if (subjects.length === 0) {
+                alert(`Please enter valid subjects. Allowed subjects: ${VALID_SUBJECTS.join(', ')}`);
+                return;
+            }
+            
+            const payload = {
+                name: data.name,
+                email: data.email,
+                password: data.password,
+                phone: data.phone,
+                subjects: subjects,
+                status: 'pending',
+                schoolId: localStorage.getItem('schoolId') || schoolData?.schoolId
+            };
+            
+            try {
+                const response = await apiCall('/admin/teachers', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                alert('Teacher added successfully. Status: Pending');
+                closeModal('addTeacherModal');
+                event.target.reset();
+                loadTeachers();
+                
+                if (document.getElementById('overviewPage').classList.contains('hidden') === false) {
+                    loadOverview();
+                }
+            } catch (error) {
+                console.error('Add teacher error:', error);
+                alert('Error adding teacher. Please enter valid subjects: ' + VALID_SUBJECTS.join(', '));
+            }
+        }
+        
+        async function loadReports() {
+            try {
+                const data = await queuedApiCall('/admin/reports');
+                displayReports(data.data?.reports || []);
+            } catch (error) {
+                console.error('Error loading reports:', error);
+                displayReports([]);
+            }
+        }
+        
+        function displayReports(reports) {
+            const tbody = document.getElementById('reportsTable');
+            
+            if (!reports || reports.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No reports available</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = reports.map(report => {
+                const reportDate = new Date(report.generatedAt || report.createdAt);
+                const formattedDate = reportDate.toLocaleDateString() + ' ' + reportDate.toLocaleTimeString();
+                
+                return `
+                    <tr>
+                        <td>${report.reportType || 'N/A'}</td>
+                        <td>${report.period || 'N/A'}</td>
+                        <td>${formattedDate}</td>
+                        <td><span class="status-badge ${report.status === 'completed' ? 'status-approved' : 'status-pending'}">${report.status || 'pending'}</span></td>
+                        <td>
+                            ${report.downloadUrl ? `
+                            <a href="${report.downloadUrl}" class="btn btn-outline btn-sm" download>
+                                <i class="fas fa-download"></i>
+                            </a>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        async function generateReport(type) {
+            if (!confirm(`Generate ${type} report? This may take a few moments.`)) return;
+            
+            document.getElementById('reportGenerationModal').classList.add('active');
+            
+            try {
+                const payload = {
+                    reportType: type,
+                    periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+                    periodEnd: new Date().toISOString(),
+                    format: 'pdf'
+                };
+                
+                if (type === 'monthly') {
+                    payload.periodStart = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+                } else if (type === 'institutional') {
+                    payload.periodStart = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+                }
+                
+                const response = await apiCall('/admin/reports/generate', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                closeModal('reportGenerationModal');
+                
+                if (response.data?.downloadUrl) {
+                    alert(`${type} report generated successfully!`);
+                    window.open(response.data.downloadUrl, '_blank');
+                } else {
+                    alert('Report generation started. You will be notified when it is ready.');
+                }
+                
+                loadReports();
+            } catch (error) {
+                closeModal('reportGenerationModal');
+                console.error('Error generating report:', error);
+                alert('Error generating report: ' + error.message);
+            }
+        }
+        
+        function refreshReports() {
+            loadReports();
+        }
+        
+        async function loadActivityLogs() {
+            try {
+                const typeFilter = document.getElementById('activityTypeFilter').value;
+                const statusFilter = document.getElementById('activityStatusFilter').value;
+                
+                let endpoint = '/admin/activity-logs';
+                if (typeFilter || statusFilter) {
+                    endpoint += '?';
+                    if (typeFilter) endpoint += `type=${typeFilter}&`;
+                    if (statusFilter) endpoint += `status=${statusFilter}`;
+                }
+                
+                const data = await queuedApiCall(endpoint);
+                displayActivityLogs(data.data?.logs || []);
+            } catch (error) {
+                console.error('Error loading activity logs:', error);
+                displayActivityLogs([]);
+            }
+        }
+        
+        function displayActivityLogs(logs) {
+            const tbody = document.getElementById('activityTable');
+            
+            if (!logs || logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No activity logs found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = logs.slice(0, 20).map(log => {
+                const logDate = new Date(log.createdAt || log.timestamp || Date.now());
+                const formattedTime = logDate.toLocaleDateString() + ' ' + logDate.toLocaleTimeString();
+                
+                return `
+                    <tr>
+                        <td>${formattedTime}</td>
+                        <td>${log.userName || log.userId || 'System'}</td>
+                        <td>${log.action || 'N/A'}</td>
+                        <td>${log.activityType || 'N/A'}</td>
+                        <td><span class="status-badge ${log.success ? 'status-approved' : 'status-rejected'}">${log.success ? 'Success' : 'Failed'}</span></td>
+                        <td>${log.details || ''}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function loadFailedActivities() {
+            document.getElementById('activityStatusFilter').value = 'failed';
+            loadActivityLogs();
+        }
+        
+        async function loadStudents() {
+            try {
+                const data = await queuedApiCall('/admin/students');
+                displayStudents(data.data?.students || []);
+            } catch (error) {
+                console.error('Error loading students:', error);
+                displayStudents([]);
+            }
+        }
+        
+        function displayStudents(students) {
+            const tbody = document.getElementById('studentsTable');
+            
+            if (!students || students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No students found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = students.slice(0, 10).map(student => `
+                <tr>
+                    <td>${student.studentId || 'N/A'}</td>
+                    <td>${student.name || 'Unknown'}</td>
+                    <td>${student.class || 'N/A'}</td>
+                    <td>${student.section || 'N/A'}</td>
+                    <td>${student.performanceIndex ? student.performanceIndex.toFixed(1) : '0.0'}</td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="viewStudent('${student.studentId || ''}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteStudent('${student.studentId || ''}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        async function deleteStudent(studentId) {
+            if (!confirm('Delete this student?')) return;
+            
+            try {
+                await apiCall(`/admin/students/${studentId}`, { method: 'DELETE' });
+                alert('Student deleted successfully');
+                loadStudents();
+                if (!document.getElementById('overviewPage').classList.contains('hidden')) {
+                    loadOverview();
+                }
+            } catch (error) {
+                alert('Error deleting student: ' + error.message);
+            }
+        }
+        
+        async function uploadCSV() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a CSV file');
+                return;
+            }
+            
+            if (!file.name.endsWith('.csv')) {
+                alert('Please select a valid CSV file');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch(`${API_BASE_URL}/admin/students/bulk-upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Upload failed');
+                }
+                
+                alert(`Successfully uploaded ${data.data?.imported || 0} students`);
+                closeModal('bulkUploadModal');
+                fileInput.value = '';
+                loadStudents();
+                if (!document.getElementById('overviewPage').classList.contains('hidden')) {
+                    loadOverview();
+                }
+                
+            } catch (error) {
+                console.error('Bulk upload error:', error);
+                alert('Error uploading CSV: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function loadClasses() {
+            try {
+                const data = await queuedApiCall('/admin/classes');
+                displayClasses(data.data?.classes || []);
+            } catch (error) {
+                console.error('Error loading classes:', error);
+                displayClasses([]);
+            }
+        }
+        
+        function displayClasses(classes) {
+            const tbody = document.getElementById('classesTable');
+            
+            if (!classes || classes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No classes found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = classes.map(cls => `
+                <tr>
+                    <td>${cls.class || 'N/A'}</td>
+                    <td>${cls.section || 'N/A'}</td>
+                    <td>${cls.subject || 'N/A'}</td>
+                    <td>${cls.teacherName || cls.teacherId || 'N/A'}</td>
+                    <td>${cls.studentCount || 0} / ${cls.maxStudents || 30}</td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="viewClass('${cls._id || ''}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteClass('${cls._id || ''}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        async function addClass(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                await apiCall('/admin/classes', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                alert('Class created successfully');
+                closeModal('addClassModal');
+                event.target.reset();
+                loadClasses();
+                if (!document.getElementById('overviewPage').classList.contains('hidden')) {
+                    loadOverview();
+                }
+            } catch (error) {
+                alert('Error creating class: ' + error.message);
+            }
+        }
+        
+        async function deleteClass(classId) {
+            if (!confirm('Delete this class?')) return;
+            
+            try {
+                await apiCall(`/admin/classes/${classId}`, { method: 'DELETE' });
+                alert('Class deleted');
+                loadClasses();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        async function loadAnalytics() {
+            try {
+                const data = await queuedApiCall('/admin/analytics/overview');
+                if (data.data?.overview) {
+                    document.getElementById('avgPerformance').textContent = 
+                        data.data.overview.averagePerformance ? 
+                        data.data.overview.averagePerformance.toFixed(1) : '0';
+                    document.getElementById('passRate').textContent = 
+                        data.data.overview.passRate ? 
+                        data.data.overview.passRate.toFixed(1) + '%' : '0%';
+                    document.getElementById('activeUsers').textContent = 
+                        data.data.overview.activeUsers || 0;
+                }
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+        
+        async function loadSettings() {
+            try {
+                const school = await queuedApiCall('/admin/school');
+                if (school.data?.school) {
+                    schoolData = school.data.school;
+                    
+                    document.getElementById('schoolName').value = schoolData.schoolName || '';
+                    document.getElementById('schoolAddress').value = schoolData.address || '';
+                    document.getElementById('schoolCity').value = schoolData.city || '';
+                    document.getElementById('schoolPhone').value = schoolData.phone || '';
+                    
+                    if (schoolData.settings) {
+                        document.getElementById('enableEmail').checked = schoolData.settings.enableEmailNotifications ?? true;
+                        document.getElementById('enableParent').checked = schoolData.settings.enableParentAccess ?? true;
+                        document.getElementById('enableAI').checked = schoolData.settings.enableAIEvaluation ?? true;
+                        document.getElementById('dailyLimit').value = schoolData.settings.challengeDailyLimit || 10;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+        
+        async function updateSchool(event) {
+            event.preventDefault();
+            
+            const data = {
+                schoolName: document.getElementById('schoolName').value,
+                address: document.getElementById('schoolAddress').value,
+                city: document.getElementById('schoolCity').value,
+                phone: document.getElementById('schoolPhone').value
+            };
+            
+            try {
+                await apiCall('/admin/school', {
+                    method: 'PUT',
+                    body: JSON.stringify(data)
+                });
+                alert('School information updated successfully!');
+                loadSettings();
+            } catch (error) {
+                alert('Error updating school: ' + error.message);
+            }
+        }
+        
+        async function updateSettings(event) {
+            event.preventDefault();
+            
+            const settings = {
+                enableEmailNotifications: document.getElementById('enableEmail').checked,
+                enableParentAccess: document.getElementById('enableParent').checked,
+                enableAIEvaluation: document.getElementById('enableAI').checked,
+                challengeDailyLimit: parseInt(document.getElementById('dailyLimit').value) || 10
+            };
+            
+            try {
+                await apiCall('/admin/school/settings', {
+                    method: 'PUT',
+                    body: JSON.stringify({ settings })
+                });
+                alert('Settings updated successfully!');
+            } catch (error) {
+                alert('Error updating settings: ' + error.message);
+            }
+        }
+        
+        function viewTeacher(teacherId) {
+            alert('Teacher details view - Feature coming soon!\nTeacher ID: ' + teacherId);
+        }
+        
+        function viewStudent(studentId) {
+            alert('Student details view - Feature coming soon!\nStudent ID: ' + studentId);
+        }
+        
+        function viewClass(classId) {
+            alert('Class details view - Feature coming soon!\nClass ID: ' + classId);
+        }
+        
+        function filterTeachers() {
+            loadTeachers();
+        }
+        
+        function filterStudents() {
+            loadStudents();
+        }
+        
+        function showNotifications() {
+            alert('Notifications feature - Coming soon!');
+        }
+        
+        function openAddTeacherModal() {
+            document.getElementById('addTeacherModal').classList.add('active');
+        }
+        
+        function openBulkUploadModal() {
+            document.getElementById('bulkUploadModal').classList.add('active');
+        }
+        
+        function openAddClassModal() {
+            document.getElementById('addClassModal').classList.add('active');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+        
+        function hideLoading() {
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }, 500);
+        }
+        
+        async function init() {
+            if (!authToken) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                setTimeout(async () => {
+                    try {
+                        const school = await queuedApiCall('/admin/school');
+                        if (school.data?.school) {
+                            schoolData = school.data.school;
+                            
+                            document.getElementById('userName').textContent = schoolData.schoolName || 'School Admin';
+                            document.getElementById('userAvatar').textContent = 
+                                (schoolData.schoolName || 'A').charAt(0).toUpperCase();
+                        }
+                        
+                        await loadOverview();
+                    } catch (error) {
+                        console.error('Error loading school data:', error);
+                        document.getElementById('userName').textContent = 'Administrator';
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Init error:', error);
+                alert('Error loading dashboard: ' + error.message);
+            } finally {
+                setTimeout(hideLoading, 1500);
+            }
+        }
+        
+        init();
+    </script>
+</body>
+</html>

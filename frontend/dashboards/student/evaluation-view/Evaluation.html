@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluation View - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; font-size: 13px; }
+        .main { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .panel.full { grid-column: 1 / -1; }
+        .metric-card { padding: 20px; background: #2d2d30; border: 2px solid #464647; border-radius: 8px; margin: 10px 0; }
+        .competency-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #464647; }
+        .competency-bar { flex: 1; height: 8px; background: #2d2d30; border-radius: 4px; margin: 0 15px; overflow: hidden; }
+        .competency-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #00d4ff); transition: width 0.5s; }
+        .radar-container { width: 100%; height: 350px; background: #000; border-radius: 8px; position: relative; }
+        canvas { width: 100%; height: 100%; }
+        .goal-item { padding: 12px; background: #2d2d30; border-left: 4px solid var(--accent); border-radius: 4px; margin: 8px 0; }
+        textarea { width: 100%; background: #2d2d30; border: 2px solid #464647; padding: 10px; border-radius: 6px; color: #fff; resize: vertical; min-height: 100px; font-family: inherit; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-chart-line"></i> Evaluation View</h1><p style="color: #888;">Self-Assessment Dashboard • Grade 6-12</p></div>
+            <div style="display: flex; gap: 15px;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-tachometer-alt"></i> Performance Overview</h2>
+                
+                <div class="metric-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="color: #888;">Performance Index</span>
+                        <span style="font-size: 32px; font-weight: bold; color: var(--accent);" id="piValue">--</span>
+                    </div>
+                    <div style="height: 4px; background: #2d2d30; border-radius: 2px; overflow: hidden;">
+                        <div style="height: 100%; background: linear-gradient(90deg, var(--accent), #00d4ff); width: 0%;" id="piBar"></div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px;">
+                    <div class="metric-card">
+                        <div style="font-size: 28px; font-weight: bold; color: #27ae60;" id="completedCount">0</div>
+                        <div style="font-size: 12px; color: #888;">Activities Completed</div>
+                    </div>
+                    <div class="metric-card">
+                        <div style="font-size: 28px; font-weight: bold; color: #f39c12;" id="streakCount">0</div>
+                        <div style="font-size: 12px; color: #888;">Day Streak</div>
+                    </div>
+                </div>
+                
+                <div class="metric-card" style="margin-top: 15px;">
+                    <h4 style="margin-bottom: 15px; color: var(--accent);">Growth Trend</h4>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-arrow-up" style="font-size: 32px; color: #27ae60;"></i>
+                        <div>
+                            <div style="font-size: 20px; font-weight: bold;">Accelerating</div>
+                            <div style="font-size: 12px; color: #888;">Your learning is on an upward trajectory</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-brain"></i> Competency Radar</h2>
+                
+                <div class="radar-container">
+                    <canvas id="radarCanvas"></canvas>
+                </div>
+                
+                <div style="margin-top: 15px; font-size: 12px; color: #888; text-align: center;">
+                    12 NEP Competencies Visualization
+                </div>
+            </div>
+            
+            <div class="panel full">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-list"></i> Competency Breakdown</h2>
+                
+                <div id="competencyList">
+                    <!-- Dynamic competency rows -->
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-bullseye"></i> Learning Goals</h2>
+                
+                <div class="goal-item">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>Improve Problem Solving</strong>
+                            <div style="font-size: 12px; color: #888;">Current: 67% → Target: 85%</div>
+                        </div>
+                        <div style="font-size: 20px; color: #f39c12;">📊</div>
+                    </div>
+                </div>
+                
+                <div class="goal-item">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>Master Critical Thinking</strong>
+                            <div style="font-size: 12px; color: #888;">Current: 74% → Target: 90%</div>
+                        </div>
+                        <div style="font-size: 20px; color: #27ae60;">✓</div>
+                    </div>
+                </div>
+                
+                <button class="btn" style="width: 100%; margin-top: 15px;" onclick="addGoal()">
+                    <i class="fas fa-plus"></i> Add New Goal
+                </button>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-clipboard"></i> Self-Reflection</h2>
+                
+                <label style="display: block; margin-bottom: 10px; color: #888;">What did you learn today?</label>
+                <textarea id="reflection" placeholder="Reflect on your learning experiences..." oninput="updateReflection()"></textarea>
+                
+                <div style="margin-top: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                    <div style="text-align: center; padding: 15px; background: #2d2d30; border-radius: 6px; cursor: pointer;" onclick="setMood('happy')">
+                        <div style="font-size: 32px;">😊</div>
+                        <div style="font-size: 11px; color: #888;">Excellent</div>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: #2d2d30; border-radius: 6px; cursor: pointer;" onclick="setMood('okay')">
+                        <div style="font-size: 32px;">😐</div>
+                        <div style="font-size: 11px; color: #888;">Good</div>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: #2d2d30; border-radius: 6px; cursor: pointer;" onclick="setMood('struggle')">
+                        <div style="font-size: 32px;">😕</div>
+                        <div style="font-size: 11px; color: #888;">Challenging</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel full">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-history"></i> Recent Activity</h2>
+                
+                <div id="activityTimeline">
+                    <!-- Dynamic activity list -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now(), canvas, ctx;
+        
+        const COMPETENCIES = [
+            'Critical Thinking', 'Communication', 'Collaboration', 'Creativity',
+            'Scientific Inquiry', 'Problem Solving', 'Digital Literacy', 'Cultural Awareness',
+            'Self-Direction', 'Real-world Application', 'Ethical Reasoning', 'Adaptability'
+        ];
+        
+        let competencyScores = [0.74, 0.82, 0.65, 0.78, 0.71, 0.67, 0.88, 0.59, 0.76, 0.69, 0.73, 0.81];
+        let mood = null;
+        
+        let interactionData = {
+            actions_count: 0, time_seconds: 0, total_parameter_space: 100,
+            tool_usage: {}, reflections_written: 0, goals_set: 0, mood_checks: 0
+        };
+        
+        async function init() {
+            canvas = document.getElementById('radarCanvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, toolId: 'evaluation-view', toolType: 'ASSESSMENT', interactionData })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                    
+                    await loadStudentData(studentId);
+                } catch (err) {}
+            }
+            
+            renderCompetencies();
+            drawRadar();
+            renderActivity();
+            
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            setInterval(saveProgress, 30000);
+        }
+        
+        async function loadStudentData(studentId) {
+            try {
+                const res = await fetch(`${API_BASE_URL}/student/${studentId}/assessment?start=${new Date(Date.now() - 30*24*60*60*1000).toISOString()}&end=${new Date().toISOString()}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && data.data.competencyScores) {
+                        competencyScores = data.data.competencyScores;
+                        renderCompetencies();
+                        drawRadar();
+                    }
+                }
+                
+                const piRes = await fetch(`${API_BASE_URL}/student/${studentId}/pi`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (piRes.ok) {
+                    const piData = await piRes.json();
+                    if (piData.success && piData.data) {
+                        const pi = piData.data.piValue * 100;
+                        document.getElementById('piValue').textContent = Math.round(pi);
+                        document.getElementById('piBar').style.width = pi + '%';
+                        document.getElementById('completedCount').textContent = piData.data.eventCount || 0;
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to load student data:', err);
+            }
+        }
+        
+        function renderCompetencies() {
+            const list = document.getElementById('competencyList');
+            list.innerHTML = COMPETENCIES.map((name, i) => {
+                const score = Math.round(competencyScores[i] * 100);
+                const color = score >= 75 ? '#27ae60' : score >= 50 ? '#f39c12' : '#e74c3c';
+                
+                return `
+                    <div class="competency-row">
+                        <div style="width: 180px; font-size: 13px;">${name}</div>
+                        <div class="competency-bar">
+                            <div class="competency-fill" style="width: ${score}%; background: ${color};"></div>
+                        </div>
+                        <div style="width: 60px; text-align: right; font-weight: bold; color: ${color};">${score}%</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function drawRadar() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(canvas.width, canvas.height) / 2 - 40;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Background circles
+            for (let i = 1; i <= 5; i++) {
+                ctx.strokeStyle = '#464647';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius * i / 5, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            // Axes
+            ctx.strokeStyle = '#464647';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 12; i++) {
+                const angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(
+                    centerX + Math.cos(angle) * radius,
+                    centerY + Math.sin(angle) * radius
+                );
+                ctx.stroke();
+            }
+            
+            // Data polygon
+            ctx.fillStyle = 'rgba(0, 122, 204, 0.3)';
+            ctx.strokeStyle = 'rgba(0, 122, 204, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            competencyScores.forEach((score, i) => {
+                const angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
+                const r = radius * score;
+                const x = centerX + Math.cos(angle) * r;
+                const y = centerY + Math.sin(angle) * r;
+                
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Data points
+            ctx.fillStyle = 'rgba(0, 212, 255, 1)';
+            competencyScores.forEach((score, i) => {
+                const angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
+                const r = radius * score;
+                const x = centerX + Math.cos(angle) * r;
+                const y = centerY + Math.sin(angle) * r;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+        
+        function renderActivity() {
+            const timeline = document.getElementById('activityTimeline');
+            const activities = [
+                { tool: 'Motion Classifier', time: '2 hours ago', icon: 'fa-atom' },
+                { tool: 'Equation Balancer', time: '1 day ago', icon: 'fa-balance-scale' },
+                { tool: 'Reflection Journal', time: '2 days ago', icon: 'fa-book' },
+                { tool: 'Practice Zone', time: '3 days ago', icon: 'fa-dumbbell' }
+            ];
+            
+            timeline.innerHTML = activities.map(act => `
+                <div style="padding: 12px; background: #2d2d30; border-radius: 6px; margin: 8px 0; display: flex; align-items: center; gap: 15px;">
+                    <i class="fas ${act.icon}" style="font-size: 24px; color: var(--accent);"></i>
+                    <div style="flex: 1;">
+                        <div style="font-weight: bold;">${act.tool}</div>
+                        <div style="font-size: 12px; color: #888;">${act.time}</div>
+                    </div>
+                    <i class="fas fa-check-circle" style="color: #27ae60;"></i>
+                </div>
+            `).join('');
+        }
+        
+        function updateReflection() {
+            interactionData.reflections_written++;
+            interactionData.actions_count++;
+        }
+        
+        function setMood(m) {
+            mood = m;
+            interactionData.mood_checks++;
+            interactionData.actions_count++;
+            event.currentTarget.style.background = 'var(--accent)';
+            setTimeout(() => event.currentTarget.style.background = '#2d2d30', 300);
+        }
+        
+        function addGoal() {
+            interactionData.goals_set++;
+            interactionData.actions_count++;
+            alert('Goal setting feature - customize your learning targets!');
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactionData })
+                });
+            } catch (err) {}
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('Evaluation session completed!');
+            window.location.href = '/dashboard';
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+    </script>
+</body>
+</html>

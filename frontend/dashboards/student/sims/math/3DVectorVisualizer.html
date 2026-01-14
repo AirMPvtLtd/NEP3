@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Vector Visualizer - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
+        body { background: var(--bg); color: #fff; overflow-x: hidden; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { 
+            background: #333; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            background: var(--accent); 
+            color: white; 
+            font-size: 13px; 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 80px;
+        }
+        .btn:hover { background: #005a9e; }
+        .main { 
+            display: grid; 
+            grid-template-columns: 1fr 380px; 
+            gap: 20px; 
+        }
+        @media (max-width: 1024px) {
+            .main { grid-template-columns: 1fr; }
+        }
+        .panel { 
+            background: var(--panel); 
+            border-radius: 8px; 
+            padding: 20px; 
+            border: 1px solid #464647;
+            overflow: hidden;
+        }
+        .canvas-area { 
+            background: #000; 
+            border-radius: 6px; 
+            height: 550px; 
+            border: 1px solid #464647; 
+            position: relative;
+            overflow: hidden;
+        }
+        canvas { 
+            width: 100%; 
+            height: 100%; 
+            display: block;
+        }
+        input[type="range"] { 
+            width: 100%; 
+            height: 8px; 
+            background: #2d2d30; 
+            border-radius: 4px; 
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb { 
+            width: 20px; 
+            height: 20px; 
+            background: var(--accent); 
+            border-radius: 50%; 
+            cursor: pointer;
+            -webkit-appearance: none;
+        }
+        .vector-input { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 10px; 
+            margin: 10px 0; 
+        }
+        .vector-input input { 
+            background: #2d2d30; 
+            border: 2px solid #464647; 
+            padding: 10px; 
+            border-radius: 6px; 
+            color: #fff; 
+            text-align: center;
+            width: 100%;
+        }
+        .vector-input input:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+        .operation-btn { 
+            padding: 12px; 
+            background: #2d2d30; 
+            border: 2px solid #464647; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            margin: 8px 0; 
+            text-align: center; 
+            transition: all 0.3s;
+            overflow: hidden;
+        }
+        .operation-btn:hover { 
+            border-color: var(--accent); 
+            background: #3a3a3c; 
+            transform: translateY(-2px);
+        }
+        .operation-btn:active {
+            transform: translateY(0);
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-box {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            overflow: hidden;
+        }
+        .control-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .info-box {
+            background: rgba(0, 122, 204, 0.1);
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 12px;
+            line-height: 1.8;
+            overflow: hidden;
+        }
+        .properties-box {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .property-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #464647;
+        }
+        .property-item:last-child {
+            border-bottom: none;
+        }
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .control-buttons {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .vector-input {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 480px) {
+            .control-buttons {
+                grid-template-columns: 1fr;
+            }
+            .vector-input {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-cube"></i> 3D Vector Visualizer</h1>
+                <p style="color: #888; margin-top: 5px;">Math Lab • Grade 11-12</p>
+            </div>
+                <div class="header-right">
+                    <span style="display: flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-clock"></i> 
+                        <span id="timer">00:00</span>
+                    </span>
+                    
+                    <!-- ✅ NEW: Challenge Button -->
+                    <button class="btn" style="background: #9b59b6;" onclick="openChallenge()">
+                        <i class="fas fa-brain"></i> Challenge Me
+                    </button>
+                    
+                    <button class="btn" onclick="saveProgress()">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                    <button class="btn" style="background: #00b894;" onclick="complete()">
+                        <i class="fas fa-check"></i> Complete
+                    </button>
+                </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">3D Vector Space</h2>
+                
+                <div class="canvas-area">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <label style="display: block; margin-bottom: 10px; color: #888;">
+                        Rotation X: <span id="rotXDisplay">30</span>°
+                    </label>
+                    <input type="range" id="rotXSlider" min="0" max="360" value="30" oninput="updateRotation()">
+                    
+                    <label style="display: block; margin: 15px 0 10px; color: #888;">
+                        Rotation Y: <span id="rotYDisplay">45</span>°
+                    </label>
+                    <input type="range" id="rotYSlider" min="0" max="360" value="45" oninput="updateRotation()">
+                </div>
+                
+                <div class="control-buttons">
+                    <button class="btn" onclick="resetView()">
+                        <i class="fas fa-sync"></i> Reset
+                    </button>
+                    <button class="btn" onclick="toggleGrid()">
+                        <i class="fas fa-border-all"></i> Grid
+                    </button>
+                    <button class="btn" onclick="toggleAxes()">
+                        <i class="fas fa-arrows-alt"></i> Axes
+                    </button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">
+                    <i class="fas fa-vector-square"></i> Vectors
+                </h2>
+                
+                <h3 style="margin: 15px 0 10px; color: var(--accent);">Vector A</h3>
+                <div class="vector-input">
+                    <div>
+                        <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">X</label>
+                        <input type="number" id="ax" value="3" oninput="updateVectors()">
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">Y</label>
+                        <input type="number" id="ay" value="2" oninput="updateVectors()">
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">Z</label>
+                        <input type="number" id="az" value="1" oninput="updateVectors()">
+                    </div>
+                </div>
+                
+                <h3 style="margin: 15px 0 10px; color: #27ae60;">Vector B</h3>
+                <div class="vector-input">
+                    <div>
+                        <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">X</label>
+                        <input type="number" id="bx" value="1" oninput="updateVectors()">
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">Y</label>
+                        <input type="number" id="by" value="3" oninput="updateVectors()">
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">Z</label>
+                        <input type="number" id="bz" value="2" oninput="updateVectors()">
+                    </div>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Operations</h3>
+                <div class="operation-btn" onclick="performOperation('add')">
+                    <strong>A + B</strong> = <span id="resultAdd">(4, 5, 3)</span>
+                </div>
+                <div class="operation-btn" onclick="performOperation('subtract')">
+                    <strong>A - B</strong> = <span id="resultSub">(2, -1, -1)</span>
+                </div>
+                <div class="operation-btn" onclick="performOperation('dot')">
+                    <strong>A · B</strong> = <span id="resultDot">11</span>
+                </div>
+                <div class="operation-btn" onclick="performOperation('cross')">
+                    <strong>A × B</strong> = <span id="resultCross">(1, -5, 7)</span>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Properties</h3>
+                <div class="properties-box">
+                    <div class="property-item">
+                        <span>|A|:</span>
+                        <strong id="magA">3.74</strong>
+                    </div>
+                    <div class="property-item">
+                        <span>|B|:</span>
+                        <strong id="magB">3.74</strong>
+                    </div>
+                    <div class="property-item">
+                        <span>Angle:</span>
+                        <strong id="angle">34.7°</strong>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <strong style="color: var(--accent);">Vector Operations:</strong><br>
+                    |v| = √(x² + y² + z²)<br>
+                    A · B = AxBx + AyBy + AzBz<br>
+                    A × B = perpendicular vector
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statVectors">0</div>
+                        <div style="font-size: 12px; color: #888;">Vectors</div>
+                    </div>
+                    <div class="stat-box">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statOps">0</div>
+                        <div style="font-size: 12px; color: #888;">Operations</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // ============================================================================
+        // EVENT TRACKING SETUP
+        // ============================================================================
+        
+        const API_BASE_URL = 'http://localhost:3000/api';
+        let eventId = null;
+        let sessionStart = null;
+        let authToken = null;
+        let studentId = null;
+        
+        // Canvas and visualization
+        let canvas, ctx;
+        let rotX = 30, rotY = 45;
+        let vectorA = {x: 3, y: 2, z: 1};
+        let vectorB = {x: 1, y: 3, z: 2};
+        let showGrid = true, showAxes = true;
+        
+        // Track unique configurations
+        const triedConfigurations = new Set();
+        const triedOperations = new Set();
+        
+        // Interaction data structure
+        let interactionData = {
+            // Universal fields
+            actions_count: 0,
+            time_seconds: 0,
+            unique_tools_used: 0,
+            correct_attempts: 0,
+            incorrect_attempts: 0,
+            retry_count: 0,
+            unique_parameters_tried: 0,
+            total_parameter_space: 0,  // Calculated below
+            tool_usage: {},
+            
+            // Specific to 3D Vector Visualizer
+            vectors_created: 0,
+            operations_performed: 0,
+            operation_types: [],
+            rotations: 0,
+            dot_products: 0,
+            cross_products: 0,
+            vector_additions: 0,
+            vector_subtractions: 0,
+            grid_toggles: 0,
+            axes_toggles: 0,
+            view_resets: 0,
+            max_magnitude_explored: 0,
+            unique_vector_pairs: 0
+        };
+        
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+        
+        async function init() {
+            // Setup canvas
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            resizeCanvas();
+            
+            // Calculate parameter space
+            calculateParameterSpace();
+            
+            // Initialize event tracking
+            await initEventTracking();
+            
+            // Start auto-save
+            startAutoSave();
+            
+            // Start timer
+            startTimer();
+            
+            // Initial draw
+            updateVectors();
+            draw();
+            
+            // Add resize handler
+            window.addEventListener('resize', handleResize);
+        }
+        
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            console.log('Canvas resized:', canvas.width, 'x', canvas.height);
+        }
+        
+        function calculateParameterSpace() {
+            // Vector A: x, y, z each can be -10 to 10 = 21 values each
+            // Vector B: x, y, z each can be -10 to 10 = 21 values each
+            // Rotation X: 0 to 360 = 361 values
+            // Rotation Y: 0 to 360 = 361 values
+            // Operations: 4 types (add, sub, dot, cross)
+            // Total: 21^6 × 361^2 × 4 = Very large
+            // Simplified estimate: 21 × 21 × 21 × 21 × 21 × 21 × 4 = 371,694,084
+            // More practical: Assume typical use of 20 vector combinations × 10 rotations × 4 ops
+            interactionData.total_parameter_space = 800;
+        }
+        
+        // ============================================================================
+        // EVENT TRACKING INITIALIZATION
+        // ============================================================================
+        
+        async function initEventTracking() {
+            // ✅ ALWAYS set sessionStart first (timer will work regardless of auth)
+            sessionStart = Date.now();
+            
+            try {
+                // Get auth token
+                authToken = localStorage.getItem('authToken');
+                
+                if (!authToken) {
+                    console.warn('No auth token found. Event tracking disabled. Timer still running.');
+                    return;
+                }
+                
+                // Extract student ID from JWT
+                const payload = JSON.parse(atob(authToken.split('.')[1]));
+                studentId = payload.userId;
+                
+                // Create event in database
+                const res = await fetch(`${API_BASE_URL}/student/event`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        studentId: studentId,
+                        toolId: 'three-d-vector-visualizer',
+                        toolType: 'LAB',
+                        interactionData: interactionData
+                    })
+                });
+                
+                if (!res.ok) {
+                    throw new Error(`Failed to create event: ${res.status}`);
+                }
+                
+                const data = await res.json();
+                eventId = data.data._id;
+                // sessionStart already set above
+                
+                console.log('✅ Event tracking initialized:', eventId);
+                
+            } catch (error) {
+                console.error('Error initializing event tracking:', error);
+                console.log('⏱️ Timer continues to run in offline mode');
+            }
+        }
+        
+        // ============================================================================
+        // AUTO-SAVE PROGRESS
+        // ============================================================================
+        
+        function startAutoSave() {
+            // Auto-save every 30 seconds
+            setInterval(saveProgress, 30000);
+            
+            // Save on page unload
+            window.addEventListener('beforeunload', saveProgress);
+        }
+        
+        async function saveProgress() {
+            if (!eventId || !authToken) return;
+            
+            try {
+                // Update time
+                interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+                
+                // Convert Set to Array for JSON
+                const dataToSend = {
+                    ...interactionData,
+                    operation_types: Array.from(triedOperations)
+                };
+                
+                // Send update to backend
+                const res = await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        interactionData: dataToSend
+                    })
+                });
+                
+                if (res.ok) {
+                    console.log('Progress saved');
+                }
+                
+            } catch (error) {
+                console.error('Error saving progress:', error);
+            }
+        }
+        
+        // ============================================================================
+        // COMPLETION
+        // ============================================================================
+        
+        async function complete() {
+            // Final save
+            await saveProgress();
+            
+            if (!eventId || !authToken) {
+                alert('Session completed!');
+                window.location.href = '/dashboard.html';
+                return;
+            }
+            
+            try {
+                // Mark event as completed
+                const res = await fetch(`${API_BASE_URL}/student/event/${eventId}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (res.ok) {
+                    alert('Session completed successfully!');
+                    window.location.href = '/dashboard.html';
+                }
+                
+            } catch (error) {
+                console.error('Error completing session:', error);
+                alert('Session completed!');
+                window.location.href = '/dashboard.html';
+            }
+        }
+        
+        // ============================================================================
+        // TIMER
+        // ============================================================================
+        
+        function startTimer() {
+            setInterval(() => {
+                if (!sessionStart) return;
+                const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('timer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+        
+        // ============================================================================
+        // INTERACTION TRACKING
+        // ============================================================================
+        
+        function handleResize() {
+            resizeCanvas();
+            draw();
+        }
+        
+        function updateRotation() {
+            rotX = parseFloat(document.getElementById('rotXSlider').value);
+            rotY = parseFloat(document.getElementById('rotYSlider').value);
+            
+            document.getElementById('rotXDisplay').textContent = Math.round(rotX);
+            document.getElementById('rotYDisplay').textContent = Math.round(rotY);
+            
+            // Track interaction
+            interactionData.actions_count++;
+            interactionData.rotations++;
+            
+            if (!interactionData.tool_usage['rotation']) {
+                interactionData.tool_usage['rotation'] = 0;
+                interactionData.unique_tools_used++;
+            }
+            interactionData.tool_usage['rotation']++;
+            
+            draw();
+        }
+        
+        function updateVectors() {
+            vectorA.x = parseFloat(document.getElementById('ax').value) || 0;
+            vectorA.y = parseFloat(document.getElementById('ay').value) || 0;
+            vectorA.z = parseFloat(document.getElementById('az').value) || 0;
+            
+            vectorB.x = parseFloat(document.getElementById('bx').value) || 0;
+            vectorB.y = parseFloat(document.getElementById('by').value) || 0;
+            vectorB.z = parseFloat(document.getElementById('bz').value) || 0;
+            
+            // Track interaction
+            interactionData.actions_count++;
+            interactionData.vectors_created++;
+            
+            if (!interactionData.tool_usage['vector_input']) {
+                interactionData.tool_usage['vector_input'] = 0;
+                interactionData.unique_tools_used++;
+            }
+            interactionData.tool_usage['vector_input']++;
+            
+            // Track unique configurations
+            const config = JSON.stringify({
+                a: vectorA,
+                b: vectorB
+            });
+            
+            if (!triedConfigurations.has(config)) {
+                triedConfigurations.add(config);
+                interactionData.unique_parameters_tried = triedConfigurations.size;
+                interactionData.unique_vector_pairs++;
+            }
+            
+            // Track max magnitude
+            const magA = Math.sqrt(vectorA.x**2 + vectorA.y**2 + vectorA.z**2);
+            const magB = Math.sqrt(vectorB.x**2 + vectorB.y**2 + vectorB.z**2);
+            const maxMag = Math.max(magA, magB);
+            
+            if (maxMag > interactionData.max_magnitude_explored) {
+                interactionData.max_magnitude_explored = Math.round(maxMag * 100) / 100;
+            }
+            
+            calculateOperations();
+            draw();
+            updateStats();
+        }
+        
+        function calculateOperations() {
+            // Addition
+            const add = {
+                x: vectorA.x + vectorB.x,
+                y: vectorA.y + vectorB.y,
+                z: vectorA.z + vectorB.z
+            };
+            document.getElementById('resultAdd').textContent = 
+                `(${add.x.toFixed(1)}, ${add.y.toFixed(1)}, ${add.z.toFixed(1)})`;
+            
+            // Subtraction
+            const sub = {
+                x: vectorA.x - vectorB.x,
+                y: vectorA.y - vectorB.y,
+                z: vectorA.z - vectorB.z
+            };
+            document.getElementById('resultSub').textContent = 
+                `(${sub.x.toFixed(1)}, ${sub.y.toFixed(1)}, ${sub.z.toFixed(1)})`;
+            
+            // Dot product
+            const dot = vectorA.x * vectorB.x + vectorA.y * vectorB.y + vectorA.z * vectorB.z;
+            document.getElementById('resultDot').textContent = dot.toFixed(2);
+            
+            // Cross product
+            const cross = {
+                x: vectorA.y * vectorB.z - vectorA.z * vectorB.y,
+                y: vectorA.z * vectorB.x - vectorA.x * vectorB.z,
+                z: vectorA.x * vectorB.y - vectorA.y * vectorB.x
+            };
+            document.getElementById('resultCross').textContent = 
+                `(${cross.x.toFixed(1)}, ${cross.y.toFixed(1)}, ${cross.z.toFixed(1)})`;
+            
+            // Magnitudes
+            const magA = Math.sqrt(vectorA.x**2 + vectorA.y**2 + vectorA.z**2);
+            const magB = Math.sqrt(vectorB.x**2 + vectorB.y**2 + vectorB.z**2);
+            document.getElementById('magA').textContent = magA.toFixed(2);
+            document.getElementById('magB').textContent = magB.toFixed(2);
+            
+            // Angle
+            const angle = magA && magB ? Math.acos(dot / (magA * magB)) * 180 / Math.PI : 0;
+            document.getElementById('angle').textContent = angle.toFixed(1) + '°';
+        }
+        
+        function performOperation(op) {
+            // Track operation
+            interactionData.operations_performed++;
+            interactionData.actions_count++;
+            triedOperations.add(op);
+            
+            // Track specific operation type
+            if (op === 'add') {
+                interactionData.vector_additions++;
+            } else if (op === 'subtract') {
+                interactionData.vector_subtractions++;
+            } else if (op === 'dot') {
+                interactionData.dot_products++;
+            } else if (op === 'cross') {
+                interactionData.cross_products++;
+            }
+            
+            if (!interactionData.tool_usage[op]) {
+                interactionData.tool_usage[op] = 0;
+                interactionData.unique_tools_used++;
+            }
+            interactionData.tool_usage[op]++;
+            
+            // Visual feedback
+            const btn = event.currentTarget;
+            btn.style.background = 'var(--accent)';
+            btn.style.borderColor = 'var(--accent)';
+            setTimeout(() => {
+                btn.style.background = '#2d2d30';
+                btn.style.borderColor = '#464647';
+            }, 300);
+            
+            updateStats();
+        }
+        
+        function resetView() {
+            rotX = 30;
+            rotY = 45;
+            document.getElementById('rotXSlider').value = 30;
+            document.getElementById('rotYSlider').value = 45;
+            document.getElementById('rotXDisplay').textContent = '30';
+            document.getElementById('rotYDisplay').textContent = '45';
+            
+            // Track interaction
+            interactionData.actions_count++;
+            interactionData.view_resets++;
+            
+            if (!interactionData.tool_usage['reset_view']) {
+                interactionData.tool_usage['reset_view'] = 0;
+                interactionData.unique_tools_used++;
+            }
+            interactionData.tool_usage['reset_view']++;
+            
+            draw();
+        }
+        
+        function toggleGrid() {
+            showGrid = !showGrid;
+            
+            // Track interaction
+            interactionData.actions_count++;
+            interactionData.grid_toggles++;
+            
+            if (!interactionData.tool_usage['toggle_grid']) {
+                interactionData.tool_usage['toggle_grid'] = 0;
+                interactionData.unique_tools_used++;
+            }
+            interactionData.tool_usage['toggle_grid']++;
+            
+            draw();
+        }
+        
+        function toggleAxes() {
+            showAxes = !showAxes;
+            
+            // Track interaction
+            interactionData.actions_count++;
+            interactionData.axes_toggles++;
+            
+            if (!interactionData.tool_usage['toggle_axes']) {
+                interactionData.tool_usage['toggle_axes'] = 0;
+                interactionData.unique_tools_used++;
+            }
+            interactionData.tool_usage['toggle_axes']++;
+            
+            draw();
+        }
+        
+        // ============================================================================
+        // DRAWING FUNCTIONS
+        // ============================================================================
+        
+        function draw() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const scale = Math.min(width, height) / 10;
+            
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Draw grid
+            if (showGrid) drawGrid(centerX, centerY, scale);
+            
+            // Draw axes
+            if (showAxes) drawAxes(centerX, centerY, scale);
+            
+            // Draw vectors
+            drawVector(vectorA, centerX, centerY, scale, '#007acc', 'A');
+            drawVector(vectorB, centerX, centerY, scale, '#27ae60', 'B');
+        }
+        
+        function drawGrid(cx, cy, scale) {
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            
+            for (let i = -5; i <= 5; i++) {
+                const pos = project3D(i, 0, 0, cx, cy, scale);
+                ctx.globalAlpha = 0.2;
+                ctx.beginPath();
+                ctx.moveTo(pos.x, cy - scale * 5);
+                ctx.lineTo(pos.x, cy + scale * 5);
+                ctx.stroke();
+                
+                const pos2 = project3D(0, i, 0, cx, cy, scale);
+                ctx.beginPath();
+                ctx.moveTo(cx - scale * 5, pos2.y);
+                ctx.lineTo(cx + scale * 5, pos2.y);
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+        }
+        
+        function drawAxes(cx, cy, scale) {
+            const axisLength = scale * 5;
+            
+            // X axis (red)
+            const xEnd = project3D(axisLength/scale, 0, 0, cx, cy, scale);
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(xEnd.x, xEnd.y);
+            ctx.stroke();
+            ctx.fillStyle = '#e74c3c';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('X', xEnd.x + 10, xEnd.y);
+            
+            // Y axis (green)
+            const yEnd = project3D(0, axisLength/scale, 0, cx, cy, scale);
+            ctx.strokeStyle = '#27ae60';
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(yEnd.x, yEnd.y);
+            ctx.stroke();
+            ctx.fillStyle = '#27ae60';
+            ctx.fillText('Y', yEnd.x + 10, yEnd.y);
+            
+            // Z axis (blue)
+            const zEnd = project3D(0, 0, axisLength/scale, cx, cy, scale);
+            ctx.strokeStyle = '#3498db';
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(zEnd.x, zEnd.y);
+            ctx.stroke();
+            ctx.fillStyle = '#3498db';
+            ctx.fillText('Z', zEnd.x + 10, zEnd.y);
+        }
+        
+        function drawVector(vec, cx, cy, scale, color, label) {
+            const end = project3D(vec.x, vec.y, vec.z, cx, cy, scale);
+            
+            // Draw vector line
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(end.x, end.y);
+            ctx.stroke();
+            
+            // Draw arrowhead
+            const angle = Math.atan2(end.y - cy, end.x - cx);
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(end.x, end.y);
+            ctx.lineTo(end.x - 15 * Math.cos(angle - 0.3), end.y - 15 * Math.sin(angle - 0.3));
+            ctx.lineTo(end.x - 15 * Math.cos(angle + 0.3), end.y - 15 * Math.sin(angle + 0.3));
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw label
+            ctx.fillStyle = color;
+            ctx.font = 'bold 18px Arial';
+            ctx.fillText(label, end.x + 15, end.y - 15);
+            
+            // Draw coordinates
+            ctx.font = '12px Arial';
+            ctx.fillText(`(${vec.x}, ${vec.y}, ${vec.z})`, end.x + 15, end.y + 5);
+        }
+        
+        function project3D(x, y, z, cx, cy, scale) {
+            const radX = rotX * Math.PI / 180;
+            const radY = rotY * Math.PI / 180;
+            
+            // Rotate around X axis
+            let tempY = y * Math.cos(radX) - z * Math.sin(radX);
+            let tempZ = y * Math.sin(radX) + z * Math.cos(radX);
+            
+            // Rotate around Y axis
+            let projX = x * Math.cos(radY) + tempZ * Math.sin(radY);
+            let projY = tempY;
+            
+            return {
+                x: cx + projX * scale,
+                y: cy - projY * scale
+            };
+        }
+        
+        // ============================================================================
+        // STATISTICS
+        // ============================================================================
+        
+        function updateStats() {
+            document.getElementById('statVectors').textContent = interactionData.vectors_created;
+            document.getElementById('statOps').textContent = interactionData.operations_performed;
+        }
+
+        //=======================================================================
+
+        
+        // ============================================================================
+        // INITIALIZATION CALL
+        // ============================================================================
+        
+        window.addEventListener('load', init);
+
+        function openChallenge() {
+            // ✅ If no eventId, create it now
+            if (!eventId) {
+                showLoading('Creating session...');
+                initEventTracking().then(() => {
+                    hideLoading();
+                    if (eventId) {
+                        openChallengeWindow();
+                    } else {
+                        alert('Failed to initialize session. Please refresh and try again.');
+                    }
+                });
+                return;
+            }
+            
+            // ✅ EventId exists, open challenge
+        openChallengeWindow();
+        }
+
+        function openChallengeWindow() {
+            const url = `../../challenge.html?toolId=electrolysis-simulator&eventId=${eventId}`;
+            window.open(url, '_blank');
+            console.log('✅ Challenge opened in new tab');
+
+            }
+    </script>
+</body>
+</html>

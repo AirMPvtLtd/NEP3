@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - NEP Workbench</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d30 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: #2d2d30;
+            border: 1px solid #464647;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 550px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .back-link a {
+            color: #888;
+            text-decoration: none;
+            transition: color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-link a:hover {
+            color: #00d4ff;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .logo p {
+            color: #888;
+            font-size: 0.95rem;
+        }
+
+        /* ROLE SELECTION BUTTONS */
+        .role-selection {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .role-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 10px;
+            background: #1e1e1e;
+            border: 2px solid #464647;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .role-btn:hover {
+            border-color: #007acc;
+            transform: translateY(-2px);
+        }
+
+        .role-btn.active {
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            border-color: #00d4ff;
+            color: white;
+        }
+
+        .role-btn i {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .role-btn span {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .auth-forms {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .auth-forms.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #aaa;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .form-group label.required::after {
+            content: " *";
+            color: #ff4444;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            background: #1e1e1e;
+            border: 2px solid #464647;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #007acc;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 122, 204, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        .form-footer a {
+            color: #00d4ff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .form-footer a:hover {
+            color: #007acc;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        .alert-error {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid #ff4444;
+            color: #ff4444;
+        }
+
+        .alert-success {
+            background: rgba(39, 174, 96, 0.1);
+            border: 1px solid #27ae60;
+            color: #27ae60;
+        }
+
+        .verification-note {
+            background: rgba(0, 122, 204, 0.1);
+            border: 1px solid #007acc;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 0.8rem;
+            color: #00d4ff;
+        }
+
+        .welcome-message {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 122, 204, 0.1);
+            border-radius: 10px;
+            border: 1px solid #007acc;
+        }
+        
+        .welcome-message h3 {
+            color: #00d4ff;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        
+        .welcome-message p {
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+        
+        .field-help {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 4px;
+            font-style: italic;
+        }
+        
+        .action-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .action-links a {
+            color: #00d4ff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s;
+        }
+        
+        .action-links a:hover {
+            color: #007acc;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="back-link">
+            <a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home</a>
+        </div>
+
+        <div class="logo">
+            <h1><i class="fas fa-graduation-cap"></i> NEP Workbench</h1>
+            <p>National Education Policy Learning Platform</p>
+        </div>
+
+        <!-- ROLE SELECTION BUTTONS -->
+        <div class="role-selection">
+            <div class="role-btn active" data-role="student">
+                <i class="fas fa-user-graduate"></i>
+                <span>Student</span>
+            </div>
+            <div class="role-btn" data-role="teacher">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>Faculty</span>
+            </div>
+            <div class="role-btn" data-role="admin">
+                <i class="fas fa-user-shield"></i>
+                <span>Admin</span>
+            </div>
+            <div class="role-btn" data-role="parent">
+                <i class="fas fa-users"></i>
+                <span>Parent</span>
+            </div>
+        </div>
+
+        <!-- STUDENT AUTH FORMS -->
+        <div class="auth-forms active" id="studentForms">
+            <div class="welcome-message">
+                <h3>Student Portal</h3>
+                <p>Access your learning materials, assignments, and track your progress</p>
+            </div>
+            
+            <div class="tabs" style="display: flex; gap: 10px; margin-bottom: 25px;">
+                <div class="tab active" data-tab="login" style="flex: 1; padding: 12px; background: #1e1e1e; border: 2px solid #464647; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s; font-weight: 500;">Login</div>
+                <div class="tab" data-tab="signup" style="flex: 1; padding: 12px; background: #1e1e1e; border: 2px solid #464647; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s; font-weight: 500;">Sign Up</div>
+            </div>
+
+            <div class="alert alert-error" id="studentErrorAlert"></div>
+            <div class="alert alert-success" id="studentSuccessAlert"></div>
+
+            <!-- STUDENT LOGIN FORM -->
+            <form id="studentLoginForm">
+                <div class="verification-note" id="studentVerificationNote" style="display: none;">
+                    <i class="fas fa-info-circle"></i> Check your email for verification link.
+                    <a href="#" onclick="resendVerification('student'); return false;" style="color: #fff; text-decoration: underline;">Resend email</a>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Student ID / Email</label>
+                    <div class="input-group">
+                        <i class="fas fa-user-graduate"></i>
+                        <input type="text" id="studentLoginId" placeholder="Enter Student ID or Email" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="studentLoginPassword" placeholder="Enter your password" required>
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="studentRememberMe">
+                    <label for="studentRememberMe">Remember me</label>
+                </div>
+
+                <button type="submit" class="btn" id="studentLoginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Student Login
+                </button>
+
+                <div class="form-footer">
+                    <a href="#" onclick="showForgotPassword('student'); return false;">Forgot Password?</a> | 
+                    <a href="#" onclick="resendVerification('student'); return false;">Resend Verification</a>
+                </div>
+            </form>
+
+            <!-- STUDENT SIGNUP FORM -->
+            <form id="studentSignupForm" style="display: none;">
+                <div class="role-notice" style="background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 0.8rem; color: #ffc107;">
+                    <div class="notice-icon" style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Student Registration Notice</strong>
+                    </div>
+                    <p><strong>Important:</strong> Students cannot self-register on this platform.</p>
+                    <p>If you are a student, please contact your teacher or school administrator to get your account created.</p>
+                    <p>Teachers create student accounts after setting up their class sections.</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Full Name</label>
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="studentSignupName" placeholder="Enter your full name" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Student ID</label>
+                    <div class="input-group">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" id="studentSignupId" placeholder="Enter your Student ID" required>
+                    </div>
+                    <div class="field-help">Provided by your teacher/school</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">School ID</label>
+                    <div class="input-group">
+                        <i class="fas fa-school"></i>
+                        <input type="text" id="studentSchoolId" placeholder="Enter School ID" required>
+                    </div>
+                    <div class="field-help">Provided by your school</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Email</label>
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="studentSignupEmail" placeholder="Enter your email" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Grade/Class</label>
+                    <div class="input-group">
+                        <i class="fas fa-graduation-cap"></i>
+                        <select id="studentGrade" required>
+                            <option value="6">Grade 6</option>
+                            <option value="7">Grade 7</option>
+                            <option value="8">Grade 8</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="studentSignupPassword" placeholder="Create password (min 8 chars)" required minlength="8">
+                    </div>
+                    <div class="password-strength" id="studentPasswordStrength"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Confirm Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="studentConfirmPassword" placeholder="Confirm your password" required minlength="8">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" id="studentSignupBtn">
+                    <i class="fas fa-user-plus"></i> Request Student Account
+                </button>
+
+                <div class="form-footer">
+                    Already have an account? <a href="#" onclick="showAuthTab('student', 'login'); return false;">Login</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- TEACHER AUTH FORMS -->
+        <div class="auth-forms" id="teacherForms">
+            <div class="welcome-message">
+                <h3>Faculty Portal</h3>
+                <p>Manage classes, assignments, and track student progress</p>
+            </div>
+
+            <div class="alert alert-error" id="teacherErrorAlert"></div>
+            <div class="alert alert-success" id="teacherSuccessAlert"></div>
+
+            <!-- TEACHER LOGIN FORM -->
+            <form id="teacherLoginForm">
+                <div class="verification-note" id="teacherVerificationNote" style="display: none;">
+                    <i class="fas fa-info-circle"></i> Check your email for verification link.
+                    <a href="#" onclick="resendVerification('teacher'); return false;" style="color: #fff; text-decoration: underline;">Resend email</a>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Teacher ID</label>
+                    <div class="input-group">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" id="teacherLoginId" placeholder="Enter Teacher ID" required>
+                    </div>
+                    <div class="field-help">Format: TCH-XXXXX (e.g., TCH-JMNI5)</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="teacherLoginPassword" placeholder="Enter your password" required>
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="teacherRememberMe">
+                    <label for="teacherRememberMe">Remember me</label>
+                </div>
+
+                <button type="submit" class="btn" id="teacherLoginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Faculty Login
+                </button>
+
+                <div class="action-links">
+                    <a href="#" onclick="showForgotPassword('teacher'); return false;">Forgot Password?</a>
+                    <a href="#" onclick="showChangePassword('teacher'); return false;">Change Password</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- ADMIN AUTH FORMS -->
+        <div class="auth-forms" id="adminForms">
+            <div class="welcome-message">
+                <h3>Admin Portal</h3>
+                <p>Manage school profiles, users, and view analytics</p>
+            </div>
+            
+            <div class="tabs" style="display: flex; gap: 10px; margin-bottom: 25px;">
+                <div class="tab active" data-tab="login" style="flex: 1; padding: 12px; background: #1e1e1e; border: 2px solid #464647; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s; font-weight: 500;">Login</div>
+                <div class="tab" data-tab="signup" style="flex: 1; padding: 12px; background: #1e1e1e; border: 2px solid #464647; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s; font-weight: 500;">Sign Up</div>
+            </div>
+
+            <div class="alert alert-error" id="adminErrorAlert"></div>
+            <div class="alert alert-success" id="adminSuccessAlert"></div>
+
+            <!-- ADMIN LOGIN FORM -->
+            <form id="adminLoginForm">
+                <div class="verification-note" id="adminVerificationNote" style="display: none;">
+                    <i class="fas fa-info-circle"></i> Check your email for verification link.
+                    <a href="#" onclick="resendVerification('admin'); return false;" style="color: #fff; text-decoration: underline;">Resend email</a>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Email</label>
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="adminLoginEmail" placeholder="Enter your email" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="adminLoginPassword" placeholder="Enter your password" required>
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="adminRememberMe">
+                    <label for="adminRememberMe">Remember me</label>
+                </div>
+
+                <button type="submit" class="btn" id="adminLoginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Admin Login
+                </button>
+
+                <div class="form-footer">
+                    <a href="#" onclick="showForgotPassword('admin'); return false;">Forgot Password?</a> | 
+                    <a href="#" onclick="resendVerification('admin'); return false;">Resend Verification</a>
+                </div>
+            </form>
+
+            <!-- ADMIN SIGNUP FORM -->
+            <form id="adminSignupForm" style="display: none;">
+                <div class="role-notice" style="background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 0.8rem; color: #ffc107;">
+                    <div class="notice-icon" style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <i class="fas fa-school"></i>
+                        <strong>School Admin Registration</strong>
+                    </div>
+                    <p>As a School Admin, you will be able to:</p>
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                        <li>Create and manage your school profile</li>
+                        <li>Approve teacher registrations</li>
+                        <li>View school-wide analytics</li>
+                        <li>Manage student accounts (through teachers)</li>
+                    </ul>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Full Name</label>
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="adminSignupName" placeholder="Enter your full name" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Admin Official Email</label>
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="adminOfficialEmail" placeholder="Enter official admin email" required>
+                    </div>
+                    <div class="field-help">Official email address for admin communications</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="adminSignupPassword" placeholder="Create password (min 8 chars)" required minlength="8">
+                    </div>
+                    <div class="password-strength" id="adminPasswordStrength"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Confirm Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="adminConfirmPassword" placeholder="Confirm your password" required minlength="8">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">School Name</label>
+                    <div class="input-group">
+                        <i class="fas fa-university"></i>
+                        <input type="text" id="adminSchoolName" placeholder="Enter your school name" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">School Address</label>
+                    <div class="input-group">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <input type="text" id="adminSchoolAddress" placeholder="Enter school address" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number (Optional)</label>
+                    <div class="input-group">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" id="adminPhone" placeholder="Enter contact number">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" id="adminSignupBtn">
+                    <i class="fas fa-user-plus"></i> Register as Admin
+                </button>
+
+                <div class="form-footer">
+                    Already have an account? <a href="#" onclick="showAuthTab('admin', 'login'); return false;">Login</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- PARENT AUTH FORMS -->
+        <div class="auth-forms" id="parentForms">
+            <div class="welcome-message">
+                <h3>Parent Portal</h3>
+                <p>Monitor your child's progress, assignments, and attendance</p>
+            </div>
+            
+            <div class="tabs" style="display: flex; gap: 10px; margin-bottom: 25px;">
+                <div class="tab active" data-tab="login" style="flex: 1; padding: 12px; background: #1e1e1e; border: 2px solid #464647; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s; font-weight: 500;">Login</div>
+                <div class="tab" data-tab="signup" style="flex: 1; padding: 12px; background: #1e1e1e; border: 2px solid #464647; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s; font-weight: 500;">Sign Up</div>
+            </div>
+
+            <div class="alert alert-error" id="parentErrorAlert"></div>
+            <div class="alert alert-success" id="parentSuccessAlert"></div>
+
+            <!-- PARENT LOGIN FORM -->
+            <form id="parentLoginForm">
+                <div class="verification-note" id="parentVerificationNote" style="display: none;">
+                    <i class="fas fa-info-circle"></i> Check your email for verification link.
+                    <a href="#" onclick="resendVerification('parent'); return false;" style="color: #fff; text-decoration: underline;">Resend email</a>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Email</label>
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="parentLoginEmail" placeholder="Enter your email" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="parentLoginPassword" placeholder="Enter your password" required>
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="parentRememberMe">
+                    <label for="parentRememberMe">Remember me</label>
+                </div>
+
+                <button type="submit" class="btn" id="parentLoginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Parent Login
+                </button>
+
+                <div class="form-footer">
+                    <a href="#" onclick="showForgotPassword('parent'); return false;">Forgot Password?</a> | 
+                    <a href="#" onclick="resendVerification('parent'); return false;">Resend Verification</a>
+                </div>
+            </form>
+
+            <!-- PARENT SIGNUP FORM -->
+            <form id="parentSignupForm" style="display: none;">
+                <div class="role-notice" style="background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 0.8rem; color: #ffc107;">
+                    <div class="notice-icon" style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <i class="fas fa-users"></i>
+                        <strong>Parent Registration</strong>
+                    </div>
+                    <p>Important: You can only register as a parent if:</p>
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                        <li>Your child is already registered in the system by their teacher</li>
+                        <li>You have your child's Student ID</li>
+                        <li>You know the School ID where your child studies</li>
+                    </ul>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Full Name</label>
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="parentSignupName" placeholder="Enter your full name" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Email</label>
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="parentSignupEmail" placeholder="Enter your email" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="parentSignupPassword" placeholder="Create password (min 8 chars)" required minlength="8">
+                    </div>
+                    <div class="password-strength" id="parentPasswordStrength"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Confirm Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="parentConfirmPassword" placeholder="Confirm your password" required minlength="8">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Student ID</label>
+                    <div class="input-group">
+                        <i class="fas fa-user-graduate"></i>
+                        <input type="text" id="parentStudentId" placeholder="Enter your child's Student ID" required>
+                    </div>
+                    <div class="field-help">Provided by your child's teacher</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">School ID</label>
+                    <div class="input-group">
+                        <i class="fas fa-school"></i>
+                        <input type="text" id="parentSchoolId" placeholder="Enter School ID" required>
+                    </div>
+                    <div class="field-help">School ID where your child studies</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number (Optional)</label>
+                    <div class="input-group">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" id="parentPhone" placeholder="Enter your phone number">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" id="parentSignupBtn">
+                    <i class="fas fa-user-plus"></i> Register as Parent
+                </button>
+
+                <div class="form-footer">
+                    Already have an account? <a href="#" onclick="showAuthTab('parent', 'login'); return false;">Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================================
+        // CONFIGURATION
+        // ============================================================================
+        const API_BASE_URL = 'http://localhost:3000/api';
+        let currentRole = 'student';
+
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeRoleButtons();
+            initializeTabs();
+            initializeFormSubmissions();
+            
+            // Check if already logged in
+            checkExistingSession();
+            
+            // Check URL parameters
+            checkUrlParameters();
+            
+            // Load remembered email
+            loadRememberedEmail();
+        });
+
+        // ============================================================================
+        // ROLE SELECTION FUNCTIONS
+        // ============================================================================
+        function initializeRoleButtons() {
+            const roleButtons = document.querySelectorAll('.role-btn');
+            roleButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const role = this.getAttribute('data-role');
+                    selectRole(role);
+                });
+            });
+        }
+
+        function selectRole(role) {
+            // Update active role button
+            document.querySelectorAll('.role-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.role-btn[data-role="${role}"]`).classList.add('active');
+            
+            // Hide all forms
+            document.querySelectorAll('.auth-forms').forEach(form => {
+                form.classList.remove('active');
+            });
+            
+            // Show selected role's forms
+            document.getElementById(`${role}Forms`).classList.add('active');
+            
+            // Reset to login tab for the selected role
+            if (role !== 'teacher') {
+                showAuthTab(role, 'login');
+            }
+            
+            // Update current role
+            currentRole = role;
+            
+            // Hide all alerts
+            hideAllAlerts();
+        }
+
+        // ============================================================================
+        // TAB MANAGEMENT
+        // ============================================================================
+        function initializeTabs() {
+            const roles = ['student', 'admin', 'parent'];
+            roles.forEach(role => {
+                const tabs = document.querySelectorAll(`#${role}Forms .tab`);
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        const tabType = this.getAttribute('data-tab');
+                        showAuthTab(role, tabType);
+                    });
+                });
+            });
+        }
+
+        function showAuthTab(role, tab) {
+            const formContainer = document.getElementById(`${role}Forms`);
+            
+            // Update tabs
+            formContainer.querySelectorAll('.tab').forEach(t => {
+                t.classList.remove('active');
+            });
+            formContainer.querySelectorAll(`.tab[data-tab="${tab}"]`).forEach(t => {
+                t.classList.add('active');
+            });
+            
+            // Show/hide forms
+            const loginForm = formContainer.querySelector(`#${role}LoginForm`);
+            const signupForm = formContainer.querySelector(`#${role}SignupForm`);
+            
+            if (tab === 'login') {
+                if (loginForm) loginForm.style.display = 'block';
+                if (signupForm) signupForm.style.display = 'none';
+            } else {
+                if (loginForm) loginForm.style.display = 'none';
+                if (signupForm) signupForm.style.display = 'block';
+            }
+            
+            // Hide alerts for this role
+            hideAlerts(role);
+        }
+
+        // ============================================================================
+        // FORM SUBMISSION HANDLERS
+        // ============================================================================
+        function initializeFormSubmissions() {
+            // Login form submissions
+            document.getElementById('studentLoginForm').addEventListener('submit', (e) => handleLogin(e, 'student'));
+            document.getElementById('teacherLoginForm').addEventListener('submit', (e) => handleLogin(e, 'teacher'));
+            document.getElementById('adminLoginForm').addEventListener('submit', (e) => handleLogin(e, 'admin'));
+            document.getElementById('parentLoginForm').addEventListener('submit', (e) => handleLogin(e, 'parent'));
+            
+            // Signup form submissions (except teacher)
+            document.getElementById('studentSignupForm').addEventListener('submit', (e) => handleSignup(e, 'student'));
+            document.getElementById('adminSignupForm').addEventListener('submit', (e) => handleSignup(e, 'admin'));
+            document.getElementById('parentSignupForm').addEventListener('submit', (e) => handleSignup(e, 'parent'));
+        }
+
+        // ============================================================================
+        // TEACHER LOGIN HANDLER (SPECIFIC TO TEACHER/FACULTY)
+        // ============================================================================
+        async function handleTeacherLogin(e) {
+            e.preventDefault();
+            
+            const teacherId = document.getElementById('teacherLoginId').value.trim();
+            const password = document.getElementById('teacherLoginPassword').value;
+            const rememberMe = document.getElementById('teacherRememberMe').checked;
+            const btn = document.getElementById('teacherLoginBtn');
+            
+            // Validation
+            if (!teacherId) {
+                showError('teacher', 'Teacher ID is required');
+                return;
+            }
+            
+            if (!password) {
+                showError('teacher', 'Password is required');
+                return;
+            }
+            
+            // Teacher ID format validation (TCH-XXXXX)
+            if (!teacherId.match(/^TCH-[A-Z0-9]{5}$/)) {
+                showError('teacher', 'Invalid Teacher ID format. Format: TCH-XXXXX');
+                return;
+            }
+            
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Logging in...`;
+            
+            try {
+                // Reference from stored teacher login: userType, teacherId, password
+                const payload = {
+                    userType: "teacher",
+                    teacherId: teacherId,
+                    password: password
+                };
+                
+                console.log('Teacher login payload:', payload);
+                
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                console.log('Teacher login response:', data);
+                
+                if (response.ok && data.success) {
+                    // Save user data
+                    localStorage.setItem('authToken', data.data?.accessToken || data.token);
+                    localStorage.setItem('userType', 'teacher');
+                    localStorage.setItem('userName', data.data?.user?.name || data.user?.name);
+                    localStorage.setItem('userId', data.data?.user?._id || data.user?._id);
+                    localStorage.setItem('teacherId', teacherId);
+                    
+                    if (data.data?.refreshToken || data.refreshToken) {
+                        localStorage.setItem('refreshToken', data.data?.refreshToken || data.refreshToken);
+                    }
+                    
+                    // Remember teacher ID if checked
+                    if (rememberMe) {
+                        localStorage.setItem('rememberTeacherId', teacherId);
+                    } else {
+                        localStorage.removeItem('rememberTeacherId');
+                    }
+                    
+                    showSuccess('teacher', 'Login successful! Redirecting...');
+                    
+                    // Redirect to teacher dashboard
+                    setTimeout(() => {
+                        window.location.href = 'dashboards/teacher/Teacherdashboard.html';
+                    }, 1000);
+                } else {
+                    showError('teacher', data.message || 'Login failed. Please check your credentials.');
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fas fa-sign-in-alt"></i> Faculty Login`;
+                }
+            } catch (error) {
+                console.error('Teacher login error:', error);
+                showError('teacher', 'Network error. Please check your connection and try again.');
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-sign-in-alt"></i> Faculty Login`;
+            }
+        }
+
+        // ============================================================================
+        // LOGIN HANDLER - FOR OTHER ROLES
+        // ============================================================================
+        async function handleLogin(e, role) {
+            if (role === 'teacher') {
+                handleTeacherLogin(e);
+                return;
+            }
+            
+            e.preventDefault();
+            
+            let email, studentId;
+            
+            if (role === 'student') {
+                // Student can login with Student ID or Email
+                const loginId = document.getElementById('studentLoginId').value.trim();
+                if (loginId.includes('@')) {
+                    email = loginId;
+                } else {
+                    studentId = loginId;
+                }
+            } else {
+                // Admin, Parent login with Email
+                email = document.getElementById(`${role}LoginEmail`).value.trim();
+            }
+            
+            const password = document.getElementById(`${role}LoginPassword`).value;
+            const rememberMe = document.getElementById(`${role}RememberMe`).checked;
+            const btn = document.getElementById(`${role}LoginBtn`);
+            
+            // Validation
+            if (role === 'student') {
+                if (!studentId && !email) {
+                    showError(role, 'Please enter your Student ID or Email');
+                    return;
+                }
+            } else {
+                if (!validateEmail(email)) {
+                    showError(role, 'Please enter a valid email address');
+                    return;
+                }
+            }
+            
+            if (!password) {
+                showError(role, 'Password is required');
+                return;
+            }
+            
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Logging in...`;
+            
+            try {
+                const payload = { 
+                    password,
+                    userType: role
+                };
+                
+                // Add identifier based on role
+                if (role === 'student') {
+                    if (email) payload.email = email;
+                    if (studentId) payload.studentId = studentId;
+                } else {
+                    payload.email = email;
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Save user data
+                    localStorage.setItem('authToken', data.token || data.data?.accessToken);
+                    localStorage.setItem('userType', data.user?.userType || data.user?.role || role);
+                    localStorage.setItem('userName', data.user?.name || data.user?.adminName);
+                    localStorage.setItem('userId', data.user?.id || data.user?._id);
+                    
+                    if (data.refreshToken || data.data?.refreshToken) {
+                        localStorage.setItem('refreshToken', data.refreshToken || data.data.refreshToken);
+                    }
+                    
+                    // Remember email if checked
+                    if (rememberMe) {
+                        localStorage.setItem('rememberEmail', email || studentId);
+                    } else {
+                        localStorage.removeItem('rememberEmail');
+                    }
+                    
+                    showSuccess(role, 'Login successful! Redirecting...');
+                    
+                    // Redirect to dashboard
+                    setTimeout(() => {
+                        redirectToDashboard(data.user?.userType || data.user?.role || role);
+                    }, 1000);
+                } else {
+                    showError(role, data.message || 'Login failed. Please check your credentials.');
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fas fa-sign-in-alt"></i> ${role.charAt(0).toUpperCase() + role.slice(1)} Login`;
+                }
+            } catch (error) {
+                console.error(`${role} login error:`, error);
+                showError(role, 'Network error. Please check your connection and try again.');
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-sign-in-alt"></i> ${role.charAt(0).toUpperCase() + role.slice(1)} Login`;
+            }
+        }
+
+        // ============================================================================
+        // SIGNUP HANDLER - FOR OTHER ROLES (EXCEPT TEACHER)
+        // ============================================================================
+        async function handleSignup(e, role) {
+            e.preventDefault();
+            
+            // Get common fields
+            const name = document.getElementById(`${role}SignupName`).value.trim();
+            const email = document.getElementById(`${role}SignupEmail`).value.trim();
+            const password = document.getElementById(`${role}SignupPassword`).value;
+            const confirmPassword = document.getElementById(`${role}ConfirmPassword`).value;
+            const btn = document.getElementById(`${role}SignupBtn`);
+            
+            // Basic validation
+            if (!name || name.length < 2) {
+                showError(role, 'Please enter a valid name (at least 2 characters)');
+                return;
+            }
+            
+            if (!validateEmail(email)) {
+                showError(role, 'Please enter a valid email address');
+                return;
+            }
+            
+            if (password.length < 8) {
+                showError(role, 'Password must be at least 8 characters long');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showError(role, 'Passwords do not match');
+                return;
+            }
+            
+            // Role-specific validation and payload preparation
+            let payload = {};
+            
+            if (role === 'student') {
+                // STUDENT SIGNUP
+                const studentId = document.getElementById('studentSignupId').value.trim();
+                const schoolId = document.getElementById('studentSchoolId').value.trim();
+                const grade = document.getElementById('studentGrade').value;
+                
+                if (!studentId) {
+                    showError(role, 'Student ID is required');
+                    return;
+                }
+                
+                if (!schoolId) {
+                    showError(role, 'School ID is required');
+                    return;
+                }
+                
+                if (!grade) {
+                    showError(role, 'Please select your grade/class');
+                    return;
+                }
+                
+                payload = {
+                    userType: 'student',
+                    name: name,
+                    email: email,
+                    password: password,
+                    studentId: studentId,
+                    schoolId: schoolId,
+                    grade: parseInt(grade)
+                };
+                
+            } else if (role === 'admin') {
+                // ADMIN SIGNUP - FIXED VERSION
+                const adminOfficialEmail = document.getElementById('adminOfficialEmail').value.trim();
+                const schoolName = document.getElementById('adminSchoolName').value.trim();
+                const schoolAddress = document.getElementById('adminSchoolAddress').value.trim();
+                const phone = document.getElementById('adminPhone').value.trim();
+                
+                if (!adminOfficialEmail) {
+                    showError(role, 'Admin official email is required');
+                    return;
+                }
+                
+                if (!schoolName) {
+                    showError(role, 'School name is required');
+                    return;
+                }
+                
+                if (!schoolAddress) {
+                    showError(role, 'School address is required');
+                    return;
+                }
+                
+                // CORRECT PAYLOAD FOR ADMIN/SCHOOL SIGNUP
+                payload = {
+                    userType: 'admin',  // REQUIRED by controller
+                    adminName: name,    // School model expects adminName
+                    adminEmail: adminOfficialEmail,  // School model expects adminEmail
+                    adminPassword: password,  // School model expects adminPassword
+                    schoolName: schoolName,
+                    schoolAddress: schoolAddress
+                };
+                
+                if (phone) payload.phone = phone;
+                
+            } else if (role === 'parent') {
+                // PARENT SIGNUP
+                const studentId = document.getElementById('parentStudentId').value.trim();
+                const schoolId = document.getElementById('parentSchoolId').value.trim();
+                const phone = document.getElementById('parentPhone').value.trim();
+                
+                if (!studentId) {
+                    showError(role, 'Student ID is required');
+                    return;
+                }
+                
+                if (!schoolId) {
+                    showError(role, 'School ID is required');
+                    return;
+                }
+                
+                payload = {
+                    userType: 'parent',
+                    name: name,
+                    email: email,
+                    password: password,
+                    studentId: studentId,
+                    schoolId: schoolId
+                };
+                
+                if (phone) payload.phone = phone;
+            }
+            
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Creating account...`;
+            
+            try {
+                console.log('Sending payload:', payload); // For debugging
+                
+                const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                console.log('Response:', data); // For debugging
+                
+                if (response.ok && data.success) {
+                    showSuccess(role, data.message || 'Account created successfully! Please check your email to verify your account.');
+                    
+                    // Clear form
+                    e.target.reset();
+                    
+                    // Switch to login tab after delay
+                    setTimeout(() => {
+                        showAuthTab(role, 'login');
+                        // Pre-fill login form with email
+                        const loginFieldId = role === 'student' ? 'studentLoginId' : `${role}LoginEmail`;
+                        const emailValue = role === 'admin' ? adminOfficialEmail : email;
+                        document.getElementById(loginFieldId).value = emailValue;
+                        document.getElementById(`${role}LoginPassword`).focus();
+                    }, 2000);
+                } else {
+                    showError(role, data.message || 'Signup failed. Please try again.');
+                }
+            } catch (error) {
+                console.error(`${role} signup error:`, error);
+                showError(role, 'Network error. Please check your connection and try again.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-user-plus"></i> Register as ${role.charAt(0).toUpperCase() + role.slice(1)}`;
+            }
+        }
+
+        // ============================================================================
+        // HELPER FUNCTIONS
+        // ============================================================================
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function showError(role, message) {
+            const alert = document.getElementById(`${role}ErrorAlert`);
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => alert.style.display = 'none', 5000);
+        }
+
+        function showSuccess(role, message) {
+            const alert = document.getElementById(`${role}SuccessAlert`);
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => alert.style.display = 'none', 5000);
+        }
+
+        function hideAlerts(role) {
+            const errorAlert = document.getElementById(`${role}ErrorAlert`);
+            const successAlert = document.getElementById(`${role}SuccessAlert`);
+            if (errorAlert) errorAlert.style.display = 'none';
+            if (successAlert) successAlert.style.display = 'none';
+        }
+
+        function hideAllAlerts() {
+            const roles = ['student', 'teacher', 'admin', 'parent'];
+            roles.forEach(role => hideAlerts(role));
+        }
+
+        function redirectToDashboard(userType) {
+            const dashboards = {
+                'student': 'dashboards/student/StudentWorkbench.html',
+                'teacher': 'dashboards/teacher/Teacherdashboard.html',
+                'admin': 'dashboards/admin/Admindashboard.html',
+                'parent': 'dashboards/parent/Parentdashboard.html'
+            };
+            
+            const normalizedType = userType.toLowerCase();
+            const dashboardUrl = dashboards[normalizedType];
+            
+            if (dashboardUrl) {
+                window.location.href = dashboardUrl;
+            } else {
+                console.error('No dashboard found for user type:', userType);
+                showError(currentRole, 'Unable to redirect to dashboard. Please contact support.');
+            }
+        }
+
+        async function checkExistingSession() {
+            const token = localStorage.getItem('authToken');
+            const userType = localStorage.getItem('userType');
+            
+            if (token && userType) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+                        headers: { 
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        redirectToDashboard(userType);
+                    } else {
+                        localStorage.clear();
+                    }
+                } catch (error) {
+                    localStorage.clear();
+                }
+            }
+        }
+
+        function checkUrlParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Check for role parameter
+            const roleParam = urlParams.get('role');
+            if (roleParam && ['student', 'teacher', 'admin', 'parent'].includes(roleParam)) {
+                selectRole(roleParam);
+            }
+            
+            // Check for tab parameter
+            const tabParam = urlParams.get('tab');
+            if (tabParam && ['login', 'signup'].includes(tabParam)) {
+                setTimeout(() => showAuthTab(currentRole, tabParam), 100);
+            }
+            
+            // Check for verification status
+            if (urlParams.get('verification') === 'success') {
+                showSuccess(currentRole, 'Email verified successfully! You can now login.');
+            }
+            
+            if (urlParams.get('verification') === 'error') {
+                showError(currentRole, 'Email verification failed. Please try again or request a new verification email.');
+            }
+        }
+
+        function loadRememberedEmail() {
+            const rememberedEmail = localStorage.getItem('rememberEmail');
+            if (rememberedEmail) {
+                // Try to find which role this email belongs to
+                const roles = ['student', 'admin', 'parent'];
+                roles.forEach(role => {
+                    const emailField = role === 'student' ? 'studentLoginId' : `${role}LoginEmail`;
+                    const field = document.getElementById(emailField);
+                    if (field) {
+                        field.value = rememberedEmail;
+                    }
+                    const rememberCheckbox = document.getElementById(`${role}RememberMe`);
+                    if (rememberCheckbox) {
+                        rememberCheckbox.checked = true;
+                    }
+                });
+            }
+            
+            // Load remembered teacher ID
+            const rememberedTeacherId = localStorage.getItem('rememberTeacherId');
+            if (rememberedTeacherId) {
+                const teacherIdField = document.getElementById('teacherLoginId');
+                if (teacherIdField) {
+                    teacherIdField.value = rememberedTeacherId;
+                }
+                const teacherRememberCheckbox = document.getElementById('teacherRememberMe');
+                if (teacherRememberCheckbox) {
+                    teacherRememberCheckbox.checked = true;
+                }
+            }
+        }
+
+        // ============================================================================
+        // FORGOT PASSWORD FUNCTION
+        // ============================================================================
+        async function showForgotPassword(role) {
+            if (role === 'teacher') {
+                const teacherId = prompt(`Enter your Teacher ID to receive password reset instructions:`);
+                
+                if (!teacherId) return;
+                
+                // Teacher ID format validation
+                if (!teacherId.match(/^TCH-[A-Z0-9]{5}$/)) {
+                    showError('teacher', 'Invalid Teacher ID format. Format: TCH-XXXXX');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ teacherId, userType: role })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        showSuccess('teacher', 'Password reset instructions have been sent to your registered email!');
+                    } else {
+                        showError('teacher', data.message || 'Failed to send reset email. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Teacher password reset error:', error);
+                    showError('teacher', 'Network error. Please try again later.');
+                }
+                return;
+            }
+            
+            const email = prompt(`Enter your ${role} email address to receive password reset instructions:`);
+            
+            if (!email) return;
+            
+            if (!validateEmail(email)) {
+                showError(role, 'Please enter a valid email address');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, userType: role })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess(role, 'Password reset instructions have been sent to your email!');
+                } else {
+                    showError(role, data.message || 'Failed to send reset email. Please try again.');
+                }
+            } catch (error) {
+                console.error('Password reset error:', error);
+                showError(role, 'Network error. Please try again later.');
+            }
+        }
+
+        // ============================================================================
+        // CHANGE PASSWORD FUNCTION
+        // ============================================================================
+        function showChangePassword(role) {
+            if (role !== 'teacher') {
+                alert('Change password feature is currently only available for Faculty.');
+                return;
+            }
+            
+            // Create a simple popup for changing password
+            const currentPassword = prompt('Enter your current password:');
+            if (!currentPassword) return;
+            
+            const newPassword = prompt('Enter your new password (min 8 characters):');
+            if (!newPassword || newPassword.length < 8) {
+                showError('teacher', 'New password must be at least 8 characters long');
+                return;
+            }
+            
+            const confirmPassword = prompt('Confirm your new password:');
+            if (newPassword !== confirmPassword) {
+                showError('teacher', 'Passwords do not match');
+                return;
+            }
+            
+            // Get teacher ID
+            const teacherId = document.getElementById('teacherLoginId').value.trim();
+            if (!teacherId) {
+                showError('teacher', 'Please enter your Teacher ID first');
+                return;
+            }
+            
+            // Call change password API
+            changeTeacherPassword(teacherId, currentPassword, newPassword);
+        }
+        
+        async function changeTeacherPassword(teacherId, currentPassword, newPassword) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userType: 'teacher',
+                        teacherId: teacherId,
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showSuccess('teacher', 'Password changed successfully! You can now login with your new password.');
+                } else {
+                    showError('teacher', data.message || 'Failed to change password. Please try again.');
+                }
+            } catch (error) {
+                console.error('Change password error:', error);
+                showError('teacher', 'Network error. Please try again later.');
+            }
+        }
+
+        // ============================================================================
+        // RESEND VERIFICATION EMAIL
+        // ============================================================================
+        async function resendVerification(role) {
+            if (role === 'teacher') {
+                const teacherId = prompt(`Enter your Teacher ID to resend verification:`);
+                
+                if (!teacherId) return;
+                
+                // Teacher ID format validation
+                if (!teacherId.match(/^TCH-[A-Z0-9]{5}$/)) {
+                    showError('teacher', 'Invalid Teacher ID format. Format: TCH-XXXXX');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ teacherId, userType: role })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        showSuccess('teacher', 'Verification email has been resent! Please check your inbox.');
+                        document.getElementById('teacherVerificationNote').style.display = 'block';
+                    } else {
+                        showError('teacher', data.message || 'Failed to resend verification email.');
+                    }
+                } catch (error) {
+                    console.error('Teacher resend verification error:', error);
+                    showError('teacher', 'Network error. Please try again later.');
+                }
+                return;
+            }
+            
+            const email = prompt(`Enter your ${role} email address to resend verification:`);
+            
+            if (!email) return;
+            
+            if (!validateEmail(email)) {
+                showError(role, 'Please enter a valid email address');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, userType: role })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess(role, 'Verification email has been resent! Please check your inbox.');
+                    document.getElementById(`${role}VerificationNote`).style.display = 'block';
+                } else {
+                    showError(role, data.message || 'Failed to resend verification email.');
+                }
+            } catch (error) {
+                console.error('Resend verification error:', error);
+                showError(role, 'Network error. Please try again later.');
+            }
+        }
+    </script>
+</body>
+</html>

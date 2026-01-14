@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice Zone - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; --success: #00b894; --error: #e74c3c; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; transition: all 0.3s; }
+        .btn:hover { transform: translateY(-2px); }
+        .main { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .mode-card { background: #2d2d30; padding: 20px; border-radius: 6px; margin: 10px 0; cursor: pointer; border: 2px solid #464647; transition: all 0.3s; }
+        .mode-card:hover, .mode-card.active { border-color: var(--accent); background: rgba(0, 122, 204, 0.1); }
+        .mode-title { font-weight: 600; margin-bottom: 8px; }
+        .question-area { background: var(--bg); border-radius: 6px; padding: 40px; text-align: center; min-height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid #464647; }
+        .question-text { font-size: 28px; margin-bottom: 30px; line-height: 1.4; }
+        .answer-input { padding: 15px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; color: #fff; font-size: 20px; text-align: center; width: 300px; }
+        .answer-input:focus { outline: none; border-color: var(--accent); }
+        .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; max-width: 600px; }
+        .option-btn { padding: 20px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; cursor: pointer; font-size: 18px; transition: all 0.3s; }
+        .option-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .option-btn.correct { background: var(--success); border-color: var(--success); }
+        .option-btn.incorrect { background: var(--error); border-color: var(--error); }
+        .feedback { padding: 20px; border-radius: 6px; margin-top: 20px; font-size: 18px; font-weight: 600; }
+        .feedback.correct { background: rgba(0, 184, 148, 0.2); color: var(--success); }
+        .feedback.incorrect { background: rgba(231, 76, 60, 0.2); color: var(--error); }
+        .progress-bar { background: #2d2d30; height: 12px; border-radius: 6px; overflow: hidden; margin: 20px 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--success)); transition: width 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-dumbbell"></i> Practice Zone</h1><p style="color: #888;">Cross-curricular • Skill Building</p></div>
+            <div style="display: flex; gap: 15px;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <span><i class="fas fa-fire"></i> Streak: <span id="streak">0</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-gamepad"></i> Practice Modes</h2>
+                
+                <div class="mode-card active" onclick="selectMode('quick-quiz')">
+                    <div class="mode-title"><i class="fas fa-bolt"></i> Quick Quiz</div>
+                    <div style="color: #888; font-size: 13px;">Fast-paced mixed questions</div>
+                </div>
+                
+                <div class="mode-card" onclick="selectMode('math-drill')">
+                    <div class="mode-title"><i class="fas fa-calculator"></i> Math Drill</div>
+                    <div style="color: #888; font-size: 13px;">Arithmetic & algebra practice</div>
+                </div>
+                
+                <div class="mode-card" onclick="selectMode('science-facts')">
+                    <div class="mode-title"><i class="fas fa-atom"></i> Science Facts</div>
+                    <div style="color: #888; font-size: 13px;">Physics & chemistry review</div>
+                </div>
+                
+                <div class="mode-card" onclick="selectMode('word-problems')">
+                    <div class="mode-title"><i class="fas fa-brain"></i> Word Problems</div>
+                    <div style="color: #888; font-size: 13px;">Real-world scenarios</div>
+                </div>
+                
+                <h3 style="margin: 25px 0 10px; color: var(--accent);">Your Progress</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="sessionProgress" style="width: 0%;"></div>
+                </div>
+                <div style="text-align: center; color: #888; font-size: 13px;">
+                    <span id="progressText">0 / 10 completed</span>
+                </div>
+                
+                <div style="margin-top: 25px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--success); font-weight: 600;" id="correctCount">0</div>
+                        <div style="font-size: 12px; color: #888;">Correct</div>
+                    </div>
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="totalCount">0</div>
+                        <div style="font-size: 12px; color: #888;">Total</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div id="questionArea" class="question-area">
+                    <div style="font-size: 48px; margin-bottom: 20px;">🎯</div>
+                    <h2 style="margin-bottom: 20px;">Ready to Practice?</h2>
+                    <p style="color: #888; margin-bottom: 30px;">Select a practice mode and click Start</p>
+                    <button class="btn" style="font-size: 18px; padding: 15px 40px;" onclick="startPractice()">
+                        <i class="fas fa-play"></i> Start Practice
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px;">
+            <div style="background: var(--panel); padding: 15px; border-radius: 6px; text-align: center;">
+                <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statQuestions">0</div>
+                <div style="font-size: 12px; color: #888;">Questions</div>
+            </div>
+            <div style="background: var(--panel); padding: 15px; border-radius: 6px; text-align: center;">
+                <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statAccuracy">0%</div>
+                <div style="font-size: 12px; color: #888;">Accuracy</div>
+            </div>
+            <div style="background: var(--panel); padding: 15px; border-radius: 6px; text-align: center;">
+                <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statAvgTime">0s</div>
+                <div style="font-size: 12px; color: #888;">Avg Time</div>
+            </div>
+            <div style="background: var(--panel); padding: 15px; border-radius: 6px; text-align: center;">
+                <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statPoints">0</div>
+                <div style="font-size: 12px; color: #888;">Points</div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now();
+        
+        let currentMode = 'quick-quiz', currentQuestion = null, questionStartTime = 0;
+        let sessionQuestions = 0, sessionCorrect = 0, streak = 0, totalTime = 0;
+        
+        let interactionData = {
+            actions_count: 0, time_seconds: 0, total_parameter_space: 200,
+            tool_usage: {}, questions_answered: 0, correct_attempts: 0, incorrect_attempts: 0,
+            modes_used: new Set(), total_points: 0
+        };
+        
+        const questionBanks = {
+            'quick-quiz': [
+                { q: 'What is 7 × 8?', a: '56', options: ['54', '56', '58', '63'] },
+                { q: 'What is the chemical symbol for water?', a: 'H2O', options: ['H2O', 'CO2', 'O2', 'H2'] },
+                { q: 'What is 15 + 27?', a: '42', options: ['40', '42', '44', '45'] },
+                { q: 'How many sides does a hexagon have?', a: '6', options: ['5', '6', '7', '8'] }
+            ],
+            'math-drill': [
+                { q: '12 × 12 = ?', a: '144', type: 'input' },
+                { q: '√64 = ?', a: '8', type: 'input' },
+                { q: '25% of 80 = ?', a: '20', type: 'input' },
+                { q: 'Solve: 2x + 5 = 15', a: '5', type: 'input' }
+            ],
+            'science-facts': [
+                { q: 'What is the speed of light?', a: '3×10⁸ m/s', options: ['3×10⁸ m/s', '3×10⁶ m/s', '3×10⁹ m/s', '3×10⁷ m/s'] },
+                { q: 'What force opposes motion?', a: 'Friction', options: ['Gravity', 'Friction', 'Magnetism', 'Inertia'] },
+                { q: 'What is Newton\'s First Law?', a: 'Objects in motion stay in motion', options: ['F=ma', 'Objects in motion stay in motion', 'Every action has a reaction', 'E=mc²'] }
+            ],
+            'word-problems': [
+                { q: 'If a car travels 60 km/h for 2.5 hours, how far does it go?', a: '150', options: ['120 km', '140 km', '150 km', '160 km'] },
+                { q: 'A rectangle has length 8m and width 5m. What is its area?', a: '40', options: ['35 m²', '40 m²', '45 m²', '50 m²'] }
+            ]
+        };
+        
+        async function init() {
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, toolId: 'practice-zone', toolType: 'PRACTICE', interactionData })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {}
+            }
+            
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            setInterval(saveProgress, 30000);
+        }
+        
+        function selectMode(mode) {
+            document.querySelectorAll('.mode-card').forEach(card => card.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            currentMode = mode;
+            interactionData.modes_used.add(mode);
+            interactionData.actions_count++;
+        }
+        
+        function startPractice() {
+            sessionQuestions = 0;
+            sessionCorrect = 0;
+            nextQuestion();
+        }
+        
+        function nextQuestion() {
+            const bank = questionBanks[currentMode];
+            if (!bank || bank.length === 0) return;
+            
+            currentQuestion = bank[Math.floor(Math.random() * bank.length)];
+            questionStartTime = Date.now();
+            
+            const area = document.getElementById('questionArea');
+            
+            if (currentQuestion.type === 'input') {
+                area.innerHTML = `
+                    <div class="question-text">${currentQuestion.q}</div>
+                    <input type="text" class="answer-input" id="answerInput" placeholder="Your answer..." autofocus>
+                    <button class="btn" style="margin-top: 20px; font-size: 18px;" onclick="checkAnswer()">
+                        <i class="fas fa-check"></i> Submit
+                    </button>
+                `;
+                
+                document.getElementById('answerInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') checkAnswer();
+                });
+            } else {
+                area.innerHTML = `
+                    <div class="question-text">${currentQuestion.q}</div>
+                    <div class="options-grid">
+                        ${currentQuestion.options.map(opt => `
+                            <div class="option-btn" onclick="selectAnswer('${opt}')">${opt}</div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            sessionQuestions++;
+            updateProgress();
+        }
+        
+        function selectAnswer(answer) {
+            checkAnswer(answer);
+        }
+        
+        function checkAnswer(selected) {
+            const userAnswer = selected || document.getElementById('answerInput')?.value.trim();
+            const correct = userAnswer.toLowerCase() === currentQuestion.a.toLowerCase() || 
+                           userAnswer === currentQuestion.a.split(' ')[0];
+            
+            const timeSpent = (Date.now() - questionStartTime) / 1000;
+            totalTime += timeSpent;
+            
+            if (correct) {
+                sessionCorrect++;
+                streak++;
+                interactionData.correct_attempts++;
+                interactionData.total_points += Math.max(10, Math.floor(30 - timeSpent));
+                showFeedback(true);
+            } else {
+                streak = 0;
+                interactionData.incorrect_attempts++;
+                showFeedback(false);
+            }
+            
+            interactionData.questions_answered++;
+            interactionData.tool_usage[currentMode] = (interactionData.tool_usage[currentMode] || 0) + 1;
+            
+            updateStats();
+            updateProgress();
+            
+            setTimeout(() => {
+                if (sessionQuestions < 10) {
+                    nextQuestion();
+                } else {
+                    showCompletion();
+                }
+            }, 2000);
+        }
+        
+        function showFeedback(correct) {
+            const area = document.getElementById('questionArea');
+            const feedback = document.createElement('div');
+            feedback.className = `feedback ${correct ? 'correct' : 'incorrect'}`;
+            feedback.innerHTML = correct ? 
+                '<i class="fas fa-check-circle"></i> Correct! Well done!' : 
+                `<i class="fas fa-times-circle"></i> Not quite. The answer was: ${currentQuestion.a}`;
+            area.appendChild(feedback);
+        }
+        
+        function showCompletion() {
+            const accuracy = Math.round((sessionCorrect / sessionQuestions) * 100);
+            const area = document.getElementById('questionArea');
+            
+            area.innerHTML = `
+                <div style="font-size: 64px; margin-bottom: 20px;">${accuracy >= 80 ? '🎉' : '💪'}</div>
+                <h2 style="margin-bottom: 20px;">Session Complete!</h2>
+                <div style="font-size: 48px; color: var(--success); margin: 20px 0;">${sessionCorrect} / ${sessionQuestions}</div>
+                <p style="color: #888; margin-bottom: 30px;">Accuracy: ${accuracy}%</p>
+                <button class="btn" style="font-size: 18px; padding: 15px 40px;" onclick="startPractice()">
+                    <i class="fas fa-redo"></i> Practice Again
+                </button>
+            `;
+        }
+        
+        function updateProgress() {
+            const progress = (sessionQuestions / 10) * 100;
+            document.getElementById('sessionProgress').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${sessionQuestions} / 10 completed`;
+            document.getElementById('correctCount').textContent = sessionCorrect;
+            document.getElementById('totalCount').textContent = sessionQuestions;
+        }
+        
+        function updateStats() {
+            document.getElementById('streak').textContent = streak;
+            document.getElementById('statQuestions').textContent = interactionData.questions_answered;
+            
+            const accuracy = interactionData.questions_answered > 0 
+                ? Math.round((interactionData.correct_attempts / interactionData.questions_answered) * 100) 
+                : 0;
+            document.getElementById('statAccuracy').textContent = accuracy + '%';
+            
+            const avgTime = interactionData.questions_answered > 0 
+                ? Math.round(totalTime / interactionData.questions_answered) 
+                : 0;
+            document.getElementById('statAvgTime').textContent = avgTime + 's';
+            
+            document.getElementById('statPoints').textContent = interactionData.total_points;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            interactionData.modes_used = Array.from(interactionData.modes_used);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactionData })
+                });
+            } catch (err) {}
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('Session completed!');
+            window.location.href = '/dashboard';
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+    </script>
+</body>
+</html>

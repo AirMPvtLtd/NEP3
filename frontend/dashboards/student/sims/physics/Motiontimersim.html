@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motion Timer Sim - NEP Workbench</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; font-size: 13px; transition: all 0.3s; }
+        .btn:hover { background: #005a9e; }
+        .btn:disabled { background: #555; cursor: not-allowed; }
+        .main { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .track-area { background: #000; border-radius: 6px; height: 200px; border: 1px solid #464647; position: relative; overflow: hidden; }
+        canvas { width: 100%; height: 100%; display: block; cursor: pointer; }
+        input[type="range"] { width: 100%; height: 8px; background: #2d2d30; border-radius: 4px; -webkit-appearance: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+        input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; border: none; }
+        .time-display { font-size: 48px; font-weight: bold; color: var(--accent); text-align: center; margin: 20px 0; font-family: 'Courier New', monospace; }
+        .gate-marker { position: absolute; width: 4px; background: #e74c3c; height: 100%; top: 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-stopwatch"></i> Motion Timer Sim</h1><p style="color: #888;">Physics Lab • Grade 9-10</p></div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">Motion Track</h2>
+                
+                <div class="track-area">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <div class="time-display" id="timeDisplay">0.000s</div>
+                
+                <div style="margin: 20px 0;">
+                    <label style="display: block; margin-bottom: 10px; color: #888;">Velocity: <span id="velocityDisplay">5.0</span> m/s</label>
+                    <input type="range" id="velocitySlider" min="1" max="20" step="0.5" value="5" oninput="updateVelocity()">
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <label style="display: block; margin-bottom: 10px; color: #888;">Distance: <span id="distanceDisplay">10.0</span> m</label>
+                    <input type="range" id="distanceSlider" min="5" max="50" step="1" value="10" oninput="updateDistance()">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px;">
+                    <button class="btn" onclick="startMotion()" id="startBtn"><i class="fas fa-play"></i> Start</button>
+                    <button class="btn" onclick="pauseMotion()" id="pauseBtn" disabled><i class="fas fa-pause"></i> Pause</button>
+                    <button class="btn" style="background: #e74c3c;" onclick="resetMotion()"><i class="fas fa-undo"></i> Reset</button>
+                </div>
+                
+                <h3 style="margin: 25px 0 10px;">Time Gates <small style="color: #888;">(Click on track to add)</small></h3>
+                <div style="background: #2d2d30; padding: 15px; border-radius: 6px; max-height: 200px; overflow-y: auto;" id="gatesList">
+                    <p style="color: #888; text-align: center;">Add time gates by clicking on the track</p>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-chart-line"></i> Analysis</h2>
+                
+                <div style="background: #2d2d30; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Velocity:</span>
+                        <strong id="currentVelocity">5.0 m/s</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Distance:</span>
+                        <strong id="currentDistance">10.0 m</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Expected Time:</span>
+                        <strong id="expectedTime">2.000 s</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                        <span>Actual Time:</span>
+                        <strong id="actualTime" style="color: var(--accent);">- s</strong>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Kinematic Equations</h3>
+                <div style="background: #2d2d30; padding: 15px; border-radius: 6px; font-size: 13px; line-height: 2;">
+                    <div>v = d / t</div>
+                    <div>d = v × t</div>
+                    <div>t = d / v</div>
+                    <div>a = Δv / Δt</div>
+                </div>
+                
+                <div style="background: rgba(0, 122, 204, 0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 12px; line-height: 1.8;">
+                    <strong style="color: var(--accent);">Motion Concepts:</strong><br>
+                    • Uniform motion: constant velocity<br>
+                    • Time gates measure intervals<br>
+                    • Average speed = total distance / total time
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statRuns">0</div>
+                        <div style="font-size: 12px; color: #888;">Runs</div>
+                    </div>
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statGates">0</div>
+                        <div style="font-size: 12px; color: #888;">Gates</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now(), canvas, ctx;
+        
+        // FIXED: Initialize all variables properly
+        let velocity = 5.0;
+        let distance = 10.0;
+        let isRunning = false;
+        let isPaused = false;
+        let objectPosition = 0;
+        let elapsedTime = 0;
+        let startTime = 0;
+        let animationId = null;
+        let gates = [];
+        let gateReadings = [];
+        
+        let interactionData = {
+            actions_count: 0,
+            time_seconds: 0,
+            total_parameter_space: 150,
+            tool_usage: {},
+            runs_completed: 0,
+            gates_placed: 0,
+            velocity_settings: new Set(),
+            distance_settings: new Set()
+        };
+        
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            
+            // FIXED: Proper canvas sizing
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            
+            console.log('Canvas initialized:', canvas.width, 'x', canvas.height);
+            
+            canvas.addEventListener('click', placeGate);
+            
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 
+                            'Authorization': `Bearer ${authToken}`, 
+                            'Content-Type': 'application/json' 
+                        },
+                        body: JSON.stringify({ 
+                            studentId, 
+                            toolId: 'motion-timer-sim', 
+                            toolType: 'LAB', 
+                            interactionData 
+                        })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {
+                    console.log('Event tracking not available');
+                }
+            }
+            
+            updateCalculations();
+            draw();
+            
+            // Timer
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = 
+                    `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            
+            // Autosave
+            setInterval(saveProgress, 30000);
+            
+            console.log('✅ Motion Timer initialized');
+        }
+        
+        function updateVelocity() {
+            velocity = parseFloat(document.getElementById('velocitySlider').value);
+            document.getElementById('velocityDisplay').textContent = velocity.toFixed(1);
+            interactionData.velocity_settings.add(Math.floor(velocity));
+            interactionData.actions_count++;
+            updateCalculations();
+        }
+        
+        function updateDistance() {
+            distance = parseFloat(document.getElementById('distanceSlider').value);
+            document.getElementById('distanceDisplay').textContent = distance.toFixed(1);
+            interactionData.distance_settings.add(Math.floor(distance));
+            interactionData.actions_count++;
+            updateCalculations();
+            draw(); // Redraw to update distance markers
+        }
+        
+        function updateCalculations() {
+            // FIXED: Safe division
+            const expectedTime = velocity > 0 ? (distance / velocity) : 0;
+            
+            document.getElementById('currentVelocity').textContent = velocity.toFixed(1) + ' m/s';
+            document.getElementById('currentDistance').textContent = distance.toFixed(1) + ' m';
+            document.getElementById('expectedTime').textContent = expectedTime.toFixed(3) + ' s';
+            
+            console.log('Calculations:', { velocity, distance, expectedTime });
+        }
+        
+        function placeGate(e) {
+            if (isRunning) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const canvasX = clickX * (canvas.width / rect.width);
+            
+            const gateDistance = (canvasX / canvas.width) * distance;
+            
+            if (gateDistance > 0 && gateDistance < distance) {
+                gates.push({
+                    x: canvasX,
+                    distance: gateDistance,
+                    triggered: false
+                });
+                gates.sort((a, b) => a.distance - b.distance);
+                interactionData.gates_placed++;
+                interactionData.actions_count++;
+                
+                console.log('Gate placed at:', gateDistance.toFixed(2), 'm');
+                draw();
+                updateStats();
+            }
+        }
+        
+        function startMotion() {
+            if (isRunning && !isPaused) return;
+            
+            if (!isPaused) {
+                // Fresh start
+                objectPosition = 0;
+                elapsedTime = 0;
+                gateReadings = [];
+                gates.forEach(g => g.triggered = false);
+                startTime = Date.now();
+            } else {
+                // Resume from pause
+                startTime = Date.now() - (elapsedTime * 1000);
+            }
+            
+            isRunning = true;
+            isPaused = false;
+            
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('pauseBtn').disabled = false;
+            
+            console.log('Motion started');
+            animate();
+        }
+        
+        function pauseMotion() {
+            isPaused = true;
+            isRunning = false;
+            
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            
+            interactionData.actions_count++;
+            console.log('Motion paused at', elapsedTime.toFixed(3), 's');
+        }
+        
+        function resetMotion() {
+            isRunning = false;
+            isPaused = false;
+            objectPosition = 0;
+            elapsedTime = 0;
+            startTime = 0;
+            gateReadings = [];
+            gates.forEach(g => g.triggered = false);
+            
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('timeDisplay').textContent = '0.000s';
+            document.getElementById('actualTime').textContent = '- s';
+            
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            
+            interactionData.runs_completed++;
+            interactionData.actions_count++;
+            
+            console.log('Motion reset');
+            updateGatesList();
+            draw();
+            updateStats();
+        }
+        
+        function animate() {
+            if (!isRunning || isPaused) return;
+            
+            // FIXED: Calculate elapsed time properly
+            elapsedTime = (Date.now() - startTime) / 1000;
+            objectPosition = velocity * elapsedTime;
+            
+            // Update display
+            document.getElementById('timeDisplay').textContent = elapsedTime.toFixed(3) + 's';
+            
+            // Check gate triggers
+            gates.forEach((gate, index) => {
+                if (objectPosition >= gate.distance && !gate.triggered) {
+                    gate.triggered = true;
+                    gateReadings.push({
+                        gate: index + 1,
+                        distance: gate.distance,
+                        time: elapsedTime
+                    });
+                    console.log(`Gate ${index + 1} triggered at ${elapsedTime.toFixed(3)}s`);
+                    updateGatesList();
+                }
+            });
+            
+            // Check if finished
+            if (objectPosition >= distance) {
+                isRunning = false;
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('pauseBtn').disabled = true;
+                document.getElementById('actualTime').textContent = elapsedTime.toFixed(3) + ' s';
+                interactionData.runs_completed++;
+                
+                console.log('Motion completed in', elapsedTime.toFixed(3), 's');
+                gates.forEach(g => g.triggered = false);
+                updateStats();
+            } else {
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            draw();
+        }
+        
+        function updateGatesList() {
+            const list = document.getElementById('gatesList');
+            
+            if (gateReadings.length === 0) {
+                list.innerHTML = '<p style="color: #888; text-align: center;">No gate readings yet</p>';
+                return;
+            }
+            
+            list.innerHTML = gateReadings.map(reading => `
+                <div style="padding: 8px; background: #1e1e1e; border-radius: 4px; margin: 5px 0; display: flex; justify-content: space-between;">
+                    <span>Gate ${reading.gate}: ${reading.distance.toFixed(2)}m</span>
+                    <strong style="color: var(--accent);">${reading.time.toFixed(3)}s</strong>
+                </div>
+            `).join('');
+        }
+        
+        function draw() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Track line
+            ctx.strokeStyle = '#464647';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, height / 2);
+            ctx.lineTo(width, height / 2);
+            ctx.stroke();
+            
+            // Distance markers
+            ctx.fillStyle = '#888';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            for (let i = 0; i <= 10; i++) {
+                const x = (i / 10) * width;
+                const markerDist = (i * distance / 10).toFixed(1);
+                
+                // Marker line
+                ctx.strokeStyle = '#555';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x, height / 2 - 5);
+                ctx.lineTo(x, height / 2 + 5);
+                ctx.stroke();
+                
+                // Text
+                ctx.fillText(markerDist + 'm', x, height / 2 + 20);
+            }
+            
+            // Gates
+            gates.forEach((gate, i) => {
+                // Gate line
+                ctx.fillStyle = gate.triggered ? '#27ae60' : '#e74c3c';
+                ctx.fillRect(gate.x - 2, 0, 4, height);
+                
+                // Gate label
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`G${i + 1}`, gate.x, 20);
+                
+                // Distance label
+                ctx.font = '10px Arial';
+                ctx.fillText(gate.distance.toFixed(1) + 'm', gate.x, 35);
+            });
+            
+            // Moving object (ball)
+            if (objectPosition <= distance) {
+                const x = (objectPosition / distance) * width;
+                
+                // Motion trail
+                ctx.fillStyle = 'rgba(0, 122, 204, 0.2)';
+                ctx.fillRect(0, height / 2 - 3, x, 6);
+                
+                // Ball shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.beginPath();
+                ctx.ellipse(x, height / 2 + 25, 12, 4, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Ball
+                const gradient = ctx.createRadialGradient(x - 5, height / 2 - 5, 2, x, height / 2, 15);
+                gradient.addColorStop(0, '#00d4ff');
+                gradient.addColorStop(1, '#007acc');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(x, height / 2, 15, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Ball highlight
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.beginPath();
+                ctx.arc(x - 5, height / 2 - 5, 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Velocity arrow
+                if (isRunning) {
+                    ctx.strokeStyle = '#ffd93d';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x, height / 2);
+                    ctx.lineTo(x + 30, height / 2);
+                    ctx.stroke();
+                    
+                    // Arrowhead
+                    ctx.fillStyle = '#ffd93d';
+                    ctx.beginPath();
+                    ctx.moveTo(x + 30, height / 2);
+                    ctx.lineTo(x + 25, height / 2 - 4);
+                    ctx.lineTo(x + 25, height / 2 + 4);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+        }
+        
+        function updateStats() {
+            document.getElementById('statRuns').textContent = interactionData.runs_completed;
+            document.getElementById('statGates').textContent = interactionData.gates_placed;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            interactionData.velocity_settings = Array.from(interactionData.velocity_settings);
+            interactionData.distance_settings = Array.from(interactionData.distance_settings);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`, 
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify({ interactionData })
+                });
+                console.log('Progress saved');
+            } catch (err) {
+                console.log('Save failed:', err);
+            }
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('✅ Session completed!\nRuns: ' + interactionData.runs_completed + '\nGates: ' + interactionData.gates_placed);
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+        
+        // Resize handler
+        window.addEventListener('resize', () => {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            draw();
+        });
+    </script>
+</body>
+</html>

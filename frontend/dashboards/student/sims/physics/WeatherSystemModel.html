@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather System Model - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; }
+        .main { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .map-area { background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%); border-radius: 6px; height: 500px; border: 1px solid #464647; position: relative; }
+        canvas { width: 100%; height: 100%; }
+        .weather-selector { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; }
+        .weather-btn { padding: 15px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; cursor: pointer; text-align: center; transition: all 0.3s; }
+        .weather-btn.active { background: var(--accent); border-color: var(--accent); }
+        input[type="range"] { width: 100%; height: 8px; background: #2d2d30; border-radius: 4px; }
+        input[type="range"]::-webkit-slider-thumb { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+        .forecast-card { background: #2d2d30; padding: 15px; border-radius: 6px; margin: 10px 0; }
+        .data-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647; }
+        .data-row:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-cloud-sun"></i> Weather System Model</h1><p style="color: #888;">Physics Lab • Grade 7-8</p></div>
+            <div style="display: flex; gap: 15px;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">Weather Simulation</h2>
+                
+                <div class="map-area">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Atmospheric Conditions</h3>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display: block; margin-bottom: 10px; color: #888;">Temperature: <span id="tempDisplay">20</span>°C</label>
+                    <input type="range" id="tempSlider" min="-10" max="40" value="20" oninput="updateConditions()">
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display: block; margin-bottom: 10px; color: #888;">Humidity: <span id="humidityDisplay">60</span>%</label>
+                    <input type="range" id="humiditySlider" min="0" max="100" value="60" oninput="updateConditions()">
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display: block; margin-bottom: 10px; color: #888;">Wind Speed: <span id="windDisplay">15</span> km/h</label>
+                    <input type="range" id="windSlider" min="0" max="100" value="15" oninput="updateConditions()">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                    <button class="btn" onclick="startAnimation()"><i class="fas fa-play"></i> Animate</button>
+                    <button class="btn" style="background: #e74c3c;" onclick="stopAnimation()"><i class="fas fa-stop"></i> Stop</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-cloud"></i> Weather Patterns</h2>
+                
+                <div class="weather-selector">
+                    <div class="weather-btn active" onclick="selectWeather('clear')">
+                        <i class="fas fa-sun" style="font-size: 28px; color: #ffd700;"></i>
+                        <div style="margin-top: 8px; font-size: 13px;">Clear</div>
+                    </div>
+                    <div class="weather-btn" onclick="selectWeather('cloudy')">
+                        <i class="fas fa-cloud" style="font-size: 28px; color: #aaa;"></i>
+                        <div style="margin-top: 8px; font-size: 13px;">Cloudy</div>
+                    </div>
+                    <div class="weather-btn" onclick="selectWeather('rainy')">
+                        <i class="fas fa-cloud-rain" style="font-size: 28px; color: #4a90e2;"></i>
+                        <div style="margin-top: 8px; font-size: 13px;">Rainy</div>
+                    </div>
+                    <div class="weather-btn" onclick="selectWeather('stormy')">
+                        <i class="fas fa-bolt" style="font-size: 28px; color: #f39c12;"></i>
+                        <div style="margin-top: 8px; font-size: 13px;">Stormy</div>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Current Conditions</h3>
+                <div class="forecast-card">
+                    <div class="data-row">
+                        <span>Weather:</span>
+                        <strong id="currentWeather">Clear</strong>
+                    </div>
+                    <div class="data-row">
+                        <span>Temperature:</span>
+                        <strong id="currentTemp">20°C</strong>
+                    </div>
+                    <div class="data-row">
+                        <span>Humidity:</span>
+                        <strong id="currentHumidity">60%</strong>
+                    </div>
+                    <div class="data-row">
+                        <span>Wind:</span>
+                        <strong id="currentWind">15 km/h</strong>
+                    </div>
+                    <div class="data-row">
+                        <span>Pressure:</span>
+                        <strong id="currentPressure">1013 hPa</strong>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(0, 122, 204, 0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 12px; line-height: 1.8;">
+                    <strong style="color: var(--accent);">Weather Factors:</strong><br>
+                    • Temperature affects air pressure<br>
+                    • Humidity determines precipitation<br>
+                    • Wind speed influences weather patterns<br>
+                    • Pressure systems create fronts
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statPatterns">0</div>
+                        <div style="font-size: 12px; color: #888;">Patterns</div>
+                    </div>
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statChanges">0</div>
+                        <div style="font-size: 12px; color: #888;">Changes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now(), canvas, ctx;
+        
+        let temperature = 20, humidity = 60, windSpeed = 15;
+        let weatherType = 'clear', animating = false, animationId = null;
+        let clouds = [], raindrops = [];
+        
+        let interactionData = {
+            actions_count: 0, time_seconds: 0, total_parameter_space: 180,
+            tool_usage: {}, weather_patterns_tested: new Set(['clear']), condition_changes: 0,
+            temperature_range: new Set(), humidity_range: new Set()
+        };
+        
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            
+            initClouds();
+            
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, toolId: 'weather-system-model', toolType: 'LAB', interactionData })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {}
+            }
+            
+            draw();
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            setInterval(saveProgress, 30000);
+        }
+        
+        function initClouds() {
+            clouds = [];
+            for (let i = 0; i < 5; i++) {
+                clouds.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * 150 + 50,
+                    size: Math.random() * 60 + 40,
+                    speed: Math.random() * 0.5 + 0.2
+                });
+            }
+        }
+        
+        function selectWeather(type) {
+            weatherType = type;
+            document.querySelectorAll('.weather-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            interactionData.weather_patterns_tested.add(type);
+            interactionData.actions_count++;
+            updateStats();
+            
+            document.getElementById('currentWeather').textContent = 
+                type.charAt(0).toUpperCase() + type.slice(1);
+            
+            if (type === 'rainy') {
+                raindrops = [];
+                for (let i = 0; i < 100; i++) {
+                    raindrops.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        speed: Math.random() * 5 + 5
+                    });
+                }
+            }
+            
+            draw();
+        }
+        
+        function updateConditions() {
+            temperature = parseFloat(document.getElementById('tempSlider').value);
+            humidity = parseFloat(document.getElementById('humiditySlider').value);
+            windSpeed = parseFloat(document.getElementById('windSlider').value);
+            
+            document.getElementById('tempDisplay').textContent = temperature;
+            document.getElementById('humidityDisplay').textContent = humidity;
+            document.getElementById('windDisplay').textContent = windSpeed;
+            
+            document.getElementById('currentTemp').textContent = temperature + '°C';
+            document.getElementById('currentHumidity').textContent = humidity + '%';
+            document.getElementById('currentWind').textContent = windSpeed + ' km/h';
+            
+            const pressure = 1013 - (temperature - 20) * 2;
+            document.getElementById('currentPressure').textContent = Math.round(pressure) + ' hPa';
+            
+            interactionData.temperature_range.add(Math.floor(temperature / 10) * 10);
+            interactionData.humidity_range.add(Math.floor(humidity / 20) * 20);
+            interactionData.condition_changes++;
+            interactionData.actions_count++;
+            
+            updateStats();
+            draw();
+        }
+        
+        function startAnimation() {
+            animating = true;
+            animate();
+        }
+        
+        function stopAnimation() {
+            animating = false;
+            if (animationId) cancelAnimationFrame(animationId);
+        }
+        
+        function animate() {
+            if (!animating) return;
+            
+            // Move clouds
+            clouds.forEach(cloud => {
+                cloud.x += cloud.speed * (windSpeed / 15);
+                if (cloud.x > canvas.width + cloud.size) {
+                    cloud.x = -cloud.size;
+                }
+            });
+            
+            // Move rain
+            if (weatherType === 'rainy') {
+                raindrops.forEach(drop => {
+                    drop.y += drop.speed;
+                    drop.x += windSpeed / 10;
+                    if (drop.y > canvas.height) {
+                        drop.y = 0;
+                        drop.x = Math.random() * canvas.width;
+                    }
+                });
+            }
+            
+            draw();
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        function draw() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Sky gradient
+            const skyColor = weatherType === 'stormy' ? '#4a5568' : 
+                           weatherType === 'rainy' ? '#718096' : '#87CEEB';
+            const grad = ctx.createLinearGradient(0, 0, 0, height);
+            grad.addColorStop(0, skyColor);
+            grad.addColorStop(1, '#E0F6FF');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, width, height);
+            
+            // Sun (if clear or cloudy)
+            if (weatherType === 'clear' || weatherType === 'cloudy') {
+                ctx.fillStyle = '#ffd700';
+                ctx.beginPath();
+                ctx.arc(width - 100, 80, 40, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 3;
+                for (let i = 0; i < 12; i++) {
+                    const angle = (i / 12) * Math.PI * 2;
+                    const x1 = (width - 100) + Math.cos(angle) * 50;
+                    const y1 = 80 + Math.sin(angle) * 50;
+                    const x2 = (width - 100) + Math.cos(angle) * 70;
+                    const y2 = 80 + Math.sin(angle) * 70;
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                }
+            }
+            
+            // Clouds
+            if (weatherType !== 'clear') {
+                ctx.fillStyle = weatherType === 'stormy' ? '#555' : '#fff';
+                clouds.forEach(cloud => {
+                    drawCloud(cloud.x, cloud.y, cloud.size);
+                });
+            }
+            
+            // Rain
+            if (weatherType === 'rainy' || weatherType === 'stormy') {
+                ctx.strokeStyle = 'rgba(100, 149, 237, 0.6)';
+                ctx.lineWidth = 2;
+                raindrops.forEach(drop => {
+                    ctx.beginPath();
+                    ctx.moveTo(drop.x, drop.y);
+                    ctx.lineTo(drop.x + 2, drop.y + 10);
+                    ctx.stroke();
+                });
+            }
+            
+            // Lightning
+            if (weatherType === 'stormy' && Math.random() < 0.02) {
+                ctx.strokeStyle = '#f39c12';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                const startX = Math.random() * width;
+                let x = startX, y = 0;
+                ctx.moveTo(x, y);
+                while (y < height) {
+                    x += (Math.random() - 0.5) * 50;
+                    y += Math.random() * 50 + 30;
+                    ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+            
+            // Ground
+            ctx.fillStyle = '#2d5016';
+            ctx.fillRect(0, height - 80, width, 80);
+        }
+        
+        function drawCloud(x, y, size) {
+            ctx.beginPath();
+            ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+            ctx.arc(x + size * 0.4, y, size * 0.4, 0, Math.PI * 2);
+            ctx.arc(x + size * 0.8, y, size * 0.5, 0, Math.PI * 2);
+            ctx.arc(x + size * 0.4, y - size * 0.3, size * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function updateStats() {
+            document.getElementById('statPatterns').textContent = interactionData.weather_patterns_tested.size;
+            document.getElementById('statChanges').textContent = interactionData.condition_changes;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            interactionData.weather_patterns_tested = Array.from(interactionData.weather_patterns_tested);
+            interactionData.temperature_range = Array.from(interactionData.temperature_range);
+            interactionData.humidity_range = Array.from(interactionData.humidity_range);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactionData })
+                });
+            } catch (err) {}
+        }
+        
+        async function complete() {
+            stopAnimation();
+            await saveProgress();
+            alert('Session completed!');
+            window.location.href = '/dashboard';
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', () => {
+            stopAnimation();
+            saveProgress();
+        });
+    </script>
+</body>
+</html>

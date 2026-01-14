@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newton's Laws Demonstrator - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; font-size: 13px; }
+        .main { display: grid; grid-template-columns: 280px 1fr 350px; gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .demo-area { background: #000; border-radius: 6px; height: 500px; border: 1px solid #464647; position: relative; }
+        canvas { width: 100%; height: 100%; }
+        .law-card { padding: 15px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; margin: 10px 0; cursor: pointer; transition: all 0.3s; }
+        .law-card:hover { border-color: var(--accent); }
+        .law-card.active { background: var(--accent); border-color: var(--accent); }
+        input[type="range"] { width: 100%; height: 8px; background: #2d2d30; border-radius: 4px; }
+        input[type="range"]::-webkit-slider-thumb { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-rocket"></i> Newton's Laws Demonstrator</h1><p style="color: #888;">Physics Lab • Grade 9-11</p></div>
+            <div style="display: flex; gap: 15px;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-list-ol"></i> Laws</h2>
+                
+                <div class="law-card active" onclick="selectLaw(1)">
+                    <strong>First Law</strong>
+                    <div style="font-size: 11px; color: #888; margin-top: 5px;">Inertia</div>
+                </div>
+                
+                <div class="law-card" onclick="selectLaw(2)">
+                    <strong>Second Law</strong>
+                    <div style="font-size: 11px; color: #888; margin-top: 5px;">F = ma</div>
+                </div>
+                
+                <div class="law-card" onclick="selectLaw(3)">
+                    <strong>Third Law</strong>
+                    <div style="font-size: 11px; color: #888; margin-top: 5px;">Action-Reaction</div>
+                </div>
+                
+                <div style="margin-top: 25px; background: #2d2d30; padding: 15px; border-radius: 6px;">
+                    <h4 style="margin-bottom: 10px; color: var(--accent);">Current Law:</h4>
+                    <div id="lawDescription" style="font-size: 13px; line-height: 1.6;">
+                        Objects at rest stay at rest, objects in motion stay in motion unless acted upon by an external force.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">Demonstration</h2>
+                
+                <div class="demo-area">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <div style="margin-top: 15px;" id="controls">
+                    <!-- Dynamic controls -->
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px;">
+                    <button class="btn" onclick="startDemo()"><i class="fas fa-play"></i> Start</button>
+                    <button class="btn" style="background: #e74c3c;" onclick="resetDemo()"><i class="fas fa-undo"></i> Reset</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-calculator"></i> Calculations</h2>
+                
+                <div id="calculations" style="background: #2d2d30; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                    <!-- Dynamic calculations -->
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Key Equations</h3>
+                <div style="background: #2d2d30; padding: 15px; border-radius: 6px; font-size: 13px; line-height: 2;">
+                    <div>F = ma</div>
+                    <div>a = F / m</div>
+                    <div>m = F / a</div>
+                    <div>F₁ = -F₂</div>
+                </div>
+                
+                <div style="background: rgba(0, 122, 204, 0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 12px; line-height: 1.8;">
+                    <strong style="color: var(--accent);">Newton's Laws:</strong><br>
+                    1st: Law of Inertia<br>
+                    2nd: Force equals mass times acceleration<br>
+                    3rd: Every action has equal opposite reaction
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statDemos">0</div>
+                        <div style="font-size: 12px; color: #888;">Demos Run</div>
+                    </div>
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statLaws">1</div>
+                        <div style="font-size: 12px; color: #888;">Laws Explored</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now(), canvas, ctx;
+        
+        let currentLaw = 1;
+        let isRunning = false;
+        let animationId = null;
+        
+        // Law 1 variables
+        let ball = {x: 100, y: 250, vx: 0, vy: 0, radius: 30};
+        
+        // Law 2 variables
+        let mass = 10, force = 50;
+        let box = {x: 100, y: 250, vx: 0, ax: 0, width: 60, height: 60};
+        
+        // Law 3 variables
+        let rocket = {x: 100, y: 250, vx: 0, exhaustVx: 0};
+        
+        let interactionData = {
+            actions_count: 0, time_seconds: 0, total_parameter_space: 160,
+            tool_usage: {}, demos_run: 0, laws_explored: new Set([1]),
+            parameter_changes: 0
+        };
+        
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, toolId: 'newtons-laws-demonstrator', toolType: 'LAB', interactionData })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {}
+            }
+            
+            loadControls();
+            updateCalculations();
+            draw();
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            setInterval(saveProgress, 30000);
+        }
+        
+        function selectLaw(law) {
+            currentLaw = law;
+            interactionData.laws_explored.add(law);
+            interactionData.actions_count++;
+            
+            document.querySelectorAll('.law-card').forEach(card => card.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            const descriptions = {
+                1: 'Objects at rest stay at rest, objects in motion stay in motion unless acted upon by an external force.',
+                2: 'The acceleration of an object depends on the mass and the force applied. F = ma',
+                3: 'For every action, there is an equal and opposite reaction.'
+            };
+            
+            document.getElementById('lawDescription').textContent = descriptions[law];
+            
+            resetDemo();
+            loadControls();
+            updateCalculations();
+            updateStats();
+        }
+        
+        function loadControls() {
+            const controls = document.getElementById('controls');
+            
+            if (currentLaw === 1) {
+                controls.innerHTML = `
+                    <label style="display: block; margin-bottom: 10px; color: #888;">Initial Velocity: <span id="velDisplay">0</span> m/s</label>
+                    <input type="range" id="velocitySlider" min="0" max="10" step="0.5" value="0" oninput="updateVelocity()">
+                    
+                    <div style="margin-top: 15px;">
+                        <label><input type="checkbox" id="frictionCheck" onchange="toggleFriction()"> Apply Friction</label>
+                    </div>
+                `;
+            } else if (currentLaw === 2) {
+                controls.innerHTML = `
+                    <label style="display: block; margin-bottom: 10px; color: #888;">Mass: <span id="massDisplay">10</span> kg</label>
+                    <input type="range" id="massSlider" min="1" max="50" step="1" value="10" oninput="updateMass()">
+                    
+                    <label style="display: block; margin: 15px 0 10px; color: #888;">Force: <span id="forceDisplay">50</span> N</label>
+                    <input type="range" id="forceSlider" min="10" max="200" step="10" value="50" oninput="updateForce()">
+                `;
+            } else if (currentLaw === 3) {
+                controls.innerHTML = `
+                    <label style="display: block; margin-bottom: 10px; color: #888;">Exhaust Velocity: <span id="exhaustDisplay">5</span> m/s</label>
+                    <input type="range" id="exhaustSlider" min="1" max="15" step="0.5" value="5" oninput="updateExhaust()">
+                `;
+            }
+        }
+        
+        function updateVelocity() {
+            ball.vx = parseFloat(document.getElementById('velocitySlider').value);
+            document.getElementById('velDisplay').textContent = ball.vx.toFixed(1);
+            interactionData.parameter_changes++;
+            interactionData.actions_count++;
+            updateCalculations();
+        }
+        
+        function toggleFriction() {
+            interactionData.actions_count++;
+            updateCalculations();
+        }
+        
+        function updateMass() {
+            mass = parseFloat(document.getElementById('massSlider').value);
+            document.getElementById('massDisplay').textContent = mass;
+            box.ax = force / mass;
+            interactionData.parameter_changes++;
+            interactionData.actions_count++;
+            updateCalculations();
+        }
+        
+        function updateForce() {
+            force = parseFloat(document.getElementById('forceSlider').value);
+            document.getElementById('forceDisplay').textContent = force;
+            box.ax = force / mass;
+            interactionData.parameter_changes++;
+            interactionData.actions_count++;
+            updateCalculations();
+        }
+        
+        function updateExhaust() {
+            rocket.exhaustVx = -parseFloat(document.getElementById('exhaustSlider').value);
+            document.getElementById('exhaustDisplay').textContent = Math.abs(rocket.exhaustVx).toFixed(1);
+            interactionData.parameter_changes++;
+            interactionData.actions_count++;
+            updateCalculations();
+        }
+        
+        function updateCalculations() {
+            const calc = document.getElementById('calculations');
+            
+            if (currentLaw === 1) {
+                const friction = document.getElementById('frictionCheck')?.checked ? 'Yes' : 'No';
+                calc.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Velocity:</span>
+                        <strong>${ball.vx.toFixed(1)} m/s</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                        <span>Friction:</span>
+                        <strong>${friction}</strong>
+                    </div>
+                `;
+            } else if (currentLaw === 2) {
+                const acceleration = force / mass;
+                calc.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Mass:</span>
+                        <strong>${mass} kg</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Force:</span>
+                        <strong>${force} N</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                        <span>Acceleration:</span>
+                        <strong style="color: var(--accent);">${acceleration.toFixed(2)} m/s²</strong>
+                    </div>
+                `;
+            } else if (currentLaw === 3) {
+                calc.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Rocket Velocity:</span>
+                        <strong>${Math.abs(rocket.vx).toFixed(1)} m/s →</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                        <span>Exhaust Velocity:</span>
+                        <strong>${Math.abs(rocket.exhaustVx).toFixed(1)} m/s ←</strong>
+                    </div>
+                `;
+            }
+        }
+        
+        function startDemo() {
+            if (isRunning) return;
+            isRunning = true;
+            interactionData.demos_run++;
+            interactionData.actions_count++;
+            animate();
+            updateStats();
+        }
+        
+        function resetDemo() {
+            isRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            
+            ball = {x: 100, y: 250, vx: 0, vy: 0, radius: 30};
+            box = {x: 100, y: 250, vx: 0, ax: force / mass, width: 60, height: 60};
+            rocket = {x: 100, y: 250, vx: 0, exhaustVx: -5};
+            
+            interactionData.actions_count++;
+            draw();
+        }
+        
+        function animate() {
+            if (!isRunning) return;
+            
+            if (currentLaw === 1) {
+                const friction = document.getElementById('frictionCheck')?.checked;
+                ball.x += ball.vx;
+                
+                if (friction && ball.vx > 0) {
+                    ball.vx -= 0.05;
+                    if (ball.vx < 0) ball.vx = 0;
+                }
+                
+                if (ball.x > canvas.width + ball.radius) {
+                    ball.x = -ball.radius;
+                }
+            } else if (currentLaw === 2) {
+                box.vx += box.ax * 0.016;
+                box.x += box.vx;
+                
+                if (box.x > canvas.width) {
+                    isRunning = false;
+                }
+            } else if (currentLaw === 3) {
+                rocket.vx += 0.05;
+                rocket.x += rocket.vx;
+                
+                if (rocket.x > canvas.width) {
+                    isRunning = false;
+                }
+            }
+            
+            updateCalculations();
+            draw();
+            
+            if (isRunning) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+        
+        function draw() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Ground
+            ctx.strokeStyle = '#464647';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, height - 100);
+            ctx.lineTo(width, height - 100);
+            ctx.stroke();
+            
+            if (currentLaw === 1) {
+                // Ball
+                const gradient = ctx.createRadialGradient(ball.x, ball.y, 5, ball.x, ball.y, ball.radius);
+                gradient.addColorStop(0, '#00d4ff');
+                gradient.addColorStop(1, '#007acc');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Velocity arrow
+                if (ball.vx > 0) {
+                    ctx.strokeStyle = '#f39c12';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(ball.x, ball.y);
+                    ctx.lineTo(ball.x + ball.vx * 10, ball.y);
+                    ctx.stroke();
+                    
+                    // Arrow head
+                    ctx.fillStyle = '#f39c12';
+                    ctx.beginPath();
+                    ctx.moveTo(ball.x + ball.vx * 10, ball.y);
+                    ctx.lineTo(ball.x + ball.vx * 10 - 10, ball.y - 5);
+                    ctx.lineTo(ball.x + ball.vx * 10 - 10, ball.y + 5);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            } else if (currentLaw === 2) {
+                // Box
+                ctx.fillStyle = '#e74c3c';
+                ctx.fillRect(box.x - box.width/2, box.y - box.height/2, box.width, box.height);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(box.x - box.width/2, box.y - box.height/2, box.width, box.height);
+                
+                // Force arrow
+                ctx.strokeStyle = '#27ae60';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(box.x + box.width/2, box.y);
+                ctx.lineTo(box.x + box.width/2 + 80, box.y);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#27ae60';
+                ctx.beginPath();
+                ctx.moveTo(box.x + box.width/2 + 80, box.y);
+                ctx.lineTo(box.x + box.width/2 + 70, box.y - 8);
+                ctx.lineTo(box.x + box.width/2 + 70, box.y + 8);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.fillStyle = '#fff';
+                ctx.font = '14px Arial';
+                ctx.fillText('F = ' + force + 'N', box.x + box.width/2 + 20, box.y - 15);
+            } else if (currentLaw === 3) {
+                // Rocket
+                ctx.fillStyle = '#3498db';
+                ctx.beginPath();
+                ctx.moveTo(rocket.x + 40, rocket.y);
+                ctx.lineTo(rocket.x - 20, rocket.y - 25);
+                ctx.lineTo(rocket.x - 20, rocket.y + 25);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Exhaust
+                if (isRunning) {
+                    ctx.fillStyle = '#f39c12';
+                    ctx.beginPath();
+                    ctx.moveTo(rocket.x - 20, rocket.y - 15);
+                    ctx.lineTo(rocket.x - 50, rocket.y - 5);
+                    ctx.lineTo(rocket.x - 50, rocket.y + 5);
+                    ctx.lineTo(rocket.x - 20, rocket.y + 15);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                
+                // Action-Reaction arrows
+                ctx.strokeStyle = '#27ae60';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(rocket.x + 40, rocket.y - 40);
+                ctx.lineTo(rocket.x + 80, rocket.y - 40);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#27ae60';
+                ctx.beginPath();
+                ctx.moveTo(rocket.x + 80, rocket.y - 40);
+                ctx.lineTo(rocket.x + 70, rocket.y - 45);
+                ctx.lineTo(rocket.x + 70, rocket.y - 35);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.strokeStyle = '#e74c3c';
+                ctx.beginPath();
+                ctx.moveTo(rocket.x - 20, rocket.y - 40);
+                ctx.lineTo(rocket.x - 60, rocket.y - 40);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#e74c3c';
+                ctx.beginPath();
+                ctx.moveTo(rocket.x - 60, rocket.y - 40);
+                ctx.lineTo(rocket.x - 50, rocket.y - 35);
+                ctx.lineTo(rocket.x - 50, rocket.y - 45);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+        
+        function updateStats() {
+            document.getElementById('statDemos').textContent = interactionData.demos_run;
+            document.getElementById('statLaws').textContent = interactionData.laws_explored.size;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            interactionData.laws_explored = Array.from(interactionData.laws_explored);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactionData })
+                });
+            } catch (err) {}
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('Session completed!');
+            window.location.href = '/dashboard';
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+    </script>
+</body>
+</html>

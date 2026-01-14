@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ratio Visualizer - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; --colorA: #e74c3c; --colorB: #3498db; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; }
+        .main { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .visual-area { background: var(--bg); border-radius: 6px; min-height: 400px; border: 1px solid #464647; padding: 30px; }
+        .ratio-bar { height: 60px; border-radius: 8px; overflow: hidden; display: flex; margin: 20px 0; }
+        .part-a { background: var(--colorA); flex: 1; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .part-b { background: var(--colorB); flex: 1; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        input[type="number"] { background: #2d2d30; border: 2px solid #464647; padding: 12px; border-radius: 6px; color: #fff; width: 100px; font-size: 16px; text-align: center; }
+        input[type="number"]:focus { outline: none; border-color: var(--accent); }
+        .grid-visual { display: grid; gap: 5px; }
+        .grid-item { width: 40px; height: 40px; border-radius: 4px; }
+        .scenario-btn { padding: 15px; background: #2d2d30; border: 1px solid #464647; border-radius: 6px; cursor: pointer; margin: 8px 0; transition: all 0.3s; }
+        .scenario-btn:hover { background: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-balance-scale"></i> Ratio Visualizer</h1><p style="color: #888;">Math Lab • Grade 6-7</p></div>
+            <div style="display: flex; gap: 15px;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">Ratio Builder</h2>
+                
+                <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: center; margin: 30px 0;">
+                    <div>
+                        <label style="display: block; margin-bottom: 10px; color: var(--colorA);">Part A</label>
+                        <input type="number" id="partA" value="2" min="1" max="20" oninput="updateRatio()">
+                    </div>
+                    <div style="font-size: 32px; color: #888;">:</div>
+                    <div>
+                        <label style="display: block; margin-bottom: 10px; color: var(--colorB);">Part B</label>
+                        <input type="number" id="partB" value="3" min="1" max="20" oninput="updateRatio()">
+                    </div>
+                </div>
+                
+                <div class="visual-area">
+                    <h3 style="margin-bottom: 15px;">Bar Model</h3>
+                    <div class="ratio-bar" id="ratioBar"></div>
+                    
+                    <h3 style="margin: 30px 0 15px;">Grid Model</h3>
+                    <div id="gridVisual" class="grid-visual"></div>
+                    
+                    <h3 style="margin: 30px 0 15px;">Simplified Ratio</h3>
+                    <div style="background: #2d2d30; padding: 20px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 32px; font-weight: bold;" id="simplifiedRatio">2:3</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                    <button class="btn" onclick="simplifyRatio()"><i class="fas fa-compress"></i> Simplify</button>
+                    <button class="btn" onclick="doubleRatio()"><i class="fas fa-times"></i> ×2</button>
+                    <button class="btn" onclick="resetRatio()"><i class="fas fa-undo"></i> Reset</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-lightbulb"></i> Examples</h2>
+                
+                <div class="scenario-btn" onclick="setRatio(1, 1)">
+                    <strong>1:1</strong> - Equal Parts<br>
+                    <small style="color: #888;">Like splitting pizza equally</small>
+                </div>
+                
+                <div class="scenario-btn" onclick="setRatio(2, 1)">
+                    <strong>2:1</strong> - Double Portion<br>
+                    <small style="color: #888;">Twice as much of one part</small>
+                </div>
+                
+                <div class="scenario-btn" onclick="setRatio(3, 2)">
+                    <strong>3:2</strong> - Recipe Ratio<br>
+                    <small style="color: #888;">3 cups flour to 2 cups sugar</small>
+                </div>
+                
+                <div class="scenario-btn" onclick="setRatio(4, 3)">
+                    <strong>4:3</strong> - Screen Ratio<br>
+                    <small style="color: #888;">Standard TV aspect ratio</small>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Ratio Properties</h3>
+                <div style="background: #2d2d30; padding: 15px; border-radius: 6px;">
+                    <div style="margin-bottom: 10px;">
+                        <span style="color: #888;">Total Parts:</span>
+                        <strong id="totalParts" style="margin-left: 10px;">5</strong>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <span style="color: #888;">Part A Fraction:</span>
+                        <strong id="fractionA" style="margin-left: 10px;">2/5</strong>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <span style="color: #888;">Part B Fraction:</span>
+                        <strong id="fractionB" style="margin-left: 10px;">3/5</strong>
+                    </div>
+                    <div>
+                        <span style="color: #888;">Decimal:</span>
+                        <strong id="decimalRatio" style="margin-left: 10px;">0.67</strong>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(0, 122, 204, 0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 12px; line-height: 1.8;">
+                    <strong style="color: var(--accent);">Ratio Concepts:</strong><br>
+                    • Ratios compare quantities<br>
+                    • Can be simplified like fractions<br>
+                    • Maintain proportions when scaled<br>
+                    • Used in recipes, maps, models
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statRatios">0</div>
+                        <div style="font-size: 12px; color: #888;">Ratios</div>
+                    </div>
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statSimplified">0</div>
+                        <div style="font-size: 12px; color: #888;">Simplified</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now();
+        
+        let partA = 2, partB = 3;
+        
+        let interactionData = {
+            actions_count: 0, time_seconds: 0, total_parameter_space: 100,
+            tool_usage: {}, ratios_created: new Set(), simplifications_performed: 0,
+            examples_used: new Set()
+        };
+        
+        async function init() {
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, toolId: 'ratio-visualizer', toolType: 'LAB', interactionData })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {}
+            }
+            
+            updateRatio();
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            setInterval(saveProgress, 30000);
+        }
+        
+        function setRatio(a, b) {
+            document.getElementById('partA').value = a;
+            document.getElementById('partB').value = b;
+            interactionData.examples_used.add(`${a}:${b}`);
+            updateRatio();
+        }
+        
+        function updateRatio() {
+            partA = parseInt(document.getElementById('partA').value) || 1;
+            partB = parseInt(document.getElementById('partB').value) || 1;
+            
+            if (partA > 20) partA = 20;
+            if (partB > 20) partB = 20;
+            if (partA < 1) partA = 1;
+            if (partB < 1) partB = 1;
+            
+            document.getElementById('partA').value = partA;
+            document.getElementById('partB').value = partB;
+            
+            interactionData.ratios_created.add(`${partA}:${partB}`);
+            interactionData.actions_count++;
+            
+            visualizeRatio();
+            calculateProperties();
+            updateStats();
+        }
+        
+        function visualizeRatio() {
+            // Bar model
+            const bar = document.getElementById('ratioBar');
+            bar.innerHTML = `
+                <div class="part-a" style="flex: ${partA};">${partA}</div>
+                <div class="part-b" style="flex: ${partB};">${partB}</div>
+            `;
+            
+            // Grid model
+            const grid = document.getElementById('gridVisual');
+            const total = partA + partB;
+            const cols = Math.ceil(Math.sqrt(total));
+            grid.style.gridTemplateColumns = `repeat(${cols}, 40px)`;
+            
+            grid.innerHTML = '';
+            for (let i = 0; i < partA; i++) {
+                const item = document.createElement('div');
+                item.className = 'grid-item';
+                item.style.background = 'var(--colorA)';
+                grid.appendChild(item);
+            }
+            for (let i = 0; i < partB; i++) {
+                const item = document.createElement('div');
+                item.className = 'grid-item';
+                item.style.background = 'var(--colorB)';
+                grid.appendChild(item);
+            }
+        }
+        
+        function calculateProperties() {
+            const total = partA + partB;
+            const gcd = findGCD(partA, partB);
+            const simplifiedA = partA / gcd;
+            const simplifiedB = partB / gcd;
+            
+            document.getElementById('totalParts').textContent = total;
+            document.getElementById('fractionA').textContent = `${partA}/${total}`;
+            document.getElementById('fractionB').textContent = `${partB}/${total}`;
+            document.getElementById('decimalRatio').textContent = (partA / partB).toFixed(2);
+            document.getElementById('simplifiedRatio').textContent = `${simplifiedA}:${simplifiedB}`;
+        }
+        
+        function findGCD(a, b) {
+            return b === 0 ? a : findGCD(b, a % b);
+        }
+        
+        function simplifyRatio() {
+            const gcd = findGCD(partA, partB);
+            if (gcd > 1) {
+                document.getElementById('partA').value = partA / gcd;
+                document.getElementById('partB').value = partB / gcd;
+                interactionData.simplifications_performed++;
+                updateRatio();
+                updateStats();
+            }
+        }
+        
+        function doubleRatio() {
+            if (partA * 2 <= 20 && partB * 2 <= 20) {
+                document.getElementById('partA').value = partA * 2;
+                document.getElementById('partB').value = partB * 2;
+                updateRatio();
+            }
+        }
+        
+        function resetRatio() {
+            document.getElementById('partA').value = 2;
+            document.getElementById('partB').value = 3;
+            updateRatio();
+        }
+        
+        function updateStats() {
+            document.getElementById('statRatios').textContent = interactionData.ratios_created.size;
+            document.getElementById('statSimplified').textContent = interactionData.simplifications_performed;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            interactionData.ratios_created = Array.from(interactionData.ratios_created);
+            interactionData.examples_used = Array.from(interactionData.examples_used);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactionData })
+                });
+            } catch (err) {}
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('Session completed!');
+            window.location.href = '/dashboard';
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+    </script>
+</body>
+</html>

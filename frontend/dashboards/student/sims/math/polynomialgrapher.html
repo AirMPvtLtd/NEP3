@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polynomial Grapher - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; --success: #00b894; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; }
+        .main { display: grid; grid-template-columns: 1fr 400px; gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .graph-area { background: var(--bg); border-radius: 6px; height: 600px; border: 1px solid #464647; position: relative; }
+        canvas { width: 100%; height: 100%; }
+        .coeff-input { display: grid; grid-template-columns: 80px 1fr; gap: 10px; margin: 10px 0; align-items: center; }
+        input[type="number"] { padding: 10px; background: #2d2d30; border: 1px solid #464647; border-radius: 4px; color: #fff; }
+        .function-list { max-height: 300px; overflow-y: auto; }
+        .function-item { background: #2d2d30; padding: 12px; margin: 8px 0; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid; }
+        .analysis-box { background: #2d2d30; padding: 15px; border-radius: 6px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-wave-square"></i> Polynomial Grapher</h1><p style="color: #888;">Math Lab • Grade 9-10</p></div>
+            <div style="display: flex; gap: 15px;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">Coordinate Plane</h2>
+                <div class="graph-area">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px;">
+                    <button class="btn" onclick="zoom(1.2)"><i class="fas fa-search-plus"></i> Zoom In</button>
+                    <button class="btn" onclick="zoom(0.8)"><i class="fas fa-search-minus"></i> Zoom Out</button>
+                    <button class="btn" onclick="resetView()"><i class="fas fa-home"></i> Reset View</button>
+                    <button class="btn" style="background: #e74c3c;" onclick="clearAll()"><i class="fas fa-trash"></i> Clear</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-plus-circle"></i> Add Polynomial</h2>
+                
+                <h3 style="margin: 15px 0 10px; color: #888; font-size: 14px;">f(x) = ax³ + bx² + cx + d</h3>
+                
+                <div class="coeff-input">
+                    <label>a (x³):</label>
+                    <input type="number" id="coeffA" value="1" step="0.1">
+                </div>
+                <div class="coeff-input">
+                    <label>b (x²):</label>
+                    <input type="number" id="coeffB" value="0" step="0.1">
+                </div>
+                <div class="coeff-input">
+                    <label>c (x):</label>
+                    <input type="number" id="coeffC" value="-3" step="0.1">
+                </div>
+                <div class="coeff-input">
+                    <label>d:</label>
+                    <input type="number" id="coeffD" value="2" step="0.1">
+                </div>
+                
+                <button class="btn" style="width: 100%; margin-top: 15px;" onclick="plotFunction()">
+                    <i class="fas fa-chart-line"></i> Plot Function
+                </button>
+                
+                <h3 style="margin: 20px 0 10px;">Graphed Functions</h3>
+                <div class="function-list" id="functionList"></div>
+                
+                <h3 style="margin: 20px 0 10px;">Analysis</h3>
+                <div class="analysis-box">
+                    <div><strong>Degree:</strong> <span id="degree">-</span></div>
+                    <div style="margin-top: 8px;"><strong>Y-Intercept:</strong> <span id="yIntercept">-</span></div>
+                    <div style="margin-top: 8px;"><strong>End Behavior:</strong> <span id="endBehavior">-</span></div>
+                    <div style="margin-top: 8px;"><strong>Roots (approx):</strong> <span id="roots">-</span></div>
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statFunctions">0</div>
+                        <div style="font-size: 12px; color: #888;">Functions</div>
+                    </div>
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statAnalysis">0</div>
+                        <div style="font-size: 12px; color: #888;">Analysis</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now(), canvas, ctx;
+        
+        let functions = [], scale = 30, offsetX = 0, offsetY = 0;
+        let interactionData = {
+            actions_count: 0, time_seconds: 0, total_parameter_space: 400,
+            tool_usage: {}, functions_plotted: 0, analysis_performed: 0, coefficients_tested: []
+        };
+        
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, toolId: 'polynomial-grapher', toolType: 'LAB', interactionData })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {}
+            }
+            
+            draw();
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            setInterval(saveProgress, 30000);
+        }
+        
+        function plotFunction() {
+            const a = parseFloat(document.getElementById('coeffA').value) || 0;
+            const b = parseFloat(document.getElementById('coeffB').value) || 0;
+            const c = parseFloat(document.getElementById('coeffC').value) || 0;
+            const d = parseFloat(document.getElementById('coeffD').value) || 0;
+            
+            const color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+            functions.push({ a, b, c, d, color });
+            
+            interactionData.functions_plotted++;
+            interactionData.actions_count++;
+            interactionData.coefficients_tested.push([a, b, c, d]);
+            
+            analyze({ a, b, c, d });
+            updateFunctionList();
+            draw();
+            updateStats();
+        }
+        
+        function updateFunctionList() {
+            document.getElementById('functionList').innerHTML = functions.map((f, i) => `
+                <div class="function-item" style="border-color: ${f.color};">
+                    <div style="font-family: monospace;">${formatFunction(f)}</div>
+                    <button onclick="removeFunction(${i})" style="background: #e74c3c; border: none; padding: 5px 10px; border-radius: 4px; color: white; cursor: pointer;">×</button>
+                </div>
+            `).join('');
+        }
+        
+        function formatFunction(f) {
+            let parts = [];
+            if (f.a !== 0) parts.push(`${f.a}x³`);
+            if (f.b !== 0) parts.push(`${f.b > 0 && parts.length ? '+' : ''}${f.b}x²`);
+            if (f.c !== 0) parts.push(`${f.c > 0 && parts.length ? '+' : ''}${f.c}x`);
+            if (f.d !== 0) parts.push(`${f.d > 0 && parts.length ? '+' : ''}${f.d}`);
+            return parts.length ? parts.join(' ') : '0';
+        }
+        
+        function removeFunction(index) {
+            functions.splice(index, 1);
+            updateFunctionList();
+            draw();
+        }
+        
+        function analyze(f) {
+            // Degree
+            const degree = f.a !== 0 ? 3 : f.b !== 0 ? 2 : f.c !== 0 ? 1 : 0;
+            document.getElementById('degree').textContent = degree;
+            
+            // Y-intercept
+            document.getElementById('yIntercept').textContent = `(0, ${f.d})`;
+            
+            // End behavior
+            let behavior = '';
+            if (f.a > 0) behavior = 'As x→-∞, y→-∞; As x→+∞, y→+∞';
+            else if (f.a < 0) behavior = 'As x→-∞, y→+∞; As x→+∞, y→-∞';
+            else if (f.b > 0) behavior = 'As x→±∞, y→+∞';
+            else if (f.b < 0) behavior = 'As x→±∞, y→-∞';
+            document.getElementById('endBehavior').textContent = behavior || 'Linear';
+            
+            // Find approximate roots
+            const roots = findRoots(f);
+            document.getElementById('roots').textContent = roots.length ? roots.map(r => r.toFixed(2)).join(', ') : 'None found';
+            
+            interactionData.analysis_performed++;
+            interactionData.tool_usage['analyze'] = (interactionData.tool_usage['analyze'] || 0) + 1;
+        }
+        
+        function findRoots(f) {
+            const roots = [];
+            const step = 0.1;
+            for (let x = -10; x <= 10; x += step) {
+                const y1 = f.a * Math.pow(x, 3) + f.b * Math.pow(x, 2) + f.c * x + f.d;
+                const y2 = f.a * Math.pow(x + step, 3) + f.b * Math.pow(x + step, 2) + f.c * (x + step) + f.d;
+                if (y1 * y2 < 0 && roots.every(r => Math.abs(r - x) > 0.5)) {
+                    roots.push(x);
+                }
+            }
+            return roots;
+        }
+        
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const centerX = canvas.width / 2 + offsetX;
+            const centerY = canvas.height / 2 + offsetY;
+            
+            // Grid
+            ctx.strokeStyle = '#2a2a2a';
+            ctx.lineWidth = 1;
+            for (let x = centerX % scale; x < canvas.width; x += scale) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for (let y = centerY % scale; y < canvas.height; y += scale) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+            
+            // Axes
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, centerY); ctx.lineTo(canvas.width, centerY);
+            ctx.moveTo(centerX, 0); ctx.lineTo(centerX, canvas.height);
+            ctx.stroke();
+            
+            // Functions
+            functions.forEach(f => {
+                ctx.strokeStyle = f.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                
+                let started = false;
+                for (let px = 0; px < canvas.width; px++) {
+                    const x = (px - centerX) / scale;
+                    const y = f.a * Math.pow(x, 3) + f.b * Math.pow(x, 2) + f.c * x + f.d;
+                    const py = centerY - y * scale;
+                    
+                    if (Math.abs(py) < canvas.height * 2) {
+                        if (!started) {
+                            ctx.moveTo(px, py);
+                            started = true;
+                        } else {
+                            ctx.lineTo(px, py);
+                        }
+                    }
+                }
+                ctx.stroke();
+            });
+        }
+        
+        function zoom(factor) {
+            scale *= factor;
+            draw();
+            interactionData.actions_count++;
+        }
+        
+        function resetView() {
+            scale = 30;
+            offsetX = 0;
+            offsetY = 0;
+            draw();
+        }
+        
+        function clearAll() {
+            functions = [];
+            updateFunctionList();
+            draw();
+        }
+        
+        function updateStats() {
+            document.getElementById('statFunctions').textContent = interactionData.functions_plotted;
+            document.getElementById('statAnalysis').textContent = interactionData.analysis_performed;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactionData })
+                });
+            } catch (err) {}
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('Session completed!');
+            window.location.href = '/dashboard';
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+    </script>
+</body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Set Analyzer - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; font-size: 13px; }
+        .main { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .chart-area { background: #000; border-radius: 6px; height: 350px; border: 1px solid #464647; position: relative; }
+        canvas { width: 100%; height: 100%; }
+        textarea { width: 100%; background: #2d2d30; border: 2px solid #464647; padding: 15px; border-radius: 6px; color: #fff; resize: vertical; min-height: 150px; font-family: 'Courier New', monospace; }
+        .stat-card { padding: 15px; background: #2d2d30; border-radius: 6px; margin: 8px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1><i class="fas fa-chart-bar"></i> Data Set Analyzer</h1><p style="color: #888;">Math Lab • Grade 9-12</p></div>
+            <div style="display: flex; gap: 15px;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">Data Input</h2>
+                
+                <label style="display: block; margin-bottom: 10px; color: #888;">Enter data values (comma or space separated):</label>
+                <textarea id="dataInput" placeholder="e.g., 10, 15, 20, 25, 30, 35, 40" oninput="validateData()"></textarea>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px;">
+                    <button class="btn" onclick="analyzeData()"><i class="fas fa-calculator"></i> Analyze</button>
+                    <button class="btn" onclick="loadSample()"><i class="fas fa-file-import"></i> Sample</button>
+                    <button class="btn" style="background: #e74c3c;" onclick="clearData()"><i class="fas fa-times"></i> Clear</button>
+                </div>
+                
+                <h3 style="margin: 25px 0 10px;">Visualization</h3>
+                <div class="chart-area">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px;">
+                    <button class="btn" onclick="showChart('histogram')"><i class="fas fa-chart-bar"></i> Histogram</button>
+                    <button class="btn" onclick="showChart('box')"><i class="fas fa-box"></i> Box Plot</button>
+                    <button class="btn" onclick="showChart('line')"><i class="fas fa-chart-line"></i> Line</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-info-circle"></i> Statistics</h2>
+                
+                <div class="stat-card">
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Count (n):</span>
+                        <strong id="statCount">0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Mean (μ):</span>
+                        <strong id="statMean" style="color: var(--accent);">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Median:</span>
+                        <strong id="statMedian">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Mode:</span>
+                        <strong id="statMode">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Range:</span>
+                        <strong id="statRange">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Std Dev (σ):</span>
+                        <strong id="statStdDev">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Variance (σ²):</span>
+                        <strong id="statVariance">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Q1 (25%):</span>
+                        <strong id="statQ1">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
+                        <span>Q3 (75%):</span>
+                        <strong id="statQ3">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                        <span>IQR:</span>
+                        <strong id="statIQR">-</strong>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">Formulas</h3>
+                <div style="background: #2d2d30; padding: 15px; border-radius: 6px; font-size: 12px; line-height: 2;">
+                    <div>Mean: μ = Σx / n</div>
+                    <div>Variance: σ² = Σ(x-μ)² / n</div>
+                    <div>Std Dev: σ = √(σ²)</div>
+                    <div>IQR = Q3 - Q1</div>
+                </div>
+                
+                <div style="background: rgba(0, 122, 204, 0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 12px; line-height: 1.8;">
+                    <strong style="color: var(--accent);">Statistics Concepts:</strong><br>
+                    • Mean: average value<br>
+                    • Median: middle value<br>
+                    • Mode: most frequent<br>
+                    • Std Dev: data spread
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statAnalyses">0</div>
+                        <div style="font-size: 12px; color: #888;">Analyses</div>
+                    </div>
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statCharts">0</div>
+                        <div style="font-size: 12px; color: #888;">Charts</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now(), canvas, ctx;
+        
+        let dataset = [];
+        let chartType = 'histogram';
+        
+        let interactionData = {
+            actions_count: 0, time_seconds: 0, total_parameter_space: 150,
+            tool_usage: {}, analyses_performed: 0, charts_created: 0,
+            chart_types: new Set()
+        };
+        
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, toolId: 'data-set-analyzer', toolType: 'LAB', interactionData })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {}
+            }
+            
+            drawPlaceholder();
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            setInterval(saveProgress, 30000);
+        }
+        
+        function validateData() {
+            interactionData.actions_count++;
+        }
+        
+        function loadSample() {
+            document.getElementById('dataInput').value = '12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45';
+            interactionData.actions_count++;
+        }
+        
+        function clearData() {
+            document.getElementById('dataInput').value = '';
+            dataset = [];
+            clearStats();
+            drawPlaceholder();
+            interactionData.actions_count++;
+        }
+        
+        function analyzeData() {
+            const input = document.getElementById('dataInput').value.trim();
+            
+            if (!input) {
+                alert('Please enter data values!');
+                return;
+            }
+            
+            dataset = input.split(/[,\s]+/).map(v => parseFloat(v)).filter(v => !isNaN(v));
+            
+            if (dataset.length === 0) {
+                alert('No valid numbers found!');
+                return;
+            }
+            
+            interactionData.analyses_performed++;
+            interactionData.actions_count++;
+            
+            calculateStats();
+            drawChart();
+            updateStats();
+        }
+        
+        function calculateStats() {
+            const sorted = [...dataset].sort((a, b) => a - b);
+            const n = dataset.length;
+            
+            // Mean
+            const mean = dataset.reduce((a, b) => a + b, 0) / n;
+            
+            // Median
+            const median = n % 2 === 0 
+                ? (sorted[n/2-1] + sorted[n/2]) / 2 
+                : sorted[Math.floor(n/2)];
+            
+            // Mode
+            const freq = {};
+            dataset.forEach(v => freq[v] = (freq[v] || 0) + 1);
+            const maxFreq = Math.max(...Object.values(freq));
+            const modes = Object.keys(freq).filter(k => freq[k] === maxFreq);
+            const mode = maxFreq > 1 ? modes.join(', ') : 'None';
+            
+            // Range
+            const range = sorted[n-1] - sorted[0];
+            
+            // Variance and Standard Deviation
+            const variance = dataset.reduce((a, v) => a + Math.pow(v - mean, 2), 0) / n;
+            const stdDev = Math.sqrt(variance);
+            
+            // Quartiles
+            const q1Index = Math.floor(n * 0.25);
+            const q3Index = Math.floor(n * 0.75);
+            const q1 = sorted[q1Index];
+            const q3 = sorted[q3Index];
+            const iqr = q3 - q1;
+            
+            document.getElementById('statCount').textContent = n;
+            document.getElementById('statMean').textContent = mean.toFixed(2);
+            document.getElementById('statMedian').textContent = median.toFixed(2);
+            document.getElementById('statMode').textContent = mode;
+            document.getElementById('statRange').textContent = range.toFixed(2);
+            document.getElementById('statStdDev').textContent = stdDev.toFixed(2);
+            document.getElementById('statVariance').textContent = variance.toFixed(2);
+            document.getElementById('statQ1').textContent = q1.toFixed(2);
+            document.getElementById('statQ3').textContent = q3.toFixed(2);
+            document.getElementById('statIQR').textContent = iqr.toFixed(2);
+        }
+        
+        function clearStats() {
+            document.getElementById('statCount').textContent = '0';
+            document.getElementById('statMean').textContent = '-';
+            document.getElementById('statMedian').textContent = '-';
+            document.getElementById('statMode').textContent = '-';
+            document.getElementById('statRange').textContent = '-';
+            document.getElementById('statStdDev').textContent = '-';
+            document.getElementById('statVariance').textContent = '-';
+            document.getElementById('statQ1').textContent = '-';
+            document.getElementById('statQ3').textContent = '-';
+            document.getElementById('statIQR').textContent = '-';
+        }
+        
+        function showChart(type) {
+            if (dataset.length === 0) {
+                alert('Please analyze data first!');
+                return;
+            }
+            
+            chartType = type;
+            interactionData.charts_created++;
+            interactionData.chart_types.add(type);
+            interactionData.actions_count++;
+            drawChart();
+            updateStats();
+        }
+        
+        function drawPlaceholder() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+            
+            ctx.fillStyle = '#464647';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Enter data and click Analyze to see visualization', width/2, height/2);
+        }
+        
+        function drawChart() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 50;
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+            
+            if (chartType === 'histogram') {
+                drawHistogram(padding, width, height);
+            } else if (chartType === 'box') {
+                drawBoxPlot(padding, width, height);
+            } else if (chartType === 'line') {
+                drawLineChart(padding, width, height);
+            }
+        }
+        
+        function drawHistogram(padding, width, height) {
+            const sorted = [...dataset].sort((a, b) => a - b);
+            const min = sorted[0];
+            const max = sorted[sorted.length - 1];
+            const bins = 10;
+            const binWidth = (max - min) / bins;
+            
+            const freq = new Array(bins).fill(0);
+            dataset.forEach(v => {
+                const binIndex = Math.min(Math.floor((v - min) / binWidth), bins - 1);
+                freq[binIndex]++;
+            });
+            
+            const maxFreq = Math.max(...freq);
+            const barWidth = (width - 2 * padding) / bins;
+            
+            // Axes
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+            
+            // Bars
+            freq.forEach((f, i) => {
+                const barHeight = (f / maxFreq) * (height - 2 * padding);
+                const x = padding + i * barWidth;
+                const y = height - padding - barHeight;
+                
+                const gradient = ctx.createLinearGradient(x, y, x, height - padding);
+                gradient.addColorStop(0, '#007acc');
+                gradient.addColorStop(1, '#00d4ff');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x + 2, y, barWidth - 4, barHeight);
+                
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x + 2, y, barWidth - 4, barHeight);
+                
+                // Labels
+                ctx.fillStyle = '#fff';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(f, x + barWidth/2, y - 5);
+            });
+            
+            // Title
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Histogram', width/2, 25);
+        }
+        
+        function drawBoxPlot(padding, width, height) {
+            const sorted = [...dataset].sort((a, b) => a - b);
+            const n = sorted.length;
+            
+            const min = sorted[0];
+            const max = sorted[n-1];
+            const q1 = sorted[Math.floor(n * 0.25)];
+            const median = n % 2 === 0 ? (sorted[n/2-1] + sorted[n/2]) / 2 : sorted[Math.floor(n/2)];
+            const q3 = sorted[Math.floor(n * 0.75)];
+            
+            const scale = (width - 2 * padding) / (max - min);
+            const centerY = height / 2;
+            const boxHeight = 80;
+            
+            const toX = (val) => padding + (val - min) * scale;
+            
+            // Whiskers
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(toX(min), centerY);
+            ctx.lineTo(toX(q1), centerY);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(toX(q3), centerY);
+            ctx.lineTo(toX(max), centerY);
+            ctx.stroke();
+            
+            // Box
+            ctx.fillStyle = 'rgba(0, 122, 204, 0.3)';
+            ctx.fillRect(toX(q1), centerY - boxHeight/2, toX(q3) - toX(q1), boxHeight);
+            ctx.strokeStyle = '#007acc';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(toX(q1), centerY - boxHeight/2, toX(q3) - toX(q1), boxHeight);
+            
+            // Median line
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(toX(median), centerY - boxHeight/2);
+            ctx.lineTo(toX(median), centerY + boxHeight/2);
+            ctx.stroke();
+            
+            // End caps
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(toX(min), centerY - 15);
+            ctx.lineTo(toX(min), centerY + 15);
+            ctx.moveTo(toX(max), centerY - 15);
+            ctx.lineTo(toX(max), centerY + 15);
+            ctx.stroke();
+            
+            // Labels
+            ctx.fillStyle = '#fff';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Min: ' + min.toFixed(1), toX(min), centerY - 30);
+            ctx.fillText('Q1: ' + q1.toFixed(1), toX(q1), centerY - 50);
+            ctx.fillText('Med: ' + median.toFixed(1), toX(median), centerY + 60);
+            ctx.fillText('Q3: ' + q3.toFixed(1), toX(q3), centerY - 50);
+            ctx.fillText('Max: ' + max.toFixed(1), toX(max), centerY - 30);
+            
+            // Title
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('Box Plot', width/2, 25);
+        }
+        
+        function drawLineChart(padding, width, height) {
+            const min = Math.min(...dataset);
+            const max = Math.max(...dataset);
+            const xScale = (width - 2 * padding) / (dataset.length - 1);
+            const yScale = (height - 2 * padding) / (max - min);
+            
+            // Axes
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+            
+            // Line
+            ctx.strokeStyle = '#00d4ff';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            dataset.forEach((val, i) => {
+                const x = padding + i * xScale;
+                const y = height - padding - (val - min) * yScale;
+                
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            
+            // Points
+            dataset.forEach((val, i) => {
+                const x = padding + i * xScale;
+                const y = height - padding - (val - min) * yScale;
+                
+                ctx.fillStyle = '#007acc';
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+            
+            // Title
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Line Chart', width/2, 25);
+        }
+        
+        function updateStats() {
+            document.getElementById('statAnalyses').textContent = interactionData.analyses_performed;
+            document.getElementById('statCharts').textContent = interactionData.charts_created;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            interactionData.chart_types = Array.from(interactionData.chart_types);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactionData })
+                });
+            } catch (err) {}
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('Session completed!');
+            window.location.href = '/dashboard';
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+    </script>
+</body>
+</html>

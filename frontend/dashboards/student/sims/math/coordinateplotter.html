@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coordinate Plotter - NEP Workbench</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; --success: #00b894; }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--accent); }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; transition: all 0.3s; }
+        .btn:hover { background: #005a9e; }
+        .main { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
+        .graph-area { background: #000; border-radius: 6px; height: 600px; position: relative; border: 1px solid #464647; }
+        canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
+        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+        label { font-size: 13px; color: #888; }
+        input { padding: 10px; background: #2d2d30; border: 1px solid #464647; border-radius: 4px; color: #fff; }
+        input:focus { outline: none; border-color: var(--accent); }
+        .point-list { max-height: 250px; overflow-y: auto; margin: 15px 0; }
+        .point-item { background: #2d2d30; padding: 10px; margin: 5px 0; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-map-pin"></i> Coordinate Plotter</h1>
+                <p style="color: #888;">Math Lab • Grade 8-9</p>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
+                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">Coordinate Plane</h2>
+                <div class="graph-area">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px;">
+                    <button class="btn" onclick="toggleGrid()" id="gridBtn"><i class="fas fa-th"></i> Grid</button>
+                    <button class="btn" onclick="toggleLabels()" id="labelBtn"><i class="fas fa-tags"></i> Labels</button>
+                    <button class="btn" style="background: #e74c3c;" onclick="clear()"><i class="fas fa-trash"></i> Clear</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;"><i class="fas fa-plus-circle"></i> Add Point</h2>
+                
+                <div class="input-group">
+                    <label>X Coordinate (-10 to 10)</label>
+                    <input type="number" id="xCoord" value="0" step="1" min="-10" max="10">
+                </div>
+                
+                <div class="input-group">
+                    <label>Y Coordinate (-10 to 10)</label>
+                    <input type="number" id="yCoord" value="0" step="1" min="-10" max="10">
+                </div>
+                
+                <button class="btn" style="width: 100%;" onclick="plotPoint()">
+                    <i class="fas fa-map-marker-alt"></i> Plot Point
+                </button>
+                
+                <h3 style="margin: 20px 0 10px;">Points</h3>
+                <div class="point-list" id="pointList">
+                    <p style="color: #888; text-align: center; padding: 20px;">No points plotted yet</p>
+                </div>
+                
+                <button class="btn" style="width: 100%; margin-top: 15px;" onclick="connectPoints()">
+                    <i class="fas fa-project-diagram"></i> Connect Points
+                </button>
+                
+                <h3 style="margin: 20px 0 10px;">Calculations</h3>
+                <div style="background: #2d2d30; padding: 15px; border-radius: 6px; font-size: 13px;">
+                    <div><strong>Distance:</strong> <span id="distance">-</span></div>
+                    <div style="margin-top: 8px;"><strong>Midpoint:</strong> <span id="midpoint">-</span></div>
+                    <div style="margin-top: 8px;"><strong>Slope:</strong> <span id="slope">-</span></div>
+                </div>
+                
+                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statPoints">0</div>
+                        <div style="font-size: 12px; color: #888;">Points</div>
+                    </div>
+                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
+                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statQuadrants">0</div>
+                        <div style="font-size: 12px; color: #888;">Quadrants</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('authToken');
+        let eventId = null, sessionStart = Date.now(), canvas, ctx;
+        
+        let points = [];
+        let showGrid = true;
+        let showLabels = true;
+        let connections = [];
+        
+        // FIXED: Coordinate limits to prevent overflow
+        const COORD_MIN = -10;
+        const COORD_MAX = 10;
+        
+        let interactionData = {
+            actions_count: 0,
+            time_seconds: 0,
+            total_parameter_space: 400,
+            tool_usage: {},
+            points_plotted: 0,
+            lines_drawn: 0,
+            calculations_performed: 0,
+            quadrants_used: new Set()
+        };
+        
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            
+            // FIXED: Proper canvas sizing
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            
+            console.log('Canvas initialized:', canvas.width, 'x', canvas.height);
+            
+            if (authToken) {
+                try {
+                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
+                    const res = await fetch(`${API_BASE_URL}/student/event`, {
+                        method: 'POST',
+                        headers: { 
+                            'Authorization': `Bearer ${authToken}`, 
+                            'Content-Type': 'application/json' 
+                        },
+                        body: JSON.stringify({ 
+                            studentId, 
+                            toolId: 'coordinate-plotter', 
+                            toolType: 'LAB', 
+                            interactionData 
+                        })
+                    });
+                    if (res.ok) eventId = (await res.json()).data._id;
+                } catch (err) {
+                    console.log('Event tracking not available');
+                }
+            }
+            
+            draw();
+            canvas.addEventListener('click', handleClick);
+            
+            // Timer
+            setInterval(() => {
+                const e = Math.floor((Date.now() - sessionStart) / 1000);
+                document.getElementById('timer').textContent = 
+                    `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
+            }, 1000);
+            
+            // Autosave
+            setInterval(saveProgress, 30000);
+            
+            console.log('✅ Coordinate Plotter initialized');
+        }
+        
+        function handleClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            
+            // Scale click position to canvas coordinates
+            const canvasX = clickX * (canvas.width / rect.width);
+            const canvasY = clickY * (canvas.height / rect.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // FIXED: Calculate scale based on canvas size
+            const scale = Math.min(canvas.width, canvas.height) / 24;
+            
+            // Convert to coordinate system (-10 to 10)
+            const coordX = Math.round((canvasX - centerX) / scale);
+            const coordY = Math.round((centerY - canvasY) / scale);
+            
+            // FIXED: Clamp to valid range
+            const clampedX = Math.max(COORD_MIN, Math.min(COORD_MAX, coordX));
+            const clampedY = Math.max(COORD_MIN, Math.min(COORD_MAX, coordY));
+            
+            document.getElementById('xCoord').value = clampedX;
+            document.getElementById('yCoord').value = clampedY;
+            
+            console.log('Click:', { clickX, clickY, canvasX, canvasY, coordX, coordY, clampedX, clampedY });
+        }
+        
+        function plotPoint() {
+            let x = parseInt(document.getElementById('xCoord').value);
+            let y = parseInt(document.getElementById('yCoord').value);
+            
+            // FIXED: Validate and clamp coordinates
+            if (isNaN(x) || isNaN(y)) {
+                alert('Please enter valid numbers');
+                return;
+            }
+            
+            x = Math.max(COORD_MIN, Math.min(COORD_MAX, x));
+            y = Math.max(COORD_MIN, Math.min(COORD_MAX, y));
+            
+            const color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+            points.push({ x, y, color });
+            
+            interactionData.points_plotted++;
+            interactionData.actions_count++;
+            
+            const quadrant = getQuadrant(x, y);
+            interactionData.quadrants_used.add(quadrant);
+            
+            console.log('Point plotted:', { x, y, quadrant });
+            
+            updatePointList();
+            draw();
+            updateStats();
+            
+            if (points.length >= 2) calculateProperties();
+        }
+        
+        function getQuadrant(x, y) {
+            if (x > 0 && y > 0) return 'I';
+            if (x < 0 && y > 0) return 'II';
+            if (x < 0 && y < 0) return 'III';
+            if (x > 0 && y < 0) return 'IV';
+            return 'Axis';
+        }
+        
+        function updatePointList() {
+            const list = document.getElementById('pointList');
+            
+            if (points.length === 0) {
+                list.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">No points plotted yet</p>';
+                return;
+            }
+            
+            list.innerHTML = points.map((p, i) => `
+                <div class="point-item">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 12px; height: 12px; background: ${p.color}; border-radius: 50%;"></div>
+                        <span><strong>(${p.x}, ${p.y})</strong></span>
+                        <span style="color: #888; font-size: 11px;">${getQuadrant(p.x, p.y)}</span>
+                    </div>
+                    <button onclick="removePoint(${i})" style="background: #e74c3c; border: none; padding: 5px 10px; border-radius: 4px; color: white; cursor: pointer; font-size: 12px;">×</button>
+                </div>
+            `).join('');
+        }
+        
+        function removePoint(index) {
+            points.splice(index, 1);
+            updatePointList();
+            draw();
+            updateStats();
+            if (points.length >= 2) calculateProperties();
+            interactionData.actions_count++;
+        }
+        
+        function draw() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            // FIXED: Dynamic scale based on canvas size
+            const scale = Math.min(width, height) / 24; // Fits -10 to 10 nicely
+            
+            // Clear
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Grid
+            if (showGrid) {
+                ctx.strokeStyle = '#2a2a2a';
+                ctx.lineWidth = 1;
+                
+                // Vertical lines
+                for (let i = COORD_MIN; i <= COORD_MAX; i++) {
+                    const x = centerX + i * scale;
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, height);
+                    ctx.stroke();
+                }
+                
+                // Horizontal lines
+                for (let i = COORD_MIN; i <= COORD_MAX; i++) {
+                    const y = centerY - i * scale;
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(width, y);
+                    ctx.stroke();
+                }
+            }
+            
+            // Axes
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(width, centerY);
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, height);
+            ctx.stroke();
+            
+            // Axis labels
+            ctx.fillStyle = '#888';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('X', width - 20, centerY - 10);
+            ctx.fillText('Y', centerX + 15, 20);
+            
+            // Coordinate labels
+            if (showLabels) {
+                ctx.fillStyle = '#888';
+                ctx.font = '11px Arial';
+                ctx.textAlign = 'center';
+                
+                for (let i = COORD_MIN; i <= COORD_MAX; i++) {
+                    if (i !== 0) {
+                        // X-axis labels
+                        ctx.fillText(i, centerX + i * scale, centerY + 18);
+                        // Y-axis labels
+                        ctx.fillText(i, centerX - 20, centerY - i * scale + 4);
+                    }
+                }
+                
+                // Origin
+                ctx.fillText('0', centerX - 15, centerY + 18);
+            }
+            
+            // Quadrant labels
+            if (showLabels) {
+                ctx.fillStyle = '#555';
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText('I', centerX + scale * 8, centerY - scale * 8);
+                ctx.fillText('II', centerX - scale * 8, centerY - scale * 8);
+                ctx.fillText('III', centerX - scale * 8, centerY + scale * 8);
+                ctx.fillText('IV', centerX + scale * 8, centerY + scale * 8);
+            }
+            
+            // Connections
+            if (connections.length > 0 && points.length >= 2) {
+                ctx.strokeStyle = '#007acc';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                
+                const p0 = points[0];
+                ctx.moveTo(centerX + p0.x * scale, centerY - p0.y * scale);
+                
+                for (let i = 1; i < points.length; i++) {
+                    const p = points[i];
+                    ctx.lineTo(centerX + p.x * scale, centerY - p.y * scale);
+                }
+                
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            // Points
+            points.forEach((p, i) => {
+                const px = centerX + p.x * scale;
+                const py = centerY - p.y * scale;
+                
+                // Point shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.beginPath();
+                ctx.arc(px + 2, py + 2, 8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Point
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(px, py, 8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Point border
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Label
+                if (showLabels) {
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 12px Arial';
+                    ctx.textAlign = 'center';
+                    
+                    // Background for label
+                    const label = `(${p.x},${p.y})`;
+                    const metrics = ctx.measureText(label);
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.fillRect(px - metrics.width/2 - 3, py - 25, metrics.width + 6, 16);
+                    
+                    ctx.fillStyle = '#fff';
+                    ctx.fillText(label, px, py - 14);
+                }
+            });
+        }
+        
+        function connectPoints() {
+            if (points.length < 2) {
+                alert('Please plot at least 2 points');
+                return;
+            }
+            
+            connections = [...points];
+            interactionData.lines_drawn++;
+            interactionData.tool_usage['connect'] = (interactionData.tool_usage['connect'] || 0) + 1;
+            interactionData.actions_count++;
+            
+            console.log('Points connected');
+            draw();
+        }
+        
+        function calculateProperties() {
+            if (points.length < 2) return;
+            
+            const p1 = points[points.length - 2];
+            const p2 = points[points.length - 1];
+            
+            // Distance formula: d = √[(x₂-x₁)² + (y₂-y₁)²]
+            const dist = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+            document.getElementById('distance').textContent = dist.toFixed(2) + ' units';
+            
+            // Midpoint formula: M = ((x₁+x₂)/2, (y₁+y₂)/2)
+            const midX = (p1.x + p2.x) / 2;
+            const midY = (p1.y + p2.y) / 2;
+            document.getElementById('midpoint').textContent = `(${midX.toFixed(1)}, ${midY.toFixed(1)})`;
+            
+            // Slope formula: m = (y₂-y₁)/(x₂-x₁)
+            const slope = (p2.y - p1.y) / (p2.x - p1.x);
+            document.getElementById('slope').textContent = isFinite(slope) ? slope.toFixed(2) : 'Undefined (vertical)';
+            
+            interactionData.calculations_performed++;
+            interactionData.tool_usage['calculate'] = (interactionData.tool_usage['calculate'] || 0) + 1;
+            
+            console.log('Calculations:', { distance: dist, midpoint: { midX, midY }, slope });
+        }
+        
+        function toggleGrid() {
+            showGrid = !showGrid;
+            document.getElementById('gridBtn').style.background = showGrid ? '#007acc' : '#555';
+            draw();
+            interactionData.actions_count++;
+        }
+        
+        function toggleLabels() {
+            showLabels = !showLabels;
+            document.getElementById('labelBtn').style.background = showLabels ? '#007acc' : '#555';
+            draw();
+            interactionData.actions_count++;
+        }
+        
+        function clear() {
+            points = [];
+            connections = [];
+            updatePointList();
+            draw();
+            document.getElementById('distance').textContent = '-';
+            document.getElementById('midpoint').textContent = '-';
+            document.getElementById('slope').textContent = '-';
+            interactionData.actions_count++;
+            console.log('Cleared all points');
+        }
+        
+        function updateStats() {
+            document.getElementById('statPoints').textContent = interactionData.points_plotted;
+            document.getElementById('statQuadrants').textContent = interactionData.quadrants_used.size;
+        }
+        
+        async function saveProgress() {
+            if (!eventId) return;
+            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
+            interactionData.quadrants_used = Array.from(interactionData.quadrants_used);
+            try {
+                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
+                    method: 'PATCH',
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`, 
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify({ interactionData })
+                });
+                console.log('Progress saved');
+            } catch (err) {
+                console.log('Save failed:', err);
+            }
+        }
+        
+        async function complete() {
+            await saveProgress();
+            alert('✅ Session completed!\nPoints plotted: ' + interactionData.points_plotted);
+        }
+        
+        window.addEventListener('load', init);
+        window.addEventListener('beforeunload', saveProgress);
+        
+        // Resize handler
+        window.addEventListener('resize', () => {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            draw();
+        });
+    </script>
+</body>
+</html>
