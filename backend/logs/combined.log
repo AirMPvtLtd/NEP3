@@ -1634,3 +1634,203 @@
 {"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-22 12:41:38"}
 {"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":187831,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-22 12:41:38"}
 {"challengeStudentId":"STU-NCYVN","challengeTeacherId":"SYSTEM-DEFAULT","isAdmin":false,"isStudent":true,"isTeacher":false,"level":"info","message":"Authorization debug:","reqUserRole":"student","reqUserStudentId":"STU-NCYVN","service":"nep-workbench","timestamp":"2026-01-22 12:44:58"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-22 12:55:12"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-22 12:55:12"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-22 12:55:12"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-22 12:55:12"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-22 12:55:12"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-22 12:55:12"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-22 12:55:12"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-22 12:55:12"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":189211,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-22 12:55:12"}
+{"difficulty":"medium","level":"info","message":"Generating challenge for student STU-NCYVN","service":"nep-workbench","simulationType":"magnetic-field-visualizer","studentLevel":10,"timestamp":"2026-01-22 12:59:00"}
+{"level":"error","message":"Generate challenge error: generateAIChallenge is not defined","service":"nep-workbench","stack":"ReferenceError: generateAIChallenge is not defined\n    at exports.generateChallenge (/home/popeye/Downloads/NEP3/backend/controllers/student.controller.js:384:27)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-22 12:59:00"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-22 13:03:58"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-22 13:03:58"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-22 13:03:58"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-22 13:03:58"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-22 13:03:58"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-22 13:03:58"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-22 13:03:58"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-22 13:03:58"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":189775,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-22 13:03:58"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-22 13:04:51"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-22 13:04:51"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-22 13:04:51"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-22 13:04:51"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-22 13:04:51"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-22 13:04:51"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-22 13:04:51"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-22 13:04:51"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":189888,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-22 13:04:51"}
+{"customTopic":"N/A","difficulty":"auto","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"motion-classifier-sim","subject":"physics","timestamp":"2026-01-22 13:05:34"}
+{"difficultyFactors":8,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-22 13:05:34","tools":17,"topics":14}
+{"level":"info","message":"📊 Recent average score: 78.00%","service":"nep-workbench","timestamp":"2026-01-22 13:05:34"}
+{"level":"info","message":"🏎️ FERRARI ENGINE: Auto difficulty mode activated","service":"nep-workbench","timestamp":"2026-01-22 13:05:34"}
+{"level":"info","message":"🎓 IRT: Calculating optimal difficulty...","service":"nep-workbench","timestamp":"2026-01-22 13:05:34"}
+{"level":"info","message":"✅ IRT selected: medium (ability: 0.00)","service":"nep-workbench","timestamp":"2026-01-22 13:05:34"}
+{"level":"info","message":"🎛️ PID: Calculating adjustment...","service":"nep-workbench","timestamp":"2026-01-22 13:05:34"}
+{"level":"info","message":"📊 PID suggests: medium (using IRT)","service":"nep-workbench","timestamp":"2026-01-22 13:05:34"}
+{"level":"info","message":"🏎️ FERRARI ENGINE: Final difficulty: medium","service":"nep-workbench","timestamp":"2026-01-22 13:05:34"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"magnetic-field-visualizer","subject":"physics","timestamp":"2026-01-22 13:05:56"}
+{"difficultyFactors":16,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-22 13:05:56","tools":15,"topics":20}
+{"level":"info","message":"📊 Recent average score: 78.00%","service":"nep-workbench","timestamp":"2026-01-22 13:05:56"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-22 13:05:56"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-22 13:05:56"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-22 13:05:56","topic":"magnetic-field-visualizer"}
+{"level":"info","message":"✅ Mistral AI responded in 17179ms","service":"nep-workbench","timestamp":"2026-01-22 13:06:13"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-22 13:06:13"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-22 13:06:13"}
+{"MCQ":2,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-22 13:06:13"}
+{"level":"info","message":"✅ Challenge generated in 17181ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-22 13:06:13"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"magnetic-field-visualizer","subject":"physics","timestamp":"2026-01-22 13:07:21"}
+{"difficultyFactors":16,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-22 13:07:21","tools":15,"topics":20}
+{"level":"info","message":"📊 Recent average score: 78.00%","service":"nep-workbench","timestamp":"2026-01-22 13:07:21"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-22 13:07:21"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-22 13:07:21"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-22 13:07:21","topic":"magnetic-field-visualizer"}
+{"level":"info","message":"✅ Mistral AI responded in 18940ms","service":"nep-workbench","timestamp":"2026-01-22 13:07:40"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-22 13:07:40"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-22 13:07:40"}
+{"MCQ":2,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-22 13:07:40"}
+{"level":"info","message":"✅ Challenge generated in 18943ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-22 13:07:40"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-22 13:10:36"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-22 13:10:36"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-22 13:10:36"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-22 13:10:36"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-22 13:10:36"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-22 13:10:36"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-22 13:10:36"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-22 13:10:36"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":190284,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-22 13:10:36"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"energy-transformation-visualizer","subject":"physics","timestamp":"2026-01-22 13:26:36"}
+{"difficultyFactors":15,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-22 13:26:36","tools":18,"topics":26}
+{"level":"info","message":"📊 Recent average score: 78.00%","service":"nep-workbench","timestamp":"2026-01-22 13:26:36"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-22 13:26:36"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-22 13:26:36"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-22 13:26:36","topic":"energy-transformation-visualizer"}
+{"level":"info","message":"✅ Mistral AI responded in 15504ms","service":"nep-workbench","timestamp":"2026-01-22 13:26:51"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-22 13:26:51"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-22 13:26:51"}
+{"MCQ":2,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-22 13:26:51"}
+{"level":"info","message":"✅ Challenge generated in 15507ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-22 13:26:51"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"electrolysis-simulator","subject":"physics","timestamp":"2026-01-22 13:37:51"}
+{"difficultyFactors":17,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-22 13:37:51","tools":18,"topics":29}
+{"level":"info","message":"📊 Recent average score: 78.00%","service":"nep-workbench","timestamp":"2026-01-22 13:37:51"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-22 13:37:51"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-22 13:37:51"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-22 13:37:51","topic":"electrolysis-simulator"}
+{"level":"info","message":"✅ Mistral AI responded in 19337ms","service":"nep-workbench","timestamp":"2026-01-22 13:38:11"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-22 13:38:11"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-22 13:38:11"}
+{"MCQ":2,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-22 13:38:11"}
+{"level":"info","message":"✅ Challenge generated in 19340ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-22 13:38:11"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-22 13:41:12"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-22 13:41:12"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-22 13:41:12"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-22 13:41:12"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-22 13:41:12"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-22 13:41:12"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-22 13:41:12"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-22 13:41:12"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":192007,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-22 13:41:12"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"trigonometry-visualizer","subject":"mathematics","timestamp":"2026-01-22 13:41:34"}
+{"difficultyFactors":16,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-22 13:41:34","tools":16,"topics":25}
+{"level":"info","message":"📊 Recent average score: 78.00%","service":"nep-workbench","timestamp":"2026-01-22 13:41:34"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-22 13:41:34"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-22 13:41:34"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"mathematics","timestamp":"2026-01-22 13:41:34","topic":"trigonometry-visualizer"}
+{"level":"info","message":"✅ Mistral AI responded in 16294ms","service":"nep-workbench","timestamp":"2026-01-22 13:41:50"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-22 13:41:50"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-22 13:41:50"}
+{"MCQ":2,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-22 13:41:50"}
+{"level":"info","message":"✅ Challenge generated in 16297ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-22 13:41:50"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-22 13:42:53"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-22 13:42:53"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-22 13:42:53"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-22 13:42:53"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-22 13:42:53"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-22 13:42:53"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-22 13:42:53"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-22 13:42:53"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":192153,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-22 13:42:53"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"heat-flow-simulator","subject":"physics","timestamp":"2026-01-22 13:43:08"}
+{"difficultyFactors":18,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-22 13:43:08","tools":18,"topics":25}
+{"level":"info","message":"📊 Recent average score: 78.00%","service":"nep-workbench","timestamp":"2026-01-22 13:43:08"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-22 13:43:08"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-22 13:43:08"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-22 13:43:08","topic":"heat-flow-simulator"}
+{"level":"info","message":"✅ Mistral AI responded in 23268ms","service":"nep-workbench","timestamp":"2026-01-22 13:43:31"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-22 13:43:31"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-22 13:43:31"}
+{"MCQ":2,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-22 13:43:31"}
+{"level":"info","message":"✅ Challenge generated in 23273ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-22 13:43:31"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-22 13:44:58"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-22 13:44:58"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-22 13:44:58"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-22 13:44:58"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-22 13:44:58"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-22 13:44:58"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-22 13:44:58"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-22 13:44:58"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":192323,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-22 13:44:58"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"ray-diagram-builder","subject":"physics","timestamp":"2026-01-22 13:45:27"}
+{"difficultyFactors":19,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-22 13:45:27","tools":19,"topics":29}
+{"level":"info","message":"📊 Recent average score: 78.00%","service":"nep-workbench","timestamp":"2026-01-22 13:45:27"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-22 13:45:27"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-22 13:45:27"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-22 13:45:27","topic":"ray-diagram-builder"}
+{"level":"info","message":"✅ Mistral AI responded in 31560ms","service":"nep-workbench","timestamp":"2026-01-22 13:45:59"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-22 13:45:59"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-22 13:45:59"}
+{"MCQ":2,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-22 13:45:59"}
+{"level":"info","message":"✅ Challenge generated in 31566ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-22 13:45:59"}
+{"kind":"ObjectId","level":"error","message":"Get student profile error: Cast to ObjectId failed for value \"SYSTEM-DEFAULT\" (type string) at path \"_id\" for model \"Teacher\"","path":"_id","reason":{},"service":"nep-workbench","stack":"CastError: Cast to ObjectId failed for value \"SYSTEM-DEFAULT\" (type string) at path \"_id\" for model \"Teacher\"\n    at SchemaObjectId.cast (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schema/objectId.js:253:11)\n    at SchemaType.applySetters (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1288:12)\n    at SchemaType.castForQuery (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1724:17)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1679:18\n    at Array.map (<anonymous>)\n    at SchemaObjectId.handle$in (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1675:14)\n    at SchemaType.castForQuery (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1720:20)\n    at cast (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/cast.js:367:39)\n    at Query.cast (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/query.js:5060:12)\n    at Query._castConditions (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/query.js:2374:10)","stringValue":"\"SYSTEM-DEFAULT\"","timestamp":"2026-01-22 13:52:39","value":"SYSTEM-DEFAULT","valueType":"string"}
+{"customTopic":"N/A","difficulty":"hard","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"electric-field-mapper","subject":"physics","timestamp":"2026-01-22 19:49:08"}
+{"difficultyFactors":20,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-22 19:49:08","tools":20,"topics":26}
+{"level":"info","message":"📊 Recent average score: 78.00%","service":"nep-workbench","timestamp":"2026-01-22 19:49:08"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: hard (user-selected)","service":"nep-workbench","timestamp":"2026-01-22 19:49:08"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-22 19:58:17"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-22 19:58:17"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-22 19:58:17"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-22 19:58:17"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-22 19:58:17"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-22 19:58:17"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-22 19:58:17"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-22 19:58:17"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":208069,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-22 19:58:17"}
+{"kind":"ObjectId","level":"error","message":"Get student profile error: Cast to ObjectId failed for value \"SYSTEM-DEFAULT\" (type string) at path \"_id\" for model \"Teacher\"","path":"_id","reason":{},"service":"nep-workbench","stack":"CastError: Cast to ObjectId failed for value \"SYSTEM-DEFAULT\" (type string) at path \"_id\" for model \"Teacher\"\n    at SchemaObjectId.cast (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schema/objectId.js:253:11)\n    at SchemaType.applySetters (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1288:12)\n    at SchemaType.castForQuery (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1724:17)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1679:18\n    at Array.map (<anonymous>)\n    at SchemaObjectId.handle$in (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1675:14)\n    at SchemaType.castForQuery (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1720:20)\n    at cast (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/cast.js:367:39)\n    at Query.cast (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/query.js:5060:12)\n    at Query._castConditions (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/query.js:2374:10)","stringValue":"\"SYSTEM-DEFAULT\"","timestamp":"2026-01-22 20:01:05","value":"SYSTEM-DEFAULT","valueType":"string"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-22 20:05:24"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-22 20:05:24"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-22 20:05:24"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-22 20:05:24"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-22 20:05:24"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-22 20:05:24"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-22 20:05:24"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-22 20:05:24"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":208452,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-22 20:05:24"}
+{"kind":"ObjectId","level":"error","message":"Get student profile error: Cast to ObjectId failed for value \"SYSTEM-DEFAULT\" (type string) at path \"_id\" for model \"Teacher\"","path":"_id","reason":{},"service":"nep-workbench","stack":"CastError: Cast to ObjectId failed for value \"SYSTEM-DEFAULT\" (type string) at path \"_id\" for model \"Teacher\"\n    at SchemaObjectId.cast (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schema/objectId.js:253:11)\n    at SchemaType.applySetters (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1288:12)\n    at SchemaType.castForQuery (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1724:17)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1679:18\n    at Array.map (<anonymous>)\n    at SchemaObjectId.handle$in (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1675:14)\n    at SchemaType.castForQuery (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1720:20)\n    at cast (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/cast.js:367:39)\n    at Query.cast (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/query.js:5060:12)\n    at Query._castConditions (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/query.js:2374:10)","stringValue":"\"SYSTEM-DEFAULT\"","timestamp":"2026-01-22 20:05:39","value":"SYSTEM-DEFAULT","valueType":"string"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-22 20:08:01"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-22 20:08:01"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-22 20:08:01"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-22 20:08:01"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-22 20:08:01"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-22 20:08:01"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-22 20:08:01"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-22 20:08:01"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":208630,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-22 20:08:01"}
+{"kind":"ObjectId","level":"error","message":"Get student profile error: Cast to ObjectId failed for value \"SYSTEM-DEFAULT\" (type string) at path \"_id\" for model \"Teacher\"","path":"_id","reason":{},"service":"nep-workbench","stack":"CastError: Cast to ObjectId failed for value \"SYSTEM-DEFAULT\" (type string) at path \"_id\" for model \"Teacher\"\n    at SchemaObjectId.cast (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schema/objectId.js:253:11)\n    at SchemaType.applySetters (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1288:12)\n    at SchemaType.castForQuery (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1724:17)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1679:18\n    at Array.map (<anonymous>)\n    at SchemaObjectId.handle$in (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1675:14)\n    at SchemaType.castForQuery (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1720:20)\n    at cast (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/cast.js:367:39)\n    at Query.cast (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/query.js:5060:12)\n    at Query._castConditions (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/query.js:2374:10)","stringValue":"\"SYSTEM-DEFAULT\"","timestamp":"2026-01-22 20:15:56","value":"SYSTEM-DEFAULT","valueType":"string"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-22 20:40:37"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-22 20:40:37"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-22 20:40:37"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-22 20:40:37"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-22 20:40:37"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-22 20:40:37"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-22 20:40:37"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-22 20:40:37"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":210464,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-22 20:40:37"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"weather-system-model","subject":"physics","timestamp":"2026-01-22 20:58:53"}
+{"difficultyFactors":16,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-22 20:58:53","tools":18,"topics":25}
+{"level":"info","message":"📊 Recent average score: 78.00%","service":"nep-workbench","timestamp":"2026-01-22 20:58:53"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-22 20:58:53"}
+{"kind":"ObjectId","level":"error","message":"Get student profile error: Cast to ObjectId failed for value \"SYSTEM-DEFAULT\" (type string) at path \"_id\" for model \"Teacher\"","path":"_id","reason":{},"service":"nep-workbench","stack":"CastError: Cast to ObjectId failed for value \"SYSTEM-DEFAULT\" (type string) at path \"_id\" for model \"Teacher\"\n    at SchemaObjectId.cast (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schema/objectId.js:253:11)\n    at SchemaType.applySetters (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1288:12)\n    at SchemaType.castForQuery (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1724:17)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1679:18\n    at Array.map (<anonymous>)\n    at SchemaObjectId.handle$in (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1675:14)\n    at SchemaType.castForQuery (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1720:20)\n    at cast (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/cast.js:367:39)\n    at Query.cast (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/query.js:5060:12)\n    at Query._castConditions (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/query.js:2374:10)","stringValue":"\"SYSTEM-DEFAULT\"","timestamp":"2026-01-22 20:59:04","value":"SYSTEM-DEFAULT","valueType":"string"}

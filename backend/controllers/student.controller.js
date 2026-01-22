@@ -342,160 +342,165 @@ exports.getSimulationDetails = async (req, res) => {
 // CHALLENGE GENERATION & SUBMISSION (FULL AI INTEGRATION)
 // ============================================================================
 
+// exports.generateChallenge = async (req, res) => {
+//   try {
+//     const { simulationType, difficulty, numberOfQuestions = 5 } = req.body;
+    
+//     // Validate simulation type
+//     if (!isValidSimulation(simulationType)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Invalid simulation type'
+//       });
+//     }
+    
+//     // Get student
+//     const student = await Student.findById(req.user.userId);
+    
+//     // Check if student can generate challenge
+//     const canGenerate = student.canGenerateChallenge(
+//       simulationType,
+//       CHALLENGE_LIMITS.DAILY_LIMIT,
+//       CHALLENGE_LIMITS.PER_SIMULATION_LIMIT
+//     );
+    
+//     if (!canGenerate.allowed) {
+//       return res.status(429).json({
+//         success: false,
+//         message: canGenerate.reason === 'daily_limit'
+//           ? 'Daily challenge limit reached. Please try again tomorrow.'
+//           : `You have reached the limit for ${simulationType} challenges today.`,
+//         remaining: canGenerate.remaining
+//       });
+//     }
+    
+//     // Generate challenge using Mistral AI
+//     logger.info(`Generating challenge for student ${student.studentId}`, {
+//       simulationType,
+//       difficulty,
+//       studentLevel: student.class
+//     });
+    
+//     const challengeData = await generateAIChallenge({
+//       simulationType,
+//       difficulty: difficulty || 'medium',
+//       studentLevel: student.class,
+//       weakCompetencies: student.weakCompetencies,
+//       numberOfQuestions
+//     });
+    
+//     // Validate generated challenge
+//     if (!challengeData || !challengeData.questions || challengeData.questions.length === 0) {
+//       throw new Error('Failed to generate valid challenge');
+//     }
+    
+//     // Create challenge in database
+//     const challenge = await Challenge.create({
+//       studentId: student.studentId,
+//       schoolId: student.schoolId,
+//       teacherId: student.teacherId,
+//       simulationType,
+//       difficulty: challengeData.difficulty || difficulty || 'medium',
+//       title: challengeData.title,
+//       questions: challengeData.questions.map((q, index) => ({
+//         questionId: `Q${index + 1}`,
+//         type: q.type || 'SHORT_ANSWER',
+//         question: q.question,
+//         options: q.options || [],
+//         correctAnswer: q.correctAnswer,
+//         explanation: q.explanation,
+//         competencies: q.competencies || [],
+//         points: q.points || 100
+//       })),
+//       totalPoints: challengeData.totalPoints || (numberOfQuestions * 100),
+//       passingScore: challengeData.passingScore || 70,
+//       estimatedTime: challengeData.estimatedTime || 10,
+//       status: 'generated',
+//       aiMetadata: {
+//         mistralModel: process.env.MISTRAL_MODEL || 'mistral-large-2411',
+//         tokensUsed: challengeData.tokensUsed || 0,
+//         metaLearningApplied: false,
+//         kalmanFilterApplied: false,
+//         pidControllerApplied: false
+//       }
+//     });
+    
+//     // Record challenge generation
+//     await student.recordChallengeGeneration(simulationType);
+    
+//     // Update student streak
+//     await student.updateStreak();
+    
+//     // Log activity
+//     await Activity.log({
+//       userId: student._id,
+//       userType: 'student',
+//       schoolId: student.schoolId,
+//       activityType: 'challenge_generated',
+//       action: `Challenge generated for ${simulationType}`,
+//       metadata: {
+//         challengeId: challenge.challengeId,
+//         simulationType,
+//         difficulty: challenge.difficulty
+//       },
+//       success: true
+//     });
+    
+//     logger.info(`Challenge ${challenge.challengeId} generated successfully`);
+    
+//     res.status(201).json({
+//       success: true,
+//       message: 'Challenge generated successfully',
+//       data: {
+//         challenge: {
+//           challengeId: challenge.challengeId,
+//           title: challenge.title,
+//           simulationType: challenge.simulationType,
+//           difficulty: challenge.difficulty,
+//           questions: challenge.questions.map(q => ({
+//             questionId: q.questionId,
+//             type: q.type,
+//             question: q.question,
+//             options: q.options,
+//             points: q.points
+//             // Do NOT send correctAnswer or explanation
+//           })),
+//           totalPoints: challenge.totalPoints,
+//           passingScore: challenge.passingScore,
+//           estimatedTime: challenge.estimatedTime,
+//           generatedAt: challenge.generatedAt
+//         },
+//         limits: {
+//           dailyRemaining: CHALLENGE_LIMITS.DAILY_LIMIT - (student.challengeLimits.totalToday + 1),
+//           simulationRemaining: CHALLENGE_LIMITS.PER_SIMULATION_LIMIT - ((student.challengeLimits.bySimulation.get(simulationType) || 0) + 1)
+//         }
+//       }
+//     });
+    
+//   } catch (error) {
+//     logger.error('Generate challenge error:', error);
+    
+//     // Log failed activity
+//     await Activity.log({
+//       userId: req.user.userId,
+//       userType: 'student',
+//       activityType: 'challenge_generated',
+//       action: 'Failed to generate challenge',
+//       success: false,
+//       errorMessage: error.message
+//     });
+    
+//     res.status(500).json({
+//       success: false,
+//       message: 'Error generating challenge',
+//       error: error.message
+//     });
+//   }
+// };
+
 exports.generateChallenge = async (req, res) => {
-  try {
-    const { simulationType, difficulty, numberOfQuestions = 5 } = req.body;
-    
-    // Validate simulation type
-    if (!isValidSimulation(simulationType)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid simulation type'
-      });
-    }
-    
-    // Get student
-    const student = await Student.findById(req.user.userId);
-    
-    // Check if student can generate challenge
-    const canGenerate = student.canGenerateChallenge(
-      simulationType,
-      CHALLENGE_LIMITS.DAILY_LIMIT,
-      CHALLENGE_LIMITS.PER_SIMULATION_LIMIT
-    );
-    
-    if (!canGenerate.allowed) {
-      return res.status(429).json({
-        success: false,
-        message: canGenerate.reason === 'daily_limit'
-          ? 'Daily challenge limit reached. Please try again tomorrow.'
-          : `You have reached the limit for ${simulationType} challenges today.`,
-        remaining: canGenerate.remaining
-      });
-    }
-    
-    // Generate challenge using Mistral AI
-    logger.info(`Generating challenge for student ${student.studentId}`, {
-      simulationType,
-      difficulty,
-      studentLevel: student.class
-    });
-    
-    const challengeData = await generateAIChallenge({
-      simulationType,
-      difficulty: difficulty || 'medium',
-      studentLevel: student.class,
-      weakCompetencies: student.weakCompetencies,
-      numberOfQuestions
-    });
-    
-    // Validate generated challenge
-    if (!challengeData || !challengeData.questions || challengeData.questions.length === 0) {
-      throw new Error('Failed to generate valid challenge');
-    }
-    
-    // Create challenge in database
-    const challenge = await Challenge.create({
-      studentId: student.studentId,
-      schoolId: student.schoolId,
-      teacherId: student.teacherId,
-      simulationType,
-      difficulty: challengeData.difficulty || difficulty || 'medium',
-      title: challengeData.title,
-      questions: challengeData.questions.map((q, index) => ({
-        questionId: `Q${index + 1}`,
-        type: q.type || 'SHORT_ANSWER',
-        question: q.question,
-        options: q.options || [],
-        correctAnswer: q.correctAnswer,
-        explanation: q.explanation,
-        competencies: q.competencies || [],
-        points: q.points || 100
-      })),
-      totalPoints: challengeData.totalPoints || (numberOfQuestions * 100),
-      passingScore: challengeData.passingScore || 70,
-      estimatedTime: challengeData.estimatedTime || 10,
-      status: 'generated',
-      aiMetadata: {
-        mistralModel: process.env.MISTRAL_MODEL || 'mistral-large-2411',
-        tokensUsed: challengeData.tokensUsed || 0,
-        metaLearningApplied: false,
-        kalmanFilterApplied: false,
-        pidControllerApplied: false
-      }
-    });
-    
-    // Record challenge generation
-    await student.recordChallengeGeneration(simulationType);
-    
-    // Update student streak
-    await student.updateStreak();
-    
-    // Log activity
-    await Activity.log({
-      userId: student._id,
-      userType: 'student',
-      schoolId: student.schoolId,
-      activityType: 'challenge_generated',
-      action: `Challenge generated for ${simulationType}`,
-      metadata: {
-        challengeId: challenge.challengeId,
-        simulationType,
-        difficulty: challenge.difficulty
-      },
-      success: true
-    });
-    
-    logger.info(`Challenge ${challenge.challengeId} generated successfully`);
-    
-    res.status(201).json({
-      success: true,
-      message: 'Challenge generated successfully',
-      data: {
-        challenge: {
-          challengeId: challenge.challengeId,
-          title: challenge.title,
-          simulationType: challenge.simulationType,
-          difficulty: challenge.difficulty,
-          questions: challenge.questions.map(q => ({
-            questionId: q.questionId,
-            type: q.type,
-            question: q.question,
-            options: q.options,
-            points: q.points
-            // Do NOT send correctAnswer or explanation
-          })),
-          totalPoints: challenge.totalPoints,
-          passingScore: challenge.passingScore,
-          estimatedTime: challenge.estimatedTime,
-          generatedAt: challenge.generatedAt
-        },
-        limits: {
-          dailyRemaining: CHALLENGE_LIMITS.DAILY_LIMIT - (student.challengeLimits.totalToday + 1),
-          simulationRemaining: CHALLENGE_LIMITS.PER_SIMULATION_LIMIT - ((student.challengeLimits.bySimulation.get(simulationType) || 0) + 1)
-        }
-      }
-    });
-    
-  } catch (error) {
-    logger.error('Generate challenge error:', error);
-    
-    // Log failed activity
-    await Activity.log({
-      userId: req.user.userId,
-      userType: 'student',
-      activityType: 'challenge_generated',
-      action: 'Failed to generate challenge',
-      success: false,
-      errorMessage: error.message
-    });
-    
-    res.status(500).json({
-      success: false,
-      message: 'Error generating challenge',
-      error: error.message
-    });
-  }
+  // Redirect to challenge controller
+  return require('./challenge.controller').generateChallenge(req, res);
 };
 
 exports.getChallengeLimits = async (req, res) => {
