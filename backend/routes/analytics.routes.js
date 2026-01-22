@@ -205,4 +205,30 @@ router.get(
   analyticsController.exportAnalytics
 );
 
+router.get('/attention/:studentId', 
+  authorize(['teacher', 'admin']), 
+  analyticsController.getAttentionStatistics
+);
+
+router.post('/attention/:studentId/analyze', 
+  authorize(['teacher', 'admin']), 
+  analyticsController.analyzeAttention
+);
+
+// routes/analytics.routes.js
+router.get('/pid/:studentId', 
+  authorize(['teacher', 'admin', 'student']), 
+  analyticsController.getPIDStatistics
+);
+
+router.post('/pid/:studentId/auto-tune', 
+  authorize(['admin']), 
+  analyticsController.autoTunePID
+);
+
+router.post('/pid/:studentId/reset', 
+  authorize(['admin']), 
+  analyticsController.resetPID
+);
+
 module.exports = router;

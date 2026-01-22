@@ -136,11 +136,11 @@
             flex-wrap: wrap;
         }
 
-        /* FEATURES - UPDATED FOR 4 CARDS IN ONE ROW */
+        /* FEATURES - UPDATED FOR 5 CARDS IN ONE ROW */
         .features {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 25px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
             margin-top: 50px;
             width: 100%;
         }
@@ -149,7 +149,7 @@
             background: #2d2d30;
             border: 1px solid #464647;
             border-radius: 12px;
-            padding: 25px;
+            padding: 20px;
             text-align: center;
             transition: all 0.3s;
             display: flex;
@@ -165,19 +165,19 @@
         }
 
         .feature-icon {
-            font-size: clamp(2.5rem, 4vw, 3rem);
-            margin-bottom: 20px;
+            font-size: clamp(2.2rem, 3vw, 2.8rem);
+            margin-bottom: 15px;
             background: linear-gradient(135deg, #007acc, #00d4ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            min-height: 60px;
+            min-height: 55px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .feature-card h3 {
-            font-size: clamp(1.1rem, 1.5vw, 1.3rem);
+            font-size: clamp(1rem, 1.3vw, 1.2rem);
             margin-bottom: 10px;
             color: #fff;
             line-height: 1.3;
@@ -186,15 +186,15 @@
         .feature-card p {
             color: #aaa;
             line-height: 1.5;
-            font-size: clamp(0.9rem, 1.2vw, 1rem);
+            font-size: clamp(0.85rem, 1.1vw, 0.95rem);
             flex-grow: 1;
         }
 
-        /* STATS */
+        /* STATS - UPDATED FOR 5 STATS */
         .stats {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
             margin-top: 60px;
             padding: 30px;
             background: #333337;
@@ -208,7 +208,7 @@
         }
 
         .stat-number {
-            font-size: clamp(2rem, 3vw, 2.5rem);
+            font-size: clamp(1.8rem, 2.5vw, 2.2rem);
             font-weight: bold;
             color: #00d4ff;
             margin-bottom: 5px;
@@ -216,7 +216,7 @@
 
         .stat-label {
             color: #aaa;
-            font-size: clamp(0.8rem, 1vw, 0.9rem);
+            font-size: clamp(0.75rem, 0.9vw, 0.85rem);
             line-height: 1.3;
         }
 
@@ -251,8 +251,66 @@
         }
 
         /* RESPONSIVE DESIGN */
-        /* Large Tablets */
-        @media (max-width: 1024px) {
+        /* Large Desktop */
+        @media (min-width: 1600px) {
+            .features {
+                gap: 25px;
+            }
+            
+            .feature-card {
+                padding: 25px 20px;
+            }
+            
+            .stats {
+                gap: 25px;
+            }
+        }
+
+        /* Desktop */
+        @media (max-width: 1400px) {
+            .features {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 18px;
+            }
+            
+            .feature-card {
+                padding: 18px 15px;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 15px;
+                padding: 25px 20px;
+            }
+        }
+
+        /* Large Tablets and Small Laptops */
+        @media (max-width: 1200px) {
+            .features {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+            }
+            
+            .hero {
+                padding: 50px 30px;
+            }
+            
+            .feature-card h3 {
+                font-size: 1.1rem;
+            }
+            
+            .feature-card p {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Tablets */
+        @media (max-width: 992px) {
             .features {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 20px;
@@ -263,8 +321,12 @@
                 gap: 25px;
             }
             
-            .hero {
-                padding: 50px 30px;
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .feature-card {
+                padding: 20px;
             }
         }
 
@@ -389,25 +451,6 @@
             }
         }
 
-        /* Large Desktops */
-        @media (min-width: 1400px) {
-            .hero {
-                max-width: 1400px;
-            }
-            
-            .features {
-                max-width: 1400px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-            
-            .stats {
-                max-width: 1200px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-        }
-
         /* Animation for feature cards */
         @keyframes fadeInUp {
             from {
@@ -435,13 +478,17 @@
         .feature-card:nth-child(4) {
             animation-delay: 0.3s;
         }
+        
+        .feature-card:nth-child(5) {
+            animation-delay: 0.4s;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <div class="logo">
             <i class="fas fa-graduation-cap"></i>
-            SPIRAL
+            SPIRAL AI
         </div>
         <div class="nav-links">
             <a href="#features">Features</a>
@@ -453,7 +500,7 @@
     </div>
 
     <div class="hero">
-        <h1>Transform Learning with NEP 2020</h1>
+        <h1>INTELLIGENT NEP PLATFORM</h1>
         <p>
             Empowering students, teachers, and parents with competency-based education.<br>
             Interactive simulations, real-time progress tracking, and personalized learning paths.
@@ -500,6 +547,15 @@
                 <h3>Multi-Role Access</h3>
                 <p>Student, Teacher, Parent, and Admin dashboards in one platform</p>
             </div>
+
+            <!-- NEW CARD: Teacher Pedagogy -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <h3>Teacher Pedagogy</h3>
+                <p>Advanced teaching tools, lesson planning, and classroom management for modern educators</p>
+            </div>
         </div>
 
         <div class="stats">
@@ -510,6 +566,10 @@
             <div class="stat-item">
                 <div class="stat-number">12</div>
                 <div class="stat-label">NEP Competencies</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Core Features</div>
             </div>
             <div class="stat-item">
                 <div class="stat-number">4</div>
@@ -567,7 +627,7 @@
                 }
             });
             
-            // Apply same height to all cards only on desktop
+            // Apply same height to all cards only on larger screens
             if (window.innerWidth >= 768) {
                 cards.forEach(card => {
                     card.style.height = maxHeight + 'px';

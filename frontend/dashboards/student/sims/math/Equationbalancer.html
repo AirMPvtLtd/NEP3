@@ -3,109 +3,624 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Equation Balancer - NEP Workbench</title>
+    <title>Equation Balance Explorer - NEP Activity Lab</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; --success: #00b894; --error: #e74c3c; }
-        body { background: var(--bg); color: #fff; }
+        :root { 
+            --bg: #1e1e1e; 
+            --panel: #252526; 
+            --accent: #007acc; 
+            --explore: #007acc;
+            --success: #00b894; 
+            --error: #e74c3c;
+            --add-color: #27ae60;
+            --subtract-color: #e74c3c;
+            --multiply-color: #3498db;
+            --divide-color: #007acc;
+        }
+        body { 
+            background: var(--bg); 
+            color: #fff;
+            overflow-x: hidden;
+        }
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        h1 { font-size: 24px; color: var(--accent); }
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; transition: all 0.3s; }
-        .btn:hover { transform: translateY(-2px); }
-        .main { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
-        .equation-display { background: var(--bg); border-radius: 6px; padding: 40px; text-align: center; font-size: 32px; font-family: 'Courier New', monospace; border: 1px solid #464647; margin: 20px 0; min-height: 120px; display: flex; align-items: center; justify-content: center; }
-        .steps-container { max-height: 400px; overflow-y: auto; }
-        .step { background: #2d2d30; padding: 15px; margin: 10px 0; border-radius: 6px; border-left: 4px solid var(--accent); }
-        .step-number { color: var(--accent); font-weight: 600; margin-bottom: 8px; }
-        .step-equation { font-family: 'Courier New', monospace; font-size: 18px; margin: 10px 0; }
-        .step-explanation { color: #888; font-size: 13px; margin-top: 8px; }
-        .operation-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 0; }
-        .op-btn { padding: 15px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; cursor: pointer; text-align: center; font-size: 16px; transition: all 0.3s; }
-        .op-btn:hover { border-color: var(--accent); background: var(--accent); }
-        .input-group { display: flex; gap: 10px; margin: 15px 0; }
-        .input-group input { flex: 1; padding: 12px; background: #2d2d30; border: 1px solid #464647; border-radius: 4px; color: #fff; font-size: 16px; }
-        .feedback { padding: 15px; border-radius: 6px; margin: 15px 0; display: none; }
-        .feedback.success { background: rgba(0, 184, 148, 0.1); border: 1px solid var(--success); color: var(--success); }
-        .feedback.error { background: rgba(231, 76, 60, 0.1); border: 1px solid var(--error); color: var(--error); }
+        
+        .header { 
+            background: #333; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            animation: slideDown 0.5s ease-out;
+            border-left: 5px solid var(--accent);
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        h1 { 
+            font-size: 24px; 
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .main { 
+            display: grid; 
+            grid-template-columns: 2fr 1fr; 
+            gap: 20px;
+        }
+        
+        .panel { 
+            background: var(--panel); 
+            border-radius: 8px; 
+            padding: 20px; 
+            border: 1px solid #464647;
+            animation: fadeIn 0.6s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Exploration Zone */
+        .exploration-zone {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 20px 0;
+        }
+        
+        .equation-builder {
+            background: rgba(0, 122, 204, 0.05);
+            border-radius: 8px;
+            padding: 25px;
+            border: 2px dashed rgba(0, 122, 204, 0.3);
+        }
+        
+        .variable-block, .constant-block, .operator-block {
+            display: inline-block;
+            padding: 12px 20px;
+            margin: 8px;
+            border-radius: 6px;
+            cursor: grab;
+            user-select: none;
+            font-weight: 600;
+            font-size: 18px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .variable-block {
+            background: rgba(0, 122, 204, 0.2);
+            border: 2px solid var(--accent);
+        }
+        
+        .constant-block {
+            background: rgba(52, 152, 219, 0.2);
+            border: 2px solid var(--multiply-color);
+        }
+        
+        .operator-block {
+            background: rgba(39, 174, 96, 0.2);
+            border: 2px solid var(--add-color);
+        }
+        
+        .block-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            min-height: 120px;
+        }
+        
+        .equation-canvas {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 30px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .equation-canvas.active {
+            border-color: var(--accent);
+            background: rgba(0, 122, 204, 0.05);
+            animation: pulseCanvas 2s infinite alternate;
+        }
+        
+        @keyframes pulseCanvas {
+            0% { box-shadow: 0 0 10px rgba(0, 122, 204, 0.1); }
+            100% { box-shadow: 0 0 20px rgba(0, 122, 204, 0.3); }
+        }
+        
+        .canvas-block {
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-size: 24px;
+            font-weight: 600;
+            animation: popIn 0.3s ease-out;
+            position: relative;
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .canvas-block.variable {
+            background: rgba(0, 122, 204, 0.3);
+            border: 2px solid var(--accent);
+        }
+        
+        .canvas-block.constant {
+            background: rgba(52, 152, 219, 0.3);
+            border: 2px solid var(--multiply-color);
+        }
+        
+        .canvas-block.operator {
+            background: rgba(39, 174, 96, 0.3);
+            border: 2px solid var(--add-color);
+        }
+        
+        .canvas-block.equals {
+            background: rgba(231, 76, 60, 0.3);
+            border: 2px solid var(--error);
+            padding: 15px;
+        }
+        
+        .balance-visualizer {
+            position: relative;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .balance-beam {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80%;
+            height: 8px;
+            background: linear-gradient(90deg, #666, #888, #666);
+            transform-origin: center;
+            border-radius: 4px;
+            transition: transform 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 2;
+        }
+        
+        .balance-pivot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+        
+        .balance-weight {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 1;
+        }
+        
+        .weight-left {
+            background: var(--accent);
+            top: 50%;
+            left: 20%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .weight-right {
+            background: var(--success);
+            top: 50%;
+            right: 20%;
+            transform: translate(50%, -50%);
+        }
+        
+        .exploration-controls {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .control-btn {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent);
+        }
+        
+        .control-btn i {
+            font-size: 20px;
+        }
+        
+        .discovery-panel {
+            background: rgba(0, 122, 204, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .discovery-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .discovery-item.revealed {
+            border-left-color: var(--success);
+            background: rgba(0, 184, 148, 0.05);
+        }
+        
+        .discovery-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .discovery-icon {
+            width: 30px;
+            height: 30px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        
+        .activity-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(0, 122, 204, 0.1), rgba(0, 122, 204, 0.05));
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .activity-log {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+            padding-right: 10px;
+        }
+        
+        .log-entry {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent);
+            font-size: 13px;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .log-time {
+            color: #888;
+            font-size: 11px;
+            float: right;
+        }
+        
+        .floating-symbol {
+            position: absolute;
+            font-size: 24px;
+            opacity: 0.1;
+            animation: float 20s infinite linear;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-1000px) rotate(360deg); }
+        }
+        
+        .drop-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            color: #888;
+            margin: 10px 0;
+            transition: all 0.3s;
+        }
+        
+        .drop-zone.active {
+            border-color: var(--accent);
+            background: rgba(0, 122, 204, 0.05);
+            color: var(--accent);
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            background: var(--accent);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            background: #0090ff;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div><h1><i class="fas fa-balance-scale"></i> Equation Balancer</h1><p style="color: #888;">Math Lab • Grade 7-8</p></div>
-            <div style="display: flex; gap: 15px;">
-                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
-                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
-                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            <div>
+                <h1><i class="fas fa-compass"></i> Equation Balance Explorer</h1>
+                <p style="color: #888;">Activity-Based Learning • Explore Mathematical Relationships</p>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div style="background: #2d2d30; padding: 8px 15px; border-radius: 20px;">
+                    <i class="fas fa-lightbulb" style="color: var(--accent);"></i>
+                    <span id="discoveries">0</span> Discoveries
+                </div>
             </div>
         </div>
         
         <div class="main">
             <div class="panel">
-                <h2 style="margin-bottom: 15px;">Solve the Equation</h2>
+                <h2 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-shapes"></i> Exploration Zone
+                </h2>
                 
-                <div class="equation-display" id="equation">
-                    2x + 5 = 13
+                <div class="exploration-zone">
+                    <div class="equation-builder">
+                        <h3 style="margin-bottom: 15px; color: var(--accent);">
+                            <i class="fas fa-puzzle-piece"></i> Building Blocks
+                        </h3>
+                        <div class="block-container" id="blockPalette">
+                            <div class="variable-block" draggable="true" data-value="x">x</div>
+                            <div class="variable-block" draggable="true" data-value="y">y</div>
+                            <div class="constant-block" draggable="true" data-value="2">2</div>
+                            <div class="constant-block" draggable="true" data-value="3">3</div>
+                            <div class="constant-block" draggable="true" data-value="5">5</div>
+                            <div class="constant-block" draggable="true" data-value="7">7</div>
+                            <div class="operator-block" draggable="true" data-value="+">+</div>
+                            <div class="operator-block" draggable="true" data-value="-">-</div>
+                            <div class="operator-block" draggable="true" data-value="×">×</div>
+                            <div class="operator-block" draggable="true" data-value="÷">÷</div>
+                            <div class="operator-block" draggable="true" data-value="=">=</div>
+                        </div>
+                        
+                        <div class="drop-zone" id="lhsDropZone">
+                            Drop Left Side Here
+                        </div>
+                        
+                        <div class="drop-zone" id="rhsDropZone">
+                            Drop Right Side Here
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 style="margin-bottom: 15px; color: var(--accent);">
+                            <i class="fas fa-balance-scale"></i> Balance Visualizer
+                        </h3>
+                        <div class="balance-visualizer" id="balanceVisualizer">
+                            <div class="balance-beam" id="balanceBeam"></div>
+                            <div class="balance-pivot"></div>
+                            <div class="balance-weight weight-left" id="leftWeight">
+                                <span id="leftValue">0</span>
+                            </div>
+                            <div class="balance-weight weight-right" id="rightWeight">
+                                <span id="rightValue">0</span>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; margin: 15px 0; color: #888; font-size: 14px;">
+                            <i class="fas fa-info-circle"></i>
+                            Balance shows the relationship between both sides
+                        </div>
+                    </div>
                 </div>
                 
-                <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center; margin-bottom: 20px;">
-                    <div style="color: #888; font-size: 13px; margin-bottom: 8px;">Goal: Isolate x</div>
-                    <div style="font-size: 20px; color: var(--accent); font-weight: 600;" id="solution">x = ?</div>
+                <div class="equation-canvas" id="equationCanvas">
+                    <div style="color: #666; font-style: italic;">
+                        Build an equation by dragging blocks...
+                    </div>
                 </div>
                 
-                <h3 style="margin: 20px 0 10px;">Apply Operation</h3>
-                <div class="operation-grid">
-                    <div class="op-btn" onclick="applyOperation('add')">+ Add</div>
-                    <div class="op-btn" onclick="applyOperation('subtract')">− Subtract</div>
-                    <div class="op-btn" onclick="applyOperation('multiply')">× Multiply</div>
-                    <div class="op-btn" onclick="applyOperation('divide')">÷ Divide</div>
+                <h3 style="margin: 20px 0 10px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-sliders-h"></i> Transformation Controls
+                </h3>
+                
+                <div class="exploration-controls">
+                    <div class="control-btn" onclick="transformEquation('mirror')">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Swap Sides</span>
+                    </div>
+                    <div class="control-btn" onclick="transformEquation('double')">
+                        <i class="fas fa-expand-alt"></i>
+                        <span>Double Both</span>
+                    </div>
+                    <div class="control-btn" onclick="transformEquation('half')">
+                        <i class="fas fa-compress-alt"></i>
+                        <span>Halve Both</span>
+                    </div>
+                    <div class="control-btn" onclick="transformEquation('add5')">
+                        <i class="fas fa-plus"></i>
+                        <span>Add 5</span>
+                    </div>
+                    <div class="control-btn" onclick="transformEquation('inverse')">
+                        <i class="fas fa-retweet"></i>
+                        <span>Inverse Ops</span>
+                    </div>
+                    <div class="control-btn" onclick="transformEquation('simplify')">
+                        <i class="fas fa-magic"></i>
+                        <span>Simplify</span>
+                    </div>
+                    <div class="control-btn" onclick="transformEquation('randomize')">
+                        <i class="fas fa-random"></i>
+                        <span>Randomize</span>
+                    </div>
+                    <div class="control-btn" onclick="resetExploration()">
+                        <i class="fas fa-redo"></i>
+                        <span>Reset</span>
+                    </div>
                 </div>
                 
-                <div class="input-group">
-                    <input type="number" id="operationValue" placeholder="Enter value..." step="0.1">
-                    <button class="btn" onclick="submitOperation()"><i class="fas fa-arrow-right"></i> Apply</button>
-                </div>
-                
-                <div class="feedback" id="feedback"></div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
-                    <button class="btn" onclick="checkAnswer()"><i class="fas fa-check-circle"></i> Check Answer</button>
-                    <button class="btn" style="background: #e74c3c;" onclick="newProblem()"><i class="fas fa-sync"></i> New Problem</button>
+                <div class="discovery-panel">
+                    <h4 style="margin-bottom: 15px; color: var(--accent);">
+                        <i class="fas fa-search"></i> Discoveries
+                    </h4>
+                    <div id="discoveriesList">
+                        <div class="discovery-item" id="discovery1">
+                            <span class="discovery-icon">?</span>
+                            What happens when you add the same number to both sides?
+                        </div>
+                        <div class="discovery-item" id="discovery2">
+                            <span class="discovery-icon">?</span>
+                            Does multiplying affect the balance differently than adding?
+                        </div>
+                        <div class="discovery-item" id="discovery3">
+                            <span class="discovery-icon">?</span>
+                            Can an equation stay balanced if you only change one side?
+                        </div>
+                        <div class="discovery-item" id="discovery4">
+                            <span class="discovery-icon">?</span>
+                            What's the relationship between multiplication and division?
+                        </div>
+                    </div>
                 </div>
             </div>
             
             <div class="panel">
-                <h2 style="margin-bottom: 15px;"><i class="fas fa-list-ol"></i> Solution Steps</h2>
+                <h2 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-chart-line"></i> Exploration Insights
+                </h2>
                 
-                <div class="steps-container" id="steps">
-                    <div class="step">
-                        <div class="step-number">Step 0 (Original)</div>
-                        <div class="step-equation">2x + 5 = 13</div>
+                <div class="activity-stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="statEquations">0</div>
+                        <div class="stat-label">Equations Created</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statTransformations">0</div>
+                        <div class="stat-label">Transformations</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statBalanceTime">0%</div>
+                        <div class="stat-label">Time in Balance</div>
                     </div>
                 </div>
                 
-                <div style="background: rgba(0, 122, 204, 0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 13px; line-height: 1.8;">
-                    <strong style="color: var(--accent);">Balance Rules:</strong><br>
-                    • What you do to one side, do to the other<br>
-                    • Inverse operations undo each other<br>
-                    • Goal: Isolate the variable
+                <h3 style="margin: 25px 0 10px; color: var(--accent);">
+                    <i class="fas fa-history"></i> Activity Log
+                </h3>
+                
+                <div class="activity-log" id="activityLog">
+                    <div class="log-entry">
+                        Welcome to the Equation Balance Explorer!
+                        <span class="log-time">Now</span>
+                    </div>
                 </div>
                 
-                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
-                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
-                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statSolved">0</div>
-                        <div style="font-size: 12px; color: #888;">Solved</div>
+                <h3 style="margin: 25px 0 10px; color: var(--accent);">
+                    <i class="fas fa-question-circle"></i> Exploration Prompts
+                </h3>
+                
+                <div style="background: rgba(0, 122, 204, 0.05); padding: 15px; border-radius: 8px; font-size: 14px; line-height: 1.6;">
+                    <div style="margin-bottom: 10px; color: var(--accent);">
+                        <i class="fas fa-bullseye"></i> Try these explorations:
                     </div>
-                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
-                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statSteps">0</div>
-                        <div style="font-size: 12px; color: #888;">Steps</div>
-                    </div>
-                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
-                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statCorrect">0</div>
-                        <div style="font-size: 12px; color: #888;">Correct</div>
-                    </div>
+                    <ul style="padding-left: 20px; color: #aaa;">
+                        <li>Create an unbalanced equation. What happens to the scale?</li>
+                        <li>Make both sides identical. What transformations keep them identical?</li>
+                        <li>Start with x = 5. What happens when you multiply both sides by 2?</li>
+                        <li>Can you create an equation that balances in more than one way?</li>
+                    </ul>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <button class="btn" onclick="exportExplorationData()" style="width: 100%;">
+                        <i class="fas fa-download"></i> Export Exploration Data
+                    </button>
                 </div>
             </div>
         </div>
@@ -113,195 +628,612 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        const API_BASE_URL = 'http://localhost:3000/api';
-        const authToken = localStorage.getItem('authToken');
-        let eventId = null, sessionStart = Date.now();
-        
-        let currentProblem = { a: 2, b: 5, c: 13 }, steps = [], selectedOp = null;
-        let interactionData = {
-            actions_count: 0, time_seconds: 0, total_parameter_space: 200,
-            tool_usage: {}, problems_solved: 0, total_steps: 0, correct_attempts: 0, incorrect_attempts: 0
+        // Activity-Based Simulation Variables
+        let explorationData = {
+            equationsCreated: 0,
+            transformations: 0,
+            discoveries: 0,
+            balancedTime: 0,
+            lastBalanceCheck: Date.now(),
+            activityLog: []
         };
         
-        async function init() {
-            if (authToken) {
-                try {
-                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
-                    const res = await fetch(`${API_BASE_URL}/student/event`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ studentId, toolId: 'equation-balancer', toolType: 'LAB', interactionData })
-                    });
-                    if (res.ok) eventId = (await res.json()).data._id;
-                } catch (err) {}
-            }
+        let currentEquation = {
+            lhs: [],
+            rhs: [],
+            isBalanced: false
+        };
+        
+        let discoveries = {
+            sameOperation: false,
+            inverseOperations: false,
+            symmetry: false,
+            scaling: false
+        };
+        
+        // Initialize the activity
+        document.addEventListener('DOMContentLoaded', function() {
+            initActivity();
+            createFloatingSymbols();
+            setupDragAndDrop();
+            startBalanceMonitor();
             
-            newProblem();
+            // Add initial log entry
+            logActivity("Started exploration session");
+        });
+        
+        function initActivity() {
+            // Initialize stats display
+            updateStatsDisplay();
+            
+            // Start balance time monitor
             setInterval(() => {
-                const e = Math.floor((Date.now() - sessionStart) / 1000);
-                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
-            }, 1000);
-            setInterval(saveProgress, 30000);
+                const totalTime = (Date.now() - explorationData.lastBalanceCheck) / 1000 + 1;
+                const balancePercent = totalTime > 0 ? Math.round((explorationData.balancedTime / totalTime) * 100) : 0;
+                document.getElementById('statBalanceTime').textContent = `${balancePercent}%`;
+            }, 2000);
         }
         
-        function newProblem() {
-            currentProblem = {
-                a: Math.floor(Math.random() * 5) + 1,
-                b: Math.floor(Math.random() * 10) + 1,
-                c: Math.floor(Math.random() * 20) + 10
-            };
+        function setupDragAndDrop() {
+            const blocks = document.querySelectorAll('.variable-block, .constant-block, .operator-block');
+            const lhsZone = document.getElementById('lhsDropZone');
+            const rhsZone = document.getElementById('rhsDropZone');
+            const canvas = document.getElementById('equationCanvas');
             
-            steps = [{ equation: `${currentProblem.a}x + ${currentProblem.b} = ${currentProblem.c}`, explanation: 'Original equation' }];
-            displayEquation();
-            displaySteps();
-            document.getElementById('feedback').style.display = 'none';
-            document.getElementById('operationValue').value = '';
-            interactionData.actions_count++;
-        }
-        
-        function displayEquation() {
-            const step = steps[steps.length - 1];
-            document.getElementById('equation').textContent = step.equation;
-        }
-        
-        function displaySteps() {
-            const container = document.getElementById('steps');
-            container.innerHTML = steps.map((step, i) => `
-                <div class="step">
-                    <div class="step-number">Step ${i}${i === 0 ? ' (Original)' : ''}</div>
-                    <div class="step-equation">${step.equation}</div>
-                    <div class="step-explanation">${step.explanation}</div>
-                </div>
-            `).join('');
-            container.scrollTop = container.scrollHeight;
-        }
-        
-        function applyOperation(op) {
-            selectedOp = op;
-            interactionData.actions_count++;
-            interactionData.tool_usage[op] = (interactionData.tool_usage[op] || 0) + 1;
-        }
-        
-        function submitOperation() {
-            if (!selectedOp) {
-                showFeedback('Please select an operation first', 'error');
-                return;
-            }
-            
-            const value = parseFloat(document.getElementById('operationValue').value);
-            if (isNaN(value)) {
-                showFeedback('Please enter a valid number', 'error');
-                return;
-            }
-            
-            // Parse current equation
-            const eq = steps[steps.length - 1].equation;
-            const parts = eq.split('=');
-            let left = parts[0].trim();
-            let right = parseFloat(parts[1].trim());
-            
-            // Apply operation
-            let newLeft, newRight, explanation;
-            
-            if (selectedOp === 'add') {
-                right += value;
-                explanation = `Added ${value} to both sides`;
-                left = left.includes('+') ? left : left + ' + ' + value;
-            } else if (selectedOp === 'subtract') {
-                right -= value;
-                explanation = `Subtracted ${value} from both sides`;
-                if (left.includes('+')) {
-                    const num = parseFloat(left.split('+')[1]);
-                    if (value === num) left = left.split('+')[0].trim();
-                }
-            } else if (selectedOp === 'multiply') {
-                right *= value;
-                explanation = `Multiplied both sides by ${value}`;
-            } else if (selectedOp === 'divide') {
-                right /= value;
-                explanation = `Divided both sides by ${value}`;
-                if (left.includes('x') && left.startsWith(value + 'x')) {
-                    left = 'x';
-                }
-            }
-            
-            newLeft = left;
-            newRight = right;
-            
-            steps.push({ 
-                equation: `${newLeft} = ${newRight.toFixed(2)}`,
-                explanation 
+            // Make blocks draggable
+            blocks.forEach(block => {
+                block.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/plain', this.dataset.value);
+                    e.dataTransfer.setData('type', this.className.includes('variable') ? 'variable' : 
+                                          this.className.includes('constant') ? 'constant' : 'operator');
+                    this.style.opacity = '0.5';
+                });
+                
+                block.addEventListener('dragend', function() {
+                    this.style.opacity = '1';
+                });
             });
             
-            interactionData.total_steps++;
-            displayEquation();
-            displaySteps();
-            updateStats();
-            
-            document.getElementById('operationValue').value = '';
-            selectedOp = null;
-            
-            // Check if solved
-            if (left === 'x' || left.trim() === 'x') {
-                document.getElementById('solution').textContent = `x = ${newRight.toFixed(2)}`;
-                showFeedback('Equation solved! Check your answer.', 'success');
-            }
-        }
-        
-        function checkAnswer() {
-            const correctAnswer = (currentProblem.c - currentProblem.b) / currentProblem.a;
-            const lastStep = steps[steps.length - 1].equation;
-            
-            if (lastStep.includes('x =') || lastStep.includes('= x')) {
-                const studentAnswer = parseFloat(lastStep.split('=')[1].trim());
-                
-                if (Math.abs(studentAnswer - correctAnswer) < 0.01) {
-                    showFeedback('✓ Correct! Well done!', 'success');
-                    interactionData.problems_solved++;
-                    interactionData.correct_attempts++;
-                } else {
-                    showFeedback(`✗ Not quite. The answer should be ${correctAnswer.toFixed(2)}`, 'error');
-                    interactionData.incorrect_attempts++;
-                }
-                updateStats();
-            } else {
-                showFeedback('Keep solving! The variable is not isolated yet.', 'error');
-            }
-        }
-        
-        function showFeedback(message, type) {
-            const feedback = document.getElementById('feedback');
-            feedback.textContent = message;
-            feedback.className = `feedback ${type}`;
-            feedback.style.display = 'block';
-        }
-        
-        function updateStats() {
-            document.getElementById('statSolved').textContent = interactionData.problems_solved;
-            document.getElementById('statSteps').textContent = interactionData.total_steps;
-            document.getElementById('statCorrect').textContent = interactionData.correct_attempts;
-        }
-        
-        async function saveProgress() {
-            if (!eventId) return;
-            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
-            try {
-                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
-                    method: 'PATCH',
-                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ interactionData })
+            // Setup drop zones
+            [lhsZone, rhsZone, canvas].forEach(zone => {
+                zone.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('active');
                 });
-            } catch (err) {}
+                
+                zone.addEventListener('dragleave', function() {
+                    this.classList.remove('active');
+                });
+                
+                zone.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('active');
+                    
+                    const value = e.dataTransfer.getData('text/plain');
+                    const type = e.dataTransfer.getData('type');
+                    
+                    if (this === canvas) {
+                        addToEquation(value, type);
+                    } else if (this === lhsZone) {
+                        addToSide(value, type, 'lhs');
+                    } else if (this === rhsZone) {
+                        addToSide(value, type, 'rhs');
+                    }
+                });
+            });
         }
         
-        async function complete() {
-            await saveProgress();
-            alert('Session completed!');
-            window.location.href = '/dashboard';
+        function addToEquation(value, type) {
+            explorationData.equationsCreated++;
+            updateStatsDisplay();
+            
+            const canvas = document.getElementById('equationCanvas');
+            canvas.classList.remove('active');
+            
+            // Clear placeholder if present
+            if (canvas.innerHTML.includes('Build an equation')) {
+                canvas.innerHTML = '';
+            }
+            
+            // Create block element
+            const block = document.createElement('div');
+            block.className = `canvas-block ${type}`;
+            block.textContent = value;
+            block.dataset.value = value;
+            block.dataset.type = type;
+            
+            // Add animation
+            block.style.animation = 'popIn 0.3s ease-out';
+            
+            // Add click to remove
+            block.addEventListener('click', function() {
+                this.style.transform = 'scale(0)';
+                this.style.opacity = '0';
+                setTimeout(() => this.remove(), 300);
+                updateEquationState();
+            });
+            
+            canvas.appendChild(block);
+            
+            // Add to current equation state
+            if (value === '=') {
+                // Special handling for equals
+                currentEquation.hasEquals = true;
+            } else if (!currentEquation.hasEquals) {
+                currentEquation.lhs.push({value, type});
+            } else {
+                currentEquation.rhs.push({value, type});
+            }
+            
+            updateEquationState();
+            logActivity(`Added ${type} block: ${value}`);
         }
         
-        window.addEventListener('load', init);
-        window.addEventListener('beforeunload', saveProgress);
+        function addToSide(value, type, side) {
+            const equation = document.getElementById('equationCanvas');
+            
+            if (equation.innerHTML.includes('Build an equation')) {
+                equation.innerHTML = '';
+            }
+            
+            // Find or create equals
+            if (!document.querySelector('.canvas-block.equals')) {
+                const equals = document.createElement('div');
+                equals.className = 'canvas-block equals';
+                equals.textContent = '=';
+                equals.dataset.value = '=';
+                equals.dataset.type = 'operator';
+                equation.appendChild(equals);
+                currentEquation.hasEquals = true;
+            }
+            
+            // Add to appropriate side
+            const block = document.createElement('div');
+            block.className = `canvas-block ${type}`;
+            block.textContent = value;
+            block.dataset.value = value;
+            block.dataset.type = type;
+            
+            if (side === 'lhs') {
+                equation.insertBefore(block, document.querySelector('.canvas-block.equals'));
+                currentEquation.lhs.push({value, type});
+            } else {
+                equation.appendChild(block);
+                currentEquation.rhs.push({value, type});
+            }
+            
+            block.style.animation = 'popIn 0.3s ease-out';
+            
+            block.addEventListener('click', function() {
+                this.style.transform = 'scale(0)';
+                this.style.opacity = '0';
+                setTimeout(() => this.remove(), 300);
+                
+                // Remove from equation state
+                if (side === 'lhs') {
+                    currentEquation.lhs = currentEquation.lhs.filter(item => 
+                        !(item.value === value && item.type === type));
+                } else {
+                    currentEquation.rhs = currentEquation.rhs.filter(item => 
+                        !(item.value === value && item.type === type));
+                }
+                
+                updateEquationState();
+            });
+            
+            explorationData.equationsCreated++;
+            updateEquationState();
+            logActivity(`Added ${value} to ${side.toUpperCase()}`);
+        }
+        
+        function updateEquationState() {
+            // Calculate if equation is balanced
+            const lhsValue = evaluateSide(currentEquation.lhs);
+            const rhsValue = evaluateSide(currentEquation.rhs);
+            
+            currentEquation.isBalanced = Math.abs(lhsValue - rhsValue) < 0.01 && 
+                                        currentEquation.hasEquals && 
+                                        currentEquation.lhs.length > 0 && 
+                                        currentEquation.rhs.length > 0;
+            
+            // Update visualizer
+            updateBalanceVisualizer(lhsValue, rhsValue);
+            
+            // Update discoveries
+            checkForDiscoveries(lhsValue, rhsValue);
+        }
+        
+        function evaluateSide(side) {
+            // Simplified evaluation for demonstration
+            let value = 0;
+            let lastOp = '+';
+            
+            side.forEach(item => {
+                if (item.type === 'operator') {
+                    lastOp = item.value;
+                } else if (item.type === 'constant') {
+                    const num = parseFloat(item.value);
+                    if (lastOp === '+') value += num;
+                    else if (lastOp === '-') value -= num;
+                    else if (lastOp === '×') value *= num;
+                    else if (lastOp === '÷') value /= num;
+                } else if (item.type === 'variable') {
+                    // Variables have arbitrary weight for visualization
+                    value += 10;
+                }
+            });
+            
+            return value;
+        }
+        
+        function updateBalanceVisualizer(lhsValue, rhsValue) {
+            const beam = document.getElementById('balanceBeam');
+            const leftWeight = document.getElementById('leftWeight');
+            const rightWeight = document.getElementById('rightWeight');
+            
+            // Update values display
+            document.getElementById('leftValue').textContent = lhsValue.toFixed(1);
+            document.getElementById('rightValue').textContent = rhsValue.toFixed(1);
+            
+            // Calculate tilt
+            const diff = rhsValue - lhsValue;
+            const maxTilt = 15; // degrees
+            const tilt = Math.max(-maxTilt, Math.min(maxTilt, diff));
+            
+            // Apply tilt animation
+            beam.style.transform = `translateX(-50%) rotate(${tilt}deg)`;
+            
+            // Animate weights
+            const weightSize = 60 + Math.abs(diff) * 2;
+            leftWeight.style.width = `${weightSize}px`;
+            leftWeight.style.height = `${weightSize}px`;
+            rightWeight.style.width = `${weightSize}px`;
+            rightWeight.style.height = `${weightSize}px`;
+            
+            // Color based on balance
+            if (currentEquation.isBalanced) {
+                leftWeight.style.background = 'var(--success)';
+                rightWeight.style.background = 'var(--success)';
+            } else {
+                leftWeight.style.background = 'var(--accent)';
+                rightWeight.style.background = diff > 0 ? 'var(--success)' : 'var(--error)';
+            }
+        }
+        
+        function transformEquation(transformation) {
+            explorationData.transformations++;
+            updateStatsDisplay();
+            
+            logActivity(`Applied transformation: ${transformation}`);
+            
+            switch(transformation) {
+                case 'mirror':
+                    // Swap lhs and rhs
+                    [currentEquation.lhs, currentEquation.rhs] = [currentEquation.rhs, currentEquation.lhs];
+                    rebuildEquationCanvas();
+                    checkDiscovery('symmetry');
+                    break;
+                    
+                case 'double':
+                    // Multiply both sides by 2
+                    currentEquation.lhs.forEach(item => {
+                        if (item.type === 'constant') {
+                            item.value = (parseFloat(item.value) * 2).toString();
+                        }
+                    });
+                    currentEquation.rhs.forEach(item => {
+                        if (item.type === 'constant') {
+                            item.value = (parseFloat(item.value) * 2).toString();
+                        }
+                    });
+                    rebuildEquationCanvas();
+                    checkDiscovery('scaling');
+                    break;
+                    
+                case 'half':
+                    // Divide both sides by 2
+                    currentEquation.lhs.forEach(item => {
+                        if (item.type === 'constant') {
+                            item.value = (parseFloat(item.value) / 2).toString();
+                        }
+                    });
+                    currentEquation.rhs.forEach(item => {
+                        if (item.type === 'constant') {
+                            item.value = (parseFloat(item.value) / 2).toString();
+                        }
+                    });
+                    rebuildEquationCanvas();
+                    checkDiscovery('scaling');
+                    break;
+                    
+                case 'add5':
+                    // Add 5 to both sides
+                    currentEquation.lhs.push({value: '+', type: 'operator'});
+                    currentEquation.lhs.push({value: '5', type: 'constant'});
+                    currentEquation.rhs.push({value: '+', type: 'operator'});
+                    currentEquation.rhs.push({value: '5', type: 'constant'});
+                    rebuildEquationCanvas();
+                    checkDiscovery('sameOperation');
+                    break;
+                    
+                case 'inverse':
+                    // Replace + with - and × with ÷
+                    currentEquation.lhs.forEach(item => {
+                        if (item.type === 'operator') {
+                            if (item.value === '+') item.value = '-';
+                            else if (item.value === '-') item.value = '+';
+                            else if (item.value === '×') item.value = '÷';
+                            else if (item.value === '÷') item.value = '×';
+                        }
+                    });
+                    currentEquation.rhs.forEach(item => {
+                        if (item.type === 'operator') {
+                            if (item.value === '+') item.value = '-';
+                            else if (item.value === '-') item.value = '+';
+                            else if (item.value === '×') item.value = '÷';
+                            else if (item.value === '÷') item.value = '×';
+                        }
+                    });
+                    rebuildEquationCanvas();
+                    checkDiscovery('inverseOperations');
+                    break;
+                    
+                case 'simplify':
+                    // Remove zeros and ones
+                    currentEquation.lhs = currentEquation.lhs.filter(item => 
+                        !(item.type === 'constant' && (item.value === '0' || item.value === '1')));
+                    currentEquation.rhs = currentEquation.rhs.filter(item => 
+                        !(item.type === 'constant' && (item.value === '0' || item.value === '1')));
+                    rebuildEquationCanvas();
+                    break;
+                    
+                case 'randomize':
+                    // Create random equation
+                    currentEquation = {
+                        lhs: [
+                            {value: (Math.floor(Math.random() * 5) + 2).toString(), type: 'constant'},
+                            {value: Math.random() > 0.5 ? '+' : '-', type: 'operator'},
+                            {value: (Math.floor(Math.random() * 5) + 1).toString(), type: 'constant'}
+                        ],
+                        rhs: [
+                            {value: (Math.floor(Math.random() * 10) + 5).toString(), type: 'constant'}
+                        ],
+                        hasEquals: true
+                    };
+                    rebuildEquationCanvas();
+                    break;
+            }
+            
+            updateEquationState();
+        }
+        
+        function rebuildEquationCanvas() {
+            const canvas = document.getElementById('equationCanvas');
+            canvas.innerHTML = '';
+            
+            // Add LHS
+            currentEquation.lhs.forEach(item => {
+                const block = document.createElement('div');
+                block.className = `canvas-block ${item.type}`;
+                block.textContent = item.value;
+                block.dataset.value = item.value;
+                block.dataset.type = item.type;
+                canvas.appendChild(block);
+            });
+            
+            // Add equals
+            if (currentEquation.hasEquals) {
+                const equals = document.createElement('div');
+                equals.className = 'canvas-block equals';
+                equals.textContent = '=';
+                equals.dataset.value = '=';
+                equals.dataset.type = 'operator';
+                canvas.appendChild(equals);
+            }
+            
+            // Add RHS
+            currentEquation.rhs.forEach(item => {
+                const block = document.createElement('div');
+                block.className = `canvas-block ${item.type}`;
+                block.textContent = item.value;
+                block.dataset.value = item.value;
+                block.dataset.type = item.type;
+                canvas.appendChild(block);
+            });
+            
+            // Add click handlers
+            document.querySelectorAll('.canvas-block').forEach(block => {
+                if (!block.classList.contains('equals')) {
+                    block.addEventListener('click', function() {
+                        const value = this.dataset.value;
+                        const type = this.dataset.type;
+                        const isLhs = Array.from(this.parentNode.children).indexOf(this) < 
+                                    Array.from(this.parentNode.children).indexOf(document.querySelector('.canvas-block.equals'));
+                        
+                        this.style.transform = 'scale(0)';
+                        this.style.opacity = '0';
+                        setTimeout(() => this.remove(), 300);
+                        
+                        if (isLhs) {
+                            currentEquation.lhs = currentEquation.lhs.filter(item => 
+                                !(item.value === value && item.type === type));
+                        } else {
+                            currentEquation.rhs = currentEquation.rhs.filter(item => 
+                                !(item.value === value && item.type === type));
+                        }
+                        
+                        updateEquationState();
+                    });
+                }
+            });
+        }
+        
+        function checkForDiscoveries(lhsValue, rhsValue) {
+            // Discovery 1: Same operation on both sides maintains balance
+            if (currentEquation.isBalanced && explorationData.transformations > 2) {
+                checkDiscovery('sameOperation');
+            }
+            
+            // Discovery 2: Inverse operations
+            if (explorationData.transformations > 5) {
+                checkDiscovery('inverseOperations');
+            }
+            
+            // Update discoveries count
+            const discoveryCount = Object.values(discoveries).filter(d => d).length;
+            if (discoveryCount > explorationData.discoveries) {
+                explorationData.discoveries = discoveryCount;
+                document.getElementById('discoveries').textContent = discoveryCount;
+                
+                // Celebrate new discovery
+                if (discoveryCount > 0) {
+                    createParticles(document.getElementById('discoveriesList'), 10, true);
+                }
+            }
+        }
+        
+        function checkDiscovery(discoveryKey) {
+            if (!discoveries[discoveryKey]) {
+                discoveries[discoveryKey] = true;
+                
+                // Update UI
+                const discoveryItem = document.getElementById(`discovery${{
+                    sameOperation: '1',
+                    inverseOperations: '4',
+                    symmetry: '2',
+                    scaling: '3'
+                }[discoveryKey]}`);
+                
+                if (discoveryItem) {
+                    discoveryItem.classList.add('revealed');
+                    discoveryItem.querySelector('.discovery-icon').innerHTML = '✓';
+                    discoveryItem.style.background = 'rgba(0, 184, 148, 0.1)';
+                    
+                    // Animate
+                    discoveryItem.style.transform = 'scale(1.05)';
+                    setTimeout(() => discoveryItem.style.transform = 'scale(1)', 300);
+                    
+                    logActivity(`Discovered: ${discoveryItem.textContent}`);
+                }
+            }
+        }
+        
+        function startBalanceMonitor() {
+            setInterval(() => {
+                if (currentEquation.isBalanced) {
+                    const now = Date.now();
+                    const timeSinceLastCheck = (now - explorationData.lastBalanceCheck) / 1000;
+                    explorationData.balancedTime += timeSinceLastCheck;
+                    explorationData.lastBalanceCheck = now;
+                }
+            }, 1000);
+        }
+        
+        function updateStatsDisplay() {
+            document.getElementById('statEquations').textContent = explorationData.equationsCreated;
+            document.getElementById('statTransformations').textContent = explorationData.transformations;
+        }
+        
+        function logActivity(message) {
+            const log = document.getElementById('activityLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            const now = new Date();
+            const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            entry.innerHTML = `${message} <span class="log-time">${timeString}</span>`;
+            
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+            
+            // Keep log manageable
+            if (log.children.length > 20) {
+                log.removeChild(log.firstChild);
+            }
+        }
+        
+        function resetExploration() {
+            currentEquation = { lhs: [], rhs: [], hasEquals: false };
+            document.getElementById('equationCanvas').innerHTML = 
+                '<div style="color: #666; font-style: italic;">Build an equation by dragging blocks...</div>';
+            
+            // Reset balance visualizer
+            document.getElementById('balanceBeam').style.transform = 'translateX(-50%) rotate(0deg)';
+            document.getElementById('leftValue').textContent = '0';
+            document.getElementById('rightValue').textContent = '0';
+            
+            logActivity("Reset exploration");
+        }
+        
+        function exportExplorationData() {
+            const data = {
+                ...explorationData,
+                discoveries: Object.keys(discoveries).filter(k => discoveries[k]),
+                sessionDuration: Date.now() - explorationData.startTime
+            };
+            
+            // Create download
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `equation-exploration-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            logActivity("Exported exploration data");
+        }
+        
+        function createFloatingSymbols() {
+            const symbols = ['+', '−', '×', '÷', '=', 'x', 'y'];
+            const container = document.body;
+            
+            for (let i = 0; i < 15; i++) {
+                const symbol = document.createElement('div');
+                symbol.className = 'floating-symbol';
+                symbol.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                symbol.style.left = Math.random() * 100 + 'vw';
+                symbol.style.animationDelay = Math.random() * 20 + 's';
+                symbol.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                symbol.style.color = `rgba(0, 122, 204, ${Math.random() * 0.1 + 0.05})`;
+                container.appendChild(symbol);
+            }
+        }
+        
+        function createParticles(element, count, isCelebration = false) {
+            const rect = element.getBoundingClientRect();
+            
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                if (isCelebration) {
+                    particle.textContent = ['🌟', '✨', '💡', '🎯', '🔍'][Math.floor(Math.random() * 5)];
+                    particle.style.fontSize = '20px';
+                    particle.style.background = 'transparent';
+                } else {
+                    particle.style.background = `rgba(0, 122, 204, 0.7)`;
+                }
+                
+                particle.style.left = (rect.left + Math.random() * rect.width) + 'px';
+                particle.style.top = (rect.top + Math.random() * rect.height) + 'px';
+                
+                document.body.appendChild(particle);
+                
+                // Animate
+                setTimeout(() => {
+                    particle.style.transition = 'all 1s';
+                    particle.style.left = (rect.left + Math.random() * rect.width) + 'px';
+                    particle.style.top = (rect.top - 100) + 'px';
+                    particle.style.opacity = '0';
+                    
+                    setTimeout(() => particle.remove(), 1000);
+                }, i * 50);
+            }
+        }
     </script>
 </body>
 </html>

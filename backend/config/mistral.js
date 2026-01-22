@@ -11,7 +11,7 @@
  * - Response validation
  * 
  * @module config/mistral
- */
+ 
 
 const axios = require('axios');
 const logger = require('../utils/logger');
@@ -109,7 +109,7 @@ let windowStart = Date.now();
 /**
  * Check if rate limit exceeded
  * @returns {boolean} True if rate limit exceeded
- */
+ 
 const isRateLimitExceeded = () => {
   const now = Date.now();
   
@@ -124,7 +124,7 @@ const isRateLimitExceeded = () => {
 
 /**
  * Increment request count
- */
+ 
 const incrementRequestCount = () => {
   requestCount++;
 };
@@ -132,7 +132,7 @@ const incrementRequestCount = () => {
 /**
  * Get remaining requests in current window
  * @returns {number} Remaining requests
- */
+ 
 const getRemainingRequests = () => {
   const now = Date.now();
   
@@ -153,7 +153,7 @@ const getRemainingRequests = () => {
  * @param {Array} messages - Array of message objects
  * @param {Object} options - Additional options
  * @returns {Promise<Object>} API response
- */
+ 
 const chatCompletion = async (messages, options = {}) => {
   try {
     // Check rate limit
@@ -210,13 +210,7 @@ const chatCompletion = async (messages, options = {}) => {
   }
 };
 
-/**
- * Retry Request with Exponential Backoff
- * 
- * @param {Function} requestFn - Function that makes the request
- * @param {number} retries - Number of retries remaining
- * @returns {Promise<Object>} Response
- */
+
 const retryRequest = async (requestFn, retries = MISTRAL_CONFIG.maxRetries) => {
   try {
     return await requestFn();
@@ -232,11 +226,7 @@ const retryRequest = async (requestFn, retries = MISTRAL_CONFIG.maxRetries) => {
   }
 };
 
-/**
- * Check if error is retryable
- * @param {Error} error - Error object
- * @returns {boolean} True if retryable
- */
+
 const isRetryableError = (error) => {
   if (!error.response) return true; // Network errors are retryable
   
@@ -250,13 +240,7 @@ const isRetryableError = (error) => {
 // HELPER FUNCTIONS
 // ============================================================================
 
-/**
- * Generate Challenge Questions
- * Specialized function for challenge generation
- * 
- * @param {Object} params - Challenge parameters
- * @returns {Promise<Object>} Generated challenge
- */
+
 const generateChallenge = async (params) => {
   const {
     simulationType,
@@ -329,13 +313,7 @@ Generate high-quality educational content now:
   }
 };
 
-/**
- * Evaluate Student Response
- * Specialized function for answer evaluation
- * 
- * @param {Object} params - Evaluation parameters
- * @returns {Promise<Object>} Evaluation result
- */
+
 const evaluateResponse = async (params) => {
   const {
     question,
@@ -401,13 +379,7 @@ Be encouraging but honest. Focus on learning, not just correctness.
   }
 };
 
-/**
- * Generate Feedback
- * Generate personalized feedback for student
- * 
- * @param {Object} params - Feedback parameters
- * @returns {Promise<string>} Generated feedback
- */
+
 const generateFeedback = async (params) => {
   const {
     studentName,
@@ -453,11 +425,7 @@ Keep it friendly, positive, and under 150 words.
 // VALIDATION FUNCTIONS
 // ============================================================================
 
-/**
- * Validate Challenge Structure
- * @param {Object} challenge - Challenge object
- * @returns {boolean} True if valid
- */
+
 const validateChallenge = (challenge) => {
   if (!challenge || typeof challenge !== 'object') return false;
   
@@ -480,11 +448,7 @@ const validateChallenge = (challenge) => {
   return true;
 };
 
-/**
- * Validate Evaluation Structure
- * @param {Object} evaluation - Evaluation object
- * @returns {boolean} True if valid
- */
+
 const validateEvaluation = (evaluation) => {
   if (!evaluation || typeof evaluation !== 'object') return false;
   
@@ -508,10 +472,7 @@ let totalRequests = 0;
 let totalErrors = 0;
 let totalTokensUsed = 0;
 
-/**
- * Get API Statistics
- * @returns {Object} Usage statistics
- */
+
 const getStatistics = () => {
   return {
     totalRequests,
@@ -523,9 +484,7 @@ const getStatistics = () => {
   };
 };
 
-/**
- * Reset Statistics
- */
+
 const resetStatistics = () => {
   totalRequests = 0;
   totalErrors = 0;
@@ -581,4 +540,52 @@ module.exports = {
   
   // Axios instance (for advanced use)
   mistralAxios
+};
+
+*/
+
+// config/mistral.config.js
+/**
+ * MISTRAL AI CONFIGURATION
+ * Configuration only - NO LOGIC
+ * All AI operations should use services/mistral.service.js
+ * 
+ * @module config/mistral.config
+ */
+
+// config/mistral.config.js
+/**
+ * MISTRAL AI CONFIGURATION
+ * Configuration only - NO LOGIC
+ * All AI operations should use services/mistral.service.js
+ * 
+ * @module config/mistral.config
+ */
+
+module.exports = {
+  // API Configuration
+  apiKey: process.env.MISTRAL_API_KEY,
+  baseURL: process.env.MISTRAL_API_URL || 'https://api.mistral.ai/v1',
+  
+  // Model Configuration
+  model: process.env.MISTRAL_MODEL || 'mistral-large-2411',
+  fallbackModel: process.env.MISTRAL_FALLBACK_MODEL || 'mistral-small-latest',
+  
+  // Generation Parameters
+  temperature: parseFloat(process.env.MISTRAL_TEMPERATURE) || 0.7,
+  maxTokens: parseInt(process.env.MISTRAL_MAX_TOKENS) || 2000,
+  topP: parseFloat(process.env.MISTRAL_TOP_P) || 1.0,
+  
+  // Request Settings
+  timeout: parseInt(process.env.MISTRAL_TIMEOUT) || 60000,
+  maxRetries: parseInt(process.env.MISTRAL_MAX_RETRIES) || 3,
+  retryDelay: parseInt(process.env.MISTRAL_RETRY_DELAY) || 1000,
+  
+  // Rate Limiting
+  rateLimit: parseInt(process.env.MISTRAL_RATE_LIMIT) || 60,
+  rateLimitWindow: parseInt(process.env.MISTRAL_RATE_LIMIT_WINDOW) || 60000,
+  
+  // Cost Tracking
+  costPerPromptToken: 0.004, // $0.004 per 1K tokens
+  costPerCompletionToken: 0.012 // $0.012 per 1K tokens
 };

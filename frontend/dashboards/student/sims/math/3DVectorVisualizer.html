@@ -3,12 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Vector Visualizer - NEP Workbench</title>
+    <title>3D Vector Visualizer - Math Lab</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
+        :root { 
+            --bg: #1e1e1e; 
+            --panel: #252526; 
+            --accent: #007acc; 
+            --vectorA: #007acc; 
+            --vectorB: #27ae60; 
+            --vectorC: #e74c3c; 
+            --vectorD: #9b59b6;
+        }
         body { background: var(--bg); color: #fff; overflow-x: hidden; }
-        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 1800px; margin: 0 auto; padding: 20px; }
         .header { 
             background: #333; 
             border-radius: 8px; 
@@ -37,10 +45,10 @@
         .btn:hover { background: #005a9e; }
         .main { 
             display: grid; 
-            grid-template-columns: 1fr 380px; 
+            grid-template-columns: 1fr 420px; 
             gap: 20px; 
         }
-        @media (max-width: 1024px) {
+        @media (max-width: 1200px) {
             .main { grid-template-columns: 1fr; }
         }
         .panel { 
@@ -53,7 +61,7 @@
         .canvas-area { 
             background: #000; 
             border-radius: 6px; 
-            height: 550px; 
+            height: 600px; 
             border: 1px solid #464647; 
             position: relative;
             overflow: hidden;
@@ -62,7 +70,9 @@
             width: 100%; 
             height: 100%; 
             display: block;
+            cursor: grab;
         }
+        canvas:active { cursor: grabbing; }
         input[type="range"] { 
             width: 100%; 
             height: 8px; 
@@ -78,120 +88,294 @@
             cursor: pointer;
             -webkit-appearance: none;
         }
-        .vector-input { 
+        .vector-control { 
             display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 10px; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 8px; 
             margin: 10px 0; 
         }
-        .vector-input input { 
+        .vector-control div { display: flex; flex-direction: column; }
+        .vector-control input { 
             background: #2d2d30; 
             border: 2px solid #464647; 
-            padding: 10px; 
+            padding: 8px; 
             border-radius: 6px; 
             color: #fff; 
             text-align: center;
             width: 100%;
+            font-size: 12px;
         }
-        .vector-input input:focus {
+        .vector-control input:focus {
             border-color: var(--accent);
             outline: none;
         }
+        .vector-control label { 
+            font-size: 10px; 
+            color: #888; 
+            display: block; 
+            margin-bottom: 3px;
+            text-align: center;
+        }
         .operation-btn { 
-            padding: 12px; 
+            padding: 10px; 
             background: #2d2d30; 
             border: 2px solid #464647; 
             border-radius: 6px; 
             cursor: pointer; 
-            margin: 8px 0; 
+            margin: 6px 0; 
             text-align: center; 
             transition: all 0.3s;
             overflow: hidden;
+            font-size: 13px;
         }
         .operation-btn:hover { 
             border-color: var(--accent); 
             background: #3a3a3c; 
             transform: translateY(-2px);
         }
-        .operation-btn:active {
-            transform: translateY(0);
-        }
+        .operation-btn:active { transform: translateY(0); }
         .header-right {
             display: flex;
             align-items: center;
             gap: 15px;
             flex-wrap: wrap;
         }
-        .stats-grid {
+        .properties-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 20px;
+            gap: 10px;
+            margin-top: 15px;
         }
-        .stat-box {
+        .property-box {
             background: #2d2d30;
-            padding: 15px;
+            padding: 12px;
             border-radius: 6px;
-            text-align: center;
             overflow: hidden;
         }
+        .property-box h4 {
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .property-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #464647;
+            font-size: 12px;
+        }
+        .property-item:last-child { border-bottom: none; }
+        .property-item .value { color: #fff; font-weight: 600; font-family: 'Courier New', monospace; }
         .control-buttons {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
             margin-top: 15px;
         }
         .info-box {
             background: rgba(0, 122, 204, 0.1);
             border: 1px solid var(--accent);
             border-radius: 6px;
-            padding: 15px;
-            margin-top: 20px;
-            font-size: 12px;
-            line-height: 1.8;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 11px;
+            line-height: 1.6;
             overflow: hidden;
         }
-        .properties-box {
+        .view-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 15px 0;
+        }
+        .view-btn {
+            padding: 10px;
+            background: #2d2d30;
+            border: 2px solid #464647;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        .view-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .view-btn:hover {
+            border-color: var(--accent);
+        }
+        .vector-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 10px 0;
+            padding-right: 5px;
+        }
+        .vector-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: #2d2d30;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            border-left: 4px solid var(--vectorA);
+        }
+        .vector-item:nth-child(2) { border-left-color: var(--vectorB); }
+        .vector-item:nth-child(3) { border-left-color: var(--vectorC); }
+        .vector-item:nth-child(4) { border-left-color: var(--vectorD); }
+        .equation-box {
+            background: #2d2d30;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.8;
+            border-left: 4px solid var(--accent);
+        }
+        .component-view {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .component-box {
+            background: #2d2d30;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .component-box h5 {
+            color: #888;
+            margin-bottom: 5px;
+            font-size: 11px;
+        }
+        .component-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        .angle-control-panel {
             background: #2d2d30;
             padding: 15px;
             border-radius: 6px;
-            margin-bottom: 20px;
+            margin: 15px 0;
         }
-        .property-item {
+        .angle-control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .angle-slider-container {
+            flex: 1;
+        }
+        .angle-value-display {
+            width: 60px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        .vector-edit-container {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .vector-edit-header {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #464647;
+            align-items: center;
+            margin-bottom: 10px;
         }
-        .property-item:last-child {
-            border-bottom: none;
+        .vector-select {
+            background: #464647;
+            color: white;
+            border: 1px solid #666;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
         }
         @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .header-right {
-                width: 100%;
-                justify-content: space-between;
-            }
-            .control-buttons {
-                grid-template-columns: repeat(3, 1fr);
-            }
-            .vector-input {
-                grid-template-columns: repeat(3, 1fr);
-            }
+            .header { flex-direction: column; align-items: flex-start; }
+            .header-right { width: 100%; justify-content: space-between; }
+            .control-buttons { grid-template-columns: repeat(2, 1fr); }
+            .vector-control { grid-template-columns: repeat(3, 1fr); }
+            .view-selector { grid-template-columns: repeat(2, 1fr); }
+            .properties-grid { grid-template-columns: 1fr; }
+            .component-view { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 480px) {
-            .control-buttons {
-                grid-template-columns: 1fr;
-            }
-            .vector-input {
-                grid-template-columns: 1fr;
-            }
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
+            .control-buttons { grid-template-columns: 1fr; }
+            .vector-control { grid-template-columns: 1fr; }
+            .view-selector { grid-template-columns: 1fr; }
+            .component-view { grid-template-columns: 1fr; }
+        }
+        .user-info {
+            background: #2d2d30;
+            padding: 10px 15px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .method-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 15px 0;
+            padding: 10px;
+            background: #2d2d30;
+            border-radius: 6px;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #464647;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background-color: var(--accent);
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        .edit-vector-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
         }
     </style>
 </head>
@@ -200,34 +384,63 @@
         <div class="header">
             <div>
                 <h1><i class="fas fa-cube"></i> 3D Vector Visualizer</h1>
-                <p style="color: #888; margin-top: 5px;">Math Lab • Grade 11-12</p>
+                <p style="color: #888; margin-top: 5px;">Multiple Vectors | Head-to-Tail | Parallelogram Method</p>
             </div>
-                <div class="header-right">
-                    <span style="display: flex; align-items: center; gap: 5px;">
-                        <i class="fas fa-clock"></i> 
-                        <span id="timer">00:00</span>
-                    </span>
-                    
-                    <!-- ✅ NEW: Challenge Button -->
-                    <button class="btn" style="background: #9b59b6;" onclick="openChallenge()">
-                        <i class="fas fa-brain"></i> Challenge Me
-                    </button>
-                    
-                    <button class="btn" onclick="saveProgress()">
-                        <i class="fas fa-save"></i> Save
-                    </button>
-                    <button class="btn" style="background: #00b894;" onclick="complete()">
-                        <i class="fas fa-check"></i> Complete
-                    </button>
+            <div class="header-right">
+                <div class="user-info">
+                    <i class="fas fa-user"></i>
+                    <div>
+                        <div id="userName">Student</div>
+                        <div style="font-size: 11px; color: #888;" id="userClass">Grade 11</div>
+                    </div>
                 </div>
+            </div>
         </div>
         
         <div class="main">
             <div class="panel">
-                <h2 style="margin-bottom: 15px;">3D Vector Space</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2><i class="fas fa-chart-line"></i> 3D Vector Space</h2>
+                    <span style="font-size: 12px; color: #888;">Click & drag to rotate | Scroll to zoom</span>
+                </div>
                 
                 <div class="canvas-area">
                     <canvas id="canvas"></canvas>
+                </div>
+                
+                <div class="view-selector">
+                    <div class="view-btn active" onclick="setViewMode('3d')" id="view3d">
+                        <i class="fas fa-cube"></i> 3D View
+                    </div>
+                    <div class="view-btn" onclick="setViewMode('headTail')" id="viewHeadTail">
+                        <i class="fas fa-project-diagram"></i> Head-to-Tail
+                    </div>
+                    <div class="view-btn" onclick="setViewMode('parallelogram')" id="viewParallelogram">
+                        <i class="fas fa-shapes"></i> Parallelogram
+                    </div>
+                </div>
+                
+                <div class="method-toggle">
+                    <span>Show Component View</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="componentToggle" checked onchange="toggleComponentView()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="control-buttons">
+                    <button class="btn" onclick="resetView()">
+                        <i class="fas fa-sync"></i> Reset
+                    </button>
+                    <button class="btn" onclick="toggleGrid()" id="gridBtn">
+                        <i class="fas fa-border-all"></i> Grid
+                    </button>
+                    <button class="btn" onclick="toggleAxes()" id="axesBtn">
+                        <i class="fas fa-arrows-alt"></i> Axes
+                    </button>
+                    <button class="btn" onclick="addVector()">
+                        <i class="fas fa-plus"></i> Add Vector
+                    </button>
                 </div>
                 
                 <div style="margin-top: 15px;">
@@ -241,103 +454,131 @@
                     </label>
                     <input type="range" id="rotYSlider" min="0" max="360" value="45" oninput="updateRotation()">
                 </div>
-                
-                <div class="control-buttons">
-                    <button class="btn" onclick="resetView()">
-                        <i class="fas fa-sync"></i> Reset
-                    </button>
-                    <button class="btn" onclick="toggleGrid()">
-                        <i class="fas fa-border-all"></i> Grid
-                    </button>
-                    <button class="btn" onclick="toggleAxes()">
-                        <i class="fas fa-arrows-alt"></i> Axes
-                    </button>
-                </div>
             </div>
             
             <div class="panel">
                 <h2 style="margin-bottom: 15px;">
-                    <i class="fas fa-vector-square"></i> Vectors
+                    <i class="fas fa-vector-square"></i> Vector Controls
                 </h2>
                 
-                <h3 style="margin: 15px 0 10px; color: var(--accent);">Vector A</h3>
-                <div class="vector-input">
-                    <div>
-                        <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">X</label>
-                        <input type="number" id="ax" value="3" oninput="updateVectors()">
+                <div class="vector-edit-container">
+                    <div class="vector-edit-header">
+                        <h3 style="margin: 0; font-size: 14px;">
+                            <i class="fas fa-edit"></i> Edit Selected Vector
+                        </h3>
+                        <select id="vectorSelect" class="vector-select" onchange="selectVectorForEdit()">
+                            <option value="1">Vector A</option>
+                            <option value="2">Vector B</option>
+                        </select>
                     </div>
-                    <div>
-                        <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">Y</label>
-                        <input type="number" id="ay" value="2" oninput="updateVectors()">
-                    </div>
-                    <div>
-                        <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">Z</label>
-                        <input type="number" id="az" value="1" oninput="updateVectors()">
-                    </div>
-                </div>
-                
-                <h3 style="margin: 15px 0 10px; color: #27ae60;">Vector B</h3>
-                <div class="vector-input">
-                    <div>
-                        <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">X</label>
-                        <input type="number" id="bx" value="1" oninput="updateVectors()">
-                    </div>
-                    <div>
-                        <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">Y</label>
-                        <input type="number" id="by" value="3" oninput="updateVectors()">
-                    </div>
-                    <div>
-                        <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">Z</label>
-                        <input type="number" id="bz" value="2" oninput="updateVectors()">
+                    
+                    <div id="vectorEditForm">
+                        <!-- Vector edit form will be inserted here -->
                     </div>
                 </div>
                 
-                <h3 style="margin: 20px 0 10px;">Operations</h3>
+                <div class="angle-control-panel">
+                    <h3 style="margin: 0 0 10px 0; font-size: 14px;">
+                        <i class="fas fa-angle-double-right"></i> Fix Angle Between Vectors
+                    </h3>
+                    
+                    <div class="angle-control-row">
+                        <span style="font-size: 12px; flex-shrink: 0;">Vector A ↔ Vector B:</span>
+                        <div class="angle-slider-container">
+                            <input type="range" id="angleSlider" min="0" max="180" value="35" oninput="updateFixedAngle()">
+                        </div>
+                        <div class="angle-value-display" id="angleValue">34.7°</div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button class="btn" onclick="lockAngle()" style="flex: 1;" id="lockAngleBtn">
+                            <i class="fas fa-lock"></i> Lock Angle
+                        </button>
+                        <button class="btn" onclick="unlockAngle()" style="flex: 1; background: #e74c3c;">
+                            <i class="fas fa-unlock"></i> Unlock
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="vector-list" id="vectorList">
+                    <!-- Dynamic vector items will be added here -->
+                </div>
+                
+                <button class="btn" onclick="addVector()" style="width: 100%; margin-bottom: 15px;">
+                    <i class="fas fa-plus-circle"></i> Add New Vector
+                </button>
+                
+                <div class="component-view" id="componentView">
+                    <!-- Component boxes will be inserted here -->
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">
+                    <i class="fas fa-calculator"></i> Operations
+                </h3>
                 <div class="operation-btn" onclick="performOperation('add')">
-                    <strong>A + B</strong> = <span id="resultAdd">(4, 5, 3)</span>
+                    <strong>Vector Sum (ΣV)</strong> - Head-to-Tail Method
+                </div>
+                <div class="operation-btn" onclick="performOperation('parallelogram')">
+                    <strong>Parallelogram Law</strong> - A + B = Resultant
                 </div>
                 <div class="operation-btn" onclick="performOperation('subtract')">
-                    <strong>A - B</strong> = <span id="resultSub">(2, -1, -1)</span>
+                    <strong>Vector Difference</strong> - A - B
                 </div>
                 <div class="operation-btn" onclick="performOperation('dot')">
-                    <strong>A · B</strong> = <span id="resultDot">11</span>
+                    <strong>Dot Product</strong> - A · B
                 </div>
                 <div class="operation-btn" onclick="performOperation('cross')">
-                    <strong>A × B</strong> = <span id="resultCross">(1, -5, 7)</span>
+                    <strong>Cross Product</strong> - A × B
+                </div>
+                <div class="operation-btn" onclick="performOperation('magnitude')">
+                    <strong>Magnitudes</strong> - |V| for all vectors
                 </div>
                 
-                <h3 style="margin: 20px 0 10px;">Properties</h3>
-                <div class="properties-box">
-                    <div class="property-item">
-                        <span>|A|:</span>
-                        <strong id="magA">3.74</strong>
+                <div class="equation-box" id="equationBox">
+                    <strong style="color: var(--accent);">Live Equations:</strong><br>
+                    <span id="equationText">Select an operation to see equations</span>
+                </div>
+                
+                <div class="properties-grid">
+                    <div class="property-box">
+                        <h4><i class="fas fa-ruler"></i> Vector Properties</h4>
+                        <div class="property-item">
+                            <span>Total Vectors:</span>
+                            <span class="value" id="totalVectors">2</span>
+                        </div>
+                        <div class="property-item">
+                            <span>Resultant Magnitude:</span>
+                            <span class="value" id="resultantMag">0.00</span>
+                        </div>
+                        <div class="property-item">
+                            <span>Total Length:</span>
+                            <span class="value" id="totalLength">0.00</span>
+                        </div>
                     </div>
-                    <div class="property-item">
-                        <span>|B|:</span>
-                        <strong id="magB">3.74</strong>
-                    </div>
-                    <div class="property-item">
-                        <span>Angle:</span>
-                        <strong id="angle">34.7°</strong>
+                    
+                    <div class="property-box">
+                        <h4><i class="fas fa-angle-double-right"></i> Angles</h4>
+                        <div class="property-item">
+                            <span>A-B Angle:</span>
+                            <span class="value" id="angleAB">0.0°</span>
+                        </div>
+                        <div class="property-item">
+                            <span>Dot Product:</span>
+                            <span class="value" id="dotProduct">0.00</span>
+                        </div>
+                        <div class="property-item">
+                            <span>Cross Mag:</span>
+                            <span class="value" id="crossMag">0.00</span>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="info-box">
-                    <strong style="color: var(--accent);">Vector Operations:</strong><br>
-                    |v| = √(x² + y² + z²)<br>
-                    A · B = AxBx + AyBy + AzBz<br>
-                    A × B = perpendicular vector
-                </div>
-                
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statVectors">0</div>
-                        <div style="font-size: 12px; color: #888;">Vectors</div>
-                    </div>
-                    <div class="stat-box">
-                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statOps">0</div>
-                        <div style="font-size: 12px; color: #888;">Operations</div>
-                    </div>
+                    <strong style="color: var(--accent);">Methods:</strong><br>
+                    • <strong>Head-to-Tail:</strong> Place vectors end-to-end<br>
+                    • <strong>Parallelogram:</strong> Complete parallelogram from vectors<br>
+                    • <strong>Components:</strong> V = Vxî + Vyĵ + Vzˆk<br>
+                    • <strong>Resultant:</strong> R = ΣV = √(ΣVx² + ΣVy² + ΣVz²)
                 </div>
             </div>
         </div>
@@ -346,79 +587,110 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         // ============================================================================
-        // EVENT TRACKING SETUP
+        // INITIALIZATION
         // ============================================================================
-        
-        const API_BASE_URL = 'http://localhost:3000/api';
-        let eventId = null;
-        let sessionStart = null;
-        let authToken = null;
-        let studentId = null;
         
         // Canvas and visualization
         let canvas, ctx;
         let rotX = 30, rotY = 45;
-        let vectorA = {x: 3, y: 2, z: 1};
-        let vectorB = {x: 1, y: 3, z: 2};
-        let showGrid = true, showAxes = true;
+        let scale = 1;
+        let isDragging = false;
+        let lastX = 0, lastY = 0;
         
-        // Track unique configurations
-        const triedConfigurations = new Set();
-        const triedOperations = new Set();
-        
-        // Interaction data structure
-        let interactionData = {
-            // Universal fields
-            actions_count: 0,
-            time_seconds: 0,
-            unique_tools_used: 0,
-            correct_attempts: 0,
-            incorrect_attempts: 0,
-            retry_count: 0,
-            unique_parameters_tried: 0,
-            total_parameter_space: 0,  // Calculated below
-            tool_usage: {},
-            
-            // Specific to 3D Vector Visualizer
-            vectors_created: 0,
-            operations_performed: 0,
-            operation_types: [],
-            rotations: 0,
-            dot_products: 0,
-            cross_products: 0,
-            vector_additions: 0,
-            vector_subtractions: 0,
-            grid_toggles: 0,
-            axes_toggles: 0,
-            view_resets: 0,
-            max_magnitude_explored: 0,
-            unique_vector_pairs: 0
+        // View modes
+        const VIEW_MODES = {
+            '3d': '3d',
+            'headTail': 'headTail',
+            'parallelogram': 'parallelogram'
         };
+        let currentView = '3d';
+        let showComponents = true;
+        
+        // Vectors array (supports multiple vectors)
+        let vectors = [
+            { id: 1, x: 3, y: 2, z: 1, label: 'A', color: '#007acc', active: true },
+            { id: 2, x: 1, y: 3, z: 2, label: 'B', color: '#27ae60', active: true }
+        ];
+        
+        let nextVectorId = 3;
+        let selectedVectorId = 1; // Default to Vector A
+        let angleLocked = false;
+        let fixedAngle = 35; // Default angle in degrees
+        
+        // User data
+        let userName = 'Student';
+        let userClass = 'Grade 11';
         
         // ============================================================================
-        // INITIALIZATION
+        // AUTHENTICATION & USER DATA
         // ============================================================================
         
-        async function init() {
+        function loadUserData() {
+            try {
+                const authToken = localStorage.getItem('authToken');
+                if (authToken) {
+                    // Decode JWT token to get user info
+                    const payload = JSON.parse(atob(authToken.split('.')[1]));
+                    userName = payload.name || payload.username || 'Student';
+                    userClass = payload.grade || payload.class || 'Grade 11';
+                    
+                    // Update UI
+                    document.getElementById('userName').textContent = userName;
+                    document.getElementById('userClass').textContent = userClass;
+                    
+                    // Load saved vectors
+                    const savedVectors = localStorage.getItem('vectorVisualizer_vectors');
+                    if (savedVectors) {
+                        const loadedVectors = JSON.parse(savedVectors);
+                        vectors = loadedVectors;
+                        nextVectorId = Math.max(...vectors.map(v => v.id)) + 1;
+                        updateVectorList();
+                        updateVectorSelect();
+                        updateComponentView();
+                        calculateAllProperties();
+                    }
+                }
+            } catch (error) {
+                console.warn('Could not load user data:', error);
+            }
+        }
+        
+        function saveUserPreferences() {
+            try {
+                localStorage.setItem('vectorVisualizer_vectors', JSON.stringify(vectors));
+            } catch (error) {
+                console.warn('Could not save preferences:', error);
+            }
+        }
+        
+        // ============================================================================
+        // INITIALIZATION FUNCTION
+        // ============================================================================
+        
+        function init() {
+            // Load user data
+            loadUserData();
+            
             // Setup canvas
             canvas = document.getElementById('canvas');
             ctx = canvas.getContext('2d');
             resizeCanvas();
             
-            // Calculate parameter space
-            calculateParameterSpace();
+            // Add event listeners for interactivity
+            canvas.addEventListener('mousedown', startDrag);
+            canvas.addEventListener('mousemove', drag);
+            canvas.addEventListener('mouseup', endDrag);
+            canvas.addEventListener('mouseleave', endDrag);
+            canvas.addEventListener('wheel', handleZoom);
             
-            // Initialize event tracking
-            await initEventTracking();
-            
-            // Start auto-save
-            startAutoSave();
-            
-            // Start timer
-            startTimer();
+            // Initialize UI
+            updateVectorList();
+            updateVectorSelect();
+            updateVectorEditForm();
+            updateComponentView();
+            calculateAllProperties();
             
             // Initial draw
-            updateVectors();
             draw();
             
             // Add resize handler
@@ -429,178 +701,754 @@
             const container = canvas.parentElement;
             canvas.width = container.clientWidth;
             canvas.height = container.clientHeight;
-            console.log('Canvas resized:', canvas.width, 'x', canvas.height);
         }
-        
-        function calculateParameterSpace() {
-            // Vector A: x, y, z each can be -10 to 10 = 21 values each
-            // Vector B: x, y, z each can be -10 to 10 = 21 values each
-            // Rotation X: 0 to 360 = 361 values
-            // Rotation Y: 0 to 360 = 361 values
-            // Operations: 4 types (add, sub, dot, cross)
-            // Total: 21^6 × 361^2 × 4 = Very large
-            // Simplified estimate: 21 × 21 × 21 × 21 × 21 × 21 × 4 = 371,694,084
-            // More practical: Assume typical use of 20 vector combinations × 10 rotations × 4 ops
-            interactionData.total_parameter_space = 800;
-        }
-        
-        // ============================================================================
-        // EVENT TRACKING INITIALIZATION
-        // ============================================================================
-        
-        async function initEventTracking() {
-            // ✅ ALWAYS set sessionStart first (timer will work regardless of auth)
-            sessionStart = Date.now();
-            
-            try {
-                // Get auth token
-                authToken = localStorage.getItem('authToken');
-                
-                if (!authToken) {
-                    console.warn('No auth token found. Event tracking disabled. Timer still running.');
-                    return;
-                }
-                
-                // Extract student ID from JWT
-                const payload = JSON.parse(atob(authToken.split('.')[1]));
-                studentId = payload.userId;
-                
-                // Create event in database
-                const res = await fetch(`${API_BASE_URL}/student/event`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        studentId: studentId,
-                        toolId: 'three-d-vector-visualizer',
-                        toolType: 'LAB',
-                        interactionData: interactionData
-                    })
-                });
-                
-                if (!res.ok) {
-                    throw new Error(`Failed to create event: ${res.status}`);
-                }
-                
-                const data = await res.json();
-                eventId = data.data._id;
-                // sessionStart already set above
-                
-                console.log('✅ Event tracking initialized:', eventId);
-                
-            } catch (error) {
-                console.error('Error initializing event tracking:', error);
-                console.log('⏱️ Timer continues to run in offline mode');
-            }
-        }
-        
-        // ============================================================================
-        // AUTO-SAVE PROGRESS
-        // ============================================================================
-        
-        function startAutoSave() {
-            // Auto-save every 30 seconds
-            setInterval(saveProgress, 30000);
-            
-            // Save on page unload
-            window.addEventListener('beforeunload', saveProgress);
-        }
-        
-        async function saveProgress() {
-            if (!eventId || !authToken) return;
-            
-            try {
-                // Update time
-                interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
-                
-                // Convert Set to Array for JSON
-                const dataToSend = {
-                    ...interactionData,
-                    operation_types: Array.from(triedOperations)
-                };
-                
-                // Send update to backend
-                const res = await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        interactionData: dataToSend
-                    })
-                });
-                
-                if (res.ok) {
-                    console.log('Progress saved');
-                }
-                
-            } catch (error) {
-                console.error('Error saving progress:', error);
-            }
-        }
-        
-        // ============================================================================
-        // COMPLETION
-        // ============================================================================
-        
-        async function complete() {
-            // Final save
-            await saveProgress();
-            
-            if (!eventId || !authToken) {
-                alert('Session completed!');
-                window.location.href = '/dashboard.html';
-                return;
-            }
-            
-            try {
-                // Mark event as completed
-                const res = await fetch(`${API_BASE_URL}/student/event/${eventId}/complete`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (res.ok) {
-                    alert('Session completed successfully!');
-                    window.location.href = '/dashboard.html';
-                }
-                
-            } catch (error) {
-                console.error('Error completing session:', error);
-                alert('Session completed!');
-                window.location.href = '/dashboard.html';
-            }
-        }
-        
-        // ============================================================================
-        // TIMER
-        // ============================================================================
-        
-        function startTimer() {
-            setInterval(() => {
-                if (!sessionStart) return;
-                const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
-                const minutes = Math.floor(elapsed / 60);
-                const seconds = elapsed % 60;
-                document.getElementById('timer').textContent = 
-                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }, 1000);
-        }
-        
-        // ============================================================================
-        // INTERACTION TRACKING
-        // ============================================================================
         
         function handleResize() {
             resizeCanvas();
             draw();
         }
+        
+        // ============================================================================
+        // INTERACTIVE CANVAS CONTROLS
+        // ============================================================================
+        
+        function startDrag(e) {
+            isDragging = true;
+            lastX = e.clientX;
+            lastY = e.clientY;
+            canvas.style.cursor = 'grabbing';
+        }
+        
+        function drag(e) {
+            if (!isDragging) return;
+            
+            const deltaX = e.clientX - lastX;
+            const deltaY = e.clientY - lastY;
+            
+            // Update rotation based on drag
+            rotY += deltaX * 0.5;
+            rotX += deltaY * 0.5;
+            
+            // Keep angles within 0-360
+            rotX = (rotX + 360) % 360;
+            rotY = (rotY + 360) % 360;
+            
+            // Update sliders and display
+            document.getElementById('rotXSlider').value = rotX;
+            document.getElementById('rotYSlider').value = rotY;
+            document.getElementById('rotXDisplay').textContent = Math.round(rotX);
+            document.getElementById('rotYDisplay').textContent = Math.round(rotY);
+            
+            lastX = e.clientX;
+            lastY = e.clientY;
+            
+            draw();
+        }
+        
+        function endDrag() {
+            isDragging = false;
+            canvas.style.cursor = 'grab';
+        }
+        
+        function handleZoom(e) {
+            e.preventDefault();
+            const zoomFactor = 0.1;
+            scale += e.deltaY > 0 ? -zoomFactor : zoomFactor;
+            scale = Math.max(0.5, Math.min(scale, 3));
+            draw();
+        }
+        
+        // ============================================================================
+        // VECTOR MANAGEMENT
+        // ============================================================================
+        
+        function updateVectorList() {
+            const vectorList = document.getElementById('vectorList');
+            vectorList.innerHTML = '';
+            
+            vectors.forEach((vector, index) => {
+                const vectorItem = document.createElement('div');
+                vectorItem.className = 'vector-item';
+                
+                vectorItem.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: ${vector.color};"></div>
+                        <div>
+                            <div style="font-weight: bold; color: ${vector.color};">${vector.label}</div>
+                            <div style="font-size: 10px; color: #888;">(${vector.x.toFixed(1)}, ${vector.y.toFixed(1)}, ${vector.z.toFixed(1)})</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button onclick="selectAndEditVector(${vector.id})" class="edit-vector-btn">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button onclick="toggleVector(${vector.id})" style="background: ${vector.active ? '#27ae60' : '#e74c3c'}; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                            ${vector.active ? 'ON' : 'OFF'}
+                        </button>
+                        <button onclick="removeVector(${vector.id})" style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                vectorList.appendChild(vectorItem);
+            });
+            
+            document.getElementById('totalVectors').textContent = vectors.filter(v => v.active).length;
+        }
+        
+        function updateVectorSelect() {
+            const vectorSelect = document.getElementById('vectorSelect');
+            vectorSelect.innerHTML = '';
+            
+            vectors.forEach(vector => {
+                const option = document.createElement('option');
+                option.value = vector.id;
+                option.textContent = `Vector ${vector.label}`;
+                option.selected = vector.id === selectedVectorId;
+                vectorSelect.appendChild(option);
+            });
+        }
+        
+        function updateVectorEditForm() {
+            const vector = vectors.find(v => v.id === selectedVectorId);
+            if (!vector) return;
+            
+            const formContainer = document.getElementById('vectorEditForm');
+            formContainer.innerHTML = `
+                <div class="vector-control">
+                    <div>
+                        <label>Label</label>
+                        <input type="text" id="editLabel" value="${vector.label}" maxlength="2" oninput="updateSelectedVector()">
+                    </div>
+                    <div>
+                        <label>X</label>
+                        <input type="number" id="editX" value="${vector.x}" step="0.1" oninput="updateSelectedVector()">
+                    </div>
+                    <div>
+                        <label>Y</label>
+                        <input type="number" id="editY" value="${vector.y}" step="0.1" oninput="updateSelectedVector()">
+                    </div>
+                    <div>
+                        <label>Z</label>
+                        <input type="number" id="editZ" value="${vector.z}" step="0.1" oninput="updateSelectedVector()">
+                    </div>
+                    <div>
+                        <label>Color</label>
+                        <input type="color" id="editColor" value="${vector.color}" oninput="updateSelectedVector()" style="height: 32px; padding: 2px;">
+                    </div>
+                </div>
+                <div style="margin-top: 10px; display: flex; gap: 10px;">
+                    <button onclick="normalizeSelectedVector()" class="btn" style="flex: 1; background: #9b59b6;">
+                        <i class="fas fa-ruler"></i> Normalize
+                    </button>
+                    <button onclick="randomizeSelectedVector()" class="btn" style="flex: 1; background: #f39c12;">
+                        <i class="fas fa-random"></i> Random
+                    </button>
+                </div>
+            `;
+        }
+        
+        function selectVectorForEdit() {
+            selectedVectorId = parseInt(document.getElementById('vectorSelect').value);
+            updateVectorEditForm();
+        }
+        
+        function selectAndEditVector(id) {
+            selectedVectorId = id;
+            document.getElementById('vectorSelect').value = id;
+            updateVectorEditForm();
+        }
+        
+        function updateSelectedVector() {
+            const vector = vectors.find(v => v.id === selectedVectorId);
+            if (!vector) return;
+            
+            // Update vector properties
+            vector.label = document.getElementById('editLabel').value || vector.label;
+            vector.x = parseFloat(document.getElementById('editX').value) || 0;
+            vector.y = parseFloat(document.getElementById('editY').value) || 0;
+            vector.z = parseFloat(document.getElementById('editZ').value) || 0;
+            vector.color = document.getElementById('editColor').value || vector.color;
+            
+            // If angle is locked, adjust vectors to maintain fixed angle
+            if (angleLocked && vectors.length >= 2) {
+                maintainFixedAngle();
+            }
+            
+            // Update UI
+            updateVectorList();
+            updateComponentView();
+            calculateAllProperties();
+            draw();
+            saveUserPreferences();
+        }
+        
+        function addVector() {
+            const colors = ['#007acc', '#27ae60', '#e74c3c', '#9b59b6', '#f39c12', '#1abc9c', '#d35400'];
+            const labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+            
+            // Find next available label
+            const usedLabels = vectors.map(v => v.label);
+            let newLabel = '';
+            for (const label of labels) {
+                if (!usedLabels.includes(label)) {
+                    newLabel = label;
+                    break;
+                }
+            }
+            if (!newLabel) newLabel = 'V' + nextVectorId;
+            
+            const newVector = {
+                id: nextVectorId++,
+                x: Math.random() * 4 - 2,
+                y: Math.random() * 4 - 2,
+                z: Math.random() * 4 - 2,
+                label: newLabel,
+                color: colors[(nextVectorId - 1) % colors.length],
+                active: true
+            };
+            
+            vectors.push(newVector);
+            selectedVectorId = newVector.id;
+            
+            updateVectorList();
+            updateVectorSelect();
+            updateVectorEditForm();
+            updateComponentView();
+            calculateAllProperties();
+            draw();
+            saveUserPreferences();
+        }
+        
+        function removeVector(id) {
+            if (vectors.length <= 1) {
+                alert('You need at least one vector!');
+                return;
+            }
+            
+            vectors = vectors.filter(v => v.id !== id);
+            
+            // Update selected vector if we removed it
+            if (selectedVectorId === id) {
+                selectedVectorId = vectors[0].id;
+            }
+            
+            updateVectorList();
+            updateVectorSelect();
+            updateVectorEditForm();
+            updateComponentView();
+            calculateAllProperties();
+            draw();
+            saveUserPreferences();
+        }
+        
+        function toggleVector(id) {
+            const vector = vectors.find(v => v.id === id);
+            if (vector) {
+                vector.active = !vector.active;
+                updateVectorList();
+                calculateAllProperties();
+                draw();
+                saveUserPreferences();
+            }
+        }
+        
+        function normalizeSelectedVector() {
+            const vector = vectors.find(v => v.id === selectedVectorId);
+            if (!vector) return;
+            
+            const mag = Math.sqrt(vector.x*vector.x + vector.y*vector.y + vector.z*vector.z);
+            if (mag > 0) {
+                vector.x = vector.x / mag;
+                vector.y = vector.y / mag;
+                vector.z = vector.z / mag;
+                
+                updateVectorEditForm();
+                updateVectorList();
+                calculateAllProperties();
+                draw();
+                saveUserPreferences();
+            }
+        }
+        
+        function randomizeSelectedVector() {
+            const vector = vectors.find(v => v.id === selectedVectorId);
+            if (!vector) return;
+            
+            vector.x = (Math.random() * 4 - 2).toFixed(1);
+            vector.y = (Math.random() * 4 - 2).toFixed(1);
+            vector.z = (Math.random() * 4 - 2).toFixed(1);
+            
+            updateVectorEditForm();
+            updateVectorList();
+            calculateAllProperties();
+            draw();
+            saveUserPreferences();
+        }
+        
+        function updateComponentView() {
+            if (!showComponents) {
+                document.getElementById('componentView').innerHTML = '';
+                return;
+            }
+            
+            const componentView = document.getElementById('componentView');
+            componentView.innerHTML = '';
+            
+            const activeVectors = vectors.filter(v => v.active);
+            
+            if (activeVectors.length === 0) return;
+            
+            // Calculate sums
+            const sumX = activeVectors.reduce((sum, v) => sum + v.x, 0);
+            const sumY = activeVectors.reduce((sum, v) => sum + v.y, 0);
+            const sumZ = activeVectors.reduce((sum, v) => sum + v.z, 0);
+            
+            // Component boxes
+            const components = [
+                { label: 'ΣX', value: sumX.toFixed(2), color: '#e74c3c' },
+                { label: 'ΣY', value: sumY.toFixed(2), color: '#27ae60' },
+                { label: 'ΣZ', value: sumZ.toFixed(2), color: '#3498db' },
+                { label: '|ΣV|', value: Math.sqrt(sumX*sumX + sumY*sumY + sumZ*sumZ).toFixed(2), color: '#9b59b6' }
+            ];
+            
+            components.forEach(comp => {
+                const box = document.createElement('div');
+                box.className = 'component-box';
+                box.innerHTML = `
+                    <h5>${comp.label}</h5>
+                    <div class="component-value" style="color: ${comp.color};">${comp.value}</div>
+                `;
+                componentView.appendChild(box);
+            });
+        }
+        
+        // ============================================================================
+        // ANGLE CONTROL FUNCTIONS (FIXED)
+        // ============================================================================
+        
+        function updateFixedAngle() {
+            fixedAngle = parseFloat(document.getElementById('angleSlider').value);
+            document.getElementById('angleValue').textContent = fixedAngle.toFixed(1) + '°';
+            
+            if (angleLocked && vectors.length >= 2) {
+                maintainFixedAngle();
+            }
+        }
+        
+        function lockAngle() {
+            if (vectors.length < 2) {
+                alert('Need at least 2 vectors to lock angle!');
+                return;
+            }
+            
+            angleLocked = true;
+            const btn = document.getElementById('lockAngleBtn');
+            btn.innerHTML = '<i class="fas fa-lock"></i> Angle Locked';
+            btn.style.background = '#27ae60';
+            
+            // Get current angle and update slider
+            const activeVectors = vectors.filter(v => v.active);
+            if (activeVectors.length >= 2) {
+                const currentAngle = getAngleBetween(activeVectors[0], activeVectors[1]);
+                fixedAngle = currentAngle;
+                document.getElementById('angleSlider').value = fixedAngle.toFixed(1);
+                document.getElementById('angleValue').textContent = fixedAngle.toFixed(1) + '°';
+            }
+            
+            maintainFixedAngle();
+        }
+        
+        function unlockAngle() {
+            angleLocked = false;
+            const btn = document.getElementById('lockAngleBtn');
+            btn.innerHTML = '<i class="fas fa-lock"></i> Lock Angle';
+            btn.style.background = '';
+        }
+        
+        function maintainFixedAngle() {
+            if (!angleLocked || vectors.length < 2) return;
+            
+            const activeVectors = vectors.filter(v => v.active);
+            if (activeVectors.length < 2) return;
+            
+            // Get first two active vectors
+            const A = activeVectors[0];
+            const B = activeVectors[1];
+            
+            const currentAngle = getAngleBetween(A, B);
+            const targetAngle = fixedAngle * Math.PI / 180; // Convert to radians
+            
+            if (Math.abs(currentAngle - fixedAngle) > 0.1) {
+                // Calculate the scaling factor to achieve target angle
+                const magA = Math.sqrt(A.x*A.x + A.y*A.y + A.z*A.z);
+                const magB = Math.sqrt(B.x*B.x + B.y*B.y + B.z*B.z);
+                
+                if (magA > 0 && magB > 0) {
+                    // Calculate current dot product
+                    const dot = A.x*B.x + A.y*B.y + A.z*B.z;
+                    
+                    // Calculate target dot product for desired angle
+                    const targetDot = magA * magB * Math.cos(targetAngle);
+                    
+                    // Scale vector B to maintain magnitude but adjust angle
+                    const scaleFactor = targetDot / dot;
+                    
+                    if (!isNaN(scaleFactor) && Math.abs(scaleFactor) < 100) {
+                        B.x *= scaleFactor;
+                        B.y *= scaleFactor;
+                        B.z *= scaleFactor;
+                        
+                        // Update the vector in the array
+                        const vectorB = vectors.find(v => v.id === B.id);
+                        if (vectorB) {
+                            vectorB.x = B.x;
+                            vectorB.y = B.y;
+                            vectorB.z = B.z;
+                            
+                            // Update edit form if this vector is selected
+                            if (selectedVectorId === B.id) {
+                                updateVectorEditForm();
+                            }
+                        }
+                        
+                        updateVectorList();
+                        calculateAllProperties();
+                        draw();
+                        saveUserPreferences();
+                    }
+                }
+            }
+        }
+        
+        // ============================================================================
+        // VIEW MODE CONTROLS
+        // ============================================================================
+        
+        function setViewMode(mode) {
+            currentView = mode;
+            
+            // Update button states
+            document.getElementById('view3d').classList.remove('active');
+            document.getElementById('viewHeadTail').classList.remove('active');
+            document.getElementById('viewParallelogram').classList.remove('active');
+            
+            document.getElementById(`view${mode.charAt(0).toUpperCase() + mode.slice(1)}`).classList.add('active');
+            
+            // Update equation display
+            updateEquations();
+            draw();
+        }
+        
+        function toggleComponentView() {
+            showComponents = document.getElementById('componentToggle').checked;
+            updateComponentView();
+            draw();
+        }
+        
+        // ============================================================================
+        // VECTOR OPERATIONS
+        // ============================================================================
+        
+        function performOperation(operation) {
+            const activeVectors = vectors.filter(v => v.active);
+            
+            if (activeVectors.length === 0) {
+                showEquation('No active vectors selected');
+                return;
+            }
+            
+            switch(operation) {
+                case 'add':
+                    performVectorSum();
+                    break;
+                case 'parallelogram':
+                    performParallelogramMethod();
+                    break;
+                case 'subtract':
+                    performVectorSubtraction();
+                    break;
+                case 'dot':
+                    performDotProduct();
+                    break;
+                case 'cross':
+                    performCrossProduct();
+                    break;
+                case 'magnitude':
+                    performMagnitudeCalculation();
+                    break;
+            }
+            
+            draw();
+        }
+        
+        function performVectorSum() {
+            const activeVectors = vectors.filter(v => v.active);
+            
+            if (activeVectors.length < 2) {
+                showEquation('Need at least 2 vectors for head-to-tail addition');
+                return;
+            }
+            
+            let equation = '<strong>Head-to-Tail Method:</strong><br>';
+            let sumX = 0, sumY = 0, sumZ = 0;
+            
+            activeVectors.forEach((v, i) => {
+                equation += `${i > 0 ? '+' : ''}${v.label}(${v.x.toFixed(1)}, ${v.y.toFixed(1)}, ${v.z.toFixed(1)}) `;
+                sumX += v.x;
+                sumY += v.y;
+                sumZ += v.z;
+            });
+            
+            const magnitude = Math.sqrt(sumX*sumX + sumY*sumY + sumZ*sumZ);
+            
+            equation += `<br>= Resultant = (${sumX.toFixed(2)}, ${sumY.toFixed(2)}, ${sumZ.toFixed(2)})`;
+            equation += `<br>|R| = √(${sumX.toFixed(2)}² + ${sumY.toFixed(2)}² + ${sumZ.toFixed(2)}²) = ${magnitude.toFixed(2)}`;
+            
+            showEquation(equation);
+        }
+        
+        function performParallelogramMethod() {
+            const activeVectors = vectors.filter(v => v.active);
+            
+            if (activeVectors.length < 2) {
+                showEquation('Need at least 2 vectors for parallelogram method');
+                return;
+            }
+            
+            // Use first two active vectors
+            const A = activeVectors[0];
+            const B = activeVectors[1];
+            
+            const sumX = A.x + B.x;
+            const sumY = A.y + B.y;
+            const sumZ = A.z + B.z;
+            
+            const magnitude = Math.sqrt(sumX*sumX + sumY*sumY + sumZ*sumZ);
+            const angle = getAngleBetween(A, B);
+            
+            let equation = '<strong>Parallelogram Law:</strong><br>';
+            equation += `R = A + B = (${A.x.toFixed(1)}, ${A.y.toFixed(1)}, ${A.z.toFixed(1)}) + (${B.x.toFixed(1)}, ${B.y.toFixed(1)}, ${B.z.toFixed(1)})<br>`;
+            equation += `R = (${sumX.toFixed(2)}, ${sumY.toFixed(2)}, ${sumZ.toFixed(2)})<br>`;
+            equation += `|R| = √(${sumX.toFixed(2)}² + ${sumY.toFixed(2)}² + ${sumZ.toFixed(2)}²) = ${magnitude.toFixed(2)}<br>`;
+            equation += `Angle between A and B: θ = ${angle.toFixed(1)}°`;
+            
+            showEquation(equation);
+        }
+        
+        function performVectorSubtraction() {
+            const activeVectors = vectors.filter(v => v.active);
+            
+            if (activeVectors.length < 2) {
+                showEquation('Need at least 2 vectors for subtraction');
+                return;
+            }
+            
+            const A = activeVectors[0];
+            const B = activeVectors[1];
+            
+            const diffX = A.x - B.x;
+            const diffY = A.y - B.y;
+            const diffZ = A.z - B.z;
+            
+            const magnitude = Math.sqrt(diffX*diffX + diffY*diffY + diffZ*diffZ);
+            
+            let equation = '<strong>Vector Subtraction:</strong><br>';
+            equation += `A - B = (${A.x.toFixed(1)}, ${A.y.toFixed(1)}, ${A.z.toFixed(1)}) - (${B.x.toFixed(1)}, ${B.y.toFixed(1)}, ${B.z.toFixed(1)})<br>`;
+            equation += `= (${diffX.toFixed(2)}, ${diffY.toFixed(2)}, ${diffZ.toFixed(2)})<br>`;
+            equation += `|A - B| = √(${diffX.toFixed(2)}² + ${diffY.toFixed(2)}² + ${diffZ.toFixed(2)}²) = ${magnitude.toFixed(2)}`;
+            
+            showEquation(equation);
+        }
+        
+        function performDotProduct() {
+            const activeVectors = vectors.filter(v => v.active);
+            
+            if (activeVectors.length < 2) {
+                showEquation('Need at least 2 vectors for dot product');
+                return;
+            }
+            
+            const A = activeVectors[0];
+            const B = activeVectors[1];
+            
+            const dot = A.x*B.x + A.y*B.y + A.z*B.z;
+            const angle = getAngleBetween(A, B);
+            
+            let equation = '<strong>Dot Product:</strong><br>';
+            equation += `A·B = (${A.x.toFixed(1)}×${B.x.toFixed(1)}) + (${A.y.toFixed(1)}×${B.y.toFixed(1)}) + (${A.z.toFixed(1)}×${B.z.toFixed(1)})<br>`;
+            equation += `= ${(A.x*B.x).toFixed(2)} + ${(A.y*B.y).toFixed(2)} + ${(A.z*B.z).toFixed(2)}<br>`;
+            equation += `= ${dot.toFixed(2)}<br>`;
+            equation += `cosθ = (A·B)/(|A||B|) = ${dot.toFixed(2)}/(${magnitude(A).toFixed(2)}×${magnitude(B).toFixed(2)})<br>`;
+            equation += `θ = cos⁻¹(${(dot/(magnitude(A)*magnitude(B))).toFixed(3)}) = ${angle.toFixed(1)}°`;
+            
+            showEquation(equation);
+        }
+        
+        function performCrossProduct() {
+            const activeVectors = vectors.filter(v => v.active);
+            
+            if (activeVectors.length < 2) {
+                showEquation('Need at least 2 vectors for cross product');
+                return;
+            }
+            
+            const A = activeVectors[0];
+            const B = activeVectors[1];
+            
+            const crossX = A.y*B.z - A.z*B.y;
+            const crossY = A.z*B.x - A.x*B.z;
+            const crossZ = A.x*B.y - A.y*B.x;
+            
+            const crossMag = Math.sqrt(crossX*crossX + crossY*crossY + crossZ*crossZ);
+            const area = crossMag;
+            
+            let equation = '<strong>Cross Product:</strong><br>';
+            equation += `A×B = (${A.y}×${B.z} - ${A.z}×${B.y}, ${A.z}×${B.x} - ${A.x}×${B.z}, ${A.x}×${B.y} - ${A.y}×${B.x})<br>`;
+            equation += `= (${crossX.toFixed(2)}, ${crossY.toFixed(2)}, ${crossZ.toFixed(2)})<br>`;
+            equation += `|A×B| = √(${crossX.toFixed(2)}² + ${crossY.toFixed(2)}² + ${crossZ.toFixed(2)}²) = ${crossMag.toFixed(2)}<br>`;
+            equation += `Area of parallelogram = |A×B| = ${area.toFixed(2)}`;
+            
+            showEquation(equation);
+        }
+        
+        function performMagnitudeCalculation() {
+            const activeVectors = vectors.filter(v => v.active);
+            
+            let equation = '<strong>Vector Magnitudes:</strong><br>';
+            let totalLength = 0;
+            
+            activeVectors.forEach(v => {
+                const mag = magnitude(v);
+                totalLength += mag;
+                equation += `|${v.label}| = √(${v.x.toFixed(1)}² + ${v.y.toFixed(1)}² + ${v.z.toFixed(1)}²) = ${mag.toFixed(2)}<br>`;
+            });
+            
+            equation += `<br><strong>Total Length:</strong> ${totalLength.toFixed(2)}`;
+            
+            showEquation(equation);
+        }
+        
+        function showEquation(text) {
+            document.getElementById('equationText').innerHTML = text;
+        }
+        
+        function updateEquations() {
+            const activeVectors = vectors.filter(v => v.active);
+            
+            if (activeVectors.length === 0) {
+                showEquation('Add vectors to see equations');
+                return;
+            }
+            
+            let equation = '';
+            
+            switch(currentView) {
+                case 'headTail':
+                    equation = '<strong>Head-to-Tail Method:</strong><br>';
+                    activeVectors.forEach((v, i) => {
+                        equation += `${i > 0 ? '+' : ''}${v.label} `;
+                    });
+                    equation += `= R<br>Place vectors end-to-end`;
+                    break;
+                    
+                case 'parallelogram':
+                    if (activeVectors.length >= 2) {
+                        equation = '<strong>Parallelogram Law:</strong><br>';
+                        equation += `A + B = R<br>`;
+                        equation += `Complete parallelogram from vectors A and B`;
+                    }
+                    break;
+                    
+                default:
+                    equation = '<strong>3D Vector Space:</strong><br>';
+                    activeVectors.forEach(v => {
+                        equation += `${v.label} = ${v.x.toFixed(1)}î + ${v.y.toFixed(1)}ĵ + ${v.z.toFixed(1)}k̂<br>`;
+                    });
+                    break;
+            }
+            
+            showEquation(equation);
+        }
+        
+        // ============================================================================
+        // VECTOR MATH FUNCTIONS
+        // ============================================================================
+        
+        function magnitude(v) {
+            return Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+        }
+        
+        function getAngleBetween(A, B) {
+            const magA = magnitude(A);
+            const magB = magnitude(B);
+            const dot = A.x*B.x + A.y*B.y + A.z*B.z;
+            
+            if (magA === 0 || magB === 0) return 0;
+            
+            const cosTheta = dot / (magA * magB);
+            const clamped = Math.max(-1, Math.min(1, cosTheta));
+            return Math.acos(clamped) * 180 / Math.PI;
+        }
+        
+        function calculateAllProperties() {
+            const activeVectors = vectors.filter(v => v.active);
+            
+            if (activeVectors.length === 0) {
+                document.getElementById('resultantMag').textContent = '0.00';
+                document.getElementById('totalLength').textContent = '0.00';
+                document.getElementById('angleAB').textContent = '0.0°';
+                document.getElementById('dotProduct').textContent = '0.00';
+                document.getElementById('crossMag').textContent = '0.00';
+                return;
+            }
+            
+            // Calculate sums
+            const sumX = activeVectors.reduce((sum, v) => sum + v.x, 0);
+            const sumY = activeVectors.reduce((sum, v) => sum + v.y, 0);
+            const sumZ = activeVectors.reduce((sum, v) => sum + v.z, 0);
+            
+            // Resultant magnitude
+            const resultantMag = Math.sqrt(sumX*sumX + sumY*sumY + sumZ*sumZ);
+            document.getElementById('resultantMag').textContent = resultantMag.toFixed(2);
+            
+            // Total length
+            const totalLength = activeVectors.reduce((sum, v) => sum + magnitude(v), 0);
+            document.getElementById('totalLength').textContent = totalLength.toFixed(2);
+            
+            // Angle between first two vectors
+            if (activeVectors.length >= 2) {
+                const angle = getAngleBetween(activeVectors[0], activeVectors[1]);
+                document.getElementById('angleAB').textContent = angle.toFixed(1) + '°';
+                
+                // Dot product
+                const dot = activeVectors[0].x*activeVectors[1].x + 
+                           activeVectors[0].y*activeVectors[1].y + 
+                           activeVectors[0].z*activeVectors[1].z;
+                document.getElementById('dotProduct').textContent = dot.toFixed(2);
+                
+                // Cross product magnitude
+                const A = activeVectors[0];
+                const B = activeVectors[1];
+                const crossX = A.y*B.z - A.z*B.y;
+                const crossY = A.z*B.x - A.x*B.z;
+                const crossZ = A.x*B.y - A.y*B.x;
+                const crossMag = Math.sqrt(crossX*crossX + crossY*crossY + crossZ*crossZ);
+                document.getElementById('crossMag').textContent = crossMag.toFixed(2);
+            } else {
+                document.getElementById('angleAB').textContent = '0.0°';
+                document.getElementById('dotProduct').textContent = '0.00';
+                document.getElementById('crossMag').textContent = '0.00';
+            }
+            
+            updateComponentView();
+            updateEquations();
+        }
+        
+        // ============================================================================
+        // VIEW CONTROL FUNCTIONS
+        // ============================================================================
         
         function updateRotation() {
             rotX = parseFloat(document.getElementById('rotXSlider').value);
@@ -609,192 +1457,35 @@
             document.getElementById('rotXDisplay').textContent = Math.round(rotX);
             document.getElementById('rotYDisplay').textContent = Math.round(rotY);
             
-            // Track interaction
-            interactionData.actions_count++;
-            interactionData.rotations++;
-            
-            if (!interactionData.tool_usage['rotation']) {
-                interactionData.tool_usage['rotation'] = 0;
-                interactionData.unique_tools_used++;
-            }
-            interactionData.tool_usage['rotation']++;
-            
             draw();
-        }
-        
-        function updateVectors() {
-            vectorA.x = parseFloat(document.getElementById('ax').value) || 0;
-            vectorA.y = parseFloat(document.getElementById('ay').value) || 0;
-            vectorA.z = parseFloat(document.getElementById('az').value) || 0;
-            
-            vectorB.x = parseFloat(document.getElementById('bx').value) || 0;
-            vectorB.y = parseFloat(document.getElementById('by').value) || 0;
-            vectorB.z = parseFloat(document.getElementById('bz').value) || 0;
-            
-            // Track interaction
-            interactionData.actions_count++;
-            interactionData.vectors_created++;
-            
-            if (!interactionData.tool_usage['vector_input']) {
-                interactionData.tool_usage['vector_input'] = 0;
-                interactionData.unique_tools_used++;
-            }
-            interactionData.tool_usage['vector_input']++;
-            
-            // Track unique configurations
-            const config = JSON.stringify({
-                a: vectorA,
-                b: vectorB
-            });
-            
-            if (!triedConfigurations.has(config)) {
-                triedConfigurations.add(config);
-                interactionData.unique_parameters_tried = triedConfigurations.size;
-                interactionData.unique_vector_pairs++;
-            }
-            
-            // Track max magnitude
-            const magA = Math.sqrt(vectorA.x**2 + vectorA.y**2 + vectorA.z**2);
-            const magB = Math.sqrt(vectorB.x**2 + vectorB.y**2 + vectorB.z**2);
-            const maxMag = Math.max(magA, magB);
-            
-            if (maxMag > interactionData.max_magnitude_explored) {
-                interactionData.max_magnitude_explored = Math.round(maxMag * 100) / 100;
-            }
-            
-            calculateOperations();
-            draw();
-            updateStats();
-        }
-        
-        function calculateOperations() {
-            // Addition
-            const add = {
-                x: vectorA.x + vectorB.x,
-                y: vectorA.y + vectorB.y,
-                z: vectorA.z + vectorB.z
-            };
-            document.getElementById('resultAdd').textContent = 
-                `(${add.x.toFixed(1)}, ${add.y.toFixed(1)}, ${add.z.toFixed(1)})`;
-            
-            // Subtraction
-            const sub = {
-                x: vectorA.x - vectorB.x,
-                y: vectorA.y - vectorB.y,
-                z: vectorA.z - vectorB.z
-            };
-            document.getElementById('resultSub').textContent = 
-                `(${sub.x.toFixed(1)}, ${sub.y.toFixed(1)}, ${sub.z.toFixed(1)})`;
-            
-            // Dot product
-            const dot = vectorA.x * vectorB.x + vectorA.y * vectorB.y + vectorA.z * vectorB.z;
-            document.getElementById('resultDot').textContent = dot.toFixed(2);
-            
-            // Cross product
-            const cross = {
-                x: vectorA.y * vectorB.z - vectorA.z * vectorB.y,
-                y: vectorA.z * vectorB.x - vectorA.x * vectorB.z,
-                z: vectorA.x * vectorB.y - vectorA.y * vectorB.x
-            };
-            document.getElementById('resultCross').textContent = 
-                `(${cross.x.toFixed(1)}, ${cross.y.toFixed(1)}, ${cross.z.toFixed(1)})`;
-            
-            // Magnitudes
-            const magA = Math.sqrt(vectorA.x**2 + vectorA.y**2 + vectorA.z**2);
-            const magB = Math.sqrt(vectorB.x**2 + vectorB.y**2 + vectorB.z**2);
-            document.getElementById('magA').textContent = magA.toFixed(2);
-            document.getElementById('magB').textContent = magB.toFixed(2);
-            
-            // Angle
-            const angle = magA && magB ? Math.acos(dot / (magA * magB)) * 180 / Math.PI : 0;
-            document.getElementById('angle').textContent = angle.toFixed(1) + '°';
-        }
-        
-        function performOperation(op) {
-            // Track operation
-            interactionData.operations_performed++;
-            interactionData.actions_count++;
-            triedOperations.add(op);
-            
-            // Track specific operation type
-            if (op === 'add') {
-                interactionData.vector_additions++;
-            } else if (op === 'subtract') {
-                interactionData.vector_subtractions++;
-            } else if (op === 'dot') {
-                interactionData.dot_products++;
-            } else if (op === 'cross') {
-                interactionData.cross_products++;
-            }
-            
-            if (!interactionData.tool_usage[op]) {
-                interactionData.tool_usage[op] = 0;
-                interactionData.unique_tools_used++;
-            }
-            interactionData.tool_usage[op]++;
-            
-            // Visual feedback
-            const btn = event.currentTarget;
-            btn.style.background = 'var(--accent)';
-            btn.style.borderColor = 'var(--accent)';
-            setTimeout(() => {
-                btn.style.background = '#2d2d30';
-                btn.style.borderColor = '#464647';
-            }, 300);
-            
-            updateStats();
         }
         
         function resetView() {
             rotX = 30;
             rotY = 45;
-            document.getElementById('rotXSlider').value = 30;
-            document.getElementById('rotYSlider').value = 45;
+            scale = 1;
+            
+            document.getElementById('rotXSlider').value = rotX;
+            document.getElementById('rotYSlider').value = rotY;
             document.getElementById('rotXDisplay').textContent = '30';
             document.getElementById('rotYDisplay').textContent = '45';
-            
-            // Track interaction
-            interactionData.actions_count++;
-            interactionData.view_resets++;
-            
-            if (!interactionData.tool_usage['reset_view']) {
-                interactionData.tool_usage['reset_view'] = 0;
-                interactionData.unique_tools_used++;
-            }
-            interactionData.tool_usage['reset_view']++;
             
             draw();
         }
         
         function toggleGrid() {
-            showGrid = !showGrid;
-            
-            // Track interaction
-            interactionData.actions_count++;
-            interactionData.grid_toggles++;
-            
-            if (!interactionData.tool_usage['toggle_grid']) {
-                interactionData.tool_usage['toggle_grid'] = 0;
-                interactionData.unique_tools_used++;
-            }
-            interactionData.tool_usage['toggle_grid']++;
-            
+            const showGrid = localStorage.getItem('showGrid') !== 'false';
+            localStorage.setItem('showGrid', !showGrid);
+            const btn = document.getElementById('gridBtn');
+            btn.innerHTML = !showGrid ? '<i class="fas fa-border-all"></i> Grid On' : '<i class="fas fa-border-all"></i> Grid Off';
             draw();
         }
         
         function toggleAxes() {
-            showAxes = !showAxes;
-            
-            // Track interaction
-            interactionData.actions_count++;
-            interactionData.axes_toggles++;
-            
-            if (!interactionData.tool_usage['toggle_axes']) {
-                interactionData.tool_usage['toggle_axes'] = 0;
-                interactionData.unique_tools_used++;
-            }
-            interactionData.tool_usage['toggle_axes']++;
-            
+            const showAxes = localStorage.getItem('showAxes') !== 'false';
+            localStorage.setItem('showAxes', !showAxes);
+            const btn = document.getElementById('axesBtn');
+            btn.innerHTML = !showAxes ? '<i class="fas fa-arrows-alt"></i> Axes On' : '<i class="fas fa-arrows-alt"></i> Axes Off';
             draw();
         }
         
@@ -807,21 +1498,166 @@
             const height = canvas.height;
             const centerX = width / 2;
             const centerY = height / 2;
-            const scale = Math.min(width, height) / 10;
+            const baseScale = Math.min(width, height) / 12 * scale;
             
             // Clear canvas
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, width, height);
             
-            // Draw grid
-            if (showGrid) drawGrid(centerX, centerY, scale);
+            // Get active vectors
+            const activeVectors = vectors.filter(v => v.active);
             
-            // Draw axes
-            if (showAxes) drawAxes(centerX, centerY, scale);
+            // Draw based on view mode
+            switch(currentView) {
+                case 'headTail':
+                    drawHeadToTail(activeVectors, centerX, centerY, baseScale);
+                    break;
+                case 'parallelogram':
+                    drawParallelogram(activeVectors, centerX, centerY, baseScale);
+                    break;
+                default:
+                    draw3DView(activeVectors, centerX, centerY, baseScale);
+                    break;
+            }
             
-            // Draw vectors
-            drawVector(vectorA, centerX, centerY, scale, '#007acc', 'A');
-            drawVector(vectorB, centerX, centerY, scale, '#27ae60', 'B');
+            // Draw grid and axes
+            const showGrid = localStorage.getItem('showGrid') !== 'false';
+            const showAxes = localStorage.getItem('showAxes') !== 'false';
+            
+            if (showGrid) drawGrid(centerX, centerY, baseScale);
+            if (showAxes) drawAxes(centerX, centerY, baseScale);
+            
+            // Draw component lines if enabled
+            if (showComponents && activeVectors.length > 0) {
+                drawComponentLines(activeVectors, centerX, centerY, baseScale);
+            }
+        }
+        
+        function draw3DView(activeVectors, cx, cy, scale) {
+            // Draw each vector from origin
+            activeVectors.forEach(vector => {
+                drawVector(vector, 0, 0, 0, cx, cy, scale);
+            });
+            
+            // Draw resultant if multiple vectors
+            if (activeVectors.length >= 2) {
+                const sumX = activeVectors.reduce((sum, v) => sum + v.x, 0);
+                const sumY = activeVectors.reduce((sum, v) => sum + v.y, 0);
+                const sumZ = activeVectors.reduce((sum, v) => sum + v.z, 0);
+                
+                if (sumX !== 0 || sumY !== 0 || sumZ !== 0) {
+                    drawVector({x: sumX, y: sumY, z: sumZ, label: 'R', color: '#f1c40f'}, 0, 0, 0, cx, cy, scale);
+                }
+            }
+        }
+        
+        function drawHeadToTail(activeVectors, cx, cy, scale) {
+            if (activeVectors.length === 0) return;
+            
+            let currentX = 0, currentY = 0, currentZ = 0;
+            
+            // Draw vectors in head-to-tail fashion
+            activeVectors.forEach((vector, index) => {
+                drawVector(vector, currentX, currentY, currentZ, cx, cy, scale);
+                
+                // Draw connection point
+                const start = project3D(currentX, currentY, currentZ, cx, cy, scale);
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(start.x, start.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Update current position
+                currentX += vector.x;
+                currentY += vector.y;
+                currentZ += vector.z;
+            });
+            
+            // Draw resultant from start to end
+            if (activeVectors.length > 1) {
+                drawVector(
+                    {x: currentX, y: currentY, z: currentZ, label: 'Resultant', color: '#f1c40f'},
+                    0, 0, 0, cx, cy, scale
+                );
+            }
+        }
+        
+        function drawParallelogram(activeVectors, cx, cy, scale) {
+            if (activeVectors.length < 2) {
+                draw3DView(activeVectors, cx, cy, scale);
+                return;
+            }
+            
+            const A = activeVectors[0];
+            const B = activeVectors[1];
+            
+            // Draw vector A
+            drawVector(A, 0, 0, 0, cx, cy, scale);
+            
+            // Draw vector B
+            drawVector(B, 0, 0, 0, cx, cy, scale);
+            
+            // Draw vector B starting from A (for parallelogram)
+            drawVector(B, A.x, A.y, A.z, cx, cy, scale);
+            
+            // Draw vector A starting from B (to complete parallelogram)
+            drawVector(A, B.x, B.y, B.z, cx, cy, scale);
+            
+            // Draw resultant (A + B)
+            drawVector(
+                {x: A.x + B.x, y: A.y + B.y, z: A.z + B.z, label: 'A+B', color: '#f1c40f'},
+                0, 0, 0, cx, cy, scale
+            );
+            
+            // Draw parallelogram outline
+            const p1 = project3D(0, 0, 0, cx, cy, scale);
+            const p2 = project3D(A.x, A.y, A.z, cx, cy, scale);
+            const p3 = project3D(A.x + B.x, A.y + B.y, A.z + B.z, cx, cy, scale);
+            const p4 = project3D(B.x, B.y, B.z, cx, cy, scale);
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.lineTo(p3.x, p3.y);
+            ctx.lineTo(p4.x, p4.y);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        function drawComponentLines(activeVectors, cx, cy, scale) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 2]);
+            
+            activeVectors.forEach(vector => {
+                const end = project3D(vector.x, vector.y, vector.z, cx, cy, scale);
+                
+                // Draw component lines
+                const projXY = project3D(vector.x, vector.y, 0, cx, cy, scale);
+                const projXZ = project3D(vector.x, 0, vector.z, cx, cy, scale);
+                const projYZ = project3D(0, vector.y, vector.z, cx, cy, scale);
+                
+                ctx.beginPath();
+                ctx.moveTo(end.x, end.y);
+                ctx.lineTo(projXY.x, projXY.y);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(end.x, end.y);
+                ctx.lineTo(projXZ.x, projXZ.y);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(end.x, end.y);
+                ctx.lineTo(projYZ.x, projYZ.y);
+                ctx.stroke();
+            });
+            
+            ctx.setLineDash([]);
         }
         
         function drawGrid(cx, cy, scale) {
@@ -857,7 +1693,7 @@
             ctx.lineTo(xEnd.x, xEnd.y);
             ctx.stroke();
             ctx.fillStyle = '#e74c3c';
-            ctx.font = 'bold 16px Arial';
+            ctx.font = 'bold 14px Arial';
             ctx.fillText('X', xEnd.x + 10, xEnd.y);
             
             // Y axis (green)
@@ -879,37 +1715,48 @@
             ctx.stroke();
             ctx.fillStyle = '#3498db';
             ctx.fillText('Z', zEnd.x + 10, zEnd.y);
+            
+            // Origin label
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 12px Arial';
+            ctx.fillText('O', cx - 15, cy + 15);
         }
         
-        function drawVector(vec, cx, cy, scale, color, label) {
-            const end = project3D(vec.x, vec.y, vec.z, cx, cy, scale);
+        function drawVector(vector, startX, startY, startZ, cx, cy, scale) {
+            const endX = startX + vector.x;
+            const endY = startY + vector.y;
+            const endZ = startZ + vector.z;
+            
+            const start = project3D(startX, startY, startZ, cx, cy, scale);
+            const end = project3D(endX, endY, endZ, cx, cy, scale);
             
             // Draw vector line
-            ctx.strokeStyle = color;
+            ctx.strokeStyle = vector.color;
             ctx.lineWidth = 4;
             ctx.beginPath();
-            ctx.moveTo(cx, cy);
+            ctx.moveTo(start.x, start.y);
             ctx.lineTo(end.x, end.y);
             ctx.stroke();
             
             // Draw arrowhead
-            const angle = Math.atan2(end.y - cy, end.x - cx);
-            ctx.fillStyle = color;
+            const angle = Math.atan2(end.y - start.y, end.x - start.x);
+            ctx.fillStyle = vector.color;
             ctx.beginPath();
             ctx.moveTo(end.x, end.y);
-            ctx.lineTo(end.x - 15 * Math.cos(angle - 0.3), end.y - 15 * Math.sin(angle - 0.3));
-            ctx.lineTo(end.x - 15 * Math.cos(angle + 0.3), end.y - 15 * Math.sin(angle + 0.3));
+            ctx.lineTo(end.x - 12 * Math.cos(angle - 0.3), end.y - 12 * Math.sin(angle - 0.3));
+            ctx.lineTo(end.x - 12 * Math.cos(angle + 0.3), end.y - 12 * Math.sin(angle + 0.3));
             ctx.closePath();
             ctx.fill();
             
             // Draw label
-            ctx.fillStyle = color;
-            ctx.font = 'bold 18px Arial';
-            ctx.fillText(label, end.x + 15, end.y - 15);
+            ctx.fillStyle = vector.color;
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText(vector.label, end.x + 10, end.y - 10);
             
-            // Draw coordinates
-            ctx.font = '12px Arial';
-            ctx.fillText(`(${vec.x}, ${vec.y}, ${vec.z})`, end.x + 15, end.y + 5);
+            // Draw magnitude
+            const mag = Math.sqrt(vector.x*vector.x + vector.y*vector.y + vector.z*vector.z);
+            ctx.font = '11px Arial';
+            ctx.fillText(`|${vector.label}|=${mag.toFixed(1)}`, end.x + 10, end.y + 5);
         }
         
         function project3D(x, y, z, cx, cy, scale) {
@@ -931,48 +1778,10 @@
         }
         
         // ============================================================================
-        // STATISTICS
-        // ============================================================================
-        
-        function updateStats() {
-            document.getElementById('statVectors').textContent = interactionData.vectors_created;
-            document.getElementById('statOps').textContent = interactionData.operations_performed;
-        }
-
-        //=======================================================================
-
-        
-        // ============================================================================
         // INITIALIZATION CALL
         // ============================================================================
         
         window.addEventListener('load', init);
-
-        function openChallenge() {
-            // ✅ If no eventId, create it now
-            if (!eventId) {
-                showLoading('Creating session...');
-                initEventTracking().then(() => {
-                    hideLoading();
-                    if (eventId) {
-                        openChallengeWindow();
-                    } else {
-                        alert('Failed to initialize session. Please refresh and try again.');
-                    }
-                });
-                return;
-            }
-            
-            // ✅ EventId exists, open challenge
-        openChallengeWindow();
-        }
-
-        function openChallengeWindow() {
-            const url = `../../challenge.html?toolId=electrolysis-simulator&eventId=${eventId}`;
-            window.open(url, '_blank');
-            console.log('✅ Challenge opened in new tab');
-
-            }
     </script>
 </body>
 </html>

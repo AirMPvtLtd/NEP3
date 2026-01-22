@@ -191,41 +191,65 @@ const validateRegistration = (req, res, next) => {
  * Validate login input
  */
 const validateLogin = (req, res, next) => {
-  const { userType, email, teacherId, password } = req.body;
+  const { userType, email, teacherId, studentId, password } = req.body;
 
   // User type validation
   const validUserTypes = ['student', 'teacher', 'parent', 'admin'];
   if (!userType || !validUserTypes.includes(userType)) {
     return res
       .status(400)
-      .json(validationError('userType', `User type must be one of: ${validUserTypes.join(', ')}`));
+      .json(
+        validationError(
+          'userType',
+          `User type must be one of: ${validUserTypes.join(', ')}`
+        )
+      );
   }
 
   // Password required for all
   if (!password) {
-    return res.status(400).json(validationError('password', 'Password is required'));
+    return res
+      .status(400)
+      .json(validationError('password', 'Password is required'));
   }
 
   // 👨‍🏫 TEACHER LOGIN → teacherId + password
   if (userType === 'teacher') {
     if (!teacherId) {
-      return res.status(400).json(validationError('teacherId', 'Teacher ID is required'));
+      return res
+        .status(400)
+        .json(validationError('teacherId', 'Teacher ID is required'));
     }
     return next();
   }
 
-  // 👤 OTHER ROLES → email + password
+  // 👨‍🎓 STUDENT LOGIN → studentId + password
+  if (userType === 'student') {
+    if (!studentId) {
+      return res
+        .status(400)
+        .json(validationError('studentId', 'Student ID is required'));
+    }
+    return next();
+  }
+
+  // 👤 ADMIN / PARENT → email + password
   if (!email) {
-    return res.status(400).json(validationError('email', 'Email is required'));
+    return res
+      .status(400)
+      .json(validationError('email', 'Email is required'));
   }
 
   if (!isValidEmail(email)) {
-    return res.status(400).json(validationError('email', 'Invalid email format'));
+    return res
+      .status(400)
+      .json(validationError('email', 'Invalid email format'));
   }
 
   req.body.email = validator.normalizeEmail(email);
   next();
 };
+
 
 
 /**

@@ -3,442 +3,1012 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Graph Maker - NEP Workbench</title>
+    <title>Interactive Graph Maker - ABS Mode</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
         body { background: var(--bg); color: #fff; }
         .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
-        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header { 
+            background: #333; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-left: 4px solid var(--accent);
+        }
         h1 { font-size: 24px; color: var(--accent); }
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; font-size: 13px; }
-        .main { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
-        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
-        .graph-area { background: #fff; border-radius: 6px; height: 500px; border: 1px solid #464647; position: relative; }
+        .main { display: grid; grid-template-columns: 300px 1fr 350px; gap: 20px; }
+        .panel { 
+            background: var(--panel); 
+            border-radius: 8px; 
+            padding: 20px; 
+            border: 1px solid #464647;
+        }
+        
+        /* Exploration Zone */
+        .exploration-zone { 
+            background: #fff; 
+            border-radius: 6px; 
+            height: 500px; 
+            border: 2px solid #464647;
+            position: relative;
+            overflow: hidden;
+        }
         canvas { width: 100%; height: 100%; }
-        .chart-type-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; }
-        .chart-btn { padding: 15px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; cursor: pointer; text-align: center; transition: all 0.3s; }
-        .chart-btn.active { background: var(--accent); border-color: var(--accent); }
-        input[type="text"], input[type="number"] { width: 100%; background: #2d2d30; border: 2px solid #464647; padding: 10px; border-radius: 6px; color: #fff; margin: 5px 0; }
-        input:focus { outline: none; border-color: var(--accent); }
-        .data-entry { background: #2d2d30; padding: 10px; border-radius: 6px; margin: 5px 0; display: flex; gap: 10px; align-items: center; }
-        .color-picker { width: 40px; height: 40px; border: none; border-radius: 4px; cursor: pointer; }
+        
+        /* Data Input */
+        .data-input-area {
+            background: #2d2d30;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .data-point {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid #464647;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 8px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .data-point:hover {
+            border-color: var(--accent);
+            transform: translateX(5px);
+        }
+        
+        .data-handle {
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: grab;
+        }
+        
+        .data-handle:active {
+            cursor: grabbing;
+        }
+        
+        /* Exploration Tools */
+        .exploration-tools {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .tool-btn {
+            padding: 15px;
+            background: #2d2d30;
+            border: 2px solid #464647;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .tool-btn:hover {
+            border-color: var(--accent);
+            background: rgba(0, 122, 204, 0.1);
+        }
+        
+        .tool-btn.active {
+            border-color: var(--accent);
+            background: rgba(0, 122, 204, 0.2);
+        }
+        
+        /* Discovery Panel */
+        .discovery-panel {
+            background: rgba(0, 122, 204, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .discovery-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .discovery-item.revealed {
+            border-left-color: #2ecc71;
+            background: rgba(46, 204, 113, 0.05);
+        }
+        
+        .discovery-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Pattern Indicators */
+        .pattern-indicator {
+            background: rgba(46, 204, 113, 0.1);
+            border: 2px solid #2ecc71;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .pattern-indicator.active {
+            background: rgba(46, 204, 113, 0.2);
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        .pattern-value {
+            font-size: 24px;
+            color: #2ecc71;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        /* Exploration Stats */
+        .exploration-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            background: var(--accent);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background: #005a9e;
+            transform: translateY(-2px);
+        }
+        
+        .exploration-prompt {
+            background: rgba(243, 156, 18, 0.1);
+            border: 2px dashed #f39c12;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        /* Chart Type Buttons */
+        .chart-type-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .chart-btn {
+            padding: 15px;
+            background: #2d2d30;
+            border: 2px solid #464647;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .chart-btn:hover {
+            border-color: var(--accent);
+            background: rgba(0, 122, 204, 0.1);
+        }
+        
+        .chart-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div><h1><i class="fas fa-chart-line"></i> Interactive Graph Maker</h1><p style="color: #888;">Math Lab • Grade 7-9</p></div>
-            <div style="display: flex; gap: 15px;">
-                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
-                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
-                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            <div>
+                <h1><i class="fas fa-chart-line"></i> Interactive Graph Maker -</h1>
+                <p style="color: #888;">Data Exploration Lab • Discover Patterns • Grade 7-9</p>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div style="background: #2d2d30; padding: 8px 15px; border-radius: 20px;">
+                    <i class="fas fa-lightbulb" style="color: #f39c12;"></i>
+                    <span id="discoveries">0</span> Discoveries
+                </div>
+                <div style="background: #2d2d30; padding: 8px 15px; border-radius: 20px;">
+                    <i class="fas fa-chart-line" style="color: #2ecc71;"></i>
+                    <span id="patterns">0</span> Patterns
+                </div>
+
             </div>
         </div>
         
         <div class="main">
+            <!-- Left Panel: Exploration Tools -->
             <div class="panel">
-                <h2 style="margin-bottom: 15px;">Graph Canvas</h2>
+                <h2 style="margin-bottom: 15px;">
+                    <i class="fas fa-tools"></i> Exploration Tools
+                </h2>
                 
-                <div class="graph-area">
-                    <canvas id="canvas"></canvas>
+                <div class="exploration-tools">
+                    <div class="tool-btn active" id="toolData" onclick="selectTool('data')">
+                        <i class="fas fa-database"></i>
+                        <div>Data Explorer</div>
+                    </div>
+                    <div class="tool-btn" id="toolVisual" onclick="selectTool('visual')">
+                        <i class="fas fa-eye"></i>
+                        <div>Visualize</div>
+                    </div>
+                    <div class="tool-btn" id="toolPattern" onclick="selectTool('pattern')">
+                        <i class="fas fa-search"></i>
+                        <div>Find Patterns</div>
+                    </div>
                 </div>
                 
-                <div style="margin-top: 15px;">
-                    <input type="text" id="titleInput" placeholder="Graph Title" oninput="updateGraph()">
-                    <input type="text" id="xLabel" placeholder="X-Axis Label" oninput="updateGraph()">
-                    <input type="text" id="yLabel" placeholder="Y-Axis Label" oninput="updateGraph()">
+                <h3 style="margin: 20px 0 10px;">
+                    <i class="fas fa-sliders-h"></i> Data Controls
+                </h3>
+                
+                <div class="data-input-area" id="dataInputArea">
+                    <!-- Data points will be dynamically added here -->
                 </div>
                 
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px;">
-                    <button class="btn" onclick="exportGraph()"><i class="fas fa-download"></i> Export</button>
-                    <button class="btn" onclick="clearData()"><i class="fas fa-trash"></i> Clear</button>
-                    <button class="btn" onclick="randomData()"><i class="fas fa-random"></i> Random</button>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="btn" onclick="addDataPoint()" style="flex: 1;">
+                        <i class="fas fa-plus"></i> Add Point
+                    </button>
+                    <button class="btn" onclick="generatePattern()" style="flex: 1; background: #2ecc71;">
+                        <i class="fas fa-wave-square"></i> Pattern
+                    </button>
+                </div>
+                
+                <div class="exploration-prompt">
+                    <strong style="color: #f39c12; display: block; margin-bottom: 10px;">
+                        <i class="fas fa-compass"></i> Exploration Prompt
+                    </strong>
+                    <div style="font-size: 13px; line-height: 1.5;">
+                        Drag points up/down. Watch how the graph changes. Look for patterns in the data.
+                    </div>
                 </div>
             </div>
             
+            <!-- Center Panel: Exploration Canvas -->
             <div class="panel">
-                <h2 style="margin-bottom: 15px;"><i class="fas fa-chart-bar"></i> Chart Type</h2>
+                <h2 style="margin-bottom: 15px;">
+                    <i class="fas fa-chart-area"></i> Exploration Canvas
+                </h2>
+                
+                <div class="exploration-zone">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">
+                    <i class="fas fa-chart-bar"></i> Visualization Types
+                </h3>
                 
                 <div class="chart-type-grid">
                     <div class="chart-btn active" onclick="selectChart('bar')">
-                        <i class="fas fa-chart-bar" style="font-size: 28px;"></i>
+                        <i class="fas fa-chart-bar" style="font-size: 24px;"></i>
                         <div style="margin-top: 8px; font-size: 12px;">Bar Chart</div>
                     </div>
                     <div class="chart-btn" onclick="selectChart('line')">
-                        <i class="fas fa-chart-line" style="font-size: 28px;"></i>
+                        <i class="fas fa-chart-line" style="font-size: 24px;"></i>
                         <div style="margin-top: 8px; font-size: 12px;">Line Chart</div>
                     </div>
-                    <div class="chart-btn" onclick="selectChart('pie')">
-                        <i class="fas fa-chart-pie" style="font-size: 28px;"></i>
-                        <div style="margin-top: 8px; font-size: 12px;">Pie Chart</div>
-                    </div>
                     <div class="chart-btn" onclick="selectChart('scatter')">
-                        <i class="fas fa-braille" style="font-size: 28px;"></i>
-                        <div style="margin-top: 8px; font-size: 12px;">Scatter</div>
+                        <i class="fas fa-braille" style="font-size: 24px;"></i>
+                        <div style="margin-top: 8px; font-size: 12px;">Scatter Plot</div>
+                    </div>
+                    <div class="chart-btn" onclick="selectChart('area')">
+                        <i class="fas fa-chart-area" style="font-size: 24px;"></i>
+                        <div style="margin-top: 8px; font-size: 12px;">Area Chart</div>
                     </div>
                 </div>
                 
-                <h3 style="margin: 20px 0 10px;">Data Points</h3>
-                <div id="dataList" style="max-height: 250px; overflow-y: auto;">
-                    <!-- Dynamic data entries -->
+                <div class="pattern-indicator" id="patternIndicator">
+                    <div style="font-size: 13px; color: #888;">Current Pattern</div>
+                    <div class="pattern-value" id="patternValue">None detected</div>
+                    <div style="font-size: 12px; color: #aaa;" id="patternDescription">
+                        Add more data points to discover patterns
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel: Discoveries & Insights -->
+            <div class="panel">
+                <h2 style="margin-bottom: 15px;">
+                    <i class="fas fa-binoculars"></i> Discoveries & Insights
+                </h2>
+                
+                <div class="exploration-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statExplorations">0</div>
+                        <div class="stat-label">Explorations</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statDataPoints">4</div>
+                        <div class="stat-label">Data Points</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statPatterns">0</div>
+                        <div class="stat-label">Patterns</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statTime">0</div>
+                        <div class="stat-label">Minutes</div>
+                    </div>
                 </div>
                 
-                <button class="btn" style="width: 100%; margin-top: 10px;" onclick="addDataPoint()">
-                    <i class="fas fa-plus"></i> Add Data Point
+                <h3 style="margin: 20px 0 10px;">
+                    <i class="fas fa-history"></i> Exploration Log
+                </h3>
+                
+                <div style="background: #2d2d30; border-radius: 6px; padding: 10px; height: 150px; overflow-y: auto; font-size: 12px;">
+                    <div id="explorationLog">
+                        <!-- Exploration log entries -->
+                    </div>
+                </div>
+                
+                <div class="discovery-panel">
+                    <h4 style="color: var(--accent); margin-bottom: 10px;">
+                        <i class="fas fa-search"></i> What to Look For
+                    </h4>
+                    
+                    <div class="discovery-item" id="discovery1">
+                        <i class="fas fa-question-circle"></i>
+                        How does changing one point affect the whole graph?
+                    </div>
+                    
+                    <div class="discovery-item" id="discovery2">
+                        <i class="fas fa-question-circle"></i>
+                        What patterns emerge when points are evenly spaced?
+                    </div>
+                    
+                    <div class="discovery-item" id="discovery3">
+                        <i class="fas fa-question-circle"></i>
+                        Try creating a "wave" pattern. What happens?
+                    </div>
+                    
+                    <div class="discovery-item" id="discovery4">
+                        <i class="fas fa-question-circle"></i>
+                        Compare bar vs line charts for the same data.
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="exportExploration()" style="width: 100%; margin-top: 20px; background: #27ae60;">
+                    <i class="fas fa-download"></i> Export Exploration
                 </button>
-                
-                <h3 style="margin: 20px 0 10px;">Graph Color</h3>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <input type="color" class="color-picker" id="colorPicker" value="#007acc" onchange="updateGraph()">
-                    <span id="colorLabel">#007acc</span>
-                </div>
-                
-                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
-                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
-                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statGraphs">0</div>
-                        <div style="font-size: 12px; color: #888;">Graphs</div>
-                    </div>
-                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
-                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statPoints">0</div>
-                        <div style="font-size: 12px; color: #888;">Data Points</div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        const API_BASE_URL = 'http://localhost:3000/api';
-        const authToken = localStorage.getItem('authToken');
-        let eventId = null, sessionStart = Date.now(), canvas, ctx;
-        
-        let chartType = 'bar', graphColor = '#007acc';
-        let dataPoints = [
-            { label: 'A', value: 25 },
-            { label: 'B', value: 40 },
-            { label: 'C', value: 35 },
-            { label: 'D', value: 50 }
-        ];
-        
-        let interactionData = {
-            actions_count: 0, time_seconds: 0, total_parameter_space: 120,
-            tool_usage: {}, graphs_created: 0, data_points_added: 0,
-            chart_types_used: new Set(['bar'])
+        // Activity-Based Simulation Variables
+        let explorationData = {
+            explorations: 0,
+            patternsFound: 0,
+            discoveries: 0,
+            dataPoints: 4,
+            explorationStart: Date.now(),
+            activityLog: [],
+            discoveredPatterns: [],
+            toolUsage: { data: 0, visual: 0, pattern: 0 }
         };
         
-        async function init() {
+        let currentTool = 'data';
+        let chartType = 'bar';
+        let dataPoints = [
+            { label: 'A', value: 25, x: 0.1 },
+            { label: 'B', value: 40, x: 0.3 },
+            { label: 'C', value: 35, x: 0.5 },
+            { label: 'D', value: 50, x: 0.7 }
+        ];
+        let canvas, ctx;
+        let selectedPoint = null;
+        let isDragging = false;
+        
+        // Initialize exploration
+        document.addEventListener('DOMContentLoaded', function() {
+            initExploration();
+            renderDataPoints();
+            drawGraph();
+            
+            logActivity("Started data exploration session");
+            updateStats();
+            startExplorationTimer();
+        });
+        
+        function initExploration() {
             canvas = document.getElementById('canvas');
             ctx = canvas.getContext('2d');
+            
             canvas.width = canvas.parentElement.clientWidth;
             canvas.height = canvas.parentElement.clientHeight;
             
-            if (authToken) {
-                try {
-                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
-                    const res = await fetch(`${API_BASE_URL}/student/event`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ studentId, toolId: 'interactive-graph-maker', toolType: 'LAB', interactionData })
-                    });
-                    if (res.ok) eventId = (await res.json()).data._id;
-                } catch (err) {}
+            window.addEventListener('resize', function() {
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = canvas.parentElement.clientHeight;
+                drawGraph();
+            });
+        }
+        
+        function selectTool(tool) {
+            currentTool = tool;
+            explorationData.toolUsage[tool] = (explorationData.toolUsage[tool] || 0) + 1;
+            explorationData.explorations++;
+            
+            // Update UI
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tool${tool.charAt(0).toUpperCase() + tool.slice(1)}`).classList.add('active');
+            
+            // Show tool-specific content
+            switch(tool) {
+                case 'data':
+                    logActivity("Selected Data Explorer tool");
+                    break;
+                case 'visual':
+                    logActivity("Selected Visualize tool");
+                    break;
+                case 'pattern':
+                    logActivity("Selected Find Patterns tool");
+                    checkForPatterns();
+                    break;
             }
             
-            renderDataList();
-            updateGraph();
-            setInterval(() => {
-                const e = Math.floor((Date.now() - sessionStart) / 1000);
-                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
-            }, 1000);
-            setInterval(saveProgress, 30000);
+            updateStats();
         }
         
         function selectChart(type) {
             chartType = type;
+            explorationData.explorations++;
+            
+            // Update UI
             document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
             event.currentTarget.classList.add('active');
-            interactionData.chart_types_used.add(type);
-            interactionData.actions_count++;
-            updateGraph();
+            
+            drawGraph();
+            logActivity(`Switched to ${type} chart`);
+            updateStats();
+        }
+        
+        function renderDataPoints() {
+            const container = document.getElementById('dataInputArea');
+            container.innerHTML = '';
+            
+            dataPoints.forEach((point, index) => {
+                const pointElement = document.createElement('div');
+                pointElement.className = 'data-point';
+                pointElement.innerHTML = `
+                    <div class="data-handle" data-index="${index}" 
+                         onmousedown="startDrag(event, ${index})"></div>
+                    <div style="flex: 1; font-size: 14px; color: #fff;">
+                        <strong>${point.label}</strong>
+                    </div>
+                    <div style="width: 100px;">
+                        <input type="range" min="0" max="100" value="${point.value}" 
+                               oninput="updatePointValue(${index}, this.value)" 
+                               style="width: 100%;">
+                    </div>
+                    <div style="width: 50px; text-align: center; color: var(--accent); font-weight: bold;">
+                        ${point.value}
+                    </div>
+                `;
+                container.appendChild(pointElement);
+            });
+        }
+        
+        function startDrag(event, index) {
+            event.preventDefault();
+            event.stopPropagation();
+            selectedPoint = index;
+            isDragging = true;
+            
+            explorationData.explorations++;
+            logActivity(`Started dragging point ${dataPoints[index].label}`);
+            
+            // Add document-level listeners for dragging
+            document.addEventListener('mousemove', handleDrag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+        
+        function handleDrag(event) {
+            if (selectedPoint !== null && isDragging) {
+                const rect = canvas.getBoundingClientRect();
+                const x = (event.clientX - rect.left) / canvas.width;
+                const y = 1 - (event.clientY - rect.top) / canvas.height; // Invert Y axis
+                
+                // Update point position
+                dataPoints[selectedPoint].x = Math.max(0.05, Math.min(0.95, x));
+                dataPoints[selectedPoint].value = Math.max(0, Math.min(100, y * 100));
+                
+                drawGraph();
+                checkForPatterns();
+                updateStats();
+            }
+        }
+        
+        function stopDrag() {
+            if (selectedPoint !== null && isDragging) {
+                logActivity(`Released point ${dataPoints[selectedPoint].label}`);
+                selectedPoint = null;
+                isDragging = false;
+                document.removeEventListener('mousemove', handleDrag);
+                document.removeEventListener('mouseup', stopDrag);
+            }
+        }
+        
+        function updatePointValue(index, value) {
+            dataPoints[index].value = parseInt(value);
+            drawGraph();
+            checkForPatterns();
+            logActivity(`Changed ${dataPoints[index].label} to ${value}`);
             updateStats();
         }
         
         function addDataPoint() {
             const label = String.fromCharCode(65 + dataPoints.length);
-            dataPoints.push({ label, value: Math.floor(Math.random() * 50) + 10 });
-            interactionData.data_points_added++;
-            interactionData.actions_count++;
-            renderDataList();
-            updateGraph();
+            const x = 0.1 + (dataPoints.length * 0.2);
+            const newPoint = {
+                label: label,
+                value: Math.floor(Math.random() * 50) + 25,
+                x: Math.min(0.95, x)
+            };
+            
+            dataPoints.push(newPoint);
+            
+            explorationData.dataPoints++;
+            renderDataPoints();
+            drawGraph();
+            logActivity(`Added new data point ${label} (${newPoint.value})`);
             updateStats();
         }
         
-        function removeDataPoint(index) {
-            dataPoints.splice(index, 1);
-            renderDataList();
-            updateGraph();
+        function generatePattern() {
+            const patternType = ['linear', 'quadratic', 'sine', 'random'][Math.floor(Math.random() * 4)];
+            
+            dataPoints.forEach((point, i) => {
+                const n = dataPoints.length;
+                const t = i / (n - 1);
+                
+                switch(patternType) {
+                    case 'linear':
+                        point.value = 20 + t * 60;
+                        break;
+                    case 'quadratic':
+                        point.value = 50 - Math.pow(t - 0.5, 2) * 100;
+                        break;
+                    case 'sine':
+                        point.value = 50 + Math.sin(t * Math.PI * 2) * 30;
+                        break;
+                    case 'random':
+                        point.value = 20 + Math.random() * 60;
+                        break;
+                }
+            });
+            
+            renderDataPoints();
+            drawGraph();
+            revealDiscovery('discovery2', `Generated ${patternType} pattern!`);
+            logActivity(`Generated ${patternType} pattern`);
+            
+            explorationData.patternsFound++;
+            document.getElementById('patterns').textContent = explorationData.patternsFound;
         }
         
-        function updateDataPoint(index, field, value) {
-            dataPoints[index][field] = field === 'value' ? parseFloat(value) || 0 : value;
-            interactionData.actions_count++;
-            updateGraph();
-        }
-        
-        function renderDataList() {
-            const list = document.getElementById('dataList');
-            list.innerHTML = dataPoints.map((dp, i) => `
-                <div class="data-entry">
-                    <input type="text" value="${dp.label}" style="flex: 1;" 
-                           onchange="updateDataPoint(${i}, 'label', this.value)">
-                    <input type="number" value="${dp.value}" style="width: 80px;"
-                           onchange="updateDataPoint(${i}, 'value', this.value)">
-                    <button class="btn" style="background: #e74c3c; padding: 8px 12px;" 
-                            onclick="removeDataPoint(${i})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `).join('');
-        }
-        
-        function clearData() {
-            dataPoints = [];
-            renderDataList();
-            updateGraph();
-        }
-        
-        function randomData() {
-            const count = Math.floor(Math.random() * 5) + 3;
-            dataPoints = [];
-            for (let i = 0; i < count; i++) {
-                dataPoints.push({
-                    label: String.fromCharCode(65 + i),
-                    value: Math.floor(Math.random() * 80) + 20
-                });
+        function checkForPatterns() {
+            const values = dataPoints.map(p => p.value);
+            const patternIndicator = document.getElementById('patternIndicator');
+            const patternValue = document.getElementById('patternValue');
+            const patternDescription = document.getElementById('patternDescription');
+            
+            // Check for patterns
+            if (isLinear(values)) {
+                patternIndicator.classList.add('active');
+                patternValue.textContent = 'Linear Pattern';
+                patternValue.style.color = '#2ecc71';
+                patternDescription.textContent = 'Points follow a straight line trend';
+                
+                if (!explorationData.discoveredPatterns.includes('linear')) {
+                    explorationData.discoveredPatterns.push('linear');
+                    explorationData.patternsFound++;
+                    revealDiscovery('discovery1', 'Discovered a linear pattern!');
+                    document.getElementById('patterns').textContent = explorationData.patternsFound;
+                }
+            } else if (isIncreasing(values)) {
+                patternIndicator.classList.add('active');
+                patternValue.textContent = 'Increasing';
+                patternValue.style.color = '#27ae60';
+                patternDescription.textContent = 'Values are consistently increasing';
+            } else if (isDecreasing(values)) {
+                patternIndicator.classList.add('active');
+                patternValue.textContent = 'Decreasing';
+                patternValue.style.color = '#e74c3c';
+                patternDescription.textContent = 'Values are consistently decreasing';
+            } else if (isConstant(values)) {
+                patternIndicator.classList.add('active');
+                patternValue.textContent = 'Constant';
+                patternValue.style.color = '#9b59b6';
+                patternDescription.textContent = 'All values are the same';
+            } else {
+                patternIndicator.classList.remove('active');
+                patternValue.textContent = 'No clear pattern';
+                patternValue.style.color = '#888';
+                patternDescription.textContent = 'Add more points or adjust values';
             }
-            renderDataList();
-            updateGraph();
-            interactionData.graphs_created++;
-            updateStats();
         }
         
-        function updateGraph() {
-            graphColor = document.getElementById('colorPicker').value;
-            document.getElementById('colorLabel').textContent = graphColor;
+        function isLinear(values) {
+            if (values.length < 3) return false;
             
-            const title = document.getElementById('titleInput').value || 'Graph Title';
-            const xLabel = document.getElementById('xLabel').value || 'X-Axis';
-            const yLabel = document.getElementById('yLabel').value || 'Y-Axis';
+            const n = values.length;
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
             
-            interactionData.graphs_created++;
-            updateStats();
+            for (let i = 0; i < n; i++) {
+                sumX += i;
+                sumY += values[i];
+                sumXY += i * values[i];
+                sumX2 += i * i;
+            }
             
+            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+            
+            // Calculate R-squared
+            let ssTotal = 0, ssResidual = 0;
+            const meanY = sumY / n;
+            
+            for (let i = 0; i < n; i++) {
+                const predicted = slope * i + intercept;
+                ssTotal += Math.pow(values[i] - meanY, 2);
+                ssResidual += Math.pow(values[i] - predicted, 2);
+            }
+            
+            const rSquared = ssTotal === 0 ? 1 : 1 - (ssResidual / ssTotal);
+            return rSquared > 0.9;
+        }
+        
+        function isIncreasing(values) {
+            for (let i = 1; i < values.length; i++) {
+                if (values[i] <= values[i-1]) return false;
+            }
+            return values.length > 1;
+        }
+        
+        function isDecreasing(values) {
+            for (let i = 1; i < values.length; i++) {
+                if (values[i] >= values[i-1]) return false;
+            }
+            return values.length > 1;
+        }
+        
+        function isConstant(values) {
+            if (values.length === 0) return false;
+            const first = values[0];
+            for (let i = 1; i < values.length; i++) {
+                if (values[i] !== first) return false;
+            }
+            return true;
+        }
+        
+        function drawGraph() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            if (chartType === 'bar') drawBarChart(title, xLabel, yLabel);
-            else if (chartType === 'line') drawLineChart(title, xLabel, yLabel);
-            else if (chartType === 'pie') drawPieChart(title);
-            else if (chartType === 'scatter') drawScatterChart(title, xLabel, yLabel);
-        }
-        
-        function drawBarChart(title, xLabel, yLabel) {
-            const padding = 60;
-            const width = canvas.width - padding * 2;
-            const height = canvas.height - padding * 2;
-            const maxValue = Math.max(...dataPoints.map(d => d.value));
-            const barWidth = width / dataPoints.length;
+            // Draw background
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            ctx.fillStyle = '#000';
-            ctx.font = 'bold 18px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(title, canvas.width / 2, 30);
+            // Draw grid
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
             
+            // Vertical lines
+            for (let i = 0; i <= 10; i++) {
+                const x = (i / 10) * canvas.width;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // Horizontal lines
+            for (let i = 0; i <= 10; i++) {
+                const y = (i / 10) * canvas.height;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Draw axes
             ctx.strokeStyle = '#333';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(padding, padding);
-            ctx.lineTo(padding, canvas.height - padding);
-            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.moveTo(50, canvas.height - 50);
+            ctx.lineTo(canvas.width - 50, canvas.height - 50);
+            ctx.moveTo(50, 50);
+            ctx.lineTo(50, canvas.height - 50);
             ctx.stroke();
             
-            ctx.fillStyle = '#666';
+            // Draw axis labels
+            ctx.fillStyle = '#333';
             ctx.font = '14px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText(xLabel, canvas.width / 2, canvas.height - 10);
-            ctx.save();
-            ctx.translate(15, canvas.height / 2);
-            ctx.rotate(-Math.PI / 2);
-            ctx.fillText(yLabel, 0, 0);
-            ctx.restore();
             
-            dataPoints.forEach((dp, i) => {
-                const barHeight = (dp.value / maxValue) * height;
-                const x = padding + i * barWidth + barWidth * 0.1;
-                const y = canvas.height - padding - barHeight;
-                const w = barWidth * 0.8;
+            // X-axis labels
+            for (let i = 0; i < dataPoints.length; i++) {
+                const x = 50 + (i / (dataPoints.length - 1)) * (canvas.width - 100);
+                ctx.fillText(dataPoints[i].label, x, canvas.height - 30);
+            }
+            
+            // Y-axis labels
+            for (let i = 0; i <= 10; i++) {
+                const y = canvas.height - 50 - (i / 10) * (canvas.height - 100);
+                const value = i * 10;
+                ctx.textAlign = 'right';
+                ctx.fillText(value, 40, y + 4);
+            }
+            
+            // Sort points by x for consistent drawing
+            const sortedPoints = [...dataPoints].sort((a, b) => a.x - b.x);
+            
+            // Draw based on chart type
+            switch(chartType) {
+                case 'bar':
+                    drawBarChart(sortedPoints);
+                    break;
+                case 'line':
+                    drawLineChart(sortedPoints);
+                    break;
+                case 'scatter':
+                    drawScatterChart(sortedPoints);
+                    break;
+                case 'area':
+                    drawAreaChart(sortedPoints);
+                    break;
+            }
+        }
+        
+        function drawBarChart(points) {
+            const barWidth = (canvas.width - 100) / points.length * 0.6;
+            const spacing = (canvas.width - 100) / points.length * 0.4;
+            
+            points.forEach((point, i) => {
+                const x = 50 + i * (barWidth + spacing) + spacing/2;
+                const height = (point.value / 100) * (canvas.height - 100);
+                const y = canvas.height - 50 - height;
                 
-                ctx.fillStyle = graphColor;
-                ctx.fillRect(x, y, w, barHeight);
+                // Draw bar
+                ctx.fillStyle = '#007acc';
+                ctx.fillRect(x, y, barWidth, height);
                 
-                ctx.fillStyle = '#000';
-                ctx.font = '12px Arial';
+                // Draw value on top
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 12px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText(dp.label, x + w / 2, canvas.height - padding + 20);
-                ctx.fillText(dp.value, x + w / 2, y - 5);
+                ctx.fillText(point.value, x + barWidth/2, y - 10);
             });
         }
         
-        function drawLineChart(title, xLabel, yLabel) {
-            const padding = 60;
-            const width = canvas.width - padding * 2;
-            const height = canvas.height - padding * 2;
-            const maxValue = Math.max(...dataPoints.map(d => d.value));
-            
-            ctx.fillStyle = '#000';
-            ctx.font = 'bold 18px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(title, canvas.width / 2, 30);
-            
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(padding, padding);
-            ctx.lineTo(padding, canvas.height - padding);
-            ctx.lineTo(canvas.width - padding, canvas.height - padding);
-            ctx.stroke();
-            
-            ctx.strokeStyle = graphColor;
+        function drawLineChart(points) {
+            ctx.strokeStyle = '#007acc';
             ctx.lineWidth = 3;
             ctx.beginPath();
-            dataPoints.forEach((dp, i) => {
-                const x = padding + (width / (dataPoints.length - 1)) * i;
-                const y = canvas.height - padding - (dp.value / maxValue) * height;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
+            
+            points.forEach((point, i) => {
+                const x = 50 + (point.x * (canvas.width - 100));
+                const y = canvas.height - 50 - (point.value / 100) * (canvas.height - 100);
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
             });
+            
             ctx.stroke();
             
-            ctx.fillStyle = graphColor;
-            dataPoints.forEach((dp, i) => {
-                const x = padding + (width / (dataPoints.length - 1)) * i;
-                const y = canvas.height - padding - (dp.value / maxValue) * height;
-                ctx.beginPath();
-                ctx.arc(x, y, 5, 0, Math.PI * 2);
-                ctx.fill();
-                
-                ctx.fillStyle = '#000';
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(dp.label, x, canvas.height - padding + 20);
-                ctx.fillStyle = graphColor;
-            });
-        }
-        
-        function drawPieChart(title) {
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2 + 20;
-            const radius = Math.min(canvas.width, canvas.height) / 3;
-            const total = dataPoints.reduce((sum, dp) => sum + dp.value, 0);
-            
-            ctx.fillStyle = '#000';
-            ctx.font = 'bold 18px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(title, centerX, 30);
-            
-            let startAngle = -Math.PI / 2;
-            const colors = ['#007acc', '#e74c3c', '#f39c12', '#27ae60', '#9b59b6', '#1abc9c'];
-            
-            dataPoints.forEach((dp, i) => {
-                const sliceAngle = (dp.value / total) * Math.PI * 2;
-                const endAngle = startAngle + sliceAngle;
-                
-                ctx.fillStyle = colors[i % colors.length];
-                ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-                ctx.closePath();
-                ctx.fill();
-                
-                const midAngle = startAngle + sliceAngle / 2;
-                const labelX = centerX + Math.cos(midAngle) * radius * 0.7;
-                const labelY = centerY + Math.sin(midAngle) * radius * 0.7;
+            // Draw points
+            points.forEach(point => {
+                const x = 50 + (point.x * (canvas.width - 100));
+                const y = canvas.height - 50 - (point.value / 100) * (canvas.height - 100);
                 
                 ctx.fillStyle = '#fff';
-                ctx.font = 'bold 14px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(dp.label, labelX, labelY);
-                ctx.font = '12px Arial';
-                ctx.fillText(Math.round((dp.value / total) * 100) + '%', labelX, labelY + 15);
-                
-                startAngle = endAngle;
-            });
-        }
-        
-        function drawScatterChart(title, xLabel, yLabel) {
-            const padding = 60;
-            const width = canvas.width - padding * 2;
-            const height = canvas.height - padding * 2;
-            const maxValue = Math.max(...dataPoints.map(d => d.value));
-            
-            ctx.fillStyle = '#000';
-            ctx.font = 'bold 18px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(title, canvas.width / 2, 30);
-            
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(padding, padding);
-            ctx.lineTo(padding, canvas.height - padding);
-            ctx.lineTo(canvas.width - padding, canvas.height - padding);
-            ctx.stroke();
-            
-            ctx.fillStyle = graphColor;
-            dataPoints.forEach((dp, i) => {
-                const x = padding + (i / dataPoints.length) * width;
-                const y = canvas.height - padding - (dp.value / maxValue) * height;
                 ctx.beginPath();
                 ctx.arc(x, y, 6, 0, Math.PI * 2);
                 ctx.fill();
+                ctx.strokeStyle = '#007acc';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw value
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(point.value, x, y - 15);
             });
         }
         
-        function exportGraph() {
-            const link = document.createElement('a');
-            link.download = 'graph.png';
-            link.href = canvas.toDataURL();
-            link.click();
-            interactionData.actions_count++;
+        function drawScatterChart(points) {
+            points.forEach(point => {
+                const x = 50 + (point.x * (canvas.width - 100));
+                const y = canvas.height - 50 - (point.value / 100) * (canvas.height - 100);
+                
+                ctx.fillStyle = '#007acc';
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw label
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(point.label, x, y - 15);
+            });
+        }
+        
+        function drawAreaChart(points) {
+            // Create gradient for area
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, 'rgba(0, 122, 204, 0.6)');
+            gradient.addColorStop(1, 'rgba(0, 122, 204, 0.1)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            
+            // Start at bottom left
+            ctx.moveTo(50, canvas.height - 50);
+            
+            // Draw line through points
+            points.forEach((point, i) => {
+                const x = 50 + (point.x * (canvas.width - 100));
+                const y = canvas.height - 50 - (point.value / 100) * (canvas.height - 100);
+                
+                if (i === 0) {
+                    ctx.lineTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            // Close the area
+            const lastPoint = points[points.length - 1];
+            const lastX = 50 + (lastPoint.x * (canvas.width - 100));
+            ctx.lineTo(lastX, canvas.height - 50);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw line on top
+            ctx.strokeStyle = '#007acc';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+        
+        function revealDiscovery(discoveryId, message) {
+            const discoveryElement = document.getElementById(discoveryId);
+            if (!discoveryElement.classList.contains('revealed')) {
+                discoveryElement.classList.add('revealed');
+                discoveryElement.innerHTML = `
+                    <i class="fas fa-check-circle" style="color: #2ecc71;"></i>
+                    ${message}
+                `;
+                
+                explorationData.discoveries++;
+                logActivity(`Discovery: ${message}`);
+                document.getElementById('discoveries').textContent = explorationData.discoveries;
+            }
+        }
+        
+        function logActivity(message) {
+            const log = document.getElementById('explorationLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.style.padding = '5px';
+            entry.style.borderBottom = '1px solid #333';
+            entry.style.fontSize = '12px';
+            
+            const now = new Date();
+            const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            entry.innerHTML = `${message} <span style="color: #888; float: right;">${timeString}</span>`;
+            
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
         }
         
         function updateStats() {
-            document.getElementById('statGraphs').textContent = interactionData.chart_types_used.size;
-            document.getElementById('statPoints').textContent = dataPoints.length;
+            document.getElementById('statExplorations').textContent = explorationData.explorations;
+            document.getElementById('statDataPoints').textContent = explorationData.dataPoints;
+            document.getElementById('statPatterns').textContent = explorationData.patternsFound;
         }
         
-        async function saveProgress() {
-            if (!eventId) return;
-            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
-            interactionData.chart_types_used = Array.from(interactionData.chart_types_used);
-            try {
-                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
-                    method: 'PATCH',
-                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ interactionData })
-                });
-            } catch (err) {}
+        function startExplorationTimer() {
+            setInterval(() => {
+                const elapsed = Math.floor((Date.now() - explorationData.explorationStart) / 60000);
+                document.getElementById('statTime').textContent = elapsed;
+            }, 60000);
         }
         
-        async function complete() {
-            await saveProgress();
-            alert('Session completed!');
-            window.location.href = '/dashboard';
+        function saveProgress() {
+            const progress = {
+                timestamp: new Date().toISOString(),
+                explorationData: explorationData,
+                dataPoints: dataPoints,
+                currentTool: currentTool,
+                chartType: chartType
+            };
+            
+            localStorage.setItem('graphExplorationProgress', JSON.stringify(progress));
+            logActivity("Exploration progress saved");
+            alert('Progress saved!');
         }
         
-        window.addEventListener('load', init);
-        window.addEventListener('beforeunload', saveProgress);
+        function exportExploration() {
+            const data = {
+                explorationData: explorationData,
+                dataPoints: dataPoints,
+                patterns: explorationData.discoveredPatterns,
+                timestamp: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `graph-exploration-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            logActivity("Exported exploration data");
+        }
     </script>
 </body>
 </html>

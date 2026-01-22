@@ -228,6 +228,7 @@ const signup = async (req, res) => {
 // ============================================================================
 // LOGIN
 // ============================================================================
+/*
 const login = async (req, res) => {
   try {
     console.log('\n================ LOGIN REQUEST START ================');
@@ -276,9 +277,10 @@ const login = async (req, res) => {
 
       case 'student':
         Model = Student;
-        query = { email: email.toLowerCase() };
+        query = { studentId: req.body.studentId };
         passwordField = 'password';
         break;
+
 
       case 'parent':
         Model = Parent;
@@ -338,6 +340,157 @@ const login = async (req, res) => {
     // 6️⃣ Token generation
     const accessToken = generateAccessToken({
       userId: user._id.toString(),
+      role: userType,
+      schoolId: user.schoolId
+    });
+
+    const refreshToken = generateRefreshToken({
+      userId: user._id.toString(),
+      role: userType
+    });
+
+    console.log('🎉 Login successful');
+    console.log('================ LOGIN REQUEST END =================\n');
+
+    return res.json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        user: user.toJSON(),
+        accessToken,
+        refreshToken
+      }
+    });
+
+  } catch (error) {
+    console.error('🔥 LOGIN EXCEPTION:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Login failed'
+    });
+  }
+};
+
+*/
+
+const login = async (req, res) => {
+  try {
+    console.log('\n================ LOGIN REQUEST START ================');
+    console.log('Incoming body:', req.body);
+
+    const { email, password, userType, teacherId, studentId } = req.body;
+
+    // 1️⃣ Basic validation
+    if (!password || !userType) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password and user type required'
+      });
+    }
+
+    // 2️⃣ Role-specific identifier validation
+    if (userType === 'teacher' && !teacherId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Teacher ID required'
+      });
+    }
+
+    if (userType === 'student' && !studentId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Student ID required'
+      });
+    }
+
+    if ((userType === 'admin' || userType === 'parent') && !email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email required'
+      });
+    }
+
+    // 3️⃣ Model & query selection
+    let Model, query, passwordField;
+
+    switch (userType) {
+      case 'admin':
+        Model = School;
+        query = { adminEmail: email.toLowerCase() };
+        passwordField = 'adminPassword';
+        break;
+
+      case 'teacher':
+        Model = Teacher;
+        query = { teacherId };
+        passwordField = 'password';
+        break;
+
+      case 'student':
+        Model = Student;
+        query = { studentId };
+        passwordField = 'password';
+        break;
+
+      case 'parent':
+        Model = Parent;
+        query = { email: email.toLowerCase() };
+        passwordField = 'password';
+        break;
+
+      default:
+        return res.status(400).json({
+          success: false,
+          message: 'User type must be one of: student, teacher, parent, admin'
+        });
+    }
+
+    console.log(`Using model: ${Model.modelName}`);
+    console.log('Query:', query);
+
+    // 4️⃣ Fetch user
+    const user = await Model.findOne(query).select(`+${passwordField}`);
+
+    if (!user) {
+      console.log('❌ User not found');
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // 5️⃣ Password verification
+    const isValid = await user.comparePassword(password);
+    console.log('Password match:', isValid);
+
+    if (!isValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // 6️⃣ Status checks
+    if (!user.active) {
+      return res.status(403).json({
+        success: false,
+        message: 'Account deactivated'
+      });
+    }
+
+    if (userType === 'teacher' && user.status !== 'approved') {
+      return res.status(403).json({
+        success: false,
+        message: `Account ${user.status}`
+      });
+    }
+
+    // 7️⃣ Token generation
+    const accessToken = generateAccessToken({
+      userId: user._id.toString(),
+      studentId: userType === 'student' ? user.studentId : undefined,
+      teacherId: userType === 'teacher' ? user.teacherId : undefined,
+
       role: userType,
       schoolId: user.schoolId
     });

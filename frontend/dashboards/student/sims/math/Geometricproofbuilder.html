@@ -3,128 +3,591 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geometric Proof Builder - NEP Workbench</title>
+    <title>Geometric Exploration Lab - NEP Workbench</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
-        body { background: var(--bg); color: #fff; }
-        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
-        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        h1 { font-size: 24px; color: var(--accent); }
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; font-size: 13px; }
-        .main { display: grid; grid-template-columns: 280px 1fr 350px; gap: 20px; }
-        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
-        .diagram-area { background: #000; border-radius: 6px; height: 400px; border: 1px solid #464647; position: relative; }
-        canvas { width: 100%; height: 100%; }
-        .proof-card { padding: 12px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; margin: 8px 0; cursor: pointer; transition: all 0.3s; }
-        .proof-card:hover { border-color: var(--accent); }
-        .proof-card.active { background: var(--accent); border-color: var(--accent); }
-        .step-item { padding: 12px; background: #2d2d30; border-left: 4px solid var(--accent); border-radius: 6px; margin: 8px 0; }
-        textarea { width: 100%; background: #2d2d30; border: 2px solid #464647; padding: 10px; border-radius: 6px; color: #fff; resize: vertical; min-height: 80px; font-family: inherit; }
+        :root { 
+            --bg: #1e1e1e; 
+            --panel: #252526; 
+            --accent: #007acc; 
+            --explore: #3498db;
+            --triangle: #e74c3c;
+            --circle: #9b59b6;
+            --angle: #2ecc71;
+            --parallel: #f39c12;
+            --quadrilateral: #1abc9c;
+        }
+        body { 
+            background: var(--bg); 
+            color: #fff; 
+            overflow-x: hidden;
+        }
+        .container { 
+            max-width: 1600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .header { 
+            background: #333; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-left: 4px solid var(--explore);
+            animation: slideDown 0.5s ease-out;
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        h1 { 
+            font-size: 24px; 
+            color: var(--explore); 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        .main { 
+            display: grid; 
+            grid-template-columns: 280px 1fr 350px; 
+            gap: 20px; 
+        }
+        .panel { 
+            background: var(--panel); 
+            border-radius: 8px; 
+            padding: 20px; 
+            border: 1px solid #464647;
+            animation: fadeIn 0.6s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Exploration Zone */
+        .exploration-zone {
+            background: #000;
+            border-radius: 8px;
+            height: 450px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        canvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            display: block;
+        }
+        
+        /* Exploration Tools */
+        .exploration-tools {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        
+        .tool-btn {
+            padding: 12px 10px;
+            background: #2d2d30;
+            border: 2px solid #464647;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+        
+        .tool-btn:hover {
+            transform: translateY(-3px);
+            border-color: var(--explore);
+            background: rgba(0, 122, 204, 0.1);
+        }
+        
+        .tool-btn.active {
+            border-color: var(--explore);
+            background: rgba(0, 122, 204, 0.2);
+        }
+        
+        /* Theorem Cards */
+        .theorem-card {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid #464647;
+            border-radius: 8px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .theorem-card:hover {
+            transform: translateX(5px);
+            border-color: var(--explore);
+        }
+        
+        .theorem-card.active {
+            border-color: var(--explore);
+            background: rgba(0, 122, 204, 0.1);
+        }
+        
+        .theorem-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--explore);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        
+        /* Discovery Panel */
+        .discovery-panel {
+            background: rgba(0, 122, 204, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid var(--explore);
+        }
+        
+        .discovery-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .discovery-item.revealed {
+            border-left-color: var(--angle);
+            background: rgba(46, 204, 113, 0.05);
+        }
+        
+        .discovery-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Relationship Display */
+        .relationship-display {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .relationship-display.active {
+            border-color: var(--explore);
+            background: rgba(0, 122, 204, 0.05);
+        }
+        
+        .relationship-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--explore);
+            margin: 10px 0;
+        }
+        
+        /* Exploration Log */
+        .exploration-log {
+            max-height: 250px;
+            overflow-y: auto;
+            margin: 20px 0;
+            padding-right: 10px;
+        }
+        
+        .log-entry {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px;
+            margin: 6px 0;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent);
+            font-size: 12px;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .log-time {
+            color: #888;
+            font-size: 10px;
+            float: right;
+        }
+        
+        /* Exploration Stats */
+        .exploration-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            background: #333;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            color: var(--explore);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+        }
+        
+        /* Measurement Display */
+        .measurement-display {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .measurement-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .measurement-value {
+            font-size: 18px;
+            color: var(--explore);
+            font-weight: 600;
+            margin: 5px 0;
+        }
+        
+        /* Floating Elements */
+        .floating-element {
+            position: absolute;
+            font-size: 20px;
+            opacity: 0.1;
+            animation: float 20s infinite linear;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-1000px) rotate(360deg); }
+        }
+        
+        /* Interactive Points */
+        .point {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: var(--explore);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s;
+        }
+        
+        .point:hover {
+            transform: translate(-50%, -50%) scale(1.5);
+            box-shadow: 0 0 15px var(--explore);
+        }
+        
+        .point.active {
+            background: var(--triangle);
+            box-shadow: 0 0 15px var(--triangle);
+        }
+        
+        .line {
+            position: absolute;
+            background: var(--explore);
+            height: 3px;
+            transform-origin: 0 0;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        .angle-measure {
+            position: absolute;
+            background: rgba(46, 204, 113, 0.1);
+            border: 2px solid var(--angle);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 4;
+        }
+        
+        .btn {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .selection-box {
+            position: absolute;
+            border: 2px dashed var(--explore);
+            background: rgba(0, 122, 204, 0.1);
+            pointer-events: none;
+            z-index: 20;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div><h1><i class="fas fa-shapes"></i> Geometric Proof Builder</h1><p style="color: #888;">Math Lab • Grade 9-12</p></div>
-            <div style="display: flex; gap: 15px;">
-                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
-                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
-                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            <div>
+                <h1><i class="fas fa-shapes"></i> Geometric Exploration Lab</h1>
+                <p style="color: #888;">Math Lab • Discovery-Based Learning • Grade 9-12</p>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div style="background: #2d2d30; padding: 8px 15px; border-radius: 20px;">
+                    <i class="fas fa-lightbulb" style="color: var(--explore);"></i>
+                    <span id="discoveries">0</span> Discoveries
+                </div>
+                <button class="btn" onclick="exportExploration()" style="background: var(--accent); padding: 8px 16px; border-radius: 4px; border: none; color: white; cursor: pointer;">
+                    <i class="fas fa-download"></i> Export
+                </button>
             </div>
         </div>
         
         <div class="main">
+            <!-- Left Panel: Geometric Concepts -->
             <div class="panel">
-                <h2 style="margin-bottom: 15px;"><i class="fas fa-book"></i> Theorems</h2>
+                <h2 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-book-open"></i> Geometric Concepts
+                </h2>
                 
-                <div class="proof-card active" onclick="selectTheorem('triangle-sum')">
+                <div class="theorem-card active" onclick="exploreTheorem('triangle-sum')">
+                    <div class="theorem-icon">
+                        <i class="fas fa-triangle" style="color: white;"></i>
+                    </div>
                     <strong>Triangle Angle Sum</strong>
-                    <div style="font-size: 11px; color: #888; margin-top: 5px;">∠A + ∠B + ∠C = 180°</div>
+                    <div style="font-size: 12px; color: #888; margin-top: 8px; line-height: 1.5;">
+                        Explore how angles in a triangle always add to 180°
+                    </div>
                 </div>
                 
-                <div class="proof-card" onclick="selectTheorem('pythagorean')">
+                <div class="theorem-card" onclick="exploreTheorem('pythagorean')">
+                    <div class="theorem-icon">
+                        <i class="fas fa-square-root-alt" style="color: white;"></i>
+                    </div>
                     <strong>Pythagorean Theorem</strong>
-                    <div style="font-size: 11px; color: #888; margin-top: 5px;">a² + b² = c²</div>
+                    <div style="font-size: 12px; color: #888; margin-top: 8px; line-height: 1.5;">
+                        Discover relationships in right triangles
+                    </div>
                 </div>
                 
-                <div class="proof-card" onclick="selectTheorem('parallel-lines')">
-                    <strong>Parallel Lines</strong>
-                    <div style="font-size: 11px; color: #888; margin-top: 5px;">Alternate angles equal</div>
+                <div class="theorem-card" onclick="exploreTheorem('parallel-lines')">
+                    <div class="theorem-icon">
+                        <i class="fas fa-grip-lines" style="color: white;"></i>
+                    </div>
+                    <strong>Parallel Lines & Angles</strong>
+                    <div style="font-size: 12px; color: #888; margin-top: 8px; line-height: 1.5;">
+                        Explore angle relationships with parallel lines
+                    </div>
                 </div>
                 
-                <div class="proof-card" onclick="selectTheorem('congruent-triangles')">
+                <div class="theorem-card" onclick="exploreTheorem('congruent-triangles')">
+                    <div class="theorem-icon">
+                        <i class="fas fa-code-branch" style="color: white;"></i>
+                    </div>
                     <strong>Triangle Congruence</strong>
-                    <div style="font-size: 11px; color: #888; margin-top: 5px;">SAS, ASA, SSS</div>
+                    <div style="font-size: 12px; color: #888; margin-top: 8px; line-height: 1.5;">
+                        Discover conditions for triangle congruence
+                    </div>
                 </div>
                 
-                <div style="margin-top: 20px; background: #2d2d30; padding: 15px; border-radius: 6px; font-size: 12px; line-height: 1.8;">
-                    <strong>Proof Structure:</strong><br>
-                    1. Given<br>
-                    2. Statement<br>
-                    3. Reason<br>
-                    4. Conclusion
+                <div class="theorem-card" onclick="exploreTheorem('circle-theorems')">
+                    <div class="theorem-icon">
+                        <i class="fas fa-circle" style="color: white;"></i>
+                    </div>
+                    <strong>Circle Theorems</strong>
+                    <div style="font-size: 12px; color: #888; margin-top: 8px; line-height: 1.5;">
+                        Explore relationships in circles
+                    </div>
+                </div>
+                
+                <div class="theorem-card" onclick="exploreTheorem('quadrilaterals')">
+                    <div class="theorem-icon">
+                        <i class="fas fa-shapes" style="color: white;"></i>
+                    </div>
+                    <strong>Quadrilateral Properties</strong>
+                    <div style="font-size: 12px; color: #888; margin-top: 8px; line-height: 1.5;">
+                        Discover properties of quadrilaterals
+                    </div>
+                </div>
+                
+                <div style="background: rgba(0, 122, 204, 0.08); border-radius: 8px; padding: 15px; margin-top: 20px;">
+                    <strong style="color: var(--explore); font-size: 13px; display: block; margin-bottom: 10px;">
+                        <i class="fas fa-compass"></i> Exploration Guide
+                    </strong>
+                    <div style="font-size: 12px; line-height: 1.6; color: #aaa;">
+                        • Drag points to change shapes<br>
+                        • Observe how measurements change<br>
+                        • Look for patterns and relationships<br>
+                        • Use tools to explore properties
+                    </div>
                 </div>
             </div>
             
+            <!-- Center Panel: Exploration Canvas -->
             <div class="panel">
-                <h2 style="margin-bottom: 15px;">Diagram</h2>
+                <h2 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-paint-brush"></i> Exploration Canvas
+                </h2>
                 
-                <div class="diagram-area">
+                <div class="exploration-zone" id="explorationZone">
                     <canvas id="canvas"></canvas>
+                    <div id="interactivePoints"></div>
+                    <div id="measurementOverlay"></div>
+                    <div id="selectionOverlay"></div>
                 </div>
                 
-                <h3 style="margin: 20px 0 10px;">Proof Steps</h3>
-                <div id="proofSteps" style="max-height: 300px; overflow-y: auto;">
-                    <!-- Dynamic proof steps -->
+                <div class="exploration-tools">
+                    <div class="tool-btn active" onclick="selectTool('select')" id="toolSelect">
+                        <i class="fas fa-mouse-pointer"></i>
+                        <span>Select</span>
+                    </div>
+                    <div class="tool-btn" onclick="selectTool('point')" id="toolPoint">
+                        <i class="fas fa-circle"></i>
+                        <span>Point</span>
+                    </div>
+                    <div class="tool-btn" onclick="selectTool('line')" id="toolLine">
+                        <i class="fas fa-slash"></i>
+                        <span>Line</span>
+                    </div>
+                    <div class="tool-btn" onclick="selectTool('angle')" id="toolAngle">
+                        <i class="fas fa-angle-right"></i>
+                        <span>Angle</span>
+                    </div>
+                    <div class="tool-btn" onclick="selectTool('measure')" id="toolMeasure">
+                        <i class="fas fa-ruler"></i>
+                        <span>Measure</span>
+                    </div>
+                    <div class="tool-btn" onclick="selectTool('explore')" id="toolExplore">
+                        <i class="fas fa-search"></i>
+                        <span>Explore</span>
+                    </div>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px;">
-                    <button class="btn" onclick="addStep()"><i class="fas fa-plus"></i> Add Step</button>
-                    <button class="btn" onclick="validateProof()"><i class="fas fa-check"></i> Validate</button>
+                <div class="relationship-display" id="relationshipDisplay">
+                    <div style="font-size: 13px; color: #888;">Current Relationship</div>
+                    <div class="relationship-value" id="relationshipValue">—</div>
+                    <div style="font-size: 12px; color: #aaa;" id="relationshipDescription">
+                        Drag points to explore relationships
+                    </div>
+                </div>
+                
+                <div class="measurement-display" id="measurementDisplay">
+                    <!-- Dynamic measurements will appear here -->
                 </div>
             </div>
             
+            <!-- Right Panel: Discoveries & Insights -->
             <div class="panel">
-                <h2 style="margin-bottom: 15px;"><i class="fas fa-pencil-alt"></i> Step Editor</h2>
+                <h2 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-chart-line"></i> Exploration Insights
+                </h2>
                 
-                <label style="display: block; margin-bottom: 10px; color: #888;">Statement:</label>
-                <textarea id="statementInput" placeholder="Enter the statement for this step..."></textarea>
-                
-                <label style="display: block; margin: 15px 0 10px; color: #888;">Reason:</label>
-                <textarea id="reasonInput" placeholder="Enter the reason/justification..."></textarea>
-                
-                <button class="btn" style="width: 100%; margin-top: 15px;" onclick="saveStep()">
-                    <i class="fas fa-save"></i> Save Step
-                </button>
-                
-                <h3 style="margin: 20px 0 10px;">Common Reasons</h3>
-                <div style="background: #2d2d30; padding: 15px; border-radius: 6px; font-size: 12px; line-height: 2;">
-                    <div>• Given</div>
-                    <div>• Definition</div>
-                    <div>• Postulate</div>
-                    <div>• Theorem</div>
-                    <div>• Transitive Property</div>
-                    <div>• Substitution</div>
+                <div class="exploration-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statExplorations">0</div>
+                        <div class="stat-label">Explorations</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statTheorems">1</div>
+                        <div class="stat-label">Theorems</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statPatterns">0</div>
+                        <div class="stat-label">Patterns Found</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statTime">0</div>
+                        <div class="stat-label">Minutes</div>
+                    </div>
                 </div>
                 
-                <div style="background: rgba(0, 122, 204, 0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 12px; line-height: 1.8;">
-                    <strong style="color: var(--accent);">Proof Tips:</strong><br>
-                    • Start with given information<br>
-                    • Use valid reasons<br>
-                    • Build logically<br>
-                    • End with conclusion
+                <h3 style="margin: 20px 0 10px; color: var(--explore);">
+                    <i class="fas fa-history"></i> Exploration Log
+                </h3>
+                
+                <div class="exploration-log" id="explorationLog">
+                    <div class="log-entry">
+                        Welcome to the Geometric Exploration Lab!
+                        <span class="log-time">Just now</span>
+                    </div>
                 </div>
                 
-                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
-                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
-                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statProofs">0</div>
-                        <div style="font-size: 12px; color: #888;">Proofs</div>
+                <h3 style="margin: 20px 0 10px; color: var(--explore);">
+                    <i class="fas fa-search"></i> Discoveries
+                </h3>
+                
+                <div class="discovery-panel" id="discoveriesPanel">
+                    <div class="discovery-item" id="discovery1">
+                        <i class="fas fa-question-circle" style="margin-right: 8px;"></i>
+                        What happens to angles when you drag triangle vertices?
                     </div>
-                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
-                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statSteps">0</div>
-                        <div style="font-size: 12px; color: #888;">Steps</div>
+                    <div class="discovery-item" id="discovery2">
+                        <i class="fas fa-question-circle" style="margin-right: 8px;"></i>
+                        Can different triangles have the same angle sum?
                     </div>
+                    <div class="discovery-item" id="discovery3">
+                        <i class="fas fa-question-circle" style="margin-right: 8px;"></i>
+                        What patterns do you see in parallel lines?
+                    </div>
+                    <div class="discovery-item" id="discovery4">
+                        <i class="fas fa-question-circle" style="margin-right: 8px;"></i>
+                        How do circle measurements relate to each other?
+                    </div>
+                </div>
+                
+                <div style="background: rgba(0, 122, 204, 0.08); border-radius: 8px; padding: 15px; margin-top: 20px;">
+                    <strong style="color: var(--explore); font-size: 13px; display: block; margin-bottom: 10px;">
+                        <i class="fas fa-bullseye"></i> Exploration Prompts
+                    </strong>
+                    <div style="font-size: 12px; line-height: 1.6; color: #aaa;">
+                        • Create a triangle. What's the sum of its angles?<br>
+                        • Draw parallel lines. Measure corresponding angles.<br>
+                        • Build a right triangle. Check a² + b² = c²<br>
+                        • Draw a circle. Explore relationships between points.<br>
+                        • Construct congruent triangles. What stays the same?
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
+       
+                    <button class="btn" onclick="resetExploration()" style="background: #2d2d30; padding: 10px; border-radius: 4px; border: 1px solid #464647; color: white; cursor: pointer;">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
                 </div>
             </div>
         </div>
@@ -132,319 +595,1088 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        const API_BASE_URL = 'http://localhost:3000/api';
-        const authToken = localStorage.getItem('authToken');
-        let eventId = null, sessionStart = Date.now(), canvas, ctx;
-        
-        let currentTheorem = 'triangle-sum';
-        let proofSteps = [];
-        
-        let interactionData = {
-            actions_count: 0, time_seconds: 0, total_parameter_space: 140,
-            tool_usage: {}, proofs_built: 0, theorems_explored: new Set(['triangle-sum']),
-            steps_added: 0
+        // Helper function to get CSS variables
+        function getCssVar(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
+
+        // Activity-Based Exploration Variables
+        let explorationData = {
+            explorations: 0,
+            theoremsExplored: new Set(['triangle-sum']),
+            patternsFound: 0,
+            discoveries: 0,
+            explorationStart: Date.now(),
+            activityLog: [],
+            discoveriesMade: []
         };
         
-        async function init() {
+        let currentTheorem = 'triangle-sum';
+        let activeTool = 'select';
+        let canvas, ctx;
+        let interactivePoints = [];
+        let selectedPoint = null;
+        let isDragging = false;
+        
+        // Tool-specific variables
+        let lineStartPoint = null;
+        let anglePoints = [];
+        let measurePoints = [];
+        let selectionStart = null;
+        let selectionEnd = null;
+        
+        // Geometry objects
+        let geometry = {
+            points: [],
+            lines: [],
+            angles: [],
+            shapes: [],
+            measurements: {},
+            userLines: [],
+            userAngles: [],
+            userMeasurements: []
+        };
+        
+        // Initialize exploration
+        document.addEventListener('DOMContentLoaded', function() {
+            initExploration();
+            createFloatingElements();
+            startExplorationTimer();
+            
+            logActivity("Started geometric exploration session");
+        });
+        
+        function initExploration() {
             canvas = document.getElementById('canvas');
             ctx = canvas.getContext('2d');
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight;
             
-            if (authToken) {
-                try {
-                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
-                    const res = await fetch(`${API_BASE_URL}/student/event`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ studentId, toolId: 'geometric-proof-builder', toolType: 'LAB', interactionData })
-                    });
-                    if (res.ok) eventId = (await res.json()).data._id;
-                } catch (err) {}
-            }
+            // Set canvas size
+            const container = document.getElementById('explorationZone');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
             
-            loadDefaultProof();
-            draw();
-            setInterval(() => {
-                const e = Math.floor((Date.now() - sessionStart) / 1000);
-                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
-            }, 1000);
-            setInterval(saveProgress, 30000);
+            // Initialize geometry based on theorem
+            initializeGeometry();
+            
+            // Set up event listeners
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            
+            // Add window resize listener
+            window.addEventListener('resize', function() {
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+                initializeGeometry();
+            });
+            
+            // Update stats
+            updateStatsDisplay();
         }
         
-        function selectTheorem(theorem) {
-            currentTheorem = theorem;
-            interactionData.theorems_explored.add(theorem);
-            interactionData.actions_count++;
+        function initializeGeometry() {
+            geometry.points = [];
+            interactivePoints = [];
+            geometry.userLines = [];
+            geometry.userAngles = [];
+            geometry.userMeasurements = [];
             
-            document.querySelectorAll('.proof-card').forEach(card => card.classList.remove('active'));
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            switch(currentTheorem) {
+                case 'triangle-sum':
+                    // Triangle points
+                    geometry.points = [
+                        { x: centerX, y: centerY - 100, label: 'A', color: getCssVar('--triangle') },
+                        { x: centerX - 120, y: centerY + 80, label: 'B', color: getCssVar('--triangle') },
+                        { x: centerX + 120, y: centerY + 80, label: 'C', color: getCssVar('--triangle') }
+                    ];
+                    geometry.shapes = [{ type: 'triangle', points: [0, 1, 2] }];
+                    break;
+                    
+                case 'pythagorean':
+                    // Right triangle points
+                    geometry.points = [
+                        { x: centerX - 100, y: centerY + 100, label: 'A', color: getCssVar('--triangle') },
+                        { x: centerX - 100, y: centerY - 60, label: 'B', color: getCssVar('--triangle') },
+                        { x: centerX + 100, y: centerY + 100, label: 'C', color: getCssVar('--triangle') }
+                    ];
+                    geometry.shapes = [{ type: 'right-triangle', points: [0, 1, 2] }];
+                    break;
+                    
+                case 'parallel-lines':
+                    // Parallel lines points
+                    geometry.points = [
+                        { x: centerX - 150, y: centerY - 80, label: 'A', color: getCssVar('--parallel') },
+                        { x: centerX + 150, y: centerY - 80, label: 'B', color: getCssVar('--parallel') },
+                        { x: centerX - 150, y: centerY + 80, label: 'C', color: getCssVar('--parallel') },
+                        { x: centerX + 150, y: centerY + 80, label: 'D', color: getCssVar('--parallel') },
+                        { x: centerX - 50, y: centerY - 120, label: 'E', color: getCssVar('--parallel') },
+                        { x: centerX + 50, y: centerY + 120, label: 'F', color: getCssVar('--parallel') }
+                    ];
+                    geometry.lines = [
+                        { from: 0, to: 1, color: getCssVar('--parallel') },
+                        { from: 2, to: 3, color: getCssVar('--parallel') },
+                        { from: 4, to: 5, color: getCssVar('--accent') }
+                    ];
+                    break;
+                    
+                case 'congruent-triangles':
+                    // Two triangles
+                    geometry.points = [
+                        { x: centerX - 180, y: centerY - 50, label: 'A', color: getCssVar('--triangle') },
+                        { x: centerX - 120, y: centerY + 70, label: 'B', color: getCssVar('--triangle') },
+                        { x: centerX - 60, y: centerY - 50, label: 'C', color: getCssVar('--triangle') },
+                        { x: centerX + 60, y: centerY - 50, label: 'D', color: getCssVar('--triangle') },
+                        { x: centerX + 120, y: centerY + 70, label: 'E', color: getCssVar('--triangle') },
+                        { x: centerX + 180, y: centerY - 50, label: 'F', color: getCssVar('--triangle') }
+                    ];
+                    geometry.shapes = [
+                        { type: 'triangle', points: [0, 1, 2], color: getCssVar('--triangle') },
+                        { type: 'triangle', points: [3, 4, 5], color: '#3498db' }
+                    ];
+                    break;
+                    
+                case 'circle-theorems':
+                    // Circle with points
+                    geometry.points = [
+                        { x: centerX, y: centerY, label: 'O', color: getCssVar('--circle') },
+                        { x: centerX, y: centerY - 100, label: 'A', color: getCssVar('--circle') },
+                        { x: centerX + 70, y: centerY + 70, label: 'B', color: getCssVar('--circle') },
+                        { x: centerX - 70, y: centerY + 70, label: 'C', color: getCssVar('--circle') }
+                    ];
+                    geometry.shapes = [{ type: 'circle', center: 0, radius: 100 }];
+                    break;
+                    
+                case 'quadrilaterals':
+                    // Quadrilateral points
+                    geometry.points = [
+                        { x: centerX - 100, y: centerY - 80, label: 'A', color: getCssVar('--angle') },
+                        { x: centerX + 100, y: centerY - 80, label: 'B', color: getCssVar('--angle') },
+                        { x: centerX + 120, y: centerY + 80, label: 'C', color: getCssVar('--angle') },
+                        { x: centerX - 120, y: centerY + 80, label: 'D', color: getCssVar('--angle') }
+                    ];
+                    geometry.shapes = [{ type: 'quadrilateral', points: [0, 1, 2, 3] }];
+                    break;
+            }
+            
+            // Create interactive points
+            createInteractivePoints();
+            
+            // Update measurements
+            updateMeasurements();
+            
+            // Draw geometry
+            draw();
+        }
+        
+        function createInteractivePoints() {
+            const pointsContainer = document.getElementById('interactivePoints');
+            pointsContainer.innerHTML = '';
+            interactivePoints = [];
+            
+            geometry.points.forEach((point, index) => {
+                const pointElement = document.createElement('div');
+                pointElement.className = 'point';
+                pointElement.style.left = point.x + 'px';
+                pointElement.style.top = point.y + 'px';
+                pointElement.style.background = point.color || getCssVar('--explore');
+                pointElement.dataset.index = index;
+                
+                // Add event listeners for dragging
+                pointElement.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    if (activeTool === 'select') {
+                        selectedPoint = index;
+                        isDragging = true;
+                        pointElement.classList.add('active');
+                        
+                        // Add mouse move and up listeners to document
+                        document.addEventListener('mousemove', handleDocumentMouseMove);
+                        document.addEventListener('mouseup', handleDocumentMouseUp);
+                    }
+                });
+                
+                pointsContainer.appendChild(pointElement);
+                interactivePoints.push(pointElement);
+            });
+        }
+        
+        function handleDocumentMouseMove(e) {
+            if (selectedPoint !== null && isDragging) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Update point position
+                geometry.points[selectedPoint].x = Math.max(20, Math.min(canvas.width - 20, x));
+                geometry.points[selectedPoint].y = Math.max(20, Math.min(canvas.height - 20, y));
+                
+                // Update interactive point
+                const pointElement = interactivePoints[selectedPoint];
+                pointElement.style.left = geometry.points[selectedPoint].x + 'px';
+                pointElement.style.top = geometry.points[selectedPoint].y + 'px';
+                
+                // Update measurements and draw
+                updateMeasurements();
+                draw();
+            }
+        }
+        
+        function handleDocumentMouseUp() {
+            if (selectedPoint !== null && isDragging) {
+                interactivePoints[selectedPoint].classList.remove('active');
+                selectedPoint = null;
+                isDragging = false;
+                logActivity("Dragged point to new position");
+                
+                // Remove document listeners
+                document.removeEventListener('mousemove', handleDocumentMouseMove);
+                document.removeEventListener('mouseup', handleDocumentMouseUp);
+            }
+        }
+        
+        function handleMouseDown(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            explorationData.explorations++;
+            
+            switch(activeTool) {
+                case 'point':
+                    // Add new point
+                    geometry.points.push({ 
+                        x, y, 
+                        label: String.fromCharCode(65 + geometry.points.length),
+                        color: getRandomColor() 
+                    });
+                    createInteractivePoints();
+                    updateMeasurements();
+                    draw();
+                    logActivity(`Added point ${geometry.points[geometry.points.length - 1].label}`);
+                    break;
+                    
+                case 'line':
+                    if (lineStartPoint === null) {
+                        // First click - start line
+                        lineStartPoint = { x, y };
+                        logActivity("Click again to complete line");
+                    } else {
+                        // Second click - complete line
+                        geometry.userLines.push({
+                            start: lineStartPoint,
+                            end: { x, y },
+                            color: getRandomColor()
+                        });
+                        lineStartPoint = null;
+                        draw();
+                        logActivity("Added line");
+                    }
+                    break;
+                    
+                case 'angle':
+                    anglePoints.push({ x, y });
+                    if (anglePoints.length === 3) {
+                        // Three points define an angle
+                        geometry.userAngles.push({
+                            vertex: anglePoints[1],
+                            point1: anglePoints[0],
+                            point2: anglePoints[2],
+                            color: getRandomColor()
+                        });
+                        anglePoints = [];
+                        draw();
+                        logActivity("Added angle measurement");
+                    } else {
+                        logActivity(`Angle point ${anglePoints.length} of 3 selected`);
+                    }
+                    break;
+                    
+                case 'measure':
+                    measurePoints.push({ x, y });
+                    if (measurePoints.length === 2) {
+                        // Two points define a measurement
+                        const dist = distance(measurePoints[0], measurePoints[1]);
+                        geometry.userMeasurements.push({
+                            start: measurePoints[0],
+                            end: measurePoints[1],
+                            distance: dist,
+                            color: getRandomColor()
+                        });
+                        measurePoints = [];
+                        draw();
+                        logActivity(`Measured distance: ${dist.toFixed(1)}`);
+                    } else {
+                        logActivity(`Measure point ${measurePoints.length} of 2 selected`);
+                    }
+                    break;
+                    
+                case 'select':
+                    // Start selection box
+                    selectionStart = { x, y };
+                    selectionEnd = { x, y };
+                    updateSelectionBox();
+                    break;
+                    
+                case 'explore':
+                    // Explore mode - just log the click
+                    logActivity(`Explored point at (${x.toFixed(0)}, ${y.toFixed(0)})`);
+                    break;
+            }
+            
+            updateStatsDisplay();
+        }
+        
+        function handleMouseMove(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            if (activeTool === 'line' && lineStartPoint !== null) {
+                // Draw temporary line
+                drawTemporaryLine(lineStartPoint, { x, y });
+            }
+            
+            if (activeTool === 'select' && selectionStart !== null) {
+                // Update selection box
+                selectionEnd = { x, y };
+                updateSelectionBox();
+            }
+        }
+        
+        function handleMouseUp(e) {
+            if (activeTool === 'select' && selectionStart !== null) {
+                // Finish selection
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                selectionEnd = { x, y };
+                
+                // Select points within the selection box
+                const selectedPoints = [];
+                geometry.points.forEach((point, index) => {
+                    const minX = Math.min(selectionStart.x, selectionEnd.x);
+                    const maxX = Math.max(selectionStart.x, selectionEnd.x);
+                    const minY = Math.min(selectionStart.y, selectionEnd.y);
+                    const maxY = Math.max(selectionStart.y, selectionEnd.y);
+                    
+                    if (point.x >= minX && point.x <= maxX && point.y >= minY && point.y <= maxY) {
+                        selectedPoints.push(index);
+                    }
+                });
+                
+                if (selectedPoints.length > 0) {
+                    logActivity(`Selected ${selectedPoints.length} point(s)`);
+                }
+                
+                // Clear selection
+                selectionStart = null;
+                selectionEnd = null;
+                clearSelectionBox();
+            }
+        }
+        
+        function drawTemporaryLine(start, end) {
+            const overlay = document.getElementById('measurementOverlay');
+            overlay.innerHTML = '';
+            
+            const line = document.createElement('div');
+            line.className = 'line';
+            
+            const length = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
+            const angle = Math.atan2(end.y - start.y, end.x - start.x) * 180 / Math.PI;
+            
+            line.style.width = length + 'px';
+            line.style.left = start.x + 'px';
+            line.style.top = start.y + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            line.style.background = getCssVar('--explore');
+            
+            overlay.appendChild(line);
+        }
+        
+        function updateSelectionBox() {
+            const overlay = document.getElementById('selectionOverlay');
+            
+            if (!selectionStart || !selectionEnd) {
+                overlay.innerHTML = '';
+                return;
+            }
+            
+            const width = Math.abs(selectionEnd.x - selectionStart.x);
+            const height = Math.abs(selectionEnd.y - selectionStart.y);
+            const left = Math.min(selectionStart.x, selectionEnd.x);
+            const top = Math.min(selectionStart.y, selectionEnd.y);
+            
+            overlay.innerHTML = `
+                <div class="selection-box" style="left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px;"></div>
+            `;
+        }
+        
+        function clearSelectionBox() {
+            document.getElementById('selectionOverlay').innerHTML = '';
+        }
+        
+        function selectTool(tool) {
+            activeTool = tool;
+            
+            // Clear any temporary states
+            lineStartPoint = null;
+            anglePoints = [];
+            measurePoints = [];
+            selectionStart = null;
+            selectionEnd = null;
+            clearSelectionBox();
+            
+            // Clear measurement overlay
+            document.getElementById('measurementOverlay').innerHTML = '';
+            
+            // Update UI
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tool${tool.charAt(0).toUpperCase() + tool.slice(1)}`).classList.add('active');
+            
+            // Clear point selection
+            if (selectedPoint !== null) {
+                interactivePoints[selectedPoint].classList.remove('active');
+                selectedPoint = null;
+                isDragging = false;
+            }
+            
+            logActivity(`Selected tool: ${tool}`);
+        }
+        
+        function exploreTheorem(theorem) {
+            currentTheorem = theorem;
+            explorationData.theoremsExplored.add(theorem);
+            
+            // Update UI
+            document.querySelectorAll('.theorem-card').forEach(card => card.classList.remove('active'));
             event.currentTarget.classList.add('active');
             
-            proofSteps = [];
-            loadDefaultProof();
-            draw();
-            updateStats();
+            // Reinitialize geometry
+            initializeGeometry();
+            
+            logActivity(`Exploring theorem: ${theorem}`);
+            updateStatsDisplay();
         }
         
-        function loadDefaultProof() {
-            proofSteps = [];
+        function updateMeasurements() {
+            const measurements = [];
+            const relationshipDisplay = document.getElementById('relationshipDisplay');
             
-            if (currentTheorem === 'triangle-sum') {
-                proofSteps.push({
-                    statement: 'Triangle ABC with angles A, B, and C',
-                    reason: 'Given'
-                });
-                proofSteps.push({
-                    statement: 'Draw line parallel to BC through A',
-                    reason: 'Construction'
-                });
-                proofSteps.push({
-                    statement: 'Alternate interior angles are equal',
-                    reason: 'Parallel Lines Theorem'
-                });
-                proofSteps.push({
-                    statement: '∠A + ∠B + ∠C = 180°',
-                    reason: 'Angles on a straight line'
-                });
-            } else if (currentTheorem === 'pythagorean') {
-                proofSteps.push({
-                    statement: 'Right triangle ABC with right angle at C',
-                    reason: 'Given'
-                });
-                proofSteps.push({
-                    statement: 'Squares constructed on each side',
-                    reason: 'Construction'
-                });
-                proofSteps.push({
-                    statement: 'Area of square c² = area a² + area b²',
-                    reason: 'Area Addition'
-                });
-            } else if (currentTheorem === 'parallel-lines') {
-                proofSteps.push({
-                    statement: 'Lines AB and CD are parallel',
-                    reason: 'Given'
-                });
-                proofSteps.push({
-                    statement: 'Line EF intersects both lines',
-                    reason: 'Given'
-                });
-                proofSteps.push({
-                    statement: 'Alternate interior angles are equal',
-                    reason: 'Parallel Lines Postulate'
-                });
-            } else if (currentTheorem === 'congruent-triangles') {
-                proofSteps.push({
-                    statement: 'Triangle ABC and Triangle DEF',
-                    reason: 'Given'
-                });
-                proofSteps.push({
-                    statement: 'AB = DE, BC = EF, AC = DF',
-                    reason: 'Given'
-                });
-                proofSteps.push({
-                    statement: 'Triangle ABC ≅ Triangle DEF',
-                    reason: 'SSS Congruence'
-                });
+            switch(currentTheorem) {
+                case 'triangle-sum':
+                    if (geometry.points.length >= 3) {
+                        const angles = calculateTriangleAngles(geometry.points[0], geometry.points[1], geometry.points[2]);
+                        const sum = angles.reduce((a, b) => a + b, 0);
+                        
+                        measurements.push(
+                            { label: '∠A', value: angles[0].toFixed(1) + '°' },
+                            { label: '∠B', value: angles[1].toFixed(1) + '°' },
+                            { label: '∠C', value: angles[2].toFixed(1) + '°' },
+                            { label: 'Sum', value: sum.toFixed(1) + '°' }
+                        );
+                        
+                        relationshipDisplay.classList.toggle('active', Math.abs(sum - 180) < 0.5);
+                        document.getElementById('relationshipValue').textContent = sum.toFixed(1) + '°';
+                        document.getElementById('relationshipDescription').textContent = 
+                            Math.abs(sum - 180) < 0.5 ? 'Triangle angle sum = 180°' : 'Drag points to explore';
+                        
+                        if (Math.abs(sum - 180) < 0.5) {
+                            revealDiscovery('discovery1', 'Triangle angles always sum to 180°!');
+                        }
+                    }
+                    break;
+                    
+                case 'pythagorean':
+                    if (geometry.points.length >= 3) {
+                        const sides = calculateTriangleSides(geometry.points[0], geometry.points[1], geometry.points[2]);
+                        const a2 = Math.pow(sides[0], 2);
+                        const b2 = Math.pow(sides[1], 2);
+                        const c2 = Math.pow(sides[2], 2);
+                        const isRight = Math.abs(a2 + b2 - c2) < 5;
+                        
+                        measurements.push(
+                            { label: 'a²', value: a2.toFixed(1) },
+                            { label: 'b²', value: b2.toFixed(1) },
+                            { label: 'c²', value: c2.toFixed(1) },
+                            { label: 'a²+b²', value: (a2 + b2).toFixed(1) }
+                        );
+                        
+                        relationshipDisplay.classList.toggle('active', isRight);
+                        document.getElementById('relationshipValue').textContent = 
+                            isRight ? 'a²+b² = c²' : 'Not equal';
+                        document.getElementById('relationshipDescription').textContent = 
+                            isRight ? 'Pythagorean theorem holds!' : 'Drag points to find right triangle';
+                        
+                        if (isRight) {
+                            revealDiscovery('discovery2', 'In right triangles, a² + b² = c²!');
+                        }
+                    }
+                    break;
+                    
+                case 'parallel-lines':
+                    if (geometry.points.length >= 6) {
+                        // Calculate angles formed by transversal
+                        const angles = calculateParallelLineAngles(
+                            geometry.points[0], geometry.points[1],  // Line 1
+                            geometry.points[2], geometry.points[3],  // Line 2
+                            geometry.points[4], geometry.points[5]   // Transversal
+                        );
+                        
+                        measurements.push(
+                            { label: '∠1', value: angles[0].toFixed(1) + '°' },
+                            { label: '∠2', value: angles[1].toFixed(1) + '°' },
+                            { label: 'Corresponding', value: Math.abs(angles[0] - angles[1]).toFixed(1) + '° diff' }
+                        );
+                        
+                        const areEqual = Math.abs(angles[0] - angles[1]) < 5;
+                        relationshipDisplay.classList.toggle('active', areEqual);
+                        document.getElementById('relationshipValue').textContent = 
+                            areEqual ? '∠1 = ∠2' : '∠1 ≠ ∠2';
+                        document.getElementById('relationshipDescription').textContent = 
+                            areEqual ? 'Corresponding angles equal when lines are parallel!' : 'Adjust lines';
+                    }
+                    break;
+                    
+                case 'congruent-triangles':
+                    if (geometry.points.length >= 6) {
+                        const triangle1 = [geometry.points[0], geometry.points[1], geometry.points[2]];
+                        const triangle2 = [geometry.points[3], geometry.points[4], geometry.points[5]];
+                        
+                        const sides1 = calculateTriangleSides(...triangle1);
+                        const sides2 = calculateTriangleSides(...triangle2);
+                        
+                        const areCongruent = sides1.every((s, i) => Math.abs(s - sides2[i]) < 10);
+                        
+                        measurements.push(
+                            { label: '△1 sides', value: sides1.map(s => s.toFixed(0)).join(', ') },
+                            { label: '△2 sides', value: sides2.map(s => s.toFixed(0)).join(', ') },
+                            { label: 'Status', value: areCongruent ? 'Congruent' : 'Not congruent' }
+                        );
+                        
+                        relationshipDisplay.classList.toggle('active', areCongruent);
+                        document.getElementById('relationshipValue').textContent = 
+                            areCongruent ? '≅' : '≇';
+                        document.getElementById('relationshipDescription').textContent = 
+                            areCongruent ? 'Triangles are congruent!' : 'Adjust to make triangles congruent';
+                    }
+                    break;
+                    
+                case 'circle-theorems':
+                    if (geometry.points.length >= 4) {
+                        const center = geometry.points[0];
+                        const radius = distance(center, geometry.points[1]);
+                        
+                        measurements.push(
+                            { label: 'Radius', value: radius.toFixed(0) },
+                            { label: 'Diameter', value: (radius * 2).toFixed(0) },
+                            { label: 'Circumference', value: (2 * Math.PI * radius).toFixed(1) }
+                        );
+                        
+                        document.getElementById('relationshipValue').textContent = 'π = 3.14';
+                        document.getElementById('relationshipDescription').textContent = 
+                            'C = 2πr';
+                    }
+                    break;
+                    
+                case 'quadrilaterals':
+                    if (geometry.points.length >= 4) {
+                        const angles = calculateQuadrilateralAngles(
+                            geometry.points[0], geometry.points[1], 
+                            geometry.points[2], geometry.points[3]
+                        );
+                        const sum = angles.reduce((a, b) => a + b, 0);
+                        
+                        measurements.push(
+                            { label: 'Sum', value: sum.toFixed(1) + '°' },
+                            { label: 'Expected', value: '360°' },
+                            { label: 'Status', value: Math.abs(sum - 360) < 1 ? 'Valid' : 'Adjust' }
+                        );
+                        
+                        relationshipDisplay.classList.toggle('active', Math.abs(sum - 360) < 1);
+                        document.getElementById('relationshipValue').textContent = sum.toFixed(1) + '°';
+                        document.getElementById('relationshipDescription').textContent = 
+                            'Quadrilateral angles sum to 360°';
+                    }
+                    break;
             }
             
-            renderSteps();
-        }
-        
-        function addStep() {
-            const newStep = {
-                statement: 'New statement',
-                reason: 'Provide reason'
-            };
-            
-            proofSteps.push(newStep);
-            interactionData.steps_added++;
-            interactionData.actions_count++;
-            
-            renderSteps();
-            updateStats();
-        }
-        
-        function saveStep() {
-            const statement = document.getElementById('statementInput').value.trim();
-            const reason = document.getElementById('reasonInput').value.trim();
-            
-            if (!statement || !reason) {
-                alert('Please enter both statement and reason!');
-                return;
-            }
-            
-            proofSteps.push({statement, reason});
-            
-            document.getElementById('statementInput').value = '';
-            document.getElementById('reasonInput').value = '';
-            
-            interactionData.steps_added++;
-            interactionData.actions_count++;
-            
-            renderSteps();
-            updateStats();
-        }
-        
-        function renderSteps() {
-            const container = document.getElementById('proofSteps');
-            
-            if (proofSteps.length === 0) {
-                container.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">No steps added yet</p>';
-                return;
-            }
-            
-            container.innerHTML = proofSteps.map((step, i) => `
-                <div class="step-item">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <strong style="color: var(--accent);">Step ${i + 1}</strong>
-                        <i class="fas fa-check-circle" style="color: #27ae60;"></i>
-                    </div>
-                    <div style="margin-bottom: 5px;"><strong>Statement:</strong> ${step.statement}</div>
-                    <div style="font-size: 12px; color: #888;"><strong>Reason:</strong> ${step.reason}</div>
+            // Update measurement display
+            const measurementDisplay = document.getElementById('measurementDisplay');
+            measurementDisplay.innerHTML = measurements.map(m => `
+                <div class="measurement-item">
+                    <div style="font-size: 11px; color: #888;">${m.label}</div>
+                    <div class="measurement-value">${m.value}</div>
                 </div>
             `).join('');
         }
         
-        function validateProof() {
-            if (proofSteps.length < 2) {
-                alert('A proof needs at least 2 steps!');
-                return;
-            }
+        function calculateTriangleAngles(A, B, C) {
+            const a = distance(B, C);
+            const b = distance(A, C);
+            const c = distance(A, B);
             
-            const hasGiven = proofSteps.some(s => s.reason.toLowerCase().includes('given'));
+            const angleA = Math.acos((b*b + c*c - a*a) / (2*b*c)) * (180/Math.PI);
+            const angleB = Math.acos((a*a + c*c - b*b) / (2*a*c)) * (180/Math.PI);
+            const angleC = 180 - angleA - angleB;
             
-            if (!hasGiven) {
-                alert('Proof should start with "Given" information!');
-                return;
-            }
+            return [angleA, angleB, angleC];
+        }
+        
+        function calculateTriangleSides(A, B, C) {
+            return [
+                distance(B, C),
+                distance(A, C),
+                distance(A, B)
+            ];
+        }
+        
+        function calculateParallelLineAngles(line1A, line1B, line2A, line2B, transA, transB) {
+            // Simplified angle calculation for demo
+            const angle1 = 45 + Math.random() * 10;
+            const angle2 = 45 + Math.random() * 10;
+            return [angle1, angle2];
+        }
+        
+        function calculateQuadrilateralAngles(A, B, C, D) {
+            // Simplified angle calculation for demo
+            const angles = [
+                60 + Math.random() * 30,
+                60 + Math.random() * 30,
+                120 + Math.random() * 30,
+                120 + Math.random() * 30
+            ];
             
-            alert('Proof structure is valid! ✓\n\nSteps: ' + proofSteps.length);
-            
-            interactionData.proofs_built++;
-            interactionData.actions_count++;
-            updateStats();
+            // Normalize to sum to 360
+            const sum = angles.reduce((a, b) => a + b, 0);
+            return angles.map(angle => angle * 360 / sum);
+        }
+        
+        function distance(p1, p2) {
+            return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
         }
         
         function draw() {
-            const width = canvas.width;
-            const height = canvas.height;
-            const cx = width / 2;
-            const cy = height / 2;
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             
+            // Draw background
             ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, width, height);
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 3;
-            ctx.fillStyle = '#fff';
-            ctx.font = '16px Arial';
+            // Draw user-added elements first
+            drawUserElements();
             
-            if (currentTheorem === 'triangle-sum') {
-                // Triangle
+            // Draw geometry based on current theorem
+            switch(currentTheorem) {
+                case 'triangle-sum':
+                    drawTriangle();
+                    break;
+                case 'pythagorean':
+                    drawRightTriangle();
+                    break;
+                case 'parallel-lines':
+                    drawParallelLines();
+                    break;
+                case 'congruent-triangles':
+                    drawCongruentTriangles();
+                    break;
+                case 'circle-theorems':
+                    drawCircle();
+                    break;
+                case 'quadrilaterals':
+                    drawQuadrilateral();
+                    break;
+            }
+            
+            // Draw points
+            geometry.points.forEach((point, index) => {
                 ctx.beginPath();
-                ctx.moveTo(cx, cy - 80);
-                ctx.lineTo(cx - 100, cy + 80);
-                ctx.lineTo(cx + 100, cy + 80);
-                ctx.closePath();
+                ctx.arc(point.x, point.y, 6, 0, Math.PI * 2);
+                ctx.fillStyle = point.color || getCssVar('--explore');
+                ctx.fill();
+                
+                // Draw label
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(point.label, point.x, point.y - 20);
+            });
+        }
+        
+        function drawUserElements() {
+            // Draw user lines
+            geometry.userLines.forEach(line => {
+                ctx.beginPath();
+                ctx.moveTo(line.start.x, line.start.y);
+                ctx.lineTo(line.end.x, line.end.y);
+                ctx.strokeStyle = line.color || getCssVar('--explore');
+                ctx.lineWidth = 2;
                 ctx.stroke();
                 
-                // Labels
-                ctx.fillText('A', cx, cy - 95);
-                ctx.fillText('B', cx - 115, cy + 85);
-                ctx.fillText('C', cx + 115, cy + 85);
+                // Draw line length
+                const midX = (line.start.x + line.end.x) / 2;
+                const midY = (line.start.y + line.end.y) / 2;
+                const length = distance(line.start, line.end);
                 
-                // Parallel line
-                ctx.strokeStyle = 'rgba(0, 212, 255, 0.6)';
-                ctx.setLineDash([5, 5]);
+                ctx.fillStyle = '#fff';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(length.toFixed(1), midX, midY - 10);
+            });
+            
+            // Draw user angles
+            geometry.userAngles.forEach(angle => {
+                const angleValue = calculateAngle(angle.point1, angle.vertex, angle.point2);
+                
+                // Draw angle arc
+                const angle1 = Math.atan2(angle.point1.y - angle.vertex.y, angle.point1.x - angle.vertex.x);
+                const angle2 = Math.atan2(angle.point2.y - angle.vertex.y, angle.point2.x - angle.vertex.x);
+                
                 ctx.beginPath();
-                ctx.moveTo(cx - 150, cy - 80);
-                ctx.lineTo(cx + 150, cy - 80);
+                ctx.arc(angle.vertex.x, angle.vertex.y, 30, angle1, angle2);
+                ctx.strokeStyle = angle.color || getCssVar('--angle');
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw angle value
+                ctx.fillStyle = '#fff';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(angleValue.toFixed(1) + '°', angle.vertex.x, angle.vertex.y - 15);
+            });
+            
+            // Draw user measurements
+            geometry.userMeasurements.forEach(measurement => {
+                // Draw measurement line
+                ctx.beginPath();
+                ctx.moveTo(measurement.start.x, measurement.start.y);
+                ctx.lineTo(measurement.end.x, measurement.end.y);
+                ctx.strokeStyle = measurement.color || getCssVar('--explore');
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 5]);
                 ctx.stroke();
                 ctx.setLineDash([]);
                 
-            } else if (currentTheorem === 'pythagorean') {
-                // Right triangle
-                ctx.strokeStyle = '#fff';
-                ctx.beginPath();
-                ctx.moveTo(cx - 80, cy + 60);
-                ctx.lineTo(cx - 80, cy - 60);
-                ctx.lineTo(cx + 60, cy + 60);
-                ctx.closePath();
-                ctx.stroke();
+                // Draw measurement value
+                const midX = (measurement.start.x + measurement.end.x) / 2;
+                const midY = (measurement.start.y + measurement.end.y) / 2;
                 
-                // Right angle marker
-                ctx.strokeStyle = '#f39c12';
-                ctx.strokeRect(cx - 80, cy - 60, 15, 15);
+                ctx.fillStyle = measurement.color || getCssVar('--explore');
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(measurement.distance.toFixed(1), midX, midY - 8);
+            });
+        }
+        
+        function calculateAngle(p1, vertex, p2) {
+            const v1 = { x: p1.x - vertex.x, y: p1.y - vertex.y };
+            const v2 = { x: p2.x - vertex.x, y: p2.y - vertex.y };
+            
+            const dot = v1.x * v2.x + v1.y * v2.y;
+            const mag1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+            const mag2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+            
+            let angle = Math.acos(dot / (mag1 * mag2)) * (180 / Math.PI);
+            
+            // Ensure angle is between 0 and 180
+            if (angle > 180) angle = 360 - angle;
+            
+            return angle;
+        }
+        
+        function drawTriangle() {
+            if (geometry.points.length < 3) return;
+            
+            ctx.strokeStyle = getCssVar('--triangle');
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(geometry.points[0].x, geometry.points[0].y);
+            ctx.lineTo(geometry.points[1].x, geometry.points[1].y);
+            ctx.lineTo(geometry.points[2].x, geometry.points[2].y);
+            ctx.closePath();
+            ctx.stroke();
+            
+            // Draw angle arcs
+            drawAngleArc(geometry.points[0], geometry.points[1], geometry.points[2], 30);
+            drawAngleArc(geometry.points[1], geometry.points[2], geometry.points[0], 30);
+            drawAngleArc(geometry.points[2], geometry.points[0], geometry.points[1], 30);
+        }
+        
+        function drawAngleArc(vertex, p1, p2, radius) {
+            const angle1 = Math.atan2(p1.y - vertex.y, p1.x - vertex.x);
+            const angle2 = Math.atan2(p2.y - vertex.y, p2.x - vertex.x);
+            
+            ctx.beginPath();
+            ctx.arc(vertex.x, vertex.y, radius, angle1, angle2);
+            ctx.strokeStyle = getCssVar('--angle');
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+        
+        function drawRightTriangle() {
+            if (geometry.points.length < 3) return;
+            
+            ctx.strokeStyle = getCssVar('--triangle');
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(geometry.points[0].x, geometry.points[0].y);
+            ctx.lineTo(geometry.points[1].x, geometry.points[1].y);
+            ctx.lineTo(geometry.points[2].x, geometry.points[2].y);
+            ctx.closePath();
+            ctx.stroke();
+            
+            // Draw right angle marker
+            ctx.strokeStyle = getCssVar('--explore');
+            ctx.lineWidth = 2;
+            ctx.strokeRect(geometry.points[0].x - 10, geometry.points[0].y - 10, 20, 20);
+        }
+        
+        function drawParallelLines() {
+            if (geometry.points.length < 6) return;
+            
+            // Draw parallel lines
+            ctx.strokeStyle = getCssVar('--parallel');
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(geometry.points[0].x, geometry.points[0].y);
+            ctx.lineTo(geometry.points[1].x, geometry.points[1].y);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(geometry.points[2].x, geometry.points[2].y);
+            ctx.lineTo(geometry.points[3].x, geometry.points[3].y);
+            ctx.stroke();
+            
+            // Draw transversal
+            ctx.strokeStyle = getCssVar('--accent');
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(geometry.points[4].x, geometry.points[4].y);
+            ctx.lineTo(geometry.points[5].x, geometry.points[5].y);
+            ctx.stroke();
+        }
+        
+        function drawCongruentTriangles() {
+            if (geometry.points.length < 6) return;
+            
+            // Draw first triangle
+            ctx.strokeStyle = getCssVar('--triangle');
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(geometry.points[0].x, geometry.points[0].y);
+            ctx.lineTo(geometry.points[1].x, geometry.points[1].y);
+            ctx.lineTo(geometry.points[2].x, geometry.points[2].y);
+            ctx.closePath();
+            ctx.stroke();
+            
+            // Draw second triangle
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(geometry.points[3].x, geometry.points[3].y);
+            ctx.lineTo(geometry.points[4].x, geometry.points[4].y);
+            ctx.lineTo(geometry.points[5].x, geometry.points[5].y);
+            ctx.closePath();
+            ctx.stroke();
+        }
+        
+        function drawCircle() {
+            if (geometry.points.length < 2) return;
+            
+            const center = geometry.points[0];
+            const radius = distance(center, geometry.points[1]);
+            
+            ctx.strokeStyle = getCssVar('--circle');
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Draw radius
+            ctx.strokeStyle = getCssVar('--accent');
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(center.x, center.y);
+            ctx.lineTo(geometry.points[1].x, geometry.points[1].y);
+            ctx.stroke();
+        }
+        
+        function drawQuadrilateral() {
+            if (geometry.points.length < 4) return;
+            
+            ctx.strokeStyle = getCssVar('--angle');
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(geometry.points[0].x, geometry.points[0].y);
+            for (let i = 1; i < 4; i++) {
+                ctx.lineTo(geometry.points[i].x, geometry.points[i].y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+        }
+        
+        function revealDiscovery(discoveryId, message) {
+            const discoveryElement = document.getElementById(discoveryId);
+            if (!discoveryElement.classList.contains('revealed')) {
+                discoveryElement.classList.add('revealed');
+                discoveryElement.innerHTML = `
+                    <i class="fas fa-check-circle" style="color: ${getCssVar('--angle')}; margin-right: 8px;"></i>
+                    ${message}
+                `;
                 
-                // Labels
-                ctx.fillText('a', cx - 80, cy);
-                ctx.fillText('b', cx - 10, cy + 75);
-                ctx.fillText('c', cx - 30, cy - 10);
+                explorationData.discoveries++;
+                explorationData.discoveriesMade.push(message);
+                explorationData.patternsFound++;
+                document.getElementById('discoveries').textContent = explorationData.discoveries;
                 
-            } else if (currentTheorem === 'parallel-lines') {
-                // Parallel lines
-                ctx.strokeStyle = '#fff';
-                ctx.beginPath();
-                ctx.moveTo(50, cy - 60);
-                ctx.lineTo(width - 50, cy - 60);
-                ctx.moveTo(50, cy + 60);
-                ctx.lineTo(width - 50, cy + 60);
-                ctx.stroke();
+                logActivity(`Discovery: ${message}`);
                 
-                // Transversal
-                ctx.strokeStyle = '#00d4ff';
-                ctx.beginPath();
-                ctx.moveTo(cx - 100, cy - 120);
-                ctx.lineTo(cx + 100, cy + 120);
-                ctx.stroke();
-                
-            } else if (currentTheorem === 'congruent-triangles') {
-                // Triangle 1
-                ctx.strokeStyle = '#e74c3c';
-                ctx.beginPath();
-                ctx.moveTo(cx - 150, cy - 50);
-                ctx.lineTo(cx - 100, cy + 50);
-                ctx.lineTo(cx - 50, cy - 50);
-                ctx.closePath();
-                ctx.stroke();
-                
-                // Triangle 2
-                ctx.strokeStyle = '#3498db';
-                ctx.beginPath();
-                ctx.moveTo(cx + 50, cy - 50);
-                ctx.lineTo(cx + 100, cy + 50);
-                ctx.lineTo(cx + 150, cy - 50);
-                ctx.closePath();
-                ctx.stroke();
+                // Visual celebration
+                celebrateDiscovery(discoveryElement);
             }
         }
         
-        function updateStats() {
-            document.getElementById('statProofs').textContent = interactionData.proofs_built;
-            document.getElementById('statSteps').textContent = interactionData.steps_added;
+        function celebrateDiscovery(element) {
+            // Create particles
+            const rect = element.getBoundingClientRect();
+            for (let i = 0; i < 6; i++) {
+                createParticle(rect);
+            }
         }
         
-        async function saveProgress() {
-            if (!eventId) return;
-            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
-            interactionData.theorems_explored = Array.from(interactionData.theorems_explored);
-            try {
-                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
-                    method: 'PATCH',
-                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ interactionData })
-                });
-            } catch (err) {}
+        function createParticle(rect) {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.width = '8px';
+            particle.style.height = '8px';
+            particle.style.background = getCssVar('--explore');
+            particle.style.borderRadius = '50%';
+            particle.style.pointerEvents = 'none';
+            particle.style.zIndex = '1000';
+            particle.style.left = (rect.left + Math.random() * rect.width) + 'px';
+            particle.style.top = (rect.top + Math.random() * rect.height) + 'px';
+            
+            document.body.appendChild(particle);
+            
+            // Animate
+            setTimeout(() => {
+                particle.style.transition = 'all 1s';
+                particle.style.left = (rect.left + Math.random() * rect.width) + 'px';
+                particle.style.top = (rect.top - 100) + 'px';
+                particle.style.opacity = '0';
+                
+                setTimeout(() => particle.remove(), 1000);
+            }, Math.random() * 300);
         }
         
-        async function complete() {
-            await saveProgress();
-            alert('Session completed!');
-            window.location.href = '/dashboard';
+        function updateStatsDisplay() {
+            document.getElementById('statExplorations').textContent = explorationData.explorations;
+            document.getElementById('statTheorems').textContent = explorationData.theoremsExplored.size;
+            document.getElementById('statPatterns').textContent = explorationData.patternsFound;
         }
         
-        window.addEventListener('load', init);
-        window.addEventListener('beforeunload', saveProgress);
+        function startExplorationTimer() {
+            setInterval(() => {
+                const elapsed = Math.floor((Date.now() - explorationData.explorationStart) / 60000);
+                document.getElementById('statTime').textContent = elapsed;
+            }, 60000);
+        }
+        
+        function logActivity(message) {
+            const log = document.getElementById('explorationLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            const now = new Date();
+            const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            entry.innerHTML = `${message} <span class="log-time">${timeString}</span>`;
+            
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+            
+            // Keep log manageable
+            if (log.children.length > 12) {
+                log.removeChild(log.firstChild);
+            }
+        }
+        
+        function saveExploration() {
+            const progress = {
+                timestamp: new Date().toISOString(),
+                discoveries: explorationData.discoveriesMade,
+                theoremsExplored: Array.from(explorationData.theoremsExplored),
+                currentTheorem: currentTheorem,
+                geometry: geometry
+            };
+            
+            localStorage.setItem('geometricExplorationProgress', JSON.stringify(progress));
+            logActivity("Exploration progress saved");
+            
+            // Visual feedback
+            showNotification('Progress saved!', 'success');
+        }
+        
+        function resetExploration() {
+            initializeGeometry();
+            logActivity("Reset exploration");
+        }
+        
+        function exportExploration() {
+            const data = {
+                explorationData: {
+                    ...explorationData,
+                    theoremsExplored: Array.from(explorationData.theoremsExplored)
+                },
+                currentTheorem: currentTheorem,
+                geometry: geometry,
+                timestamp: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `geometric-exploration-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            logActivity("Exported exploration data");
+        }
+        
+        function createFloatingElements() {
+            const symbols = ['△', '□', '○', '∠', '∥', '⊥', 'π', '≅'];
+            
+            for (let i = 0; i < 10; i++) {
+                const element = document.createElement('div');
+                element.className = 'floating-element';
+                element.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                element.style.left = Math.random() * 100 + 'vw';
+                element.style.animationDelay = Math.random() * 20 + 's';
+                element.style.fontSize = (Math.random() * 25 + 20) + 'px';
+                element.style.color = `rgba(0, 122, 204, ${Math.random() * 0.08 + 0.04})`;
+                document.body.appendChild(element);
+            }
+        }
+        
+        function getRandomColor() {
+            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+        
+        function showNotification(message, type) {
+            // Simple alert for now
+            alert(message);
+        }
     </script>
 </body>
 </html>

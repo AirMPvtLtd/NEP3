@@ -173,6 +173,79 @@ const metaParametersSchema = new mongoose.Schema({
       default: 0
     }
   },
+
+  //
+
+  // ADD TO SCHEMA
+  pidConfig: {
+    Kp: { type: Number, default: 0.5 },
+    Ki: { type: Number, default: 0.1 },
+    Kd: { type: Number, default: 0.2 },
+    setpoint: { type: Number, default: 70 }
+  },
+
+  pidState: {
+    integral: Number,
+    lastError: Number,
+    lastOutput: Number,
+    lastTime: Date
+  },
+
+  pidLastUpdated: Date,
+
+  pidUpdateHistory: [{
+    performance: Number,
+    adjustment: Number,
+    error: Number,
+    timestamp: Date
+  }],
+  // ADD TO SCHEMA
+  irtAbility: {
+    type: Number,
+    default: 0
+  },
+
+  irtStandardError: {
+    type: Number,
+    default: 2.0
+  },
+
+  irtSampleSize: {
+    type: Number,
+    default: 0
+  },
+
+  irtLastUpdated: Date,
+
+  irtHistory: [{
+    ability: Number,
+    standardError: Number,
+    sampleSize: Number,
+    timestamp: Date
+  }],
+  // ADD TO SCHEMA
+  attentionConfig: {
+    temperature: Number,
+    queryWeights: Object
+  },
+
+  attentionMemory: [{
+    simulation_type: String,
+    difficulty: String,
+    competency: [String],
+    time_of_day: Number,
+    session_length: Number,
+    recent_performance: Number
+  }],
+
+  attentionHistory: [{
+    timestamp: Date,
+    query: Object,
+    selectedChallenge: mongoose.Schema.Types.ObjectId,
+    weights: [Number],
+    topK: [Object],
+    confidence: Number
+  }],
   
   // History tracking
   updateHistory: [{

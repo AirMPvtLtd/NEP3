@@ -40,6 +40,7 @@ const aiLogSchema = new mongoose.Schema({
       'challenge_generation',
       'challenge_evaluation', 
       'answer_evaluation',
+      'response_evaluation',
       'feedback_generation',
       'nep_report_generation',
       'competency_analysis',
@@ -488,7 +489,7 @@ aiLogSchema.statics.cleanup = async function(daysOld = 30) {
 aiLogSchema.methods.calculateCost = function(promptTokens, completionTokens, model) {
   // Cost per 1K tokens (example rates - adjust based on actual pricing)
   const rates = {
-    'mistral-large-latest': { prompt: 0.004, completion: 0.012 },
+    'mistral-large-2411': { prompt: 0.004, completion: 0.012 },
     'mistral-medium-latest': { prompt: 0.002, completion: 0.006 },
     'gpt-4': { prompt: 0.03, completion: 0.06 },
     'gpt-3.5-turbo': { prompt: 0.0015, completion: 0.002 }

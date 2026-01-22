@@ -36,9 +36,6 @@
             --accelerated-color: #00b894;
             --decelerated-color: #fd79a8;
             --circular-color: #6c5ce7;
-            --beginner-color: #00b894;
-            --intermediate-color: #fd79a8;
-            --advanced-color: #6c5ce7;
         }
         
         body {
@@ -83,76 +80,9 @@
             to { transform: rotate(360deg); }
         }
         
-        /* Toast Notifications */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .toast {
-            padding: 15px 20px;
-            border-radius: 6px;
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-left: 4px solid var(--accent-color);
-            color: var(--text-primary);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            animation: slideIn 0.3s ease;
-            min-width: 300px;
-            max-width: 400px;
-        }
-        
-        .toast.error {
-            border-left-color: var(--error-color);
-        }
-        
-        .toast.success {
-            border-left-color: var(--success-color);
-        }
-        
-        .toast.warning {
-            border-left-color: var(--warning-color);
-        }
-        
-        .toast-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        .toast-title {
-            font-weight: 600;
-            font-size: 14px;
-        }
-        
-        .toast-close {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 18px;
-            padding: 0;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .toast-message {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-        
         /* Main Container */
         .simulation-container {
-            max-width: 1600px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             display: flex;
@@ -161,7 +91,7 @@
             min-height: 100vh;
         }
         
-        /* HEADER */
+        /* HEADER - Simplified */
         .main-header {
             background: var(--header-bg);
             border-radius: 8px;
@@ -170,8 +100,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
         }
         
         .header-left {
@@ -195,55 +123,6 @@
             display: flex;
             gap: 15px;
             align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        .session-info {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-        
-        .info-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-        
-        .info-value {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        
-        .connection-status {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            background: rgba(0, 122, 204, 0.2);
-            color: var(--accent-color);
-            border: 1px solid var(--accent-color);
-        }
-        
-        .connection-status.offline {
-            background: rgba(255, 68, 68, 0.2);
-            color: var(--error-color);
-            border-color: var(--error-color);
-        }
-        
-        .connection-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent-color);
-        }
-        
-        .connection-dot.offline {
-            background: var(--error-color);
         }
         
         .header-actions {
@@ -278,249 +157,22 @@
             color: var(--text-primary);
         }
         
-        .header-btn.success {
-            background: var(--success-color);
-            border-color: var(--success-color);
-            color: var(--text-primary);
-        }
-        
-        /* UNIVERSAL CHALLENGE COMPONENT STYLES */
-        .challenge-header-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .challenge-meta {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        .challenge-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .challenge-badge.beginner {
-            background: rgba(0, 184, 148, 0.2);
-            color: var(--beginner-color);
-            border: 1px solid var(--beginner-color);
-        }
-        
-        .challenge-badge.intermediate {
-            background: rgba(253, 121, 168, 0.2);
-            color: var(--intermediate-color);
-            border: 1px solid var(--intermediate-color);
-        }
-        
-        .challenge-badge.advanced {
-            background: rgba(108, 92, 231, 0.2);
-            color: var(--advanced-color);
-            border: 1px solid var(--advanced-color);
-        }
-        
-        .challenge-timer {
-            font-size: 12px;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .challenge-progress {
-            flex: 1;
-            height: 4px;
-            background: var(--border-color);
-            border-radius: 2px;
-            overflow: hidden;
-            margin: 0 15px;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: var(--accent-color);
-            border-radius: 2px;
-            transition: width 0.3s ease;
-        }
-        
-        .challenge-hint-btn {
-            background: none;
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        
-        .challenge-hint-btn:hover {
-            background: var(--accent-color);
-            border-color: var(--accent-color);
-            color: var(--text-primary);
-        }
-        
-        .challenge-hint-panel {
-            background: var(--header-bg);
-            border-radius: 6px;
-            padding: 15px;
-            margin: 10px 0;
-            border: 1px solid var(--border-color);
-            display: none;
-        }
-        
-        .hint-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--accent-color);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .hint-text {
-            font-size: 13px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-        
-        .challenge-options {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin: 15px 0;
-        }
-        
-        .option-btn {
-            padding: 12px;
-            border: 2px solid var(--border-color);
-            border-radius: 6px;
-            background: var(--secondary-bg);
-            color: var(--text-secondary);
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        
-        .option-btn:hover {
-            border-color: var(--accent-color);
-            transform: translateY(-2px);
-        }
-        
-        .option-btn.selected {
-            background: var(--accent-color);
-            border-color: var(--accent-color);
-            color: var(--text-primary);
-        }
-        
-        .challenge-feedback {
-            background: rgba(0, 122, 204, 0.1);
-            border: 1px solid var(--accent-color);
-            border-radius: 6px;
-            padding: 15px;
-            margin: 15px 0;
-            display: none;
-        }
-        
-        .feedback-correct {
-            background: rgba(0, 184, 148, 0.1);
-            border-color: var(--success-color);
-        }
-        
-        .feedback-incorrect {
-            background: rgba(255, 68, 68, 0.1);
-            border-color: var(--error-color);
-        }
-        
-        .feedback-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .feedback-title {
-            font-size: 14px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .feedback-content {
-            font-size: 13px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-        
-        .challenge-navigation {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .nav-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 4px;
-            background: var(--accent-color);
-            color: var(--text-primary);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-btn:hover {
-            background: #005a99;
-            transform: translateY(-1px);
-        }
-        
-        .nav-btn.secondary {
-            background: var(--header-bg);
-            color: var(--text-secondary);
-            border: 1px solid var(--border-color);
-        }
-        
-        .nav-btn.secondary:hover {
-            background: #3c3c3c;
-        }
-        
-        /* Main Content */
+        /* Main Content - Full width simulation */
         .main-content {
             display: flex;
             flex: 1;
             min-height: 0;
-            gap: 20px;
         }
         
-        /* Left Panel - Simulation Area */
+        /* Simulation Panel - Now takes full width */
         .simulation-panel {
-            flex: 3;
+            flex: 1;
             background: var(--panel-bg);
             border-radius: 8px;
             border: 1px solid var(--border-color);
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            min-width: 0;
         }
         
         .simulation-header {
@@ -529,8 +181,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
         }
         
         .simulation-title {
@@ -548,7 +198,7 @@
             border: 1px solid var(--accent-color);
         }
         
-        /* Simulation Canvas */
+        /* Simulation Area */
         .simulation-area {
             flex: 1;
             padding: 20px;
@@ -563,7 +213,7 @@
             border: 1px solid var(--border-color);
             position: relative;
             overflow: hidden;
-            height: 350px;
+            height: 400px;
         }
         
         #motion-canvas {
@@ -772,142 +422,7 @@
             display: block;
         }
         
-        /* Right Panel - Challenge Area */
-        .challenge-panel {
-            flex: 2;
-            min-width: 350px;
-            max-width: 450px;
-            background: var(--panel-bg);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .challenge-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .challenge-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .challenge-stats {
-            display: flex;
-            gap: 10px;
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-        
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .challenge-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        /* Updated Challenge Problem with Universal Component */
-        .challenge-problem {
-            background: var(--header-bg);
-            border-radius: 6px;
-            padding: 20px;
-            border: 1px solid var(--border-color);
-        }
-        
-        .problem-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--accent-color);
-            margin-bottom: 10px;
-        }
-        
-        .problem-text {
-            font-size: 14px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            margin-bottom: 20px;
-        }
-        
-        .challenge-input-section {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .input-label {
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-        
-        .challenge-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            background: var(--secondary-bg);
-            color: var(--text-primary);
-            font-size: 14px;
-        }
-        
-        .challenge-input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-        }
-        
-        /* Challenge History */
-        .challenge-history {
-            margin-top: 20px;
-        }
-        
-        .history-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 10px;
-        }
-        
-        .history-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .history-item {
-            background: var(--header-bg);
-            border-radius: 4px;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-        
-        .history-item.correct {
-            border-left-color: var(--success-color);
-        }
-        
-        .history-item.incorrect {
-            border-left-color: var(--error-color);
-        }
-        
-        /* STATUS BAR */
+        /* STATUS BAR - Simplified */
         .status-bar {
             background: var(--accent-color);
             padding: 8px 20px;
@@ -916,7 +431,6 @@
             justify-content: space-between;
             align-items: center;
             border-radius: 8px;
-            margin-top: 20px;
         }
         
         .status-left, .status-right {
@@ -954,7 +468,7 @@
         
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
         }
         
@@ -976,25 +490,6 @@
         }
         
         /* RESPONSIVE BREAKPOINTS */
-        @media (max-width: 1024px) {
-            .main-content {
-                flex-direction: column;
-            }
-            
-            .challenge-panel {
-                max-width: 100%;
-                min-width: 0;
-            }
-            
-            .controls-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-            
-            .challenge-options {
-                grid-template-columns: 1fr;
-            }
-        }
-        
         @media (max-width: 768px) {
             .simulation-container {
                 padding: 10px;
@@ -1007,16 +502,15 @@
                 gap: 10px;
             }
             
-            .header-right {
-                justify-content: space-between;
-                width: 100%;
-            }
-            
             .controls-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: 1fr;
             }
             
             .motion-types {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .metrics-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
             
@@ -1042,23 +536,13 @@
                 justify-content: center;
             }
             
-            .controls-grid {
-                grid-template-columns: 1fr;
-            }
-            
             .motion-types {
                 grid-template-columns: 1fr;
             }
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -1069,58 +553,25 @@
         <div class="loading-text">Loading Motion Classifier Simulator...</div>
     </div>
     
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
-    
     <!-- Main Simulation Container -->
     <div class="simulation-container">
-        <!-- HEADER - Updated with Export PDF Button -->
+        <!-- HEADER - Simplified -->
         <div class="main-header">
             <div class="header-left">
                 <div class="header-title">Motion Classifier Simulator</div>
-                <div class="header-subtitle">Physics Lab • Grade 6-8 • Analyze & Classify Motion Types</div>
+                <div class="header-subtitle">Physics Lab • Analyze & Classify Motion Types</div>
             </div>
             
             <div class="header-right">
-                <div class="session-info">
-                    <div class="info-item">
-                        <i class="fas fa-clock"></i>
-                        <span>Time: <span class="info-value" id="sessionTimer">00:00</span></span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-mouse-pointer"></i>
-                        <span>Actions: <span class="info-value" id="actionCounter">0</span></span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-save"></i>
-                        <span>Save: <span class="info-value" id="saveStatus">Auto</span></span>
-                    </div>
-                    <div class="connection-status" id="connectionStatus">
-                        <div class="connection-dot"></div>
-                        <span>Online</span>
-                    </div>
-                </div>
-                
                 <div class="header-actions">
-                    <button class="header-btn" onclick="exportChallengeReport()">
-                        <i class="fas fa-file-pdf"></i> Export Report
-                    </button>
-                    <button class="header-btn" onclick="saveProgress()">
-                        <i class="fas fa-save"></i> Save Now
-                    </button>
-                    <button class="header-btn success" onclick="completeSession()">
-                        <i class="fas fa-check-circle"></i> Complete
-                    </button>
-                    <button class="header-btn" onclick="exitSession()">
-                        <i class="fas fa-sign-out-alt"></i> Exit
-                    </button>
+           
+                   
                 </div>
             </div>
         </div>
         
-        <!-- MAIN CONTENT -->
+        <!-- MAIN CONTENT - Full width simulation only -->
         <div class="main-content">
-            <!-- Left Panel - Simulation -->
             <div class="simulation-panel">
                 <div class="simulation-header">
                     <div class="simulation-title">Motion Simulation Workspace</div>
@@ -1223,122 +674,12 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Right Panel - Challenges with Universal Component -->
-            <div class="challenge-panel">
-                <div class="challenge-header">
-                    <div class="challenge-title">
-                        <i class="fas fa-puzzle-piece"></i> AI Challenges
-                    </div>
-                    <div class="challenge-stats">
-                        <div class="stat-item">
-                            <i class="fas fa-check-circle"></i>
-                            <span id="challengeCorrect">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-times-circle"></i>
-                            <span id="challengeIncorrect">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-percentage"></i>
-                            <span id="challengeSuccess">0%</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="challenge-content">
-                    <!-- UNIVERSAL CHALLENGE COMPONENT -->
-                    <div class="challenge-problem" id="currentChallengeContainer">
-                        <div class="problem-title" id="challengeNumber">Challenge #1</div>
-                        
-                        <!-- Challenge Header Section -->
-                        <div class="challenge-header-section">
-                            <div class="challenge-meta">
-                                <span class="challenge-badge beginner" id="challengeBadge">Beginner</span>
-                                <span class="challenge-timer">
-                                    <i class="fas fa-clock"></i> <span id="challengeTimer">0s</span>
-                                </span>
-                            </div>
-                            
-                            <div class="challenge-progress">
-                                <div class="progress-fill" id="challengeProgress" style="width: 0%"></div>
-                            </div>
-                            
-                            <button class="challenge-hint-btn" id="hintBtn" onclick="toggleHint()">
-                                <i class="fas fa-lightbulb"></i>
-                            </button>
-                        </div>
-                        
-                        <!-- Challenge Text -->
-                        <div class="problem-text" id="challengeText">
-                            Observe the motion and classify its type. Is it uniform, accelerated, decelerated, or circular motion?
-                        </div>
-                        
-                        <!-- Hint Panel (Initially Hidden) -->
-                        <div class="challenge-hint-panel" id="hintPanel">
-                            <div class="hint-title">
-                                <i class="fas fa-lightbulb"></i> Hint
-                            </div>
-                            <div class="hint-text" id="hintText">
-                                Watch how the velocity changes over time. Check if the object's speed remains constant or changes.
-                            </div>
-                        </div>
-                        
-                        <!-- Multiple Choice Options -->
-                        <div class="challenge-options" id="challengeOptions">
-                            <!-- Options will be populated by JavaScript -->
-                        </div>
-                        
-                        <!-- Free Text Input -->
-                        <div class="challenge-input-section" id="textInputSection" style="display: none;">
-                            <div class="input-label">Your Answer:</div>
-                            <input type="text" class="challenge-input" id="challengeAnswer" 
-                                   placeholder="Enter your classification..." 
-                                   onkeypress="handleEnterKey(event)">
-                        </div>
-                        
-                        <!-- Feedback Section -->
-                        <div class="challenge-feedback" id="challengeFeedback">
-                            <div class="feedback-header">
-                                <div class="feedback-title" id="feedbackTitle">
-                                    <i class="fas fa-robot"></i> AI Feedback
-                                </div>
-                                <button class="toast-close" onclick="closeFeedback()">&times;</button>
-                            </div>
-                            <div class="feedback-content" id="feedbackContent">
-                                Your answer is correct! This is uniform motion because the velocity remains constant.
-                            </div>
-                        </div>
-                        
-                        <!-- Navigation Buttons -->
-                        <div class="challenge-navigation">
-                            <button class="nav-btn" id="submitBtn" onclick="submitChallenge()">
-                                <i class="fas fa-paper-plane"></i> Submit Answer
-                            </button>
-                            <button class="nav-btn secondary" id="nextBtn" onclick="newChallenge()" style="display: none;">
-                                <i class="fas fa-forward"></i> Next Challenge
-                            </button>
-                            <button class="nav-btn secondary" id="retryBtn" onclick="retryChallenge()" style="display: none;">
-                                <i class="fas fa-redo"></i> Try Again
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Challenge History -->
-                    <div class="challenge-history">
-                        <div class="history-title">Recent Attempts</div>
-                        <div class="history-list" id="challengeHistory">
-                            <!-- History items will be added here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
         
         <!-- Metrics Display -->
         <div class="metrics-display">
             <div class="metrics-title">
-                <i class="fas fa-chart-bar"></i> Learning Metrics
+                <i class="fas fa-chart-bar"></i> Simulation Metrics
             </div>
             <div class="metrics-grid">
                 <div class="metric-item">
@@ -1346,26 +687,26 @@
                     <div class="metric-value" id="metricTypes">0</div>
                 </div>
                 <div class="metric-item">
-                    <div class="metric-label">Correct Classifications</div>
-                    <div class="metric-value" id="metricCorrect">0</div>
+                    <div class="metric-label">Speed Variations</div>
+                    <div class="metric-value" id="metricSpeed">0</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-label">Distance Traveled</div>
+                    <div class="metric-value" id="metricDistance">0 m</div>
                 </div>
                 <div class="metric-item">
                     <div class="metric-label">Graphs Plotted</div>
                     <div class="metric-value" id="metricGraphs">0</div>
                 </div>
-                <div class="metric-item">
-                    <div class="metric-label">Speed Variations</div>
-                    <div class="metric-value" id="metricSpeed">0</div>
-                </div>
             </div>
         </div>
         
-        <!-- STATUS BAR -->
+        <!-- STATUS BAR - Simplified -->
         <div class="status-bar">
             <div class="status-left">
                 <div class="status-item">
                     <i class="fas fa-running"></i>
-                    <span>Current Motion: <span class="status-value" id="statusMotion">Uniform</span></span>
+                    <span>Motion: <span class="status-value" id="statusMotion">Uniform</span></span>
                 </div>
                 <div class="status-item">
                     <i class="fas fa-bolt"></i>
@@ -1379,12 +720,8 @@
             
             <div class="status-right">
                 <div class="status-item">
-                    <i class="fas fa-tools"></i>
-                    <span>Tools Used: <span class="status-value" id="statusTools">0</span></span>
-                </div>
-                <div class="status-item">
-                    <i class="fas fa-bullseye"></i>
-                    <span>Challenge Score: <span class="status-value" id="statusScore">0%</span></span>
+                    <i class="fas fa-clock"></i>
+                    <span>Time: <span class="status-value" id="statusTime">0s</span></span>
                 </div>
                 <div class="status-item" id="statusReady">
                     <i class="fas fa-check-circle"></i>
@@ -1396,43 +733,13 @@
     
     <script>
         // ===============================
-        // NEP WORKBENCH INTEGRATION LAYER
+        // AUTHENTICATION CHECK
         // ===============================
-        
-        const API_BASE_URL = 'http://localhost:3000/api';
         const authToken = localStorage.getItem('authToken') || new URLSearchParams(window.location.search).get('token');
         
-        // Session tracking
-        let sessionStartTime = Date.now();
-        let sessionTimerInterval;
-        let eventId = null;
-        let autoSaveInterval;
-        let isOnline = navigator.onLine;
-        
-        // Interaction tracking
-        let interactionData = {
-            actions_count: 0,
-            unique_tools_used: 0,
-            correct_attempts: 0,
-            incorrect_attempts: 0,
-            retry_count: 0,
-            time_seconds: 0,
-            unique_parameters_tried: 0,
-            total_parameter_space: 160, // FIXED: 4 motion types × 10 speeds × 4 difficulty levels
-            challenges_attempted: 0,
-            challenges_completed: 0,
-            challenge_ids: [],
-            tool_usage: {},
-            motion_types_tested: 0,
-            correct_classifications: 0,
-            graphs_plotted: 0,
-            speed_variations_tried: 0,
-            graph_drawn_flag: false
-        };
-        
-        // Track unique tools
-        let usedTools = new Set();
-        let usedParameters = new Set();
+        if (!authToken) {
+            window.location.href = '/login.html';
+        }
         
         // ===============================
         // SIMULATION STATE
@@ -1444,60 +751,42 @@
             isRunning: false,
             speed: 1,
             time: 0,
-            position: { x: 50, y: 175 },
+            position: { x: 50, y: 200 },
             velocity: 2,
             acceleration: 0,
             distance: 0,
             angularVelocity: 0,
             radius: 100,
             centerX: 400,
-            centerY: 175,
+            centerY: 200,
             animationId: null,
             velocityData: [],
             maxVelocity: 10
         };
         
-        // ===============================
-        // CHALLENGE SYSTEM
-        // ===============================
-        
-        let currentChallenge = null;
-        let challengeStartTime = null; // FIXED: Added challenge timer tracking
-        let challengeTimerInterval = null;
-        let challengeHistory = [];
-        let challengeStats = {
-            correct: 0,
-            incorrect: 0,
-            total: 0
+        // Metrics tracking
+        let metrics = {
+            motionTypesTested: 0,
+            speedVariations: 0,
+            graphsPlotted: 0,
+            uniqueSpeeds: new Set(),
+            uniqueMotionTypes: new Set()
         };
-        let currentChallengeNumber = 1;
         
         // ===============================
         // INITIALIZATION
         // ===============================
         
-        async function initialize() {
+        function initialize() {
             try {
-                // Initialize simulation
+                // Setup canvas
                 setupCanvas();
                 setupGraph();
                 setupEventListeners();
                 
-                // Initialize NEP integration
-                await initializeNEPIntegration();
-                
-                // Generate first challenge
-                await generateChallenge();
-                
                 // Update UI
                 updateUI();
                 updateMetrics();
-                
-                // Start session timer
-                startSessionTimer();
-                
-                // Start auto-save
-                startAutoSave();
                 
                 // Hide loading overlay
                 setTimeout(() => {
@@ -1507,503 +796,11 @@
                     }, 300);
                 }, 1000);
                 
-                showToast('Motion Classifier Simulator loaded successfully!', 'success');
-                
             } catch (error) {
                 console.error('Initialization error:', error);
-                showToast('Error loading simulation. Please refresh.', 'error');
                 document.getElementById('loadingOverlay').style.display = 'none';
+                alert('Error loading simulation. Please refresh.');
             }
-        }
-        
-        // ===============================
-        // NEP INTEGRATION FUNCTIONS - FIXED
-        // ===============================
-        
-        function getCurrentStudentId() { // FIXED: Added student ID extraction
-            if (!authToken) return null;
-            try {
-                const payload = JSON.parse(atob(authToken.split('.')[1]));
-                return payload.userId;
-            } catch (error) {
-                console.error('Failed to decode token:', error);
-                return null;
-            }
-        }
-        
-        async function initializeNEPIntegration() {
-            if (!authToken) {
-                console.warn('No auth token found. Running in offline mode.');
-                updateConnectionStatus(false);
-                return;
-            }
-            
-            try {
-                // Get student ID from token
-                const studentId = getCurrentStudentId();
-                if (!studentId) throw new Error('Invalid token');
-                
-                // Create session event - FIXED API parameters
-                const eventData = {
-                    studentId: studentId,
-                    toolId: 'motion-classifier-sim',
-                    toolType: 'LAB',
-                    interactionData: interactionData
-                };
-                
-                const response = await fetch(`${API_BASE_URL}/student/event`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(eventData)
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    eventId = data.data._id; // FIXED: Get _id from response
-                    showToast('Session started successfully', 'success');
-                    updateConnectionStatus(true);
-                } else {
-                    throw new Error('Failed to create event');
-                }
-            } catch (error) {
-                console.warn('Offline mode activated:', error);
-                updateConnectionStatus(false);
-            }
-        }
-        
-        async function saveProgress() {
-            interactionData.time_seconds = Math.floor((Date.now() - sessionStartTime) / 1000);
-            interactionData.unique_tools_used = usedTools.size;
-            interactionData.unique_parameters_tried = usedParameters.size;
-            
-            if (!eventId || !isOnline) {
-                // Save to localStorage as fallback
-                localStorage.setItem('motion-classifier-backup', JSON.stringify({
-                    interactionData,
-                    timestamp: Date.now()
-                }));
-                showToast('Progress saved locally', 'warning');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ interactionData })
-                });
-                
-                if (response.ok) {
-                    showToast('Progress saved successfully', 'success');
-                    document.getElementById('saveStatus').textContent = 'Saved';
-                }
-            } catch (error) {
-                console.error('Save error:', error);
-                showToast('Save failed. Using local backup.', 'error');
-            }
-        }
-        
-        function startAutoSave() {
-            autoSaveInterval = setInterval(() => {
-                saveProgress();
-                document.getElementById('saveStatus').textContent = 'Auto-saving...';
-                setTimeout(() => {
-                    document.getElementById('saveStatus').textContent = 'Auto';
-                }, 2000);
-            }, 30000);
-        }
-        
-        function startSessionTimer() {
-            sessionTimerInterval = setInterval(() => {
-                const elapsedSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
-                const minutes = Math.floor(elapsedSeconds / 60);
-                const seconds = elapsedSeconds % 60;
-                document.getElementById('sessionTimer').textContent = 
-                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }, 1000);
-        }
-        
-        function trackInteraction(action, tool = null, parameter = null) {
-            interactionData.actions_count++;
-            
-            if (tool) {
-                usedTools.add(tool);
-                interactionData.tool_usage[tool] = (interactionData.tool_usage[tool] || 0) + 1;
-            }
-            
-            if (parameter) {
-                usedParameters.add(parameter);
-            }
-            
-            document.getElementById('actionCounter').textContent = interactionData.actions_count;
-            document.getElementById('statusTools').textContent = usedTools.size;
-        }
-        
-        function updateConnectionStatus(online) {
-            isOnline = online;
-            const statusElement = document.getElementById('connectionStatus');
-            const dotElement = statusElement.querySelector('.connection-dot');
-            
-            if (online) {
-                statusElement.className = 'connection-status';
-                dotElement.className = 'connection-dot';
-                statusElement.innerHTML = '<div class="connection-dot"></div><span>Online</span>';
-            } else {
-                statusElement.className = 'connection-status offline';
-                dotElement.className = 'connection-dot offline';
-                statusElement.innerHTML = '<div class="connection-dot offline"></div><span>Offline</span>';
-            }
-        }
-        
-        // ===============================
-        // CHALLENGE SYSTEM FUNCTIONS - FIXED
-        // ===============================
-        
-        function startChallengeTimer() {
-            if (challengeTimerInterval) clearInterval(challengeTimerInterval);
-            
-            challengeStartTime = Date.now(); // FIXED: Track challenge start time
-            
-            challengeTimerInterval = setInterval(() => {
-                const elapsedSeconds = Math.floor((Date.now() - challengeStartTime) / 1000);
-                document.getElementById('challengeTimer').textContent = `${elapsedSeconds}s`;
-                
-                // Update progress bar (max 120 seconds per challenge)
-                const progress = Math.min((elapsedSeconds / 120) * 100, 100);
-                document.getElementById('challengeProgress').style.width = `${progress}%`;
-            }, 1000);
-        }
-        
-        async function generateChallenge() {
-            startChallengeTimer();
-            document.getElementById('challengeNumber').textContent = `Challenge #${currentChallengeNumber}`;
-            currentChallengeNumber++;
-            
-            // Reset UI state
-            document.getElementById('challengeFeedback').style.display = 'none';
-            document.getElementById('submitBtn').style.display = 'flex';
-            document.getElementById('nextBtn').style.display = 'none';
-            document.getElementById('retryBtn').style.display = 'none';
-            document.getElementById('hintPanel').style.display = 'none';
-            
-            if (!isOnline) {
-                // Generate offline challenge
-                currentChallenge = {
-                    id: `offline-${Date.now()}`,
-                    question: "Observe the current motion type and classify it correctly.",
-                    type: "classification",
-                    options: ["Uniform Motion", "Accelerated Motion", "Decelerated Motion", "Circular Motion"],
-                    correctAnswer: motionState.type,
-                    difficulty: 2,
-                    hints: ["Watch how velocity changes over time", "Check if acceleration is constant"]
-                };
-                displayChallenge(currentChallenge);
-                return;
-            }
-            
-            try {
-                const successRate = challengeStats.total > 0 ? 
-                    challengeStats.correct / challengeStats.total : 0.5;
-                
-                // FIXED: Updated API call parameters
-                const response = await fetch(`${API_BASE_URL}/student/challenge/generate`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        simType: 'motion-classifier-sim',
-                        eventId: eventId,
-                        studentLevel: successRate > 0.7 ? 'advanced' : 
-                                      successRate > 0.4 ? 'intermediate' : 'beginner',
-                        recentPerformance: {
-                            success_rate: successRate,
-                            avg_difficulty: 2
-                        }
-                    })
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    currentChallenge = result.data;
-                    displayChallenge(currentChallenge);
-                } else {
-                    throw new Error('Challenge generation failed');
-                }
-            } catch (error) {
-                console.warn('Using offline challenge:', error);
-                // Fallback to offline challenge
-                currentChallenge = {
-                    id: `offline-${Date.now()}`,
-                    question: "Classify the motion type you observe on the screen.",
-                    type: "classification",
-                    options: ["Uniform Motion", "Accelerated Motion", "Decelerated Motion", "Circular Motion"],
-                    correctAnswer: motionState.type,
-                    difficulty: 2
-                };
-                displayChallenge(currentChallenge);
-            }
-        }
-        
-        function displayChallenge(challenge) {
-            // Update challenge text
-            document.getElementById('challengeText').textContent = challenge.question;
-            
-            // Update difficulty badge
-            const badge = document.getElementById('challengeBadge');
-            badge.className = 'challenge-badge';
-            if (challenge.difficulty <= 1) {
-                badge.textContent = 'Beginner';
-                badge.classList.add('beginner');
-            } else if (challenge.difficulty <= 2) {
-                badge.textContent = 'Intermediate';
-                badge.classList.add('intermediate');
-            } else {
-                badge.textContent = 'Advanced';
-                badge.classList.add('advanced');
-            }
-            
-            // Display options or text input
-            if (challenge.options && challenge.options.length > 0) {
-                displayMultipleChoice(challenge.options);
-            } else {
-                displayTextInput();
-            }
-            
-            // Store hints if available
-            if (challenge.hints) {
-                document.getElementById('hintText').textContent = challenge.hints[0];
-            }
-        }
-        
-        function displayMultipleChoice(options) {
-            const optionsContainer = document.getElementById('challengeOptions');
-            const textInputSection = document.getElementById('textInputSection');
-            
-            // Show options, hide text input
-            optionsContainer.style.display = 'grid';
-            textInputSection.style.display = 'none';
-            
-            // Clear previous options
-            optionsContainer.innerHTML = '';
-            
-            // Add new options
-            options.forEach((option, index) => {
-                const button = document.createElement('button');
-                button.className = 'option-btn';
-                button.textContent = option;
-                button.dataset.value = option.toLowerCase();
-                button.onclick = () => selectOption(button);
-                optionsContainer.appendChild(button);
-            });
-        }
-        
-        function displayTextInput() {
-            const optionsContainer = document.getElementById('challengeOptions');
-            const textInputSection = document.getElementById('textInputSection');
-            
-            // Hide options, show text input
-            optionsContainer.style.display = 'none';
-            textInputSection.style.display = 'flex';
-            
-            // Clear input
-            document.getElementById('challengeAnswer').value = '';
-        }
-        
-        function selectOption(button) {
-            // Deselect all options
-            document.querySelectorAll('.option-btn').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            
-            // Select clicked option
-            button.classList.add('selected');
-        }
-        
-        function toggleHint() {
-            const hintPanel = document.getElementById('hintPanel');
-            hintPanel.style.display = hintPanel.style.display === 'none' ? 'block' : 'none';
-        }
-        
-        function handleEnterKey(event) {
-            if (event.key === 'Enter') {
-                submitChallenge();
-            }
-        }
-        
-        async function submitChallenge() {
-            let answer;
-            
-            // Get answer based on input type
-            const optionsContainer = document.getElementById('challengeOptions');
-            if (optionsContainer.style.display !== 'none') {
-                const selectedOption = document.querySelector('.option-btn.selected');
-                if (!selectedOption) {
-                    showToast('Please select an option', 'warning');
-                    return;
-                }
-                answer = selectedOption.textContent;
-            } else {
-                answer = document.getElementById('challengeAnswer').value.trim();
-                if (!answer) {
-                    showToast('Please enter your answer', 'warning');
-                    return;
-                }
-            }
-            
-            const timeSpent = Math.floor((Date.now() - challengeStartTime) / 1000);
-            
-            trackInteraction('challenge_submit', 'challenge_system');
-            interactionData.challenges_attempted++;
-            challengeStats.total++;
-            
-            let isCorrect = false;
-            let feedback = '';
-            
-            if (isOnline && currentChallenge.id && !currentChallenge.id.startsWith('offline-')) {
-                try {
-                    // FIXED: Updated submit API call parameters
-                    const response = await fetch(`${API_BASE_URL}/student/challenge/submit`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${authToken}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            challengeId: currentChallenge.id,
-                            eventId: eventId,
-                            answer: answer,
-                            timeSpent: timeSpent,
-                            attemptNumber: 1
-                        })
-                    });
-                    
-                    if (response.ok) {
-                        const result = await response.json();
-                        const evaluation = result.data.aiEvaluation;
-                        isCorrect = evaluation.correct;
-                        feedback = evaluation.feedback;
-                        
-                        // Store challenge attempt ID
-                        if (result.data._id) {
-                            interactionData.challenge_ids.push(result.data._id);
-                        }
-                    } else {
-                        throw new Error('Submission failed');
-                    }
-                } catch (error) {
-                    console.warn('Offline challenge submission:', error);
-                    // Fallback to local validation
-                    isCorrect = answer.toLowerCase().includes(motionState.type.toLowerCase());
-                    feedback = isCorrect ? 
-                        "Correct! Your classification matches the motion type." :
-                        "Not quite. Observe the velocity changes and try again.";
-                }
-            } else {
-                // Local validation for offline challenges
-                isCorrect = answer.toLowerCase().includes(motionState.type.toLowerCase());
-                feedback = isCorrect ? 
-                    "Correct! Your classification matches the motion type." :
-                    "Not quite. Observe the velocity changes and try again.";
-            }
-            
-            // Update stats
-            if (isCorrect) {
-                challengeStats.correct++;
-                interactionData.correct_attempts++;
-                interactionData.correct_classifications++;
-                interactionData.challenges_completed++;
-            } else {
-                challengeStats.incorrect++;
-                interactionData.incorrect_attempts++;
-                interactionData.retry_count++;
-            }
-            
-            // Update UI
-            updateChallengeStats();
-            
-            // Show feedback
-            const feedbackElement = document.getElementById('challengeFeedback');
-            const feedbackTitle = document.getElementById('feedbackTitle');
-            const feedbackContent = document.getElementById('feedbackContent');
-            
-            feedbackElement.className = isCorrect ? 
-                'challenge-feedback feedback-correct' : 
-                'challenge-feedback feedback-incorrect';
-            
-            feedbackTitle.innerHTML = isCorrect ? 
-                '<i class="fas fa-check-circle"></i> Correct!' : 
-                '<i class="fas fa-times-circle"></i> Incorrect';
-            
-            feedbackContent.textContent = feedback;
-            feedbackElement.style.display = 'block';
-            
-            // Update buttons
-            document.getElementById('submitBtn').style.display = 'none';
-            if (isCorrect) {
-                document.getElementById('nextBtn').style.display = 'flex';
-            } else {
-                document.getElementById('retryBtn').style.display = 'flex';
-            }
-            
-            // Add to history
-            addToHistory(answer, isCorrect);
-            
-            // Clear timer
-            if (challengeTimerInterval) {
-                clearInterval(challengeTimerInterval);
-            }
-        }
-        
-        function retryChallenge() {
-            document.getElementById('challengeFeedback').style.display = 'none';
-            document.getElementById('submitBtn').style.display = 'flex';
-            document.getElementById('retryBtn').style.display = 'none';
-            startChallengeTimer();
-        }
-        
-        function newChallenge() {
-            document.getElementById('challengeFeedback').style.display = 'none';
-            generateChallenge();
-        }
-        
-        function closeFeedback() {
-            document.getElementById('challengeFeedback').style.display = 'none';
-        }
-        
-        function updateChallengeStats() {
-            document.getElementById('challengeCorrect').textContent = challengeStats.correct;
-            document.getElementById('challengeIncorrect').textContent = challengeStats.incorrect;
-            const successRate = challengeStats.total > 0 ? 
-                Math.round((challengeStats.correct / challengeStats.total) * 100) : 0;
-            document.getElementById('challengeSuccess').textContent = `${successRate}%`;
-            document.getElementById('statusScore').textContent = `${successRate}%`;
-        }
-        
-        function addToHistory(answer, isCorrect) {
-            const historyList = document.getElementById('challengeHistory');
-            const historyItem = document.createElement('div');
-            historyItem.className = `history-item ${isCorrect ? 'correct' : 'incorrect'}`;
-            historyItem.textContent = `${answer} - ${isCorrect ? '✓ Correct' : '✗ Incorrect'}`;
-            historyList.prepend(historyItem);
-            
-            // Keep only last 5 items
-            while (historyList.children.length > 5) {
-                historyList.removeChild(historyList.lastChild);
-            }
-            
-            challengeHistory.unshift({
-                answer,
-                isCorrect,
-                timestamp: new Date().toLocaleTimeString()
-            });
         }
         
         // ===============================
@@ -2034,6 +831,12 @@
             
             // Initial graph
             drawGraph();
+            
+            // Track graph plotting
+            if (metrics.graphsPlotted === 0) {
+                metrics.graphsPlotted = 1;
+                updateMetrics();
+            }
         }
         
         function setupEventListeners() {
@@ -2048,10 +851,6 @@
                 graphCanvas.height = graphContainer.clientHeight;
                 drawGraph();
             });
-            
-            // Online/offline detection
-            window.addEventListener('online', () => updateConnectionStatus(true));
-            window.addEventListener('offline', () => updateConnectionStatus(false));
         }
         
         function drawMotion() {
@@ -2186,13 +985,6 @@
         
         function drawGraph() {
             graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
-            
-            // FIXED: Track graphs plotted properly
-            if (!interactionData.graph_drawn_flag) {
-                interactionData.graphs_plotted = 1;
-                interactionData.graph_drawn_flag = true;
-                updateMetrics();
-            }
             
             if (motionState.velocityData.length === 0) return;
             
@@ -2366,9 +1158,6 @@
             document.getElementById('startBtn').disabled = true;
             document.getElementById('pauseBtn').disabled = false;
             
-            trackInteraction('start_motion', 'play_button');
-            usedTools.add('play_button');
-            
             updateMotion();
         }
         
@@ -2380,23 +1169,17 @@
             if (motionState.animationId) {
                 cancelAnimationFrame(motionState.animationId);
             }
-            
-            trackInteraction('pause_motion', 'pause_button');
-            usedTools.add('pause_button');
         }
         
         function resetMotion() {
             pauseMotion();
             motionState.time = 0;
             motionState.distance = 0;
-            motionState.position = { x: 50, y: 175 };
+            motionState.position = { x: 50, y: 200 };
             motionState.velocity = 2;
             motionState.acceleration = 0;
             motionState.angularVelocity = 0;
             motionState.velocityData = [];
-            
-            trackInteraction('reset_motion', 'reset_button');
-            usedTools.add('reset_button');
             
             updateUI();
             drawMotion();
@@ -2419,18 +1202,12 @@
             document.getElementById('statusMotion').textContent = 
                 type.charAt(0).toUpperCase() + type.slice(1);
             
-            trackInteraction('change_motion_type', 'motion_type_selector', type);
-            usedTools.add('motion_type_selector');
-            
             // Track unique motion types
-            if (!usedParameters.has(`motion_${type}`)) {
-                interactionData.motion_types_tested++;
-                usedParameters.add(`motion_${type}`);
+            if (!metrics.uniqueMotionTypes.has(type)) {
+                metrics.uniqueMotionTypes.add(type);
+                metrics.motionTypesTested = metrics.uniqueMotionTypes.size;
                 updateMetrics();
             }
-            
-            // Generate new challenge based on motion type
-            generateChallenge();
         }
         
         function selectMotionType(type) {
@@ -2446,31 +1223,28 @@
             motionState.speed = speed;
             document.getElementById('speedValue').textContent = `${speed}x`;
             
-            trackInteraction('adjust_speed', 'speed_slider', speed);
-            usedTools.add('speed_slider');
-            
-            // Track speed variations
-            if (!usedParameters.has(`speed_${speed}`)) {
-                interactionData.speed_variations_tried++;
-                usedParameters.add(`speed_${speed}`);
+            // Track unique speeds
+            if (!metrics.uniqueSpeeds.has(speed)) {
+                metrics.uniqueSpeeds.add(speed);
+                metrics.speedVariations = metrics.uniqueSpeeds.size;
                 updateMetrics();
             }
         }
         
         function classifyMotion() {
-            // Show classification interface
-            showToast('Select the correct motion type classification', 'info');
+            // Simple classification alert
+            const classification = motionState.type === 'uniform' ? 'Uniform Motion (constant velocity)' :
+                                  motionState.type === 'accelerated' ? 'Accelerated Motion (increasing velocity)' :
+                                  motionState.type === 'decelerated' ? 'Decelerated Motion (decreasing velocity)' :
+                                  'Circular Motion (constant speed, changing direction)';
             
-            trackInteraction('classify_motion', 'classify_button');
-            usedTools.add('classify_button');
-            
-            interactionData.correct_classifications++;
-            updateMetrics();
+            alert(`Motion Classification: ${classification}\n\nVelocity: ${motionState.velocity.toFixed(1)} m/s\nTime: ${motionState.time.toFixed(1)} s`);
         }
         
         function updateUI() {
             // Update time display
             document.getElementById('timeValue').textContent = `${motionState.time.toFixed(1)}s`;
+            document.getElementById('statusTime').textContent = `${motionState.time.toFixed(1)}s`;
             
             // Update distance display
             document.getElementById('distanceValue').textContent = `${motionState.distance.toFixed(1)} m`;
@@ -2481,126 +1255,29 @@
         }
         
         function updateMetrics() {
-            document.getElementById('metricTypes').textContent = interactionData.motion_types_tested;
-            document.getElementById('metricCorrect').textContent = interactionData.correct_classifications;
-            document.getElementById('metricGraphs').textContent = interactionData.graphs_plotted;
-            document.getElementById('metricSpeed').textContent = interactionData.speed_variations_tried;
-        }
-        
-        // ===============================
-        // NEW FUNCTIONS ADDED FOR FIXES
-        // ===============================
-        
-        function exportChallengeReport() {
-            trackInteraction('export_report', 'pdf_export');
-            
-            // Create report data
-            const reportData = {
-                simulation: 'Motion Classifier Simulator',
-                date: new Date().toLocaleDateString(),
-                time: new Date().toLocaleTimeString(),
-                sessionDuration: Math.floor((Date.now() - sessionStartTime) / 1000),
-                challengeStats: challengeStats,
-                interactionData: interactionData,
-                challengeHistory: challengeHistory
-            };
-            
-            // In a real implementation, this would generate a PDF
-            // For now, we'll show a toast and save as JSON
-            const dataStr = JSON.stringify(reportData, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            const exportFileDefaultName = `motion_classifier_report_${Date.now()}.json`;
-            
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-            
-            showToast('Report exported as JSON file', 'success');
-        }
-        
-        // ===============================
-        // UI UTILITY FUNCTIONS
-        // ===============================
-        
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <div class="toast-header">
-                    <div class="toast-title">
-                        ${type === 'error' ? '⚠️ Error' : type === 'success' ? '✅ Success' : 'ℹ️ Info'}
-                    </div>
-                    <button class="toast-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
-                </div>
-                <div class="toast-message">${message}</div>
-            `;
-            
-            container.appendChild(toast);
-            
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                if (toast.parentElement) {
-                    toast.style.animation = 'slideOut 0.3s ease';
-                    setTimeout(() => {
-                        if (toast.parentElement) {
-                            toast.parentElement.removeChild(toast);
-                        }
-                    }, 300);
-                }
-            }, 5000);
+            document.getElementById('metricTypes').textContent = metrics.motionTypesTested;
+            document.getElementById('metricSpeed').textContent = metrics.speedVariations;
+            document.getElementById('metricDistance').textContent = `${motionState.distance.toFixed(1)} m`;
+            document.getElementById('metricGraphs').textContent = metrics.graphsPlotted;
         }
         
         // ===============================
         // SESSION MANAGEMENT
         // ===============================
         
-        async function completeSession() {
-            // Final save
-            interactionData.time_seconds = Math.floor((Date.now() - sessionStartTime) / 1000);
-            await saveProgress();
-            
-            // Stop timers
-            clearInterval(sessionTimerInterval);
-            clearInterval(autoSaveInterval);
-            if (challengeTimerInterval) clearInterval(challengeTimerInterval);
-            
+        function completeSession() {
             if (motionState.animationId) {
                 cancelAnimationFrame(motionState.animationId);
             }
             
-            // Show completion message
-            const successRate = challengeStats.total > 0 ? 
-                Math.round((challengeStats.correct / challengeStats.total) * 100) : 0;
+            // Show completion message with metrics
+            const message = `Session Completed!\n\n` +
+                          `Motion Types Tested: ${metrics.motionTypesTested}\n` +
+                          `Speed Variations Tried: ${metrics.speedVariations}\n` +
+                          `Total Distance: ${motionState.distance.toFixed(1)} m\n` +
+                          `Final Time: ${motionState.time.toFixed(1)} s`;
             
-            showToast(`Session completed! Score: ${successRate}%`, 'success');
-            
-            // Export final report
-            exportChallengeReport();
-            
-            // Redirect or show completion screen
-            setTimeout(() => {
-                if (isOnline && authToken) {
-                    window.location.href = `/dashboard?completed=motion-classifier&score=${successRate}`;
-                } else {
-                    alert(`Session completed!\nFinal Score: ${successRate}%\nActions: ${interactionData.actions_count}\nTime: ${Math.floor(interactionData.time_seconds / 60)} minutes`);
-                }
-            }, 2000);
-        }
-        
-        function exitSession() {
-            if (confirm('Are you sure you want to exit? Your progress will be saved.')) {
-                saveProgress();
-                clearInterval(sessionTimerInterval);
-                clearInterval(autoSaveInterval);
-                if (challengeTimerInterval) clearInterval(challengeTimerInterval);
-                
-                if (motionState.animationId) {
-                    cancelAnimationFrame(motionState.animationId);
-                }
-                
+            if (confirm(message + "\n\nReturn to dashboard?")) {
                 window.location.href = '/dashboard';
             }
         }
@@ -2610,23 +1287,6 @@
         // ===============================
         
         document.addEventListener('DOMContentLoaded', initialize);
-        
-        // Track page visibility for session management
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                // Save when page becomes hidden
-                saveProgress();
-            }
-        });
-        
-        // Track beforeunload for final save
-        window.addEventListener('beforeunload', (e) => {
-            if (interactionData.actions_count > 0) {
-                saveProgress();
-                // Some browsers require returnValue to be set
-                e.returnValue = 'Your progress will be saved.';
-            }
-        });
     </script>
 </body>
 </html>

@@ -7,6 +7,7 @@
 const { Student, Challenge, ChallengeLimit, Activity, NEPReport, HelpTicket } = require('../models');
 const { getRecommendedSimulations, isValidSimulation, getSimulation, getAllSimulationIds } = require('../utils/Simulationhelpers');
 //const { generateChallenge: generateAIChallenge, evaluateResponse } = require('../config/mistral');
+const mistralService = require('../services/mistral.service');
 const { SIMULATION_METADATA, CHALLENGE_LIMITS, NEP_COMPETENCIES } = require('../config/constants');
 const logger = require('../utils/logger');
 
@@ -14,76 +15,118 @@ const logger = require('../utils/logger');
 // PROFILE & DASHBOARD
 // ============================================================================
 
+/**
+ * STUDENT PROFILE CONTROLLER
+ * NEP Workbench – Production Safe
+ */
+
+
+// ============================================================================
+// GET STUDENT PROFILE
+// ============================================================================
 exports.getProfile = async (req, res) => {
   try {
+    // 1️⃣ Fetch student by Mongo _id (JWT se)
     const student = await Student.findById(req.user.userId)
-      .populate('teacherId', 'name email subjects')
-      .populate('schoolId', 'schoolName');
-    
+      .populate('teacherId', 'teacherId name email subjects')
+      .populate('schoolId', 'schoolId schoolName address city state')
+      .lean();
+
     if (!student) {
       return res.status(404).json({
         success: false,
         message: 'Student not found'
       });
     }
-    
-    res.json({
+
+    // 2️⃣ Return combined response (similar to teacher profile)
+    return res.json({
       success: true,
-      data: { student }
+      data: {
+        student
+      }
     });
-    
+
   } catch (error) {
-    logger.error('Get profile error:', error);
-    res.status(500).json({
+    logger.error('Get student profile error:', error);
+    return res.status(500).json({
       success: false,
-      message: 'Error fetching profile',
-      error: error.message
+      message: 'Error fetching profile'
     });
   }
 };
 
+// ============================================================================
+// UPDATE STUDENT PROFILE
+// ============================================================================
 exports.updateProfile = async (req, res) => {
   try {
-    const allowedUpdates = ['name', 'phone', 'dateOfBirth', 'profilePicture'];
+    const { userId } = req.user; // business ID: STD-XXXXX
+
+    const allowedUpdates = [
+      'name',
+      'phone',
+      'dateOfBirth',
+      'profilePicture'
+    ];
+
     const updates = {};
-    
     allowedUpdates.forEach(field => {
       if (req.body[field] !== undefined) {
         updates[field] = req.body[field];
       }
     });
-    
-    const student = await Student.findByIdAndUpdate(
-      req.user.userId,
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid fields provided for update'
+      });
+    }
+
+    const student = await Student.findOneAndUpdate(
+      { studentId: userId },
       updates,
       { new: true, runValidators: true }
     );
-    
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
+      });
+    }
+
+    // Activity log (NEP-compliant)
     await Activity.log({
-      userId: req.user.userId,
+      userId: student.studentId,          // business ID
       userType: 'student',
       schoolId: student.schoolId,
       activityType: 'profile_updated',
       action: 'Student updated profile',
-      metadata: { fields: Object.keys(updates) },
+      metadata: {
+        updatedFields: Object.keys(updates)
+      },
       success: true
     });
-    
-    res.json({
+
+    return res.json({
       success: true,
       message: 'Profile updated successfully',
       data: { student }
     });
-    
+
   } catch (error) {
     logger.error('Update profile error:', error);
-    res.status(500).json({
+
+    return res.status(500).json({
       success: false,
       message: 'Error updating profile',
       error: error.message
     });
   }
 };
+
 
 exports.getDashboard = async (req, res) => {
   try {
@@ -374,7 +417,7 @@ exports.generateChallenge = async (req, res) => {
       estimatedTime: challengeData.estimatedTime || 10,
       status: 'generated',
       aiMetadata: {
-        mistralModel: process.env.MISTRAL_MODEL || 'mistral-large-latest',
+        mistralModel: process.env.MISTRAL_MODEL || 'mistral-large-2411',
         tokensUsed: challengeData.tokensUsed || 0,
         metaLearningApplied: false,
         kalmanFilterApplied: false,

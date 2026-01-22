@@ -1,175 +1,52 @@
+// models/index.js
 /**
- * MODELS INDEX
- * Central export for all Mongoose models
- * 
- * @module models
- */
-/*
-const School = require('./School');
-const Teacher = require('./Teacher');
-const ClassSection = require('./ClassSection');
-const Student = require('./Student');
-const Parent = require('./Parent');
-const Activity = require('./Activity');
-const Challenge = require('./Challenge');
-const ChallengeLimit = require('./ChallengeLimit');
-const NEPReport = require('./NEPReport');
-const InstitutionalReport = require('./InstitutionalReport');
-const EmailVerification = require('./EmailVerification');
-const PasswordReset = require('./PasswordReset');
-const MetaParameters = require('./MetaParameters');
-const KalmanState = require('./KalmanState');
-const AILog = require('./AILog');
-const HelpTicket = require('./HelpTicket');
-
-module.exports = {
-  // Core Models
-  School,
-  Teacher,
-  ClassSection,
-  Student,
-  Parent,
-  
-  // Activity & Logging
-  Activity,
-  AILog,
-  
-  // Challenge System
-  Challenge,
-  ChallengeLimit,
-  
-  // Reports
-  NEPReport,
-  InstitutionalReport,
-  
-  // Authentication & Security
-  EmailVerification,
-  PasswordReset,
-  
-  // Algorithms
-  MetaParameters,
-  KalmanState,
-  
-  // Support
-  HelpTicket
-};
-*/
-
-/**
- * MODELS INDEX
- * Central export for all Mongoose models
- * 
- * @module models
+ * MODELS INDEX - UPDATED
+ * Central export for all models
  */
 
-// Core User Models
-const School = require('./School');
-const Teacher = require('./Teacher');
-const ClassSection = require('./ClassSection');
-const Student = require('./Student');
-const Parent = require('./Parent');
-const CompanyMember = require('./CompanyMember');
+// Core Models
+exports.School = require('./School');
+exports.Student = require('./Student');
+exports.Teacher = require('./Teacher');
+exports.Parent = require('./Parent');
+exports.Challenge = require('./Challenge');
+exports.Activity = require('./Activity');
+exports.AILog = require('./AILog');
+exports.EmailVerification = require('./EmailVerification');
+exports.PasswordReset = require('./PasswordReset');
+exports.NEPReport = require('./NEPReport');
+exports.Ledger = require('./Ledger');
 
-// Activity & Logging
-const Activity = require('./Activity');
-const AILog = require('./AILog');
-const ExportLog = require('./ExportLog');
+// Feature Models
+exports.ClassSection = require('./ClassSection');
+exports.CompetencyMaster = require('./CompetencyMaster');
+exports.InstitutionalReport = require('./InstitutionalReport');
+exports.ChallengeLimit = require('./ChallengeLimit');
+exports.HelpTicket = require('./HelpTicket');
+//exports.Notification = require('./Notification'); // ✅ ADD THIS LINE
 
-// Challenge System
-const Challenge = require('./Challenge');
-const ChallengeLimit = require('./ChallengeLimit');
-const CreativeChallenge = require('./CreativeChallenge');
-const EthicalDilemma = require('./EthicalDilemma');
+// AI/ML Models
+exports.KalmanState = require('./KalmanState');
+exports.MetaParameters = require('./MetaParameters');
+exports.PredictionValidation = require('./PredictionValidation'); // ✅ ADD THIS LINE
+exports.AttentionMetrics = require('./AttentionMetrics');
+exports.BayesianNetwork = require('./BayesianNetwork');
+exports.CognitiveProfile = require('./CognitiveProfile');
+exports.HMMState = require('./HMMState');
+exports.KnowledgeGraph = require('./KnowledgeGraph');
+exports.LongitudinalData = require('./LongitudinalData');
+exports.HumanCognitionDataset = require('./HumanCognitionDataset');
 
-// Reports
-const NEPReport = require('./NEPReport');
-const InstitutionalReport = require('./InstitutionalReport');
+// Session & Tracking
+exports.SimulationSession = require('./SimulationSession'); // ✅ ADD THIS LINE
+exports.ExportLog = require('./ExportLog'); // ✅ ADD THIS LINE
 
-// Authentication & Security
-const EmailVerification = require('./EmailVerification');
-const PasswordReset = require('./PasswordReset');
-const ResearchAPIKey = require('./ResearchAPIKey');
+// Creative Models
+exports.CreativeChallenge = require('./CreativeChallenge');
+exports.EthicalDilemma = require('./EthicalDilemma');
+exports.InnovationProfile = require('./InnovationProfile');
+exports.InnovationEvent = require('./InnovationEvent');
 
-// Algorithm State Models
-const MetaParameters = require('./MetaParameters');
-const KalmanState = require('./KalmanState');
-const AttentionMetrics = require('./AttentionMetrics');
-const HMMState = require('./HMMState');
-const BayesianNetwork = require('./BayesianNetwork');
-
-// Cognitive & Thinking Data
-const CognitiveProfile = require('./CognitiveProfile');
-const KnowledgeGraph = require('./KnowledgeGraph');
-const HumanCognitionDataset = require('./HumanCognitionDataset');
-
-// Simulation
-const SimulationSession = require('./SimulationSession');
-
-// Innovation Tracking
-const InnovationProfile = require('./InnovationProfile');
-const InnovationEvent = require('./InnovationEvent');
-const LongitudinalData = require('./LongitudinalData');
-const PredictionValidation = require('./PredictionValidation');
-
-const Ledger = require('./Ledger');
-const CompetencyMaster = require('./CompetencyMaster');
-
-// Support
-const HelpTicket = require('./HelpTicket');
-
-module.exports = {
-  // Core User Models (6)
-  School,
-  Teacher,
-  ClassSection,
-  Student,
-  Parent,
-  CompanyMember,
-  
-  // Activity & Logging (3)
-  Activity,
-  AILog,
-  ExportLog,
-  
-  // Challenge System (4)
-  Challenge,
-  ChallengeLimit,
-  CreativeChallenge,
-  EthicalDilemma,
-  
-  // Reports (2)
-  NEPReport,
-  InstitutionalReport,
-  
-  // Authentication & Security (3)
-  EmailVerification,
-  PasswordReset,
-  ResearchAPIKey,
-  
-  // Algorithm State Models (5)
-  MetaParameters,
-  KalmanState,
-  AttentionMetrics,
-  HMMState,
-  BayesianNetwork,
-  
-  // Cognitive & Thinking Data (3)
-  CognitiveProfile,
-  KnowledgeGraph,
-  HumanCognitionDataset,
-  
-  // Simulation (1)
-  SimulationSession,
-  
-  // Innovation Tracking (4)
-  InnovationProfile,
-  InnovationEvent,
-  LongitudinalData,
-  PredictionValidation,
-  
-  Ledger,
-  // Support (1)
-  HelpTicket,
-  CompetencyMaster
-
-};
+// Enterprise Models
+exports.CompanyMember = require('./CompanyMember');
+exports.ResearchAPIKey = require('./ResearchAPIKey');

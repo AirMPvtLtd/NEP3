@@ -69,6 +69,8 @@ const generateAccessToken = (payload) => {
     // Create token payload
     const tokenPayload = {
       userId: payload.userId,
+      studentId: payload.studentId,
+      teacherId: payload.teacherId, 
       role: payload.role,
       schoolId: payload.schoolId,
       email: payload.email,

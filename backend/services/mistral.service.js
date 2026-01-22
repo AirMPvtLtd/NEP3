@@ -736,7 +736,7 @@ module.exports = {
  * - NEVER decide difficulty or pedagogy
  *
  * @module services/mistral.service
- */
+ 
 
 const axios = require('axios');
 const { AILog } = require('../models');
@@ -860,7 +860,7 @@ const calculateCost = (promptTokens = 0, completionTokens = 0, model) => {
  * @param {Object} options
  * @param {String} options.simulatorId
  * @param {Object} options.challengeIntent  // produced by algorithms
- */
+ 
 const generateChallenge = async ({ simulatorId, challengeIntent }) => {
   const sim = SIM_CONTEXTS[simulatorId];
   if (!sim) {
@@ -948,7 +948,7 @@ OUTPUT FORMAT (STRICT JSON):
 
 /**
  * Extract reasoning signals from student submission
- */
+ 
 const extractReasoningSignals = async ({
   simulatorId,
   challenge,
@@ -1024,7 +1024,7 @@ const generateNEPReport = async (options) => {
    * - Student profile & period metadata
    *
    * AI is ONLY allowed to format + narrate this data.
-   */
+   
 
   const systemPrompt = `
 You are an official educational assessment report generator.
@@ -1229,4 +1229,845 @@ module.exports = {
   DEFAULT_MODEL,
   DEFAULT_TEMPERATURE,
   DEFAULT_MAX_TOKENS
+};
+*/
+
+// services/mistral.service.js
+/**
+ * MISTRAL AI SERVICE
+ * All Mistral AI operations
+ * 
+ * @module services/mistral.service
+ */
+
+const axios = require('axios');
+const { AILog } = require('../models');
+const { SIM_CONTEXTS } = require('../config/constants');
+const mistralConfig = require('../config/mistral'); // USE CONFIG
+const logger = require('../utils/logger');
+
+// ============================================================================
+// API CLIENT
+// ============================================================================
+
+const mistralClient = axios.create({
+  baseURL: mistralConfig.baseURL,
+  headers: {
+    Authorization: `Bearer ${mistralConfig.apiKey}`,
+    'Content-Type': 'application/json'
+  },
+  timeout: mistralConfig.timeout
+});
+
+// Validate API key on startup
+if (!mistralConfig.apiKey) {
+  console.warn('⚠️  MISTRAL_API_KEY not set. AI functionality will be disabled.');
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('MISTRAL_API_KEY is required in production');
+  }
+}
+
+// ============================================================================
+// CORE AI CALL
+// ============================================================================
+
+const callMistralAPI = async ({
+  messages,
+  model = mistralConfig.model,
+  temperature = mistralConfig.temperature,
+  maxTokens = mistralConfig.maxTokens,
+  topP = mistralConfig.topP,
+  operation = 'system_ai_call'
+}) => {
+  if (!mistralConfig.apiKey) {
+    throw new Error('Mistral API key not configured');
+  }
+
+  const startTime = Date.now();
+  let retries = 0;
+
+  while (retries <= mistralConfig.maxRetries) {
+    try {
+      const response = await mistralClient.post('/chat/completions', {
+        model,
+        messages,
+        temperature,
+        max_tokens: maxTokens,
+        top_p: topP
+      });
+
+      const data = response.data;
+      const responseTime = Date.now() - startTime;
+      const content = data.choices?.[0]?.message?.content || '';
+
+      // Log successful request
+      await AILog.logRequest({
+        userType: 'system',
+        userId: 'SYSTEM',
+        operation,
+        model,
+        request: { 
+          prompt: messages[messages.length - 1]?.content,
+          temperature,
+          maxTokens
+        },
+        response: {
+          content,
+          tokensUsed: data.usage?.total_tokens,
+          promptTokens: data.usage?.prompt_tokens,
+          completionTokens: data.usage?.completion_tokens,
+          responseTime,
+          finishReason: data.choices?.[0]?.finish_reason
+        },
+        success: true,
+        tokensUsed: data.usage?.total_tokens,
+        cost: calculateCost(
+          data.usage?.prompt_tokens,
+          data.usage?.completion_tokens,
+          model
+        )
+      });
+
+      return {
+        success: true,
+        content,
+        usage: data.usage,
+        model: data.model,
+        responseTime,
+        finishReason: data.choices?.[0]?.finish_reason
+      };
+
+    } catch (error) {
+      retries++;
+      const responseTime = Date.now() - startTime;
+
+      console.error(`Mistral API Error (attempt ${retries}/${mistralConfig.maxRetries}):`, 
+        error.response?.data || error.message);
+
+      if (retries > mistralConfig.maxRetries) {
+        // Log failed request
+        await AILog.logRequest({
+          userType: 'system',
+          userId: 'SYSTEM',
+          operation,
+          model,
+          request: {
+            prompt: messages[messages.length - 1]?.content,
+            temperature,
+            maxTokens
+          },
+          response: { responseTime },
+          success: false,
+          errorMessage: error.message,
+          errorCode: error.response?.status?.toString()
+        });
+
+        throw new Error(`Mistral API error: ${error.response?.data?.message || error.message}`);
+      }
+
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, mistralConfig.retryDelay * retries));
+    }
+  }
+};
+
+// ============================================================================
+// COST CALCULATION
+// ============================================================================
+
+const calculateCost = (promptTokens = 0, completionTokens = 0, model) => {
+  const config = mistralConfig;
+  
+  const promptCost = (promptTokens / 1000) * config.costPerPromptToken;
+  const completionCost = (completionTokens / 1000) * config.costPerCompletionToken;
+  
+  return promptCost + completionCost;
+};
+
+// ============================================================================
+// CHALLENGE GENERATION
+// ============================================================================
+
+const generateChallenge = async ({
+  // From Frontend API
+  subject,
+  simulationType = null,
+  customTopic = null,
+  difficulty = 'medium',
+  numberOfQuestions = 5,
+  
+  // From Database
+  studentLevel,
+  weakCompetencies = [],
+  
+  // From constants.js
+  simulationMetadata = null,
+  
+  // From Ferrari Engine
+  context = {}
+}) => {
+  try {
+    logger.info('🤖 Mistral AI: Challenge generation started', {
+      subject,
+      topic: simulationType || customTopic,
+      difficulty,
+      numberOfQuestions,
+      hasMetadata: !!simulationMetadata,
+      ferrariEngine: context.ferrariEngineUsed || false
+    });
+    
+    // ====================================================================
+    // BUILD SYSTEM PROMPT
+    // ====================================================================
+    
+    const systemPrompt = `You are an expert ${subject} educator creating NEP 2020 aligned challenges for Class ${studentLevel} students.
+
+CRITICAL RULES:
+1. Create EXACTLY ${numberOfQuestions} questions
+2. Subject: ${subject}
+3. Difficulty: ${difficulty}
+4. Output ONLY valid JSON (NO markdown, NO backticks, NO extra text)
+
+QUESTION TYPES - MIX THESE AUTOMATICALLY:
+- MCQ: Multiple choice with 4 options
+- SHORT_ANSWER: Brief text response (1-3 sentences)
+- NUMERICAL: Numeric answer with units
+- REASONING: Detailed explanation required
+
+AUTOMATIC TYPE DISTRIBUTION BY DIFFICULTY:
+${difficulty === 'easy' ? '- Easy: 60% MCQ, 20% SHORT_ANSWER, 10% NUMERICAL, 10% REASONING' : ''}
+${difficulty === 'medium' ? '- Medium: 40% MCQ, 30% SHORT_ANSWER, 20% NUMERICAL, 10% REASONING' : ''}
+${difficulty === 'hard' ? '- Hard: 20% MCQ, 20% SHORT_ANSWER, 30% NUMERICAL, 30% REASONING' : ''}
+
+${simulationType && simulationMetadata ? `
+═══════════════════════════════════════════════════════════════
+SIMULATION-BASED CHALLENGE
+═══════════════════════════════════════════════════════════════
+Simulation: ${simulationType}
+
+TOPICS COVERED BY THIS SIMULATION:
+${simulationMetadata.topics.slice(0, 10).map((t, i) => `${i + 1}. ${t}`).join('\n')}
+${simulationMetadata.topics.length > 10 ? `... and ${simulationMetadata.topics.length - 10} more topics` : ''}
+
+TOOLS AVAILABLE IN SIMULATION:
+${simulationMetadata.tools.slice(0, 10).map((t, i) => `${i + 1}. ${t}`).join('\n')}
+${simulationMetadata.tools.length > 10 ? `... and ${simulationMetadata.tools.length - 10} more tools` : ''}
+
+DIFFICULTY FACTORS TO CONSIDER:
+${simulationMetadata.difficultyFactors.slice(0, 8).map((f, i) => `${i + 1}. ${f}`).join('\n')}
+${simulationMetadata.difficultyFactors.length > 8 ? `... and ${simulationMetadata.difficultyFactors.length - 8} more factors` : ''}
+
+IMPORTANT SIMULATION RULES:
+- ALL questions MUST be answerable using ONLY the simulation tools listed above
+- Questions should guide students to use specific tools
+- Questions should involve interactions with the simulation
+- Avoid questions requiring external calculations or knowledge beyond the simulation
+- Reference simulation observations and measurements
+═══════════════════════════════════════════════════════════════
+` : ''}
+
+${customTopic ? `
+═══════════════════════════════════════════════════════════════
+CUSTOM TOPIC CHALLENGE
+═══════════════════════════════════════════════════════════════
+Topic: "${customTopic}"
+
+REQUIREMENTS:
+- ALL questions must be directly related to this specific topic
+- Cover different aspects of the topic progressively
+- Start with foundational concepts, build to advanced
+- Ensure questions are appropriate for Class ${studentLevel}
+═══════════════════════════════════════════════════════════════
+` : ''}
+
+NEP 2020 COMPETENCIES (include in each question):
+- critical-thinking
+- problem-solving  
+- scientific-temper
+- analytical-reasoning
+- creativity
+
+OUTPUT FORMAT (STRICT JSON - NO MARKDOWN):
+{
+  "title": "Engaging challenge title",
+  "difficulty": "${difficulty}",
+  "questions": [
+    {
+      "type": "MCQ",
+      "question": "Clear question text",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctAnswer": "REQUIRED - MUST ALWAYS BE PROVIDED",
+      "explanation": "Detailed explanation of why this is correct",
+      "competencies": ["critical-thinking", "problem-solving"],
+      "points": 100,
+      "hint": "Helpful hint if student struggles"
+    }
+  ]
+}`;
+
+    // ====================================================================
+    // BUILD USER PROMPT
+    // ====================================================================
+    
+    let userPrompt = `Generate ${numberOfQuestions} ${difficulty} difficulty questions for Class ${studentLevel} students.
+
+CONTEXT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Subject: ${subject}
+Topic: ${simulationType || customTopic}
+Topic Type: ${simulationType ? 'Simulation-based' : 'Custom topic'}
+Difficulty: ${difficulty}
+Number of Questions: ${numberOfQuestions}
+Student Level: Class ${studentLevel}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${weakCompetencies.length > 0 ? `
+STUDENT WEAK AREAS (give extra focus):
+${weakCompetencies.slice(0, 4).map((c, i) => `${i + 1}. ${c}`).join('\n')}
+` : ''}
+
+${context.irtAbility ? `
+FERRARI ENGINE INSIGHTS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IRT Student Ability: ${context.irtAbility.toFixed(3)}
+Expected Success Rate: ~${((context.irtAbility > 0 ? 60 + (context.irtAbility * 10) : 50)).toFixed(0)}%
+${context.pidAdjustment ? `PID Adjustment: ${context.pidAdjustment.toFixed(3)}` : ''}
+${context.recentAvgScore ? `Recent Performance: ${context.recentAvgScore.toFixed(1)}%` : ''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This data suggests the student needs questions at ${difficulty} level.
+Calibrate question complexity accordingly.
+` : ''}
+
+${simulationMetadata ? `
+SIMULATION GUIDANCE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+For EACH question:
+1. Specify which simulation tools the student should use
+2. Describe what they should observe or measure
+3. Ask them to analyze simulation results
+4. Ensure questions build on simulation capabilities
+
+Example question structure:
+"Using the [TOOL NAME], set [PARAMETER] to [VALUE]. 
+Observe [MEASUREMENT]. What do you notice about [CONCEPT]?"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+` : ''}
+
+REQUIREMENTS:
+✓ Mix question types (MCQ, SHORT_ANSWER, NUMERICAL, REASONING)
+✓ Progressive difficulty (easier → harder)
+✓ Include competencies in each question
+✓ Provide clear, educational explanations
+✓ Add helpful hints for student learning
+${simulationType ? '✓ Questions must use simulation tools' : ''}
+${customTopic ? '✓ All questions relate to the custom topic' : ''}
+
+Generate the challenge now. Output ONLY the JSON object. No markdown, no backticks, no extra text.`;
+
+    // ====================================================================
+    // CALL MISTRAL AI
+    // ====================================================================
+    
+    const startTime = Date.now();
+    
+    const response = await callMistralAPI({
+      operation: 'challenge_generation',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      temperature: 0.7,
+      maxTokens: 3000
+    });
+    
+    const responseTime = Date.now() - startTime;
+    
+    logger.info(`✅ Mistral AI responded in ${responseTime}ms`);
+    
+    // ====================================================================
+    // PARSE & VALIDATE RESPONSE
+    // ====================================================================
+    
+    let challengeData;
+    try {
+      // Remove markdown code blocks if present
+      let cleanContent = response.content.trim();
+      
+      // Remove ```json and ``` markers
+      cleanContent = cleanContent.replace(/^```json\s*/i, '');
+      cleanContent = cleanContent.replace(/^```\s*/, '');
+      cleanContent = cleanContent.replace(/```\s*$/, '');
+      cleanContent = cleanContent.trim();
+      
+      // Parse JSON
+      challengeData = JSON.parse(cleanContent);
+      
+      logger.info('✅ Successfully parsed AI response');
+      
+    } catch (parseError) {
+      logger.error('❌ JSON parse failed:', parseError.message);
+      logger.error('Raw response (first 500 chars):', response.content.substring(0, 500));
+      throw new Error('AI returned invalid JSON format');
+    }
+    
+    // Validate structure
+    if (!challengeData.questions || !Array.isArray(challengeData.questions)) {
+      throw new Error('Response missing questions array');
+    }
+    
+    if (challengeData.questions.length === 0) {
+      throw new Error('AI generated 0 questions');
+    }
+    
+    if (challengeData.questions.length !== numberOfQuestions) {
+      logger.warn(`⚠️ Expected ${numberOfQuestions} questions, got ${challengeData.questions.length}`);
+    }
+    
+    // Validate each question
+    challengeData.questions.forEach((q, index) => {
+      if (!q.question) {
+        throw new Error(`Question ${index + 1} missing question text`);
+      }
+      if (!q.correctAnswer) {
+        throw new Error(`Question ${index + 1} missing correct answer`);
+      }
+      if (!q.type) {
+        q.type = 'SHORT_ANSWER'; // Default
+        logger.warn(`Question ${index + 1} missing type, defaulting to SHORT_ANSWER`);
+      }
+      if (q.type === 'MCQ' && (!q.options || q.options.length < 2)) {
+        throw new Error(`Question ${index + 1} is MCQ but has no options`);
+      }
+      if (!q.competencies || q.competencies.length === 0) {
+        q.competencies = ['critical-thinking']; // Default
+      }
+    });
+    
+    logger.info(`✅ Validated ${challengeData.questions.length} questions`);
+    
+    // Log question type distribution
+    const typeDistribution = challengeData.questions.reduce((acc, q) => {
+      acc[q.type] = (acc[q.type] || 0) + 1;
+      return acc;
+    }, {});
+    
+    logger.info('📊 Question type distribution:', typeDistribution);
+    
+    // ====================================================================
+    // RETURN FORMATTED RESPONSE
+    // ====================================================================
+    
+    return {
+      success: true,
+      title: challengeData.title || `${subject} Challenge - ${simulationType || customTopic}`,
+      difficulty: challengeData.difficulty || difficulty,
+      questions: challengeData.questions,
+      totalPoints: numberOfQuestions * 100,
+      passingScore: 70,
+      estimatedTime: Math.max(10, numberOfQuestions * 2),
+      
+      // Metadata
+      metadata: {
+        model: response.model || 'mistral-large-2411',
+        responseTime: responseTime,
+        simulationUsed: !!simulationType,
+        customTopicUsed: !!customTopic,
+        ferrariEngineUsed: context.ferrariEngineUsed || false,
+        questionTypeDistribution: typeDistribution
+      },
+      
+      tokensUsed: response.usage?.total_tokens || 0,
+      cost: calculateCost(
+        response.usage?.prompt_tokens || 0,
+        response.usage?.completion_tokens || 0,
+        response.model || 'mistral-large-2411'
+      )
+    };
+    
+  } catch (error) {
+    logger.error('❌ Mistral AI generation error:', error);
+    throw error;
+  }
+};
+
+// ============================================================================
+// REASONING SIGNAL EXTRACTION
+// ============================================================================
+
+const extractReasoningSignals = async ({
+  simulatorId,
+  challenge,
+  studentSubmission
+}) => {
+  const systemPrompt = `
+You are an analysis engine.
+DO NOT grade. DO NOT teach.
+ONLY extract machine-readable signals.
+Output STRICT JSON only.
+`;
+
+  const userPrompt = `
+SIMULATOR CONTEXT: ${JSON.stringify(SIM_CONTEXTS[simulatorId], null, 2)}
+CHALLENGE: ${JSON.stringify(challenge, null, 2)}
+STUDENT SUBMISSION: ${JSON.stringify(studentSubmission, null, 2)}
+
+EXTRACT:
+{
+  "primary_answer_correct": boolean,
+  "reasoning_quality": "low|medium|high",
+  "uses_correct_simulator_concepts": boolean,
+  "mentions_key_topics": [],
+  "misconception_tags": []
+}
+`;
+
+  const response = await callMistralAPI({
+    operation: 'reasoning_extraction',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    temperature: 0.3,
+    maxTokens: 1000
+  });
+
+  try {
+    return JSON.parse(response.content);
+  } catch (error) {
+    throw new Error('Failed to parse reasoning signals: ' + error.message);
+  }
+};
+
+// ============================================================================
+// FEEDBACK GENERATION
+// ============================================================================
+
+const generateFeedback = async (options) => {
+  const systemPrompt = `You are a supportive educator providing feedback.`;
+  const userPrompt = JSON.stringify(options, null, 2);
+
+  const response = await callMistralAPI({
+    operation: 'feedback_generation',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    temperature: 0.7,
+    maxTokens: 500
+  });
+
+  return { 
+    success: true, 
+    feedback: response.content,
+    metadata: {
+      model: response.model,
+      tokensUsed: response.usage?.total_tokens,
+      cost: calculateCost(
+        response.usage?.prompt_tokens,
+        response.usage?.completion_tokens,
+        response.model
+      )
+    }
+  };
+};
+
+// ============================================================================
+// NEP REPORT GENERATION
+// ============================================================================
+
+const generateNEPReport = async (options) => {
+  const systemPrompt = `
+You are an official educational assessment report generator.
+
+MANDATORY RULES:
+- Follow NEP 2020 competency-based assessment principles
+- Map EACH competency to a ledger hash entry
+- Use ONLY the data provided in input
+- DO NOT invent scores, hashes, events, or competencies
+- EXACTLY 12 competencies must be reported
+- CPI values must be between 0.0 and 1.0
+- Output STRICT JSON only
+
+This report will be used for government audits and CBSE inspections.
+Accuracy, neutrality, and structural correctness are mandatory.
+`;
+
+  const userPrompt = `
+Generate a NEP 2020–aligned student progress report with
+DIRECT MAPPING between competencies and ledger hash entries.
+
+AUTHORITATIVE INPUT DATA:
+${JSON.stringify(options, null, 2)}
+
+OUTPUT STRUCTURE (STRICT JSON):
+{
+  "studentProfile": {
+    "studentId": "string",
+    "name": "string",
+    "class": "string",
+    "section": "string",
+    "schoolId": "string"
+  },
+  "ledgerMetadata": {
+    "ledgerBlockId": "string",
+    "merkleRoot": "string",
+    "reportHash": "string",
+    "verificationStatus": "verified | unverified"
+  },
+  "reportMeta": {
+    "period": { "start": "YYYY-MM-DD", "end": "YYYY-MM-DD" },
+    "generatedAt": "ISO_TIMESTAMP",
+    "alignedPolicy": "NEP-2020",
+    "reportVersion": "1.0"
+  },
+  "analyticalSummary": {
+    "totalChallenges": number,
+    "ledgerEvents": number,
+    "averageCPI": number,
+    "smoothedCPI": number,
+    "learningTrend": "improving | stable | declining",
+    "driftDetected": boolean
+  },
+  "overallSummary": {
+    "performanceLevel": "beginning | developing | proficient | advanced",
+    "summaryText": "150–200 words",
+    "learningTrendNarrative": "short explanation"
+  },
+  "competencyLedgerMap": {
+    "competency_name": {
+      "ledgerHash": "string",
+      "cpiScore": number,
+      "level": "emerging | developing | proficient | advanced",
+      "evidenceSources": [],
+      "ledgerProofSummary": [],
+      "inspectorNotes": "string"
+    }
+  },
+  "competencyMatrixSummary": {
+    "proficientCount": number,
+    "developingCount": number,
+    "emergingCount": number,
+    "notAssessedCount": number
+  },
+  "teacherRemarks": {
+    "pedagogicalFocus": "string",
+    "recommendedStrategy": "string"
+  },
+  "parentNotes": {
+    "plainLanguageSummary": "string",
+    "homeSupportSuggestions": []
+  },
+  "complianceStatement": {
+    "nepAligned": true,
+    "ledgerVerified": true,
+    "auditReady": true
+  }
+}
+`;
+
+  const response = await callMistralAPI({
+    operation: 'nep_report_generation',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    temperature: 0.5,
+    maxTokens: 3000
+  });
+
+  try {
+    return {
+      success: true,
+      report: JSON.parse(response.content),
+      metadata: {
+        model: response.model,
+        tokensUsed: response.usage?.total_tokens,
+        cost: calculateCost(
+          response.usage?.prompt_tokens,
+          response.usage?.completion_tokens,
+          response.model
+        )
+      }
+    };
+  } catch (error) {
+    throw new Error('Failed to parse NEP report: ' + error.message);
+  }
+};
+
+// ============================================================================
+// RECOMMENDATIONS
+// ============================================================================
+
+const generateRecommendations = async (options) => {
+  const response = await callMistralAPI({
+    operation: 'recommendation_generation',
+    messages: [
+      { role: 'user', content: JSON.stringify(options, null, 2) }
+    ],
+    temperature: 0.6,
+    maxTokens: 1500
+  });
+
+  try {
+    return { 
+      success: true, 
+      recommendations: JSON.parse(response.content),
+      metadata: {
+        model: response.model,
+        tokensUsed: response.usage?.total_tokens
+      }
+    };
+  } catch (error) {
+    throw new Error('Failed to parse recommendations: ' + error.message);
+  }
+};
+
+// ============================================================================
+// BATCH PROCESSING
+// ============================================================================
+
+const batchProcess = async (requests) => {
+  const results = [];
+  for (const req of requests) {
+    try {
+      results.push(await callMistralAPI(req));
+      await new Promise(r => setTimeout(r, 100)); // Rate limit delay
+    } catch (e) {
+      results.push({ success: false, error: e.message });
+    }
+  }
+  return results;
+};
+
+// ============================================================================
+// HEALTH CHECK
+// ============================================================================
+
+const healthCheck = async () => {
+  try {
+    const res = await callMistralAPI({
+      messages: [{ role: 'user', content: 'ping' }],
+      maxTokens: 5
+    });
+    return { 
+      status: 'healthy', 
+      model: res.model,
+      responseTime: res.responseTime
+    };
+  } catch (e) {
+    return { 
+      status: 'unhealthy', 
+      error: e.message 
+    };
+  }
+};
+
+/**
+ * Evaluate student response
+ */
+const evaluateResponse = async ({
+  question,
+  questionType,
+  correctAnswer,
+  studentAnswer,
+  studentReasoning = '',
+  expectedExplanation = ''
+}) => {
+  try {
+    const systemPrompt = `You are an expert educator evaluating student responses.
+
+GRADING CRITERIA:
+Answer Correctness: 0-70 points
+- Completely correct: 70
+- Mostly correct: 50-60
+- Partially correct: 30-40
+- Incorrect: 0-20
+
+Reasoning Quality: 0-30 points
+- Excellent reasoning: 25-30
+- Good reasoning: 15-24
+- Weak reasoning: 5-14
+- No/poor reasoning: 0-4
+
+OUTPUT (JSON only):
+{
+  "answerCorrect": true|false,
+  "answerScore": 0-70,
+  "reasoningScore": 0-30,
+  "totalScore": 0-100,
+  "feedback": "Constructive feedback",
+  "strengths": ["strength1"],
+  "improvements": ["area1"]
+}`;
+
+    const userPrompt = `QUESTION: ${question}
+TYPE: ${questionType}
+CORRECT: ${correctAnswer}
+STUDENT: ${studentAnswer}
+${studentReasoning ? `REASONING: ${studentReasoning}` : ''}
+
+Evaluate. Output JSON only.`;
+
+    const response = await callMistralAPI({
+      operation: 'response_evaluation',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      temperature: 0.3,
+      maxTokens: 1000
+    });
+    
+    let evaluation;
+    try {
+      let clean = response.content.trim();
+      clean = clean.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+      evaluation = JSON.parse(clean);
+    } catch {
+      // Fallback
+      const isCorrect = studentAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim();
+      return {
+        answerCorrect: isCorrect,
+        answerScore: isCorrect ? 70 : 0,
+        reasoningScore: studentReasoning ? 15 : 0,
+        totalScore: (isCorrect ? 70 : 0) + (studentReasoning ? 15 : 0),
+        feedback: isCorrect ? 'Correct!' : 'Incorrect.',
+        strengths: isCorrect ? ['Correct answer'] : [],
+        improvements: isCorrect ? [] : ['Review concept'],
+        tokensUsed: response.usage?.total_tokens || 0
+      };
+    }
+    
+    return {
+      success: true,
+      ...evaluation,
+      tokensUsed: response.usage?.total_tokens || 0
+    };
+    
+  } catch (error) {
+    logger.error('Evaluation error:', error);
+    throw error;
+  }
+};
+
+
+// ============================================================================
+// EXPORTS
+// ============================================================================
+
+module.exports = {
+  callMistralAPI,
+  calculateCost,
+  generateChallenge,
+  extractReasoningSignals,
+  generateFeedback,
+  generateNEPReport,
+  generateRecommendations,
+  batchProcess,
+  healthCheck,
+  evaluateResponse,
+  
+  // Export config for reference
+  config: mistralConfig
 };

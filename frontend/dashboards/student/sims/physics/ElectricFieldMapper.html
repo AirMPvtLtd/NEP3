@@ -3,471 +3,1569 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Electric Field Mapper - NEP Workbench</title>
+    <title>Electric Field Exploration Lab - NEP Workbench</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
-        body { background: var(--bg); color: #fff; }
-        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
-        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        :root { 
+            --bg: #1e1e1e; 
+            --panel: #252526; 
+            --accent: #007acc;
+            --positive: #ff6b6b;
+            --negative: #4dabf7;
+            --field: #27ae60;
+            --discovery: #f39c12;
+            --potential: #9966ff;
+        }
+        body { background: var(--bg); color: #fff; line-height: 1.6; }
+        
+        /* Header - Dark Theme */
+        .header { 
+            background: #333; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin: 20px auto;
+            max-width: 1600px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-left: 4px solid var(--accent);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
         h1 { font-size: 24px; color: var(--accent); }
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; }
-        .main { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
-        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
-        .field-area { 
+        
+        /* Main Container */
+        .container { 
+            max-width: 1600px; 
+            margin: 0 auto; 
+            padding: 0 20px 20px;
+            display: grid; 
+            grid-template-columns: 280px 1fr 350px; 
+            gap: 20px; 
+        }
+        
+        /* Panels - Dark Theme */
+        .panel { 
+            background: var(--panel); 
+            border-radius: 8px; 
+            padding: 20px; 
+            border: 1px solid #464647;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* Simulation Canvas */
+        .simulation-area { 
             background: #000; 
             border-radius: 6px; 
-            height: 550px; 
-            border: 1px solid #464647; 
+            height: 600px;
+            border: 2px solid #464647; 
             position: relative; 
             cursor: crosshair;
-            width: 100%;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
-        canvas { 
+        #simulationCanvas { 
             display: block;
-            border-radius: 6px;
+            width: 100%;
+            height: 100%;
         }
-        .charge-btn { padding: 12px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; cursor: pointer; margin: 8px 0; transition: all 0.3s; text-align: center; }
-        .charge-btn.active { background: var(--accent); border-color: var(--accent); }
-        input[type="range"] { width: 100%; height: 8px; background: #2d2d30; border-radius: 4px; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
-        input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; border: none; }
-        .toggle-switch { display: flex; gap: 5px; background: #2d2d30; border-radius: 6px; padding: 5px; }
-        .toggle-option { flex: 1; padding: 8px; text-align: center; border-radius: 4px; cursor: pointer; transition: all 0.3s; font-size: 12px; }
-        .toggle-option.active { background: var(--accent); }
+        
+        /* Charge Palette */
+        .charge-palette {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .charge-icon {
+            aspect-ratio: 1;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 20px;
+            color: white;
+            font-weight: bold;
+            border: 2px solid #464647;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        }
+        .charge-icon:hover {
+            transform: scale(1.05);
+            border-color: var(--accent);
+        }
+        .charge-icon.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent), 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .positive-charge {
+            background: radial-gradient(circle at 30% 30%, var(--positive), #c0392b);
+        }
+        .negative-charge {
+            background: radial-gradient(circle at 30% 30%, var(--negative), #2980b9);
+        }
+        .neutral-charge {
+            background: radial-gradient(circle at 30% 30%, #666, #444);
+        }
+        
+        /* Sliders */
+        .slider-container {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: #aaa;
+        }
+        .slider-value {
+            color: var(--accent);
+            font-weight: bold;
+        }
+        input[type="range"] { 
+            width: 100%; 
+            height: 8px; 
+            background: #464647; 
+            border-radius: 4px; 
+            outline: none;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb { 
+            width: 20px; 
+            height: 20px; 
+            background: var(--accent); 
+            border-radius: 50%; 
+            cursor: pointer; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        /* Toggle Switches */
+        .toggle-group {
+            margin: 20px 0;
+        }
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #2d2d30;
+            margin: 8px 0;
+            border-radius: 6px;
+            border: 1px solid #464647;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .toggle-item:hover {
+            border-color: var(--accent);
+            background: rgba(0, 122, 204, 0.1);
+            transform: translateX(5px);
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider-switch {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #464647;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider-switch:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider-switch {
+            background-color: var(--accent);
+        }
+        input:checked + .slider-switch:before {
+            transform: translateX(26px);
+        }
+        
+        /* Buttons */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .btn {
+            padding: 12px 20px;
+            background: var(--accent);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            background: #005a9e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .btn-success {
+            background: var(--field);
+        }
+        .btn-danger {
+            background: #e74c3c;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        /* Field Probe */
+        .field-probe {
+            background: rgba(39, 174, 96, 0.1);
+            border: 2px solid var(--field);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            position: relative;
+        }
+        .probe-handle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: move;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .field-value {
+            font-size: 28px;
+            color: var(--field);
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        /* Information Panel */
+        .info-panel {
+            background: rgba(0, 122, 204, 0.1);
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .info-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .info-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .info-item.success {
+            border-left-color: var(--field);
+        }
+        .info-item.warning {
+            border-left-color: var(--discovery);
+        }
+        .info-item.info {
+            border-left-color: var(--accent);
+        }
+        
+        /* Data Display */
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .data-card {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            transition: all 0.3s;
+            border: 1px solid #464647;
+        }
+        .data-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent);
+        }
+        .data-value {
+            font-size: 24px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .data-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Discovery Panel */
+        .discovery-panel {
+            background: rgba(243, 156, 18, 0.1);
+            border: 2px solid var(--discovery);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .discovery-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .discovery-item.revealed {
+            border-left-color: var(--discovery);
+            background: rgba(243, 156, 18, 0.15);
+        }
+        .discovery-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Exploration Log */
+        .exploration-log {
+            background: #2d2d30;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            padding: 8px;
+            margin: 5px 0;
+            border-bottom: 1px solid #464647;
+            font-size: 12px;
+            color: #aaa;
+        }
+        .log-time {
+            color: var(--accent);
+            float: right;
+            font-size: 11px;
+        }
+        
+        /* Physics Formulas */
+        .formula-panel {
+            background: rgba(153, 102, 255, 0.1);
+            border: 2px solid var(--potential);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .formula {
+            font-family: 'Cambria', 'Times New Roman', serif;
+            font-size: 14px;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Animation */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .pulsing {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            border: 1px solid #464647;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div><h1><i class="fas fa-broadcast-tower"></i> Electric Field Mapper</h1><p style="color: #888;">Physics Lab • Grade 11-12</p></div>
-            <div style="display: flex; gap: 15px; align-items: center;">
-                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
-                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
-                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
-            </div>
+    <!-- Header -->
+    <div class="header">
+        <div>
+            <h1><i class="fas fa-atom"></i> Electric Field Exploration Lab</h1>
+            <p style="color: #888;">Discover Field Patterns • Explore Relationships • Grade 11-12</p>
         </div>
-        
-        <div class="main">
-            <div class="panel">
-                <h2 style="margin-bottom: 15px;">Field Visualization</h2>
-                
-                <div class="field-area" id="fieldArea">
-                    <canvas id="canvas"></canvas>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <div style="background: #2d2d30; padding: 8px 15px; border-radius: 20px; border: 1px solid #464647;">
+                <i class="fas fa-lightbulb" style="color: var(--discovery);"></i>
+                <span id="discoveries">0</span> Discoveries
+            </div>
+
+            <button class="btn btn-success" onclick="exportExploration()">
+                <i class="fas fa-download"></i> Export
+            </button>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Left Panel - Controls -->
+        <div class="panel">
+            <h2 style="margin-bottom: 15px; color: var(--accent);">
+                <i class="fas fa-sliders-h"></i> Exploration Controls
+            </h2>
+            
+            <h3 style="margin: 20px 0 10px; color: #aaa;">Charge Types</h3>
+            <div class="charge-palette">
+                <div class="charge-icon positive-charge active" onclick="selectCharge('positive')" title="Positive Charge">
+                    +
                 </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px;">
-                    <button class="btn" onclick="clearCharges()"><i class="fas fa-eraser"></i> Clear</button>
-                    <button class="btn" onclick="toggleVectors()"><i class="fas fa-vector-square"></i> Vectors</button>
-                    <button class="btn" onclick="toggleField()"><i class="fas fa-wave-square"></i> Field</button>
+                <div class="charge-icon negative-charge" onclick="selectCharge('negative')" title="Negative Charge">
+                    -
+                </div>
+                <div class="charge-icon neutral-charge" onclick="selectCharge('neutral')" title="Neutral Object">
+                    0
+                </div>
+                <div class="charge-icon" style="background: radial-gradient(circle at 30% 30%, var(--potential), #6600cc);" 
+                     onclick="selectCharge('dipole')" title="Dipole Pair">
+                    ±
+                </div>
+                <div class="charge-icon" style="background: radial-gradient(circle at 30% 30%, #ff9999, #cc0000);" 
+                     onclick="selectCharge('positive-large')" title="Large Positive">
+                    ++
+                </div>
+                <div class="charge-icon" style="background: radial-gradient(circle at 30% 30%, #99ccff, #0066cc);" 
+                     onclick="selectCharge('negative-large')" title="Large Negative">
+                    --
                 </div>
             </div>
             
-            <div class="panel">
-                <h2 style="margin-bottom: 15px;"><i class="fas fa-plus-circle"></i> Charge Controls</h2>
-                
-                <h3 style="margin: 15px 0 10px;">Charge Type</h3>
-                <div class="toggle-switch">
-                    <div class="toggle-option active" id="positiveBtn" onclick="setChargeType('positive')">
-                        <i class="fas fa-plus"></i> Positive
-                    </div>
-                    <div class="toggle-option" id="negativeBtn" onclick="setChargeType('negative')">
-                        <i class="fas fa-minus"></i> Negative
-                    </div>
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span>Charge Magnitude</span>
+                    <span class="slider-value" id="chargeValueDisplay">1.0 µC</span>
+                </div>
+                <input type="range" min="0.1" max="5" step="0.1" value="1.0" id="chargeSlider" oninput="updateChargeSlider()">
+            </div>
+            
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span>Field Resolution</span>
+                    <span class="slider-value" id="resolutionDisplay">Medium</span>
+                </div>
+                <input type="range" min="1" max="3" step="1" value="2" id="resolutionSlider" oninput="updateResolution()">
+            </div>
+            
+            <h3 style="margin: 20px 0 10px; color: #aaa;">Visualization</h3>
+            <div class="toggle-group">
+                <div class="toggle-item" onclick="toggleField('vectors')">
+                    <span><i class="fas fa-arrows-alt" style="color: var(--field);"></i> Field Vectors</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggleVectors" checked>
+                        <span class="slider-switch"></span>
+                    </label>
                 </div>
                 
-                <div style="margin: 20px 0;">
-                    <label style="display: block; margin-bottom: 10px; color: #888;">Charge Magnitude: <span id="chargeDisplay">1.0</span> µC</label>
-                    <input type="range" id="chargeSlider" min="0.5" max="5" step="0.5" value="1" oninput="updateCharge()">
+                <div class="toggle-item" onclick="toggleField('lines')">
+                    <span><i class="fas fa-stream" style="color: var(--field);"></i> Field Lines</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggleLines" checked>
+                        <span class="slider-switch"></span>
+                    </label>
                 </div>
                 
-                <h3 style="margin: 20px 0 10px;">Visualization</h3>
-                <div class="charge-btn active" id="vectorsBtn" onclick="toggleOption('vectors')">
-                    <i class="fas fa-arrows-alt"></i> Show Field Vectors
-                </div>
-                <div class="charge-btn active" id="fieldBtn" onclick="toggleOption('field')">
-                    <i class="fas fa-fill"></i> Show Field Lines
-                </div>
-                <div class="charge-btn" id="potentialBtn" onclick="toggleOption('potential')">
-                    <i class="fas fa-layer-group"></i> Show Potential
+                <div class="toggle-item" onclick="toggleField('potential')">
+                    <span><i class="fas fa-layer-group" style="color: var(--potential);"></i> Potential Map</span>
+                    <label class="switch">
+                        <input type="checkbox" id="togglePotential">
+                        <span class="slider-switch"></span>
+                    </label>
                 </div>
                 
-                <h3 style="margin: 20px 0 10px;">Calculations</h3>
-                <div style="background: #2d2d30; padding: 15px; border-radius: 6px;">
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
-                        <span>Charges:</span>
-                        <strong id="chargeCount">0</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
-                        <span>Net Charge:</span>
-                        <strong id="netCharge">0 µC</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-                        <span>Field Strength:</span>
-                        <strong id="fieldStrength">0 N/C</strong>
-                    </div>
+                <div class="toggle-item" onclick="toggleField('grid')">
+                    <span><i class="fas fa-th" style="color: #aaa;"></i> Show Grid</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggleGrid">
+                        <span class="slider-switch"></span>
+                    </label>
                 </div>
+            </div>
+            
+            <h3 style="margin: 20px 0 10px; color: #aaa;">Actions</h3>
+            <div class="btn-group">
+                <button class="btn" onclick="runSimulation()" id="runBtn">
+                    <i class="fas fa-play"></i> Run
+                </button>
+                <button class="btn btn-secondary" onclick="pauseSimulation()">
+                    <i class="fas fa-pause"></i> Pause
+                </button>
+            </div>
+            
+            <button class="btn btn-success" onclick="addTestCharges()" style="width: 100%; margin: 10px 0;">
+                <i class="fas fa-flask"></i> Add Test Charges
+            </button>
+            
+            <button class="btn btn-danger" onclick="resetSimulation()" style="width: 100%;">
+                <i class="fas fa-redo"></i> Reset All
+            </button>
+        </div>
+        
+        <!-- Center Panel - Simulation -->
+        <div class="panel" style="grid-column: span 1;">
+            <h2 style="margin-bottom: 15px; color: var(--accent);">
+                <i class="fas fa-map"></i> Field Exploration Canvas
+            </h2>
+            
+            <div class="simulation-area">
+                <canvas id="simulationCanvas"></canvas>
                 
-                <div style="background: rgba(0, 122, 204, 0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 12px; line-height: 1.8;">
-                    <strong style="color: var(--accent);">Electric Field:</strong><br>
-                    E = kQ/r²<br>
-                    k = 8.99 × 10⁹ N⋅m²/C²<br>
-                    Field points away from +, toward -
-                </div>
-                
-                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
-                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
-                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statCharges">0</div>
-                        <div style="font-size: 12px; color: #888;">Charges</div>
+                <!-- Field Probe -->
+                <div id="fieldProbe" class="field-probe" style="position: absolute; top: 20px; left: 20px;">
+                    <div class="probe-handle" onmousedown="startDrag(event)" title="Drag to move">
+                        <i class="fas fa-hand-pointer"></i>
                     </div>
-                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
-                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statConfigs">0</div>
-                        <div style="font-size: 12px; color: #888;">Configs</div>
+                    <div style="font-size: 12px; margin-bottom: 5px; color: #aaa;">Field Probe</div>
+                    <div class="field-value" id="probeField">0 N/C</div>
+                    <div style="font-size: 11px; color: #aaa;" id="probePotential">Potential: 0 V</div>
+                    <div style="font-size: 11px; color: #aaa;" id="probeDirection">Direction: —</div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px;">
+                <div class="data-card">
+                    <div class="data-value" id="totalField">0</div>
+                    <div class="data-label">Total Field</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-value" id="totalEnergy">0</div>
+                    <div class="data-label">Energy</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-value" id="chargeCount">0</div>
+                    <div class="data-label">Charges</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-value" id="simTime">0.0</div>
+                    <div class="data-label">Time (s)</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Panel - Information -->
+        <div class="panel">
+            <h2 style="margin-bottom: 15px; color: var(--accent);">
+                <i class="fas fa-info-circle"></i> Exploration Data
+            </h2>
+            
+            <div class="data-grid">
+                <div class="data-card">
+                    <div class="data-value" id="positiveCount">0</div>
+                    <div class="data-label">Positive</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-value" id="negativeCount">0</div>
+                    <div class="data-label">Negative</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-value" id="dipoleCount">0</div>
+                    <div class="data-label">Dipoles</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-value" id="neutralCount">0</div>
+                    <div class="data-label">Neutral</div>
+                </div>
+            </div>
+            
+            <!-- Physics Principles -->
+            <div class="formula-panel">
+                <h3 style="margin-bottom: 10px; color: var(--potential);">
+                    <i class="fas fa-calculator"></i> Physics Principles
+                </h3>
+                <div class="formula">
+                    F = k·q₁q₂/r²
+                    <div style="font-size: 11px; color: #aaa;">Coulomb's Law</div>
+                </div>
+                <div class="formula">
+                    E = F/q₀ = k·q/r²
+                    <div style="font-size: 11px; color: #aaa;">Electric Field</div>
+                </div>
+                <div class="formula">
+                    V = k·q/r
+                    <div style="font-size: 11px; color: #aaa;">Electric Potential</div>
+                </div>
+            </div>
+            
+            <!-- Discoveries -->
+            <div class="discovery-panel">
+                <h3 style="margin-bottom: 10px; color: var(--discovery);">
+                    <i class="fas fa-search"></i> Pattern Discovery
+                </h3>
+                <div class="discovery-item" id="discovery1">
+                    <i class="fas fa-question-circle"></i>
+                    Place two like charges. What happens to field lines between them?
+                </div>
+                <div class="discovery-item" id="discovery2">
+                    <i class="fas fa-question-circle"></i>
+                    Place opposite charges. Where is the field strongest?
+                </div>
+                <div class="discovery-item" id="discovery3">
+                    <i class="fas fa-question-circle"></i>
+                    Create a dipole. How does field strength change with distance?
+                </div>
+                <div class="discovery-item" id="discovery4">
+                    <i class="fas fa-question-circle"></i>
+                    Try three charges in a triangle. What patterns emerge?
+                </div>
+            </div>
+            
+            <!-- Observations -->
+            <div class="info-panel">
+                <h3 style="margin-bottom: 10px; color: var(--accent);">
+                    <i class="fas fa-eye"></i> Live Observations
+                </h3>
+                <div id="observations">
+                    <div class="info-item warning">
+                        <i class="fas fa-lightbulb"></i> Place charges to see field lines
+                    </div>
+                    <div class="info-item success" id="observation1" style="display: none;">
+                        <i class="fas fa-check-circle"></i> Like charges repel each other
+                    </div>
+                    <div class="info-item success" id="observation2" style="display: none;">
+                        <i class="fas fa-check-circle"></i> Opposite charges attract
+                    </div>
+                    <div class="info-item success" id="observation3" style="display: none;">
+                        <i class="fas fa-check-circle"></i> Field strength ∝ 1/r²
                     </div>
                 </div>
+            </div>
+            
+            <!-- Quick Experiments -->
+            <h3 style="margin: 20px 0 10px; color: #aaa;">Quick Experiments</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="btn btn-secondary" onclick="setupDipole()">
+                    <i class="fas fa-magnet"></i> Dipole
+                </button>
+                <button class="btn btn-secondary" onclick="setupQuadrupole()">
+                    <i class="fas fa-asterisk"></i> Quadrupole
+                </button>
+                <button class="btn btn-secondary" onclick="setupLineOfCharges()">
+                    <i class="fas fa-minus"></i> Line
+                </button>
+                <button class="btn btn-secondary" onclick="setupTriangle()">
+                    <i class="fas fa-play"></i> Triangle
+                </button>
+            </div>
+            
+            <!-- Exploration Log -->
+            <h3 style="margin: 20px 0 10px; color: #aaa;">
+                <i class="fas fa-history"></i> Exploration Log
+            </h3>
+            <div class="exploration-log" id="explorationLog">
+                <!-- Log entries will appear here -->
             </div>
         </div>
     </div>
     
     <script>
-        const API_BASE_URL = 'http://localhost:3000/api';
-        const authToken = localStorage.getItem('authToken');
-        let eventId = null, sessionStart = Date.now(), canvas, ctx;
-        
-        const k = 8.99e9;
-        let chargeType = 'positive', chargeMagnitude = 1.0;
+        // ============== SIMULATION VARIABLES ==============
+        let canvas, ctx;
+        let simulationRunning = false;
+        let simulationTime = 0;
+        let selectedChargeType = 'positive';
+        let chargeMagnitude = 1.0;
+        let fieldResolution = 2;
         let charges = [];
-        let showVectors = true, showField = true, showPotential = false;
-        
-        let interactionData = {
-            actions_count: 0, time_seconds: 0, total_parameter_space: 200,
-            tool_usage: {}, charges_placed: 0, configurations_created: 0,
-            charge_types_used: new Set(['positive'])
+        let testCharges = [];
+        let showVectors = true;
+        let showFieldLines = true;
+        let showPotential = false;
+        let showGrid = false;
+        let animationId = null;
+        let isDragging = false;
+        let dragOffsetX = 0, dragOffsetY = 0;
+        let explorationData = {
+            discoveries: 0,
+            patternsFound: 0,
+            chargesPlaced: 0,
+            explorations: 0,
+            startTime: Date.now()
         };
         
-        async function init() {
-            canvas = document.getElementById('canvas');
+        const k = 8.99e9; // Coulomb's constant
+        
+        // ============== INITIALIZATION ==============
+        document.addEventListener('DOMContentLoaded', function() {
+            initSimulation();
+            setupDefaultExperiment();
+            startAnimation();
+            updateDisplay();
+            logActivity("Electric Field Exploration Lab initialized");
+        });
+        
+        function initSimulation() {
+            canvas = document.getElementById('simulationCanvas');
             ctx = canvas.getContext('2d');
             
-            // CRITICAL FIX: Set canvas size properly
-            const fieldArea = document.getElementById('fieldArea');
-            canvas.width = fieldArea.clientWidth;
-            canvas.height = fieldArea.clientHeight;
+            // Set canvas size
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
             
-            console.log('Canvas initialized:', canvas.width, 'x', canvas.height);
+            // Add event listeners
+            canvas.addEventListener('click', handleCanvasClick);
+            canvas.addEventListener('mousemove', handleMouseMove);
             
-            canvas.addEventListener('click', placeCharge);
-            
-            if (authToken) {
-                try {
-                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
-                    const res = await fetch(`${API_BASE_URL}/student/event`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ studentId, toolId: 'electric-field-mapper', toolType: 'LAB', interactionData })
-                    });
-                    if (res.ok) eventId = (await res.json()).data._id;
-                } catch (err) {
-                    console.log('Event tracking not available');
-                }
-            }
-            
-            // Initial draw
-            draw();
-            
-            // Timer
-            setInterval(() => {
-                const e = Math.floor((Date.now() - sessionStart) / 1000);
-                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
-            }, 1000);
-            
-            // Autosave
-            setInterval(saveProgress, 30000);
-            
-            console.log('✅ Electric Field Mapper initialized');
-        }
-        
-        function setChargeType(type) {
-            chargeType = type;
-            document.getElementById('positiveBtn').classList.remove('active');
-            document.getElementById('negativeBtn').classList.remove('active');
-            
-            if (type === 'positive') {
-                document.getElementById('positiveBtn').classList.add('active');
-            } else {
-                document.getElementById('negativeBtn').classList.add('active');
-            }
-            
-            interactionData.charge_types_used.add(type);
-            interactionData.actions_count++;
-            
-            console.log('Charge type set to:', type);
-        }
-        
-        function updateCharge() {
-            chargeMagnitude = parseFloat(document.getElementById('chargeSlider').value);
-            document.getElementById('chargeDisplay').textContent = chargeMagnitude.toFixed(1);
-            interactionData.actions_count++;
-        }
-        
-        function placeCharge(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
-            
-            charges.push({
-                x: x,
-                y: y,
-                type: chargeType,
-                magnitude: chargeMagnitude
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                const container = canvas.parentElement;
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+                draw();
             });
             
-            interactionData.charges_placed++;
-            interactionData.actions_count++;
+            console.log('✅ Electric Field Exploration Lab initialized');
+        }
+        
+        // ============== CHARGE MANAGEMENT ==============
+        function selectCharge(type) {
+            selectedChargeType = type;
             
-            console.log('Charge placed:', {x, y, type: chargeType, magnitude: chargeMagnitude});
-            console.log('Total charges:', charges.length);
+            // Update UI
+            document.querySelectorAll('.charge-icon').forEach(icon => {
+                icon.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
             
-            updateInfo();
-            draw();
-        }
-        
-        function clearCharges() {
-            charges = [];
-            interactionData.configurations_created++;
-            console.log('Charges cleared');
-            updateInfo();
-            draw();
-        }
-        
-        function toggleVectors() {
-            showVectors = !showVectors;
-            interactionData.actions_count++;
-            console.log('Vectors:', showVectors);
-            draw();
-        }
-        
-        function toggleField() {
-            showField = !showField;
-            interactionData.actions_count++;
-            console.log('Field lines:', showField);
-            draw();
-        }
-        
-        function toggleOption(option) {
-            const btn = document.getElementById(option + 'Btn');
-            btn.classList.toggle('active');
-            
-            if (option === 'vectors') {
-                showVectors = !showVectors;
-                console.log('Vectors toggled:', showVectors);
-            }
-            if (option === 'field') {
-                showField = !showField;
-                console.log('Field toggled:', showField);
-            }
-            if (option === 'potential') {
-                showPotential = !showPotential;
-                console.log('Potential toggled:', showPotential);
+            // Update charge magnitude based on type
+            switch(type) {
+                case 'positive-large':
+                    chargeMagnitude = 2.0;
+                    break;
+                case 'negative-large':
+                    chargeMagnitude = -2.0;
+                    break;
+                case 'dipole':
+                    // Will create both charges
+                    break;
+                default:
+                    chargeMagnitude = Math.abs(chargeMagnitude);
+                    if (type === 'negative') chargeMagnitude = -chargeMagnitude;
+                    if (type === 'neutral') chargeMagnitude = 0;
             }
             
-            interactionData.actions_count++;
-            draw();
+            updateChargeSlider();
+            updateDisplay();
+            logActivity(`Selected ${type} charge`);
         }
         
-        function updateInfo() {
-            document.getElementById('chargeCount').textContent = charges.length;
-            
-            const netCharge = charges.reduce((sum, c) => {
-                return sum + (c.type === 'positive' ? c.magnitude : -c.magnitude);
-            }, 0);
-            document.getElementById('netCharge').textContent = netCharge.toFixed(1) + ' µC';
-            
-            document.getElementById('statCharges').textContent = interactionData.charges_placed;
-            document.getElementById('statConfigs').textContent = interactionData.configurations_created;
+        function updateChargeSlider() {
+            const value = parseFloat(document.getElementById('chargeSlider').value);
+            chargeMagnitude = value;
+            if (selectedChargeType === 'negative' || selectedChargeType === 'negative-large') {
+                chargeMagnitude = -value;
+            }
+            document.getElementById('chargeValueDisplay').textContent = 
+                Math.abs(value).toFixed(1) + ' µC';
         }
         
+        function updateResolution() {
+            const value = parseInt(document.getElementById('resolutionSlider').value);
+            fieldResolution = value;
+            const resolutions = ['Low', 'Medium', 'High'];
+            document.getElementById('resolutionDisplay').textContent = resolutions[value - 1];
+        }
+        
+        // ============== CANVAS INTERACTIONS ==============
+        function handleCanvasClick(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            if (selectedChargeType === 'dipole') {
+                // Create dipole pair
+                createDipole(x, y);
+            } else {
+                // Create single charge
+                const charge = {
+                    x: x,
+                    y: y,
+                    type: selectedChargeType,
+                    magnitude: chargeMagnitude * 1e-6, // Convert to Coulombs
+                    radius: 20,
+                    id: Date.now() + Math.random()
+                };
+                charges.push(charge);
+                explorationData.chargesPlaced++;
+                explorationData.explorations++;
+            }
+            
+            updateObservations();
+            updateDisplay();
+            detectPatterns();
+            logActivity(`Placed ${selectedChargeType} charge at (${Math.round(x)}, ${Math.round(y)})`);
+        }
+        
+        function handleMouseMove(event) {
+            if (!isDragging) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const probe = document.getElementById('fieldProbe');
+            
+            let x = event.clientX - rect.left - dragOffsetX;
+            let y = event.clientY - rect.top - dragOffsetY;
+            
+            // Keep probe within canvas bounds
+            x = Math.max(10, Math.min(x, canvas.width - probe.offsetWidth - 10));
+            y = Math.max(10, Math.min(y, canvas.height - probe.offsetHeight - 10));
+            
+            probe.style.left = x + 'px';
+            probe.style.top = y + 'px';
+            
+            // Update probe measurements
+            updateProbeMeasurement(x + probe.offsetWidth / 2, y + probe.offsetHeight / 2);
+        }
+        
+        function startDrag(event) {
+            isDragging = true;
+            const probe = document.getElementById('fieldProbe');
+            const rect = probe.getBoundingClientRect();
+            dragOffsetX = event.clientX - rect.left;
+            dragOffsetY = event.clientY - rect.top;
+            
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', stopDrag);
+        }
+        
+        function stopDrag() {
+            isDragging = false;
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+        
+        // ============== FIELD CALCULATIONS ==============
+        function calculateElectricField(x, y) {
+            let ex = 0, ey = 0;
+            
+            charges.forEach(charge => {
+                const dx = x - charge.x;
+                const dy = y - charge.y;
+                const r = Math.sqrt(dx*dx + dy*dy);
+                
+                if (r > charge.radius) {
+                    const magnitude = k * charge.magnitude / (r * r);
+                    ex += magnitude * dx / r;
+                    ey += magnitude * dy / r;
+                }
+            });
+            
+            const magnitude = Math.sqrt(ex*ex + ey*ey);
+            return { ex, ey, magnitude };
+        }
+        
+        function calculatePotential(x, y) {
+            let potential = 0;
+            
+            charges.forEach(charge => {
+                const dx = x - charge.x;
+                const dy = y - charge.y;
+                const r = Math.sqrt(dx*dx + dy*dy);
+                
+                if (r > charge.radius) {
+                    potential += k * charge.magnitude / r;
+                }
+            });
+            
+            return potential;
+        }
+        
+        function updateProbeMeasurement(x, y) {
+            const field = calculateElectricField(x, y);
+            const potential = calculatePotential(x, y);
+            
+            document.getElementById('probeField').textContent = 
+                field.magnitude > 1000 ? 
+                (field.magnitude / 1000).toFixed(2) + ' kN/C' :
+                field.magnitude.toFixed(2) + ' N/C';
+            
+            document.getElementById('probePotential').textContent = 
+                'Potential: ' + potential.toFixed(2) + ' V';
+            
+            if (field.magnitude > 0.1) {
+                const angle = Math.atan2(field.ey, field.ex) * 180 / Math.PI;
+                document.getElementById('probeDirection').textContent = 
+                    'Direction: ' + angle.toFixed(1) + '°';
+            } else {
+                document.getElementById('probeDirection').textContent = 'Direction: —';
+            }
+        }
+        
+        // ============== VISUALIZATION ==============
         function draw() {
             // Clear canvas
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            console.log('Drawing... Charges:', charges.length, 'Vectors:', showVectors, 'Field:', showField);
+            // Draw grid if enabled
+            if (showGrid) drawGrid();
             
-            // Draw in order
-            if (showPotential) drawPotential();
-            if (showField) drawFieldLines();
-            if (showVectors) drawVectors();
+            // Draw in proper order
+            if (showPotential) drawPotentialMap();
             drawCharges();
+            if (showFieldLines) drawFieldLines();
+            if (showVectors) drawFieldVectors();
+            if (testCharges.length > 0) drawTestCharges();
+        }
+        
+        function drawGrid() {
+            const gridSize = 20;
+            ctx.strokeStyle = 'rgba(70, 70, 71, 0.5)';
+            ctx.lineWidth = 0.5;
+            ctx.setLineDash([2, 2]);
+            
+            // Vertical lines
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // Horizontal lines
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            ctx.setLineDash([]);
+        }
+        
+        function drawPotentialMap() {
+            const gridSize = 15;
+            ctx.globalAlpha = 0.15;
+            
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                for (let y = 0; y < canvas.height; y += gridSize) {
+                    const potential = calculatePotential(x, y);
+                    const intensity = Math.min(1, Math.abs(potential) / 10000);
+                    
+                    if (potential > 0) {
+                        ctx.fillStyle = `rgba(255, 107, 107, ${intensity})`;
+                    } else {
+                        ctx.fillStyle = `rgba(77, 171, 247, ${intensity})`;
+                    }
+                    
+                    ctx.fillRect(x, y, gridSize, gridSize);
+                }
+            }
+            ctx.globalAlpha = 1;
+        }
+        
+        function drawCharges() {
+            charges.forEach(charge => {
+                // Draw charge body
+                const gradient = ctx.createRadialGradient(
+                    charge.x, charge.y, 0,
+                    charge.x, charge.y, charge.radius
+                );
+                
+                if (charge.magnitude > 0) {
+                    gradient.addColorStop(0, '#ff9999');
+                    gradient.addColorStop(1, '#cc0000');
+                } else if (charge.magnitude < 0) {
+                    gradient.addColorStop(0, '#99ccff');
+                    gradient.addColorStop(1, '#0066cc');
+                } else {
+                    gradient.addColorStop(0, '#cccccc');
+                    gradient.addColorStop(1, '#666666');
+                }
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(charge.x, charge.y, charge.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw border
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw charge symbol
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = 'white';
+                
+                let symbol;
+                if (Math.abs(charge.magnitude) > 1.5e-6) {
+                    symbol = charge.magnitude > 0 ? '++' : '--';
+                } else if (charge.magnitude === 0) {
+                    symbol = '0';
+                } else {
+                    symbol = charge.magnitude > 0 ? '+' : '−';
+                }
+                
+                ctx.fillText(symbol, charge.x, charge.y);
+                
+                // Draw magnitude
+                ctx.font = '10px Arial';
+                ctx.fillStyle = '#aaa';
+                ctx.fillText(
+                    Math.abs(charge.magnitude * 1e6).toFixed(1) + 'µC',
+                    charge.x,
+                    charge.y + charge.radius + 12
+                );
+            });
         }
         
         function drawFieldLines() {
-            console.log('Drawing field lines for', charges.length, 'charges');
-            
             charges.forEach(charge => {
                 const lines = 16;
+                const color = charge.magnitude > 0 ? 
+                    'rgba(255, 107, 107, 0.4)' : 
+                    'rgba(77, 171, 247, 0.4)';
+                
                 for (let i = 0; i < lines; i++) {
                     const angle = (i / lines) * Math.PI * 2;
-                    const color = charge.type === 'positive' ? '#ff6b6b' : '#4dabf7';
-                    ctx.strokeStyle = color;
-                    ctx.lineWidth = 2;
-                    ctx.globalAlpha = 0.4;
-                    ctx.beginPath();
-                    ctx.moveTo(charge.x, charge.y);
-                    
-                    const length = 100;
-                    const dir = charge.type === 'positive' ? 1 : -1;
-                    const endX = charge.x + Math.cos(angle) * length * dir;
-                    const endY = charge.y + Math.sin(angle) * length * dir;
-                    ctx.lineTo(endX, endY);
-                    ctx.stroke();
-                    ctx.globalAlpha = 1;
+                    drawSingleFieldLine(charge, angle, color);
                 }
             });
         }
         
-        function drawVectors() {
-            const gridSize = 40;
-            console.log('Drawing vectors on grid');
+        function drawSingleFieldLine(charge, startAngle, color) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1.5;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
             
-            for (let x = gridSize; x < canvas.width; x += gridSize) {
-                for (let y = gridSize; y < canvas.height; y += gridSize) {
-                    const field = calculateField(x, y);
-                    const mag = Math.sqrt(field.x * field.x + field.y * field.y);
+            let x = charge.x;
+            let y = charge.y;
+            const step = 4;
+            const maxSteps = 300;
+            
+            // Start slightly outside the charge
+            const startRadius = charge.radius + 5;
+            x += startRadius * Math.cos(startAngle);
+            y += startRadius * Math.sin(startAngle);
+            
+            ctx.moveTo(x, y);
+            
+            for (let i = 0; i < maxSteps; i++) {
+                const field = calculateElectricField(x, y);
+                if (field.magnitude < 10 || field.magnitude > 1e10) break;
+                
+                // Normalize direction
+                const dx = field.ex / field.magnitude;
+                const dy = field.ey / field.magnitude;
+                
+                // Reverse direction for negative charges
+                const dir = charge.magnitude > 0 ? 1 : -1;
+                x += dx * step * dir;
+                y += dy * step * dir;
+                
+                // Check bounds
+                if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) break;
+                
+                // Check if we hit another charge
+                let hitCharge = false;
+                charges.forEach(c => {
+                    const dist = Math.sqrt((x - c.x)**2 + (y - c.y)**2);
+                    if (dist < c.radius + 5 && c.id !== charge.id) {
+                        hitCharge = true;
+                    }
+                });
+                if (hitCharge) break;
+                
+                ctx.lineTo(x, y);
+            }
+            
+            ctx.stroke();
+        }
+        
+        function drawFieldVectors() {
+            const gridSize = fieldResolution === 1 ? 50 : fieldResolution === 2 ? 30 : 20;
+            
+            for (let x = gridSize; x < canvas.width - gridSize; x += gridSize) {
+                for (let y = gridSize; y < canvas.height - gridSize; y += gridSize) {
+                    const field = calculateElectricField(x, y);
                     
-                    if (mag > 0.01) {
-                        const scale = Math.min(20, mag * 500);
-                        const ex = x + (field.x / mag) * scale;
-                        const ey = y + (field.y / mag) * scale;
+                    if (field.magnitude > 100) {
+                        const scale = Math.min(25, Math.log10(field.magnitude) * 5);
                         
-                        ctx.strokeStyle = '#4dabf7';
+                        // Draw vector line
+                        ctx.strokeStyle = '#27ae60';
                         ctx.lineWidth = 2;
                         ctx.beginPath();
                         ctx.moveTo(x, y);
-                        ctx.lineTo(ex, ey);
+                        ctx.lineTo(x + (field.ex / field.magnitude) * scale, 
+                                 y + (field.ey / field.magnitude) * scale);
                         ctx.stroke();
                         
-                        // Arrowhead
-                        const angle = Math.atan2(field.y, field.x);
+                        // Draw arrowhead
+                        const angle = Math.atan2(field.ey, field.ex);
+                        ctx.fillStyle = '#27ae60';
                         ctx.beginPath();
-                        ctx.moveTo(ex, ey);
-                        ctx.lineTo(ex - 5 * Math.cos(angle - 0.3), ey - 5 * Math.sin(angle - 0.3));
-                        ctx.lineTo(ex - 5 * Math.cos(angle + 0.3), ey - 5 * Math.sin(angle + 0.3));
+                        const tipX = x + (field.ex / field.magnitude) * scale;
+                        const tipY = y + (field.ey / field.magnitude) * scale;
+                        ctx.moveTo(tipX, tipY);
+                        ctx.lineTo(tipX - 10 * Math.cos(angle - 0.3), 
+                                 tipY - 10 * Math.sin(angle - 0.3));
+                        ctx.lineTo(tipX - 10 * Math.cos(angle + 0.3), 
+                                 tipY - 10 * Math.sin(angle + 0.3));
                         ctx.closePath();
-                        ctx.fillStyle = '#4dabf7';
                         ctx.fill();
                     }
                 }
             }
         }
         
-        function drawPotential() {
-            console.log('Drawing potential map');
-            ctx.globalAlpha = 0.1;
-            for (let x = 0; x < canvas.width; x += 10) {
-                for (let y = 0; y < canvas.height; y += 10) {
-                    const potential = calculatePotential(x, y);
-                    const intensity = Math.min(255, Math.abs(potential) * 50);
-                    const color = potential > 0 ? `rgb(${intensity}, 0, 0)` : `rgb(0, 0, ${intensity})`;
-                    ctx.fillStyle = color;
-                    ctx.fillRect(x, y, 10, 10);
-                }
-            }
-            ctx.globalAlpha = 1;
-        }
-        
-        function calculateField(x, y) {
-            let ex = 0, ey = 0;
-            
-            charges.forEach(charge => {
-                const dx = x - charge.x;
-                const dy = y - charge.y;
-                const r = Math.sqrt(dx * dx + dy * dy);
-                
-                if (r > 5) {
-                    const magnitude = k * charge.magnitude * 1e-6 / (r * r);
-                    const sign = charge.type === 'positive' ? 1 : -1;
-                    ex += sign * magnitude * dx / r;
-                    ey += sign * magnitude * dy / r;
-                }
-            });
-            
-            return { x: ex, y: ey };
-        }
-        
-        function calculatePotential(x, y) {
-            let v = 0;
-            
-            charges.forEach(charge => {
-                const dx = x - charge.x;
-                const dy = y - charge.y;
-                const r = Math.sqrt(dx * dx + dy * dy);
-                
-                if (r > 5) {
-                    const sign = charge.type === 'positive' ? 1 : -1;
-                    v += sign * k * charge.magnitude * 1e-6 / r;
-                }
-            });
-            
-            return v;
-        }
-        
-        function drawCharges() {
-            console.log('Drawing', charges.length, 'charges');
-            
-            charges.forEach(charge => {
-                const color = charge.type === 'positive' ? '#ff6b6b' : '#4dabf7';
-                const gradient = ctx.createRadialGradient(charge.x, charge.y, 0, charge.x, charge.y, 20);
-                gradient.addColorStop(0, color);
-                gradient.addColorStop(1, charge.type === 'positive' ? '#c0392b' : '#2980b9');
-                
-                ctx.fillStyle = gradient;
+        function drawTestCharges() {
+            testCharges.forEach(charge => {
+                ctx.fillStyle = 'rgba(153, 102, 255, 0.8)';
                 ctx.beginPath();
-                ctx.arc(charge.x, charge.y, 20, 0, Math.PI * 2);
+                ctx.arc(charge.x, charge.y, 8, 0, Math.PI * 2);
                 ctx.fill();
                 
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 3;
-                ctx.font = 'bold 20px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillStyle = '#fff';
-                ctx.fillText(charge.type === 'positive' ? '+' : '−', charge.x, charge.y);
+                ctx.strokeStyle = '#9966ff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw small plus sign for positive test charge
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(charge.x - 4, charge.y);
+                ctx.lineTo(charge.x + 4, charge.y);
+                ctx.moveTo(charge.x, charge.y - 4);
+                ctx.lineTo(charge.x, charge.y + 4);
+                ctx.stroke();
             });
         }
         
-        async function saveProgress() {
-            if (!eventId) return;
-            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
-            interactionData.charge_types_used = Array.from(interactionData.charge_types_used);
-            try {
-                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
-                    method: 'PATCH',
-                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ interactionData })
-                });
-                console.log('Progress saved');
-            } catch (err) {
-                console.log('Save failed:', err);
+        // ============== SIMULATION CONTROL ==============
+        function runSimulation() {
+            if (!simulationRunning) {
+                simulationRunning = true;
+                startAnimation();
+                document.getElementById('runBtn').innerHTML = 
+                    '<i class="fas fa-stop"></i> Stop';
+                document.getElementById('runBtn').classList.add('btn-danger');
+                logActivity("Simulation started");
+            } else {
+                pauseSimulation();
             }
         }
         
-        async function complete() {
-            await saveProgress();
-            alert('✅ Session completed! Total charges placed: ' + charges.length);
+        function pauseSimulation() {
+            simulationRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            document.getElementById('runBtn').innerHTML = 
+                '<i class="fas fa-play"></i> Run';
+            document.getElementById('runBtn').classList.remove('btn-danger');
+            logActivity("Simulation paused");
         }
         
-        window.addEventListener('load', init);
-        window.addEventListener('beforeunload', saveProgress);
+        function startAnimation() {
+            if (!animationId) {
+                function animate() {
+                    if (simulationRunning) {
+                        simulationTime += 0.016; // 60 FPS
+                        updateTestCharges();
+                        updateDisplay();
+                    }
+                    draw();
+                    animationId = requestAnimationFrame(animate);
+                }
+                animate();
+            }
+        }
         
-        // Resize handler
-        window.addEventListener('resize', () => {
-            const fieldArea = document.getElementById('fieldArea');
-            canvas.width = fieldArea.clientWidth;
-            canvas.height = fieldArea.clientHeight;
+        function updateTestCharges() {
+            // Move test charges according to electric field
+            testCharges.forEach(charge => {
+                const field = calculateElectricField(charge.x, charge.y);
+                const forceMagnitude = field.magnitude * 1e-9; // Small test charge
+                
+                if (field.magnitude > 0) {
+                    charge.vx += (field.ex / field.magnitude) * forceMagnitude * 0.1;
+                    charge.vy += (field.ey / field.magnitude) * forceMagnitude * 0.1;
+                    
+                    // Apply damping
+                    charge.vx *= 0.98;
+                    charge.vy *= 0.98;
+                    
+                    // Update position
+                    charge.x += charge.vx;
+                    charge.y += charge.vy;
+                    
+                    // Boundary check
+                    if (charge.x < 0 || charge.x > canvas.width) charge.vx *= -0.5;
+                    if (charge.y < 0 || charge.y > canvas.height) charge.vy *= -0.5;
+                    charge.x = Math.max(10, Math.min(charge.x, canvas.width - 10));
+                    charge.y = Math.max(10, Math.min(charge.y, canvas.height - 10));
+                }
+            });
+        }
+        
+        // ============== EXPERIMENT SETUPS ==============
+        function setupDefaultExperiment() {
+            // Create a simple dipole
+            createDipole(canvas.width / 2, canvas.height / 2);
+        }
+        
+        function createDipole(x, y) {
+            charges.push({
+                x: x - 60,
+                y: y,
+                type: 'positive',
+                magnitude: 1e-6,
+                radius: 20,
+                id: Date.now()
+            });
+            
+            charges.push({
+                x: x + 60,
+                y: y,
+                type: 'negative',
+                magnitude: -1e-6,
+                radius: 20,
+                id: Date.now() + 1
+            });
+            
+            logActivity("Created dipole configuration");
+            updateDisplay();
+        }
+        
+        function addTestCharges() {
+            // Add several test charges
+            for (let i = 0; i < 5; i++) {
+                testCharges.push({
+                    x: 100 + i * 50,
+                    y: canvas.height / 2,
+                    vx: 0,
+                    vy: 0,
+                    id: Date.now() + i
+                });
+            }
+            logActivity("Added test charges");
+        }
+        
+        function setupQuadrupole() {
+            resetSimulation();
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            charges = [
+                { x: centerX - 80, y: centerY - 80, type: 'positive', magnitude: 1e-6, radius: 20, id: 1 },
+                { x: centerX + 80, y: centerY + 80, type: 'positive', magnitude: 1e-6, radius: 20, id: 2 },
+                { x: centerX + 80, y: centerY - 80, type: 'negative', magnitude: -1e-6, radius: 20, id: 3 },
+                { x: centerX - 80, y: centerY + 80, type: 'negative', magnitude: -1e-6, radius: 20, id: 4 }
+            ];
+            logActivity("Setup quadrupole configuration");
+            updateDisplay();
+        }
+        
+        function setupLineOfCharges() {
+            resetSimulation();
+            const centerY = canvas.height / 2;
+            
+            for (let i = 0; i < 5; i++) {
+                charges.push({
+                    x: 100 + i * 100,
+                    y: centerY,
+                    type: i % 2 === 0 ? 'positive' : 'negative',
+                    magnitude: i % 2 === 0 ? 1e-6 : -1e-6,
+                    radius: 18,
+                    id: Date.now() + i
+                });
+            }
+            logActivity("Setup line of charges");
+            updateDisplay();
+        }
+        
+        function setupTriangle() {
+            resetSimulation();
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 80;
+            
+            for (let i = 0; i < 3; i++) {
+                const angle = (i / 3) * Math.PI * 2;
+                charges.push({
+                    x: centerX + radius * Math.cos(angle),
+                    y: centerY + radius * Math.sin(angle),
+                    type: i === 0 ? 'positive' : 'negative',
+                    magnitude: i === 0 ? 1e-6 : -0.5e-6,
+                    radius: 18,
+                    id: Date.now() + i
+                });
+            }
+            logActivity("Setup triangle configuration");
+            updateDisplay();
+        }
+        
+        // ============== UI UPDATES ==============
+        function updateDisplay() {
+            // Update counts
+            const positive = charges.filter(c => c.magnitude > 0).length;
+            const negative = charges.filter(c => c.magnitude < 0).length;
+            const neutral = charges.filter(c => c.magnitude === 0).length;
+            const dipoles = Math.min(positive, negative);
+            
+            document.getElementById('positiveCount').textContent = positive;
+            document.getElementById('negativeCount').textContent = negative;
+            document.getElementById('neutralCount').textContent = neutral;
+            document.getElementById('dipoleCount').textContent = dipoles;
+            document.getElementById('chargeCount').textContent = charges.length;
+            
+            // Update simulation time
+            document.getElementById('simTime').textContent = simulationTime.toFixed(1);
+            
+            // Calculate total field magnitude at center
+            const centerField = calculateElectricField(canvas.width/2, canvas.height/2);
+            document.getElementById('totalField').textContent = 
+                centerField.magnitude > 1000 ? 
+                (centerField.magnitude/1000).toFixed(1) + 'k' :
+                centerField.magnitude.toFixed(1);
+            
+            // Calculate total potential energy
+            let totalEnergy = 0;
+            for (let i = 0; i < charges.length; i++) {
+                for (let j = i + 1; j < charges.length; j++) {
+                    const dx = charges[i].x - charges[j].x;
+                    const dy = charges[i].y - charges[j].y;
+                    const r = Math.sqrt(dx*dx + dy*dy);
+                    if (r > 0) {
+                        totalEnergy += k * charges[i].magnitude * charges[j].magnitude / r;
+                    }
+                }
+            }
+            document.getElementById('totalEnergy').textContent = 
+                Math.abs(totalEnergy).toExponential(2);
+        }
+        
+        function updateObservations() {
+            // Show observations based on current setup
+            if (charges.length >= 2) {
+                const positiveCharges = charges.filter(c => c.magnitude > 0);
+                const negativeCharges = charges.filter(c => c.magnitude < 0);
+                
+                document.getElementById('observation1').style.display = 'block';
+                document.getElementById('observation2').style.display = 'block';
+                
+                if (positiveCharges.length === 1 && negativeCharges.length === 1) {
+                    document.getElementById('observation3').style.display = 'block';
+                }
+            }
+        }
+        
+        function toggleField(type) {
+            const checkbox = document.getElementById('toggle' + type.charAt(0).toUpperCase() + type.slice(1));
+            
+            switch(type) {
+                case 'vectors':
+                    showVectors = checkbox.checked;
+                    logActivity(`${showVectors ? 'Enabled' : 'Disabled'} field vectors`);
+                    break;
+                case 'lines':
+                    showFieldLines = checkbox.checked;
+                    logActivity(`${showFieldLines ? 'Enabled' : 'Disabled'} field lines`);
+                    break;
+                case 'potential':
+                    showPotential = checkbox.checked;
+                    logActivity(`${showPotential ? 'Enabled' : 'Disabled'} potential map`);
+                    break;
+                case 'grid':
+                    showGrid = checkbox.checked;
+                    logActivity(`${showGrid ? 'Enabled' : 'Disabled'} grid`);
+                    break;
+            }
+        }
+        
+        // ============== PATTERN DETECTION ==============
+        function detectPatterns() {
+            if (charges.length === 0) return;
+            
+            if (charges.length === 1) {
+                revealDiscovery('discovery1', 'Single charge: Field lines radiate symmetrically');
+            }
+            else if (charges.length === 2) {
+                const q1 = charges[0];
+                const q2 = charges[1];
+                
+                if (q1.magnitude * q2.magnitude > 0) {
+                    revealDiscovery('discovery1', 'Like charges repel: Field lines bend away from each other');
+                } else {
+                    revealDiscovery('discovery2', 'Opposite charges attract: Field lines connect between charges');
+                }
+            }
+            else if (charges.length === 3) {
+                revealDiscovery('discovery4', 'Triangle configuration: Complex interference patterns observed');
+            }
+            
+            // Check for dipole
+            if (charges.length >= 2) {
+                const positiveCharges = charges.filter(c => c.magnitude > 0);
+                const negativeCharges = charges.filter(c => c.magnitude < 0);
+                
+                if (positiveCharges.length === 1 && negativeCharges.length === 1) {
+                    const dx = positiveCharges[0].x - negativeCharges[0].x;
+                    const dy = positiveCharges[0].y - negativeCharges[0].y;
+                    const distance = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if (distance < 200) {
+                        revealDiscovery('discovery3', 'Dipole detected: Field strength decreases with 1/r³ at large distances');
+                    }
+                }
+            }
+        }
+        
+        function revealDiscovery(discoveryId, message) {
+            const discoveryElement = document.getElementById(discoveryId);
+            if (!discoveryElement.classList.contains('revealed')) {
+                discoveryElement.classList.add('revealed');
+                discoveryElement.innerHTML = `
+                    <i class="fas fa-check-circle" style="color: var(--discovery);"></i>
+                    ${message}
+                `;
+                
+                explorationData.discoveries++;
+                explorationData.patternsFound++;
+                
+                document.getElementById('discoveries').textContent = explorationData.discoveries;
+                logActivity(`Discovery: ${message}`);
+            }
+        }
+        
+        // ============== UTILITY FUNCTIONS ==============
+        function resetSimulation() {
+            charges = [];
+            testCharges = [];
+            simulationTime = 0;
+            simulationRunning = false;
+            document.getElementById('runBtn').innerHTML = '<i class="fas fa-play"></i> Run';
+            document.getElementById('runBtn').classList.remove('btn-danger');
+            updateDisplay();
             draw();
-        });
+            logActivity("Simulation reset");
+        }
+        
+        function saveExploration() {
+            const progress = {
+                timestamp: new Date().toISOString(),
+                explorationData: explorationData,
+                charges: charges,
+                settings: {
+                    showVectors,
+                    showFieldLines,
+                    showPotential,
+                    showGrid,
+                    fieldResolution
+                }
+            };
+            
+            localStorage.setItem('electricFieldExploration', JSON.stringify(progress));
+            logActivity("Exploration progress saved");
+        }
+        
+        function exportExploration() {
+            const data = {
+                explorationData: explorationData,
+                charges: charges,
+                timestamp: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `field-exploration-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            logActivity("Exported exploration data");
+        }
+        
+        function logActivity(message) {
+            const log = document.getElementById('explorationLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            const now = new Date();
+            const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            
+            entry.innerHTML = `${message} <span class="log-time">${timeString}</span>`;
+            
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+            
+            explorationData.explorations++;
+        }
     </script>
 </body>
 </html>

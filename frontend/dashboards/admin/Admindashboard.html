@@ -946,7 +946,12 @@
                     </div>
                     
                     <div class="search-bar">
-                        <input type="text" class="search-input" placeholder="Search teachers..." id="teacherSearch">
+                        <input type="text"
+                               class="search-input"
+                               placeholder="Search teachers..."
+                               id="teacherSearch"
+                               oninput="filterTeachers()">
+
                         <select class="form-select" id="teacherStatusFilter" onchange="filterTeachers()">
                             <option value="">All Status</option>
                             <option value="pending">Pending</option>
@@ -991,7 +996,7 @@
                     </div>
                     
                     <div class="search-bar">
-                        <input type="text" class="search-input" placeholder="Search students..." id="studentSearch">
+                        <input type="text" class="search-input" placeholder="Search students..." id="studentSearch" oninput="filterStudents()">
                         <select class="form-select" id="classFilter" onchange="filterStudents()">
                             <option value="">All Classes</option>
                             <option value="1">Class 1</option>
@@ -1588,16 +1593,29 @@
         
         async function loadOverview() {
             try {
+                console.log('DEBUG: Loading overview data...');
                 const stats = await queuedApiCall('/admin/school/statistics');
+                console.log('DEBUG: Overview API response:', stats);
+                
                 const overview = stats.data?.overview || stats.data || {};
+                console.log('DEBUG: Processed overview data:', overview);
                 
                 document.getElementById('totalTeachers').textContent = overview.totalTeachers || 0;
                 document.getElementById('totalStudents').textContent = overview.totalStudents || 0;
                 document.getElementById('totalClasses').textContent = overview.totalClasses || 0;
                 document.getElementById('totalChallenges').textContent = overview.totalChallenges || 0;
                 
+                console.log('DEBUG: Updated overview stats:', {
+                    teachers: overview.totalTeachers || 0,
+                    students: overview.totalStudents || 0,
+                    classes: overview.totalClasses || 0,
+                    challenges: overview.totalChallenges || 0
+                });
+                
                 try {
+                    console.log('DEBUG: Loading pending teachers...');
                     const pending = await queuedApiCall('/admin/teachers/pending');
+                    console.log('DEBUG: Pending teachers response:', pending);
                     displayPendingTeachers(pending.data?.teachers || []);
                 } catch (error) {
                     console.error('Error loading pending teachers:', error);
@@ -1610,6 +1628,7 @@
         }
         
         function setDefaultValues() {
+            console.log('DEBUG: Setting default overview values');
             document.getElementById('totalTeachers').textContent = '0';
             document.getElementById('totalStudents').textContent = '0';
             document.getElementById('totalClasses').textContent = '0';
@@ -1618,14 +1637,22 @@
         
         async function loadTeachers() {
             try {
+                console.log('DEBUG: Loading teachers...');
                 const status = document.getElementById('teacherStatusFilter').value;
+                console.log('DEBUG: Teacher status filter:', status);
+                
                 const data = await queuedApiCall('/admin/teachers');
+                console.log('DEBUG: Teachers API response:', data);
+                
                 let teachers = data.data?.teachers || [];
+                console.log('DEBUG: Total teachers found:', teachers.length);
                 
                 if (status) {
-                    teachers = teachers.filter(t => 
+                    const filteredTeachers = teachers.filter(t => 
                         (t.status || 'pending') === status
                     );
+                    console.log('DEBUG: Filtered teachers by status', status, ':', filteredTeachers.length);
+                    teachers = filteredTeachers;
                 }
                 
                 displayTeachers(teachers);
@@ -1637,13 +1664,16 @@
         }
         
         function displayTeachers(teachers) {
+            console.log('DEBUG: Displaying teachers:', teachers);
             const tbody = document.getElementById('teachersTable');
             
             if (!teachers || teachers.length === 0) {
+                console.log('DEBUG: No teachers to display');
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center">No teachers found</td></tr>';
                 return;
             }
             
+            console.log('DEBUG: Rendering', teachers.length, 'teachers');
             tbody.innerHTML = teachers.slice(0, 10).map(teacher => {
                 const status = teacher.status || 'pending';
                 const statusDisplay = status.charAt(0).toUpperCase() + status.slice(1);
@@ -1681,6 +1711,7 @@
         }
         
         async function approveTeacher(teacherId) {
+            console.log('DEBUG: Approving teacher:', teacherId);
             if (!confirm('Approve this teacher?')) return;
             
             try {
@@ -1693,6 +1724,7 @@
                     loadOverview();
                 }
             } catch (error) {
+                console.error('DEBUG: Approval failed, trying alternative:', error);
                 try {
                     await apiCall(`/admin/teachers/${teacherId}`, {
                         method: 'PUT',
@@ -1704,12 +1736,14 @@
                         loadOverview();
                     }
                 } catch (error2) {
+                    console.error('DEBUG: Both approval methods failed:', error2);
                     alert('Error approving teacher: ' + error.message);
                 }
             }
         }
         
         async function rejectTeacher(teacherId) {
+            console.log('DEBUG: Rejecting teacher:', teacherId);
             const reason = prompt('Enter rejection reason:');
             if (!reason) return;
             
@@ -1721,6 +1755,7 @@
                 alert('Teacher rejected');
                 loadTeachers();
             } catch (error) {
+                console.error('DEBUG: Rejection failed, trying alternative:', error);
                 try {
                     await apiCall(`/admin/teachers/${teacherId}`, {
                         method: 'PUT',
@@ -1732,19 +1767,23 @@
                     alert('Teacher rejected');
                     loadTeachers();
                 } catch (error2) {
+                    console.error('DEBUG: Both rejection methods failed:', error2);
                     alert('Error rejecting teacher: ' + error.message);
                 }
             }
         }
         
         function displayPendingTeachers(teachers) {
+            console.log('DEBUG: Displaying pending teachers:', teachers);
             const container = document.getElementById('pendingTeachers');
             
             if (!teachers || teachers.length === 0) {
+                console.log('DEBUG: No pending teachers to display');
                 container.innerHTML = '<p class="text-center" style="color: #aaa; padding: 20px;">No pending approvals</p>';
                 return;
             }
             
+            console.log('DEBUG: Rendering', teachers.length, 'pending teachers');
             container.innerHTML = teachers.slice(0, 5).map(teacher => `
                 <div style="padding: 15px; border-bottom: 1px solid #464647;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1771,8 +1810,10 @@
         async function addTeacher(event) {
             event.preventDefault();
             
+            console.log('DEBUG: Adding new teacher...');
             const formData = new FormData(event.target);
             const data = Object.fromEntries(formData);
+            console.log('DEBUG: Teacher form data:', data);
             
             const subjects = data.subjects.split(',')
                 .map(s => s.trim())
@@ -1790,6 +1831,8 @@
                 })
                 .filter(s => VALID_SUBJECTS.includes(s));
             
+            console.log('DEBUG: Processed subjects:', subjects);
+            
             if (subjects.length === 0) {
                 alert(`Please enter valid subjects. Allowed subjects: ${VALID_SUBJECTS.join(', ')}`);
                 return;
@@ -1805,12 +1848,15 @@
                 schoolId: localStorage.getItem('schoolId') || schoolData?.schoolId
             };
             
+            console.log('DEBUG: Teacher payload:', payload);
+            
             try {
                 const response = await apiCall('/admin/teachers', {
                     method: 'POST',
                     body: JSON.stringify(payload)
                 });
                 
+                console.log('DEBUG: Teacher added successfully:', response);
                 alert('Teacher added successfully. Status: Pending');
                 closeModal('addTeacherModal');
                 event.target.reset();
@@ -1827,7 +1873,9 @@
         
         async function loadReports() {
             try {
+                console.log('DEBUG: Loading reports...');
                 const data = await queuedApiCall('/admin/reports');
+                console.log('DEBUG: Reports API response:', data);
                 displayReports(data.data?.reports || []);
             } catch (error) {
                 console.error('Error loading reports:', error);
@@ -1836,13 +1884,16 @@
         }
         
         function displayReports(reports) {
+            console.log('DEBUG: Displaying reports:', reports);
             const tbody = document.getElementById('reportsTable');
             
             if (!reports || reports.length === 0) {
+                console.log('DEBUG: No reports to display');
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center">No reports available</td></tr>';
                 return;
             }
             
+            console.log('DEBUG: Rendering', reports.length, 'reports');
             tbody.innerHTML = reports.map(report => {
                 const reportDate = new Date(report.generatedAt || report.createdAt);
                 const formattedDate = reportDate.toLocaleDateString() + ' ' + reportDate.toLocaleTimeString();
@@ -1866,6 +1917,7 @@
         }
         
         async function generateReport(type) {
+            console.log('DEBUG: Generating report:', type);
             if (!confirm(`Generate ${type} report? This may take a few moments.`)) return;
             
             document.getElementById('reportGenerationModal').classList.add('active');
@@ -1884,11 +1936,14 @@
                     payload.periodStart = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
                 }
                 
+                console.log('DEBUG: Report generation payload:', payload);
+                
                 const response = await apiCall('/admin/reports/generate', {
                     method: 'POST',
                     body: JSON.stringify(payload)
                 });
                 
+                console.log('DEBUG: Report generation response:', response);
                 closeModal('reportGenerationModal');
                 
                 if (response.data?.downloadUrl) {
@@ -1907,13 +1962,17 @@
         }
         
         function refreshReports() {
+            console.log('DEBUG: Refreshing reports...');
             loadReports();
         }
         
         async function loadActivityLogs() {
             try {
+                console.log('DEBUG: Loading activity logs...');
                 const typeFilter = document.getElementById('activityTypeFilter').value;
                 const statusFilter = document.getElementById('activityStatusFilter').value;
+                
+                console.log('DEBUG: Activity filters - type:', typeFilter, 'status:', statusFilter);
                 
                 let endpoint = '/admin/activity-logs';
                 if (typeFilter || statusFilter) {
@@ -1922,7 +1981,9 @@
                     if (statusFilter) endpoint += `status=${statusFilter}`;
                 }
                 
+                console.log('DEBUG: Activity logs endpoint:', endpoint);
                 const data = await queuedApiCall(endpoint);
+                console.log('DEBUG: Activity logs API response:', data);
                 displayActivityLogs(data.data?.logs || []);
             } catch (error) {
                 console.error('Error loading activity logs:', error);
@@ -1931,13 +1992,16 @@
         }
         
         function displayActivityLogs(logs) {
+            console.log('DEBUG: Displaying activity logs:', logs);
             const tbody = document.getElementById('activityTable');
             
             if (!logs || logs.length === 0) {
+                console.log('DEBUG: No activity logs to display');
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center">No activity logs found</td></tr>';
                 return;
             }
             
+            console.log('DEBUG: Rendering', logs.length, 'activity logs');
             tbody.innerHTML = logs.slice(0, 20).map(log => {
                 const logDate = new Date(log.createdAt || log.timestamp || Date.now());
                 const formattedTime = logDate.toLocaleDateString() + ' ' + logDate.toLocaleTimeString();
@@ -1956,28 +2020,88 @@
         }
         
         function loadFailedActivities() {
+            console.log('DEBUG: Loading failed activities...');
             document.getElementById('activityStatusFilter').value = 'failed';
             loadActivityLogs();
         }
         
+        // Function to filter students (added based on your request)
+        function filterStudents() {
+            console.log('DEBUG: filterStudents() called');
+            
+            // Get current filter values
+            const classVal = document.getElementById('classFilter')?.value;
+            const sectionVal = document.getElementById('sectionFilter')?.value;
+            const searchVal = document.getElementById('studentSearch')?.value;
+            
+            console.log('DEBUG: Filtering students with:', {
+                class: classVal,
+                section: sectionVal,
+                search: searchVal
+            });
+            
+            // Debounce to prevent too many API calls
+            if (window.studentFilterTimeout) {
+                clearTimeout(window.studentFilterTimeout);
+            }
+            
+            window.studentFilterTimeout = setTimeout(() => {
+                console.log('DEBUG: Executing student filter after debounce');
+                loadStudents();
+            }, 300); // 300ms delay
+        }
+        
         async function loadStudents() {
             try {
-                const data = await queuedApiCall('/admin/students');
-                displayStudents(data.data?.students || []);
+                console.log('DEBUG: loadStudents() called');
+                const search = document.getElementById('studentSearch')?.value.trim();
+                const classNum = document.getElementById('classFilter')?.value;
+                const section = document.getElementById('sectionFilter')?.value;
+
+                console.log('DEBUG: Student filters:', {
+                    search: search,
+                    class: classNum,
+                    section: section
+                });
+
+                const params = new URLSearchParams();
+
+                if (search) params.append('search', search);
+                if (classNum) params.append('class', classNum);
+                if (section) params.append('section', section);
+
+                const endpoint =
+                    params.toString().length > 0
+                        ? `/admin/students?${params.toString()}`
+                        : '/admin/students';
+
+                console.log('DEBUG: Student API endpoint:', endpoint);
+
+                const data = await queuedApiCall(endpoint);
+                console.log('DEBUG: Students API response:', data);
+                
+                const students = data.data?.students || [];
+                console.log('DEBUG: Total students found:', students.length);
+                
+                displayStudents(students);
+
             } catch (error) {
                 console.error('Error loading students:', error);
                 displayStudents([]);
             }
         }
-        
+
         function displayStudents(students) {
+            console.log('DEBUG: Displaying students:', students);
             const tbody = document.getElementById('studentsTable');
             
             if (!students || students.length === 0) {
+                console.log('DEBUG: No students to display');
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center">No students found</td></tr>';
                 return;
             }
             
+            console.log('DEBUG: Rendering', students.length, 'students');
             tbody.innerHTML = students.slice(0, 10).map(student => `
                 <tr>
                     <td>${student.studentId || 'N/A'}</td>
@@ -1998,6 +2122,7 @@
         }
         
         async function deleteStudent(studentId) {
+            console.log('DEBUG: Deleting student:', studentId);
             if (!confirm('Delete this student?')) return;
             
             try {
@@ -2008,11 +2133,13 @@
                     loadOverview();
                 }
             } catch (error) {
+                console.error('DEBUG: Delete student error:', error);
                 alert('Error deleting student: ' + error.message);
             }
         }
         
         async function uploadCSV() {
+            console.log('DEBUG: Uploading CSV...');
             const fileInput = document.getElementById('csvFile');
             const file = fileInput.files[0];
             
@@ -2026,12 +2153,14 @@
                 return;
             }
             
+            console.log('DEBUG: CSV file selected:', file.name, file.size, 'bytes');
             showLoading();
             
             try {
                 const formData = new FormData();
                 formData.append('file', file);
                 
+                console.log('DEBUG: Sending bulk upload request...');
                 const response = await fetch(`${API_BASE_URL}/admin/students/bulk-upload`, {
                     method: 'POST',
                     headers: {
@@ -2041,6 +2170,7 @@
                 });
                 
                 const data = await response.json();
+                console.log('DEBUG: Bulk upload response:', data);
                 
                 if (!response.ok) {
                     throw new Error(data.message || 'Upload failed');
@@ -2064,7 +2194,9 @@
         
         async function loadClasses() {
             try {
+                console.log('DEBUG: Loading classes...');
                 const data = await queuedApiCall('/admin/classes');
+                console.log('DEBUG: Classes API response:', data);
                 displayClasses(data.data?.classes || []);
             } catch (error) {
                 console.error('Error loading classes:', error);
@@ -2073,13 +2205,16 @@
         }
         
         function displayClasses(classes) {
+            console.log('DEBUG: Displaying classes:', classes);
             const tbody = document.getElementById('classesTable');
             
             if (!classes || classes.length === 0) {
+                console.log('DEBUG: No classes to display');
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center">No classes found</td></tr>';
                 return;
             }
             
+            console.log('DEBUG: Rendering', classes.length, 'classes');
             tbody.innerHTML = classes.map(cls => `
                 <tr>
                     <td>${cls.class || 'N/A'}</td>
@@ -2102,8 +2237,10 @@
         async function addClass(event) {
             event.preventDefault();
             
+            console.log('DEBUG: Adding new class...');
             const formData = new FormData(event.target);
             const data = Object.fromEntries(formData);
+            console.log('DEBUG: Class form data:', data);
             
             try {
                 await apiCall('/admin/classes', {
@@ -2118,11 +2255,13 @@
                     loadOverview();
                 }
             } catch (error) {
+                console.error('DEBUG: Add class error:', error);
                 alert('Error creating class: ' + error.message);
             }
         }
         
         async function deleteClass(classId) {
+            console.log('DEBUG: Deleting class:', classId);
             if (!confirm('Delete this class?')) return;
             
             try {
@@ -2130,13 +2269,16 @@
                 alert('Class deleted');
                 loadClasses();
             } catch (error) {
+                console.error('DEBUG: Delete class error:', error);
                 alert('Error: ' + error.message);
             }
         }
         
         async function loadAnalytics() {
             try {
+                console.log('DEBUG: Loading analytics...');
                 const data = await queuedApiCall('/admin/analytics/overview');
+                console.log('DEBUG: Analytics API response:', data);
                 if (data.data?.overview) {
                     document.getElementById('avgPerformance').textContent = 
                         data.data.overview.averagePerformance ? 
@@ -2146,6 +2288,12 @@
                         data.data.overview.passRate.toFixed(1) + '%' : '0%';
                     document.getElementById('activeUsers').textContent = 
                         data.data.overview.activeUsers || 0;
+                    
+                    console.log('DEBUG: Analytics data updated:', {
+                        avgPerformance: data.data.overview.averagePerformance,
+                        passRate: data.data.overview.passRate,
+                        activeUsers: data.data.overview.activeUsers
+                    });
                 }
             } catch (error) {
                 console.error('Error loading analytics:', error);
@@ -2154,9 +2302,13 @@
         
         async function loadSettings() {
             try {
+                console.log('DEBUG: Loading settings...');
                 const school = await queuedApiCall('/admin/school');
+                console.log('DEBUG: Settings API response:', school);
+                
                 if (school.data?.school) {
                     schoolData = school.data.school;
+                    console.log('DEBUG: School data loaded:', schoolData);
                     
                     document.getElementById('schoolName').value = schoolData.schoolName || '';
                     document.getElementById('schoolAddress').value = schoolData.address || '';
@@ -2168,6 +2320,13 @@
                         document.getElementById('enableParent').checked = schoolData.settings.enableParentAccess ?? true;
                         document.getElementById('enableAI').checked = schoolData.settings.enableAIEvaluation ?? true;
                         document.getElementById('dailyLimit').value = schoolData.settings.challengeDailyLimit || 10;
+                        
+                        console.log('DEBUG: Settings loaded:', {
+                            enableEmail: schoolData.settings.enableEmailNotifications,
+                            enableParent: schoolData.settings.enableParentAccess,
+                            enableAI: schoolData.settings.enableAIEvaluation,
+                            dailyLimit: schoolData.settings.challengeDailyLimit
+                        });
                     }
                 }
             } catch (error) {
@@ -2178,12 +2337,15 @@
         async function updateSchool(event) {
             event.preventDefault();
             
+            console.log('DEBUG: Updating school...');
             const data = {
                 schoolName: document.getElementById('schoolName').value,
                 address: document.getElementById('schoolAddress').value,
                 city: document.getElementById('schoolCity').value,
                 phone: document.getElementById('schoolPhone').value
             };
+            
+            console.log('DEBUG: School update data:', data);
             
             try {
                 await apiCall('/admin/school', {
@@ -2193,6 +2355,7 @@
                 alert('School information updated successfully!');
                 loadSettings();
             } catch (error) {
+                console.error('DEBUG: Update school error:', error);
                 alert('Error updating school: ' + error.message);
             }
         }
@@ -2200,12 +2363,15 @@
         async function updateSettings(event) {
             event.preventDefault();
             
+            console.log('DEBUG: Updating settings...');
             const settings = {
                 enableEmailNotifications: document.getElementById('enableEmail').checked,
                 enableParentAccess: document.getElementById('enableParent').checked,
                 enableAIEvaluation: document.getElementById('enableAI').checked,
                 challengeDailyLimit: parseInt(document.getElementById('dailyLimit').value) || 10
             };
+            
+            console.log('DEBUG: Settings update data:', settings);
             
             try {
                 await apiCall('/admin/school/settings', {
@@ -2214,62 +2380,72 @@
                 });
                 alert('Settings updated successfully!');
             } catch (error) {
+                console.error('DEBUG: Update settings error:', error);
                 alert('Error updating settings: ' + error.message);
             }
         }
         
         function viewTeacher(teacherId) {
+            console.log('DEBUG: Viewing teacher:', teacherId);
             alert('Teacher details view - Feature coming soon!\nTeacher ID: ' + teacherId);
         }
         
         function viewStudent(studentId) {
+            console.log('DEBUG: Viewing student:', studentId);
             alert('Student details view - Feature coming soon!\nStudent ID: ' + studentId);
         }
         
         function viewClass(classId) {
+            console.log('DEBUG: Viewing class:', classId);
             alert('Class details view - Feature coming soon!\nClass ID: ' + classId);
         }
         
         function filterTeachers() {
+            console.log('DEBUG: filterTeachers() called');
             loadTeachers();
         }
         
-        function filterStudents() {
-            loadStudents();
-        }
-        
         function showNotifications() {
+            console.log('DEBUG: Showing notifications');
             alert('Notifications feature - Coming soon!');
         }
         
         function openAddTeacherModal() {
+            console.log('DEBUG: Opening add teacher modal');
             document.getElementById('addTeacherModal').classList.add('active');
         }
         
         function openBulkUploadModal() {
+            console.log('DEBUG: Opening bulk upload modal');
             document.getElementById('bulkUploadModal').classList.add('active');
         }
         
         function openAddClassModal() {
+            console.log('DEBUG: Opening add class modal');
             document.getElementById('addClassModal').classList.add('active');
         }
         
         function closeModal(modalId) {
+            console.log('DEBUG: Closing modal:', modalId);
             document.getElementById(modalId).classList.remove('active');
         }
         
         function showLoading() {
+            console.log('DEBUG: Showing loading overlay');
             document.getElementById('loadingOverlay').style.display = 'flex';
         }
         
         function hideLoading() {
+            console.log('DEBUG: Hiding loading overlay');
             setTimeout(() => {
                 document.getElementById('loadingOverlay').style.display = 'none';
             }, 500);
         }
         
         async function init() {
+            console.log('DEBUG: Initializing dashboard...');
             if (!authToken) {
+                console.log('DEBUG: No auth token, redirecting to login');
                 window.location.href = '/login.html';
                 return;
             }
@@ -2279,13 +2455,21 @@
             try {
                 setTimeout(async () => {
                     try {
+                        console.log('DEBUG: Loading school data...');
                         const school = await queuedApiCall('/admin/school');
+                        console.log('DEBUG: School API response:', school);
+                        
                         if (school.data?.school) {
                             schoolData = school.data.school;
                             
                             document.getElementById('userName').textContent = schoolData.schoolName || 'School Admin';
                             document.getElementById('userAvatar').textContent = 
                                 (schoolData.schoolName || 'A').charAt(0).toUpperCase();
+                            
+                            console.log('DEBUG: User info updated:', {
+                                name: schoolData.schoolName,
+                                avatar: (schoolData.schoolName || 'A').charAt(0).toUpperCase()
+                            });
                         }
                         
                         await loadOverview();
@@ -2303,6 +2487,8 @@
             }
         }
         
+        // Initialize the dashboard
+        console.log('DEBUG: Starting dashboard initialization...');
         init();
     </script>
 </body>

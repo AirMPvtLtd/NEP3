@@ -3,9 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Fix CSP to allow external resources -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;
+        style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+        font-src 'self' https://cdnjs.cloudflare.com;
+        img-src 'self' data: https:;
+        connect-src 'self' http://localhost:3000;
+    ">
     <title>NEP Workbench - Student Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Font Awesome - with error handling -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+          onerror="this.onerror=null; console.warn('Font Awesome failed to load');">
+    <!-- ApexCharts Library -->
+
     <style>
         * {
             margin: 0;
@@ -269,6 +282,17 @@
             background: #3e3e42;
         }
 
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #464647;
+            color: #cccccc;
+        }
+
+        .btn-outline:hover {
+            border-color: #007acc;
+            color: white;
+        }
+
         .competency-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -355,9 +379,42 @@
             color: #17a2b8;
         }
 
+        .badge-danger {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+
+        .badge-secondary {
+            background: rgba(108, 117, 125, 0.2);
+            color: #6c757d;
+        }
+
         .chart-container {
             height: 300px;
             margin-top: 20px;
+            position: relative;
+        }
+
+        .chart-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 30, 30, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .chart-loading .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #007acc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
         /* ============================================================ */
@@ -377,6 +434,241 @@
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+        /* ============================================================ */
+        /* SIMULATIONS PAGE STYLES */
+        /* ============================================================ */
+        .subject-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: #333337;
+            border: 1px solid #464647;
+            border-radius: 20px;
+            color: #cccccc;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover {
+            border-color: #007acc;
+            color: white;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            border-color: transparent;
+            color: white;
+        }
+
+        .simulations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .simulation-card {
+            background: #2d2d30;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #464647;
+            transition: all 0.3s;
+        }
+
+        .simulation-card:hover {
+            border-color: #007acc;
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px rgba(0, 122, 204, 0.2);
+        }
+
+        .simulation-image {
+            height: 150px;
+            background: linear-gradient(135deg, var(--subject-color), #00d4ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+        }
+
+        .simulation-content {
+            padding: 20px;
+        }
+
+        .simulation-title {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .simulation-desc {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .simulation-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .simulation-tag {
+            background: #333337;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .simulation-difficulty {
+            font-size: 0.8rem;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .difficulty-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .difficulty-easy { background: #28a745; }
+        .difficulty-medium { background: #ffc107; }
+        .difficulty-hard { background: #dc3545; }
+
+        .simulation-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #464647;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .simulation-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .coming-soon-card {
+            opacity: 0.7;
+        }
+
+        .coming-soon-card .simulation-image {
+            background: linear-gradient(135deg, #6c757d, #adb5bd);
+        }
+
+        /* ============================================================ */
+        /* SIMULATION MODAL */
+        /* ============================================================ */
+        .simulation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: #252526;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 2px solid #007acc;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #464647;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .close-modal:hover {
+            background: #333337;
+            color: white;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .modal-info-item {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #464647;
+        }
+
+        .modal-info-label {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .modal-info-value {
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #464647;
         }
 
         /* ============================================================ */
@@ -404,6 +696,18 @@
             
             .sidebar {
                 display: none;
+            }
+            
+            .simulations-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .subject-filter {
+                justify-content: center;
+            }
+            
+            .modal-actions {
+                flex-direction: column;
             }
         }
 
@@ -435,9 +739,32 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* ============================================================ */
+        /* RATE LIMIT NOTIFICATION */
+        /* ============================================================ */
+        .rate-limit-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff4444;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 6px;
+            z-index: 10000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            align-items: center;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
+    <div class="rate-limit-notification" id="rateLimitNotification">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span id="rateLimitMessage">Too many requests. Please wait...</span>
+    </div>
+
     <div class="dashboard">
         <!-- HEADER -->
         <header class="header">
@@ -471,33 +798,45 @@
         <!-- SIDEBAR -->
         <aside class="sidebar">
             <ul class="nav-menu">
-                <li class="nav-item active" onclick="showPage('overview')">
+                <li class="nav-item active" data-page="overview">
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
                 </li>
-                <li class="nav-item" onclick="showPage('simulations')">
+                <li class="nav-item" data-page="profile">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Profile</span>
+                </li>
+                <li class="nav-item" data-page="simulations">
                     <i class="fas fa-flask"></i>
                     <span>Simulations</span>
                 </li>
-                <li class="nav-item" onclick="showPage('challenges')">
+                <li class="nav-item" data-page="challenges">
                     <i class="fas fa-brain"></i>
                     <span>Challenges</span>
                 </li>
-                <li class="nav-item" onclick="showPage('performance')">
+                <li class="nav-item" data-page="performance">
                     <i class="fas fa-chart-line"></i>
                     <span>Performance</span>
                 </li>
-                <li class="nav-item" onclick="showPage('competencies')">
+                <li class="nav-item" data-page="competencies">
                     <i class="fas fa-star"></i>
                     <span>Competencies</span>
                 </li>
-                <li class="nav-item" onclick="showPage('reports')">
+                <li class="nav-item" data-page="reports">
                     <i class="fas fa-file-alt"></i>
                     <span>Reports</span>
                 </li>
-                <li class="nav-item" onclick="showPage('help')">
+                <li class="nav-item" onclick="openReasoningPad(event)">
+                    <i class="fas fa-calculator"></i>
+                    <span>Reasoning Pad</span>
+                </li>
+                <li class="nav-item" data-page="help">
                     <i class="fas fa-question-circle"></i>
                     <span>Help</span>
+                </li>
+                <li class="nav-item" onclick="logoutStudent(event)">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
                 </li>
             </ul>
         </aside>
@@ -556,8 +895,8 @@
                         <button class="btn" onclick="showPage('simulations')">
                             <i class="fas fa-play"></i> Start Simulation
                         </button>
-                        <button class="btn" onclick="generateNewChallenge()">
-                            <i class="fas fa-brain"></i> Generate Challenge
+                        <button class="btn" onclick="window.open('challenge.html', '_blank')">
+                            <i class="fas fa-plus"></i> Generate New Challenge
                         </button>
                         <button class="btn btn-secondary" onclick="showPage('performance')">
                             <i class="fas fa-chart-bar"></i> View Progress
@@ -569,9 +908,21 @@
             <!-- SIMULATIONS PAGE -->
             <div class="page" id="simulations">
                 <h1><i class="fas fa-flask"></i> Interactive Simulations</h1>
-                <p style="color: #888; margin-bottom: 30px;">44 simulations across Physics, Math, Chemistry, and Biology</p>
+                <p style="color: #888; margin-bottom: 10px;">Explore 36+ simulations across Physics, Math, and more subjects</p>
                 
-                <div id="simulationsGrid"></div>
+                <!-- Subject Filter -->
+                <div class="subject-filter" id="subjectFilter">
+                    <button class="filter-btn active" data-subject="all">All Simulations</button>
+                    <button class="filter-btn" data-subject="physics">Physics (19)</button>
+                    <button class="filter-btn" data-subject="math">Mathematics (17)</button>
+                    <button class="filter-btn" data-subject="chemistry">Chemistry (Coming Soon)</button>
+                    <button class="filter-btn" data-subject="biology">Biology (Coming Soon)</button>
+                    <button class="filter-btn" data-subject="computer">Computer Science (Coming Soon)</button>
+                </div>
+                
+                <div id="simulationsGrid" class="simulations-grid">
+                    <!-- Simulations will be loaded here -->
+                </div>
             </div>
 
             <!-- CHALLENGES PAGE -->
@@ -582,8 +933,8 @@
                 <div class="panel">
                     <h2>Challenge Limits</h2>
                     <p>Daily Remaining: <strong id="dailyLimit">--</strong></p>
-                    <button class="btn" onclick="generateNewChallenge()">
-                        <i class="fas fa-plus"></i> Generate New Challenge
+                    <button class="btn" onclick="window.open('challenge.html', '_blank')">
+                        <i class="fas fa-brain"></i> Generate Challenge
                     </button>
                 </div>
 
@@ -638,7 +989,10 @@
                 <div class="panel">
                     <h2>Performance Trend</h2>
                     <div class="chart-container">
-                        <canvas id="performanceChart"></canvas>
+                        <div id="performanceChart"></div>
+                        <div class="chart-loading" id="performanceChartLoading" style="display: none;">
+                            <div class="spinner"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -651,7 +1005,10 @@
                 <div class="panel">
                     <h2>Competency Radar</h2>
                     <div class="chart-container">
-                        <canvas id="competencyChart"></canvas>
+                        <div id="competencyChart"></div>
+                        <div class="chart-loading" id="competencyChartLoading" style="display: none;">
+                            <div class="spinner"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -720,43 +1077,792 @@
         </footer>
     </div>
 
+    <!-- PROFILE PAGE -->
+    <div class="page" id="profile">
+        <h1><i class="fas fa-user-circle"></i> My Profile</h1>
+        <p style="color: #888; margin-bottom: 30px;">View and update your profile information</p>
+        
+        <div class="panel">
+            <h2>Profile Information</h2>
+            <form id="profileForm" onsubmit="updateProfile(event)">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #00d4ff; font-weight: 600;">
+                            <i class="fas fa-user"></i> Full Name
+                        </label>
+                        <input 
+                            type="text" 
+                            id="profileName" 
+                            placeholder="Enter your name"
+                            style="width: 100%; padding: 12px; background: #333337; border: 1px solid #464647; color: white; border-radius: 4px;"
+                            required>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #00d4ff; font-weight: 600;">
+                            <i class="fas fa-envelope"></i> Email
+                        </label>
+                        <input 
+                            type="email" 
+                            id="profileEmail" 
+                            placeholder="Email address"
+                            style="width: 100%; padding: 12px; background: #333337; border: 1px solid #464647; color: white; border-radius: 4px;"
+                            disabled>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #00d4ff; font-weight: 600;">
+                            <i class="fas fa-phone"></i> Phone Number
+                        </label>
+                        <input 
+                            type="tel" 
+                            id="profilePhone" 
+                            placeholder="Phone number"
+                            style="width: 100%; padding: 12px; background: #333337; border: 1px solid #464647; color: white; border-radius: 4px;">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #00d4ff; font-weight: 600;">
+                            <i class="fas fa-calendar"></i> Date of Birth
+                        </label>
+                        <input 
+                            type="date" 
+                            id="profileDOB" 
+                            style="width: 100%; padding: 12px; background: #333337; border: 1px solid #464647; color: white; border-radius: 4px;">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #00d4ff; font-weight: 600;">
+                            <i class="fas fa-school"></i> School
+                        </label>
+                        <input 
+                            type="text" 
+                            id="profileSchool" 
+                            placeholder="School name"
+                            style="width: 100%; padding: 12px; background: #333337; border: 1px solid #464647; color: white; border-radius: 4px;"
+                            disabled>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #00d4ff; font-weight: 600;">
+                            <i class="fas fa-chalkboard-teacher"></i> Teacher
+                        </label>
+                        <input 
+                            type="text" 
+                            id="profileTeacher" 
+                            placeholder="Teacher name"
+                            style="width: 100%; padding: 12px; background: #333337; border: 1px solid #464647; color: white; border-radius: 4px;"
+                            disabled>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #00d4ff; font-weight: 600;">
+                            <i class="fas fa-graduation-cap"></i> Class
+                        </label>
+                        <input 
+                            type="text" 
+                            id="profileClass" 
+                            placeholder="Class"
+                            style="width: 100%; padding: 12px; background: #333337; border: 1px solid #464647; color: white; border-radius: 4px;"
+                            disabled>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #00d4ff; font-weight: 600;">
+                            <i class="fas fa-layer-group"></i> Section
+                        </label>
+                        <input 
+                            type="text" 
+                            id="profileSection" 
+                            placeholder="Section"
+                            style="width: 100%; padding: 12px; background: #333337; border: 1px solid #464647; color: white; border-radius: 4px;"
+                            disabled>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #00d4ff; font-weight: 600;">
+                        <i class="fas fa-image"></i> Profile Picture URL
+                    </label>
+                    <input 
+                        type="url" 
+                        id="profilePicture" 
+                        placeholder="Enter profile picture URL"
+                        style="width: 100%; padding: 12px; background: #333337; border: 1px solid #464647; color: white; border-radius: 4px;">
+                </div>
+                
+                <div style="display: flex; gap: 15px;">
+                    <button type="submit" class="btn">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="loadProfile()">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="panel">
+            <h2>Account Statistics</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <div style="background: #333337; padding: 20px; border-radius: 6px; text-align: center;">
+                    <i class="fas fa-calendar-check" style="font-size: 2rem; color: #007acc; margin-bottom: 10px;"></i>
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #00d4ff;" id="profileJoinedDate">--</div>
+                    <div style="color: #888; font-size: 0.85rem;">Member Since</div>
+                </div>
+                
+                <div style="background: #333337; padding: 20px; border-radius: 6px; text-align: center;">
+                    <i class="fas fa-trophy" style="font-size: 2rem; color: #007acc; margin-bottom: 10px;"></i>
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #00d4ff;" id="profileTotalChallenges">0</div>
+                    <div style="color: #888; font-size: 0.85rem;">Challenges Completed</div>
+                </div>
+                
+                <div style="background: #333337; padding: 20px; border-radius: 6px; text-align: center;">
+                    <i class="fas fa-chart-line" style="font-size: 2rem; color: #007acc; margin-bottom: 10px;"></i>
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #00d4ff;" id="profilePI">--</div>
+                    <div style="color: #888; font-size: 0.85rem;">Performance Index</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SIMULATION MODAL -->
+    <div class="simulation-modal" id="simulationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalSimulationTitle">Simulation Details</h2>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-info-grid">
+                    <div class="modal-info-item">
+                        <div class="modal-info-label">Subject</div>
+                        <div class="modal-info-value" id="modalSubject">--</div>
+                    </div>
+                    <div class="modal-info-item">
+                        <div class="modal-info-label">Difficulty</div>
+                        <div class="modal-info-value" id="modalDifficulty">--</div>
+                    </div>
+                    <div class="modal-info-item">
+                        <div class="modal-info-label">Duration</div>
+                        <div class="modal-info-value" id="modalDuration">--</div>
+                    </div>
+                    <div class="modal-info-item">
+                        <div class="modal-info-label">Concepts</div>
+                        <div class="modal-info-value" id="modalConcepts">--</div>
+                    </div>
+                </div>
+                <h3 style="margin-bottom: 10px;">Description</h3>
+                <p id="modalDescription" style="color: #ccc; line-height: 1.6;"></p>
+                <div class="modal-actions">
+                    <button class="btn" onclick="launchSimulation()" id="launchBtn">
+                        <i class="fas fa-rocket"></i> Launch Simulation
+                    </button>
+                    <button class="btn btn-secondary" onclick="generateChallengeForSimulation()" id="challengeBtn">
+                        <i class="fas fa-brain"></i> Generate Challenge
+                    </button>
+                    <button class="btn btn-outline" onclick="closeModal()">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOADING OVERLAY -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
     <!-- LOADING OVERLAY -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
     </div>
 
+    <!-- Load ApexCharts BEFORE the main script -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    
+    <script>
+        // Wait for ApexCharts to load
+        window.apexChartsLoaded = false;
+        
+        // Check if ApexCharts loaded successfully
+        if (typeof ApexCharts !== 'undefined') {
+            window.apexChartsLoaded = true;
+            console.log('✅ ApexCharts loaded successfully');
+        } else {
+            console.error('❌ ApexCharts failed to load from CDN');
+        }
+    </script>
     <script>
         // ================================================================
         // CONFIGURATION
         // ================================================================
         const API_BASE_URL = 'http://localhost:3000/api';
-        let authToken = localStorage.getItem('studentToken');
+        let authToken = localStorage.getItem('authToken');
         let dashboardData = null;
+        let isInitializing = false;
+        let lastAPICallTime = 0;
+        const API_CALL_DELAY = 1000; // Minimum 1 second between calls
+        let pageCache = {};
+        let performanceChart = null;
+        let competencyChart = null;
+        let currentSelectedSimulation = null;
 
         // ================================================================
-        // NAVIGATION
+        // SIMULATION DATA
         // ================================================================
-        function showPage(pageId) {
-            // Hide all pages
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
-            });
+        const SIMULATIONS_DATA = {
+            physics: [
+                { 
+                    id: 'motion-classifier-sim',
+                    name: 'Motion Classifier Simulation',
+                    file: 'MOTIONCLASSIFIERSIM.html',
+                    icon: 'fas fa-running',
+                    color: '#007acc',
+                    description: 'Classify different types of motion and understand kinematic principles',
+                    difficulty: 'easy',
+                    duration: '10-15 min',
+                    concepts: ['Kinematics', 'Motion Types', 'Velocity', 'Acceleration'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'measurement-skills-sim',
+                    name: 'Measurement Skills Simulator',
+                    file: '', // Coming soon
+                    icon: 'fas fa-ruler-combined',
+                    color: '#007acc',
+                    description: 'Practice precise measurement techniques with virtual instruments',
+                    difficulty: 'easy',
+                    duration: '8-12 min',
+                    concepts: ['Measurement', 'Precision', 'Units', 'Instruments'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'motion-timer-sim',
+                    name: 'Motion Timer Simulation',
+                    file: 'Motiontimersim.html',
+                    icon: 'fas fa-stopwatch',
+                    color: '#007acc',
+                    description: 'Analyze motion using virtual timers and position sensors',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Timing', 'Motion Analysis', 'Position', 'Time Measurement'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'projectile-motion-simulator',
+                    name: 'Projectile Motion Simulator',
+                    file: 'Projectilemotionsimulator.html',
+                    icon: 'fas fa-basketball-ball',
+                    color: '#007acc',
+                    description: 'Explore projectile motion with adjustable parameters',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Projectile Motion', 'Trajectory', 'Velocity Components', 'Range'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'shadow-formation-simulator',
+                    name: 'Shadow Formation Simulator',
+                    file: 'ShadowFormationSimulator.html',
+                    icon: 'fas fa-sun',
+                    color: '#007acc',
+                    description: 'Understand light properties and shadow formation principles',
+                    difficulty: 'easy',
+                    duration: '10-15 min',
+                    concepts: ['Light', 'Shadows', 'Light Sources', 'Object Position'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'weather-system-model',
+                    name: 'Weather System Model',
+                    file: 'WeatherSystemModel.html',
+                    icon: 'fas fa-cloud-sun',
+                    color: '#007acc',
+                    description: 'Simulate weather patterns and atmospheric conditions',
+                    difficulty: 'hard',
+                    duration: '20-25 min',
+                    concepts: ['Atmosphere', 'Weather Patterns', 'Climate', 'Meteorology'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'sound-wave-generator',
+                    name: 'Sound Wave Generator',
+                    file: 'SoundWaveGenerator.html',
+                    icon: 'fas fa-wave-square',
+                    color: '#007acc',
+                    description: 'Generate and analyze different sound wave patterns',
+                    difficulty: 'medium',
+                    duration: '12-18 min',
+                    concepts: ['Sound Waves', 'Frequency', 'Amplitude', 'Wave Properties'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'heat-flow-simulator',
+                    name: 'Heat Flow Simulator',
+                    file: 'HeatFlowSimulator.html',
+                    icon: 'fas fa-temperature-high',
+                    color: '#007acc',
+                    description: 'Visualize heat transfer through conduction, convection, and radiation',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Heat Transfer', 'Conduction', 'Convection', 'Radiation'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'light-path-visualizer',
+                    name: 'Light Path Visualizer',
+                    file: 'Lightpathvisualizer.html',
+                    icon: 'fas fa-lightbulb',
+                    color: '#007acc',
+                    description: 'Trace light paths through different media and understand refraction',
+                    difficulty: 'medium',
+                    duration: '12-16 min',
+                    concepts: ['Light Reflection', 'Refraction', 'Optics', 'Light Paths'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'newtons-laws-demonstrator',
+                    name: 'Newton\'s Laws Demonstrator',
+                    file: 'Newtonslawsdemonstrator.html',
+                    icon: 'fas fa-car',
+                    color: '#007acc',
+                    description: 'Interactive demonstration of Newton\'s three laws of motion',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Newton\'s Laws', 'Force', 'Motion', 'Inertia'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'magnetic-field-visualizer',
+                    name: 'Magnetic Field Visualizer',
+                    file: 'Magneticfieldvisualizer.html',
+                    icon: 'fas fa-magnet',
+                    color: '#007acc',
+                    description: 'Visualize magnetic fields around different magnet configurations',
+                    difficulty: 'hard',
+                    duration: '18-22 min',
+                    concepts: ['Magnetism', 'Magnetic Fields', 'Poles', 'Field Lines'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'gas-properties-simulator',
+                    name: 'Gas Properties Simulator',
+                    file: 'Gaspropertiessimulator.html',
+                    icon: 'fas fa-wind',
+                    color: '#007acc',
+                    description: 'Explore gas laws and properties with interactive controls',
+                    difficulty: 'hard',
+                    duration: '20-25 min',
+                    concepts: ['Gas Laws', 'Pressure', 'Volume', 'Temperature'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'electrolysis-simulator',
+                    name: 'Electrolysis Simulator',
+                    file: 'Electrolysissimulator.html',
+                    icon: 'fas fa-bolt',
+                    color: '#007acc',
+                    description: 'Simulate electrolysis process and understand chemical reactions',
+                    difficulty: 'hard',
+                    duration: '20-25 min',
+                    concepts: ['Electrolysis', 'Chemical Reactions', 'Ions', 'Electrodes'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'force-visualizer',
+                    name: 'Force Visualizer',
+                    file: 'Force visualizer.html',
+                    icon: 'fas fa-weight-hanging',
+                    color: '#007acc',
+                    description: 'Visualize forces acting on objects in different scenarios',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Forces', 'Vectors', 'Net Force', 'Equilibrium'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'gravity-simulator',
+                    name: 'Gravity Simulator',
+                    file: 'GravitySimulator.html',
+                    icon: 'fas fa-globe',
+                    color: '#007acc',
+                    description: 'Simulate gravitational forces between celestial bodies',
+                    difficulty: 'hard',
+                    duration: '20-25 min',
+                    concepts: ['Gravity', 'Orbits', 'Celestial Mechanics', 'Mass'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'electric-field-mapper',
+                    name: 'Electric Field Mapper',
+                    file: 'ElectricFieldMapper.html',
+                    icon: 'fas fa-bolt',
+                    color: '#007acc',
+                    description: 'Map electric fields around different charge configurations',
+                    difficulty: 'hard',
+                    duration: '20-25 min',
+                    concepts: ['Electric Fields', 'Charges', 'Field Lines', 'Potential'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'ray-diagram-builder',
+                    name: 'Ray Diagram Builder',
+                    file: 'Raydiagrambuilder.html',
+                    icon: 'fas fa-draw-polygon',
+                    color: '#007acc',
+                    description: 'Construct ray diagrams for lenses and mirrors',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Ray Diagrams', 'Lenses', 'Mirrors', 'Optics'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'energy-transformation-visualizer',
+                    name: 'Energy Transformation Visualizer',
+                    file: 'EnergyTransformationVisualizer.html',
+                    icon: 'fas fa-exchange-alt',
+                    color: '#007acc',
+                    description: 'Visualize energy transformations between different forms',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Energy Forms', 'Transformations', 'Conservation', 'Efficiency'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'advanced-circuit-simulator',
+                    name: 'Advanced Circuit Simulator',
+                    file: 'Simplecircuitbuilder.html',
+                    icon: 'fas fa-microchip',
+                    color: '#007acc',
+                    description: 'Build and analyze complex electrical circuits',
+                    difficulty: 'hard',
+                    duration: '25-30 min',
+                    concepts: ['Circuits', 'Resistance', 'Current', 'Voltage'],
+                    completed: false,
+                    score: null
+                }
+            ],
+            math: [
+                { 
+                    id: 'shape-builder-measurer',
+                    name: 'Shape Builder & Measurer',
+                    file: 'shapebuilder.html',
+                    icon: 'fas fa-shapes',
+                    color: '#28a745',
+                    description: 'Construct geometric shapes and measure their properties',
+                    difficulty: 'easy',
+                    duration: '10-15 min',
+                    concepts: ['Geometry', 'Shapes', 'Measurement', 'Properties'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'fraction-pie-visualizer',
+                    name: 'Fraction Pie Visualizer',
+                    file: 'Fractionpievisualizer.html',
+                    icon: 'fas fa-chart-pie',
+                    color: '#28a745',
+                    description: 'Visualize fractions using interactive pie charts',
+                    difficulty: 'easy',
+                    duration: '8-12 min',
+                    concepts: ['Fractions', 'Pie Charts', 'Ratios', 'Percentages'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'equation-solver-with-steps',
+                    name: 'Equation Solver with Steps',
+                    file: 'Equationsolver.html',
+                    icon: 'fas fa-equals',
+                    color: '#28a745',
+                    description: 'Solve equations step-by-step with visual explanations',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Algebra', 'Equations', 'Solving Steps', 'Variables'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'data-set-analyzer',
+                    name: 'Data Set Analyzer',
+                    file: 'Datasetanalyzer.html',
+                    icon: 'fas fa-chart-bar',
+                    color: '#28a745',
+                    description: 'Analyze data sets and calculate statistical measures',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Statistics', 'Data Analysis', 'Mean', 'Median', 'Mode'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'unit-circle-simulator',
+                    name: 'Unit Circle Simulator',
+                    file: 'Unitcirclesimulator.html',
+                    icon: 'fas fa-circle',
+                    color: '#28a745',
+                    description: 'Explore trigonometric functions using the unit circle',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Trigonometry', 'Unit Circle', 'Sine', 'Cosine', 'Tangent'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'three-d-vector-visualizer',
+                    name: '3D Vector Visualizer',
+                    file: '3DVectorVisualizer.html',
+                    icon: 'fas fa-vector-square',
+                    color: '#28a745',
+                    description: 'Visualize 3D vectors and perform vector operations',
+                    difficulty: 'hard',
+                    duration: '20-25 min',
+                    concepts: ['Vectors', '3D Geometry', 'Vector Operations', 'Coordinates'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'polynomial-grapher',
+                    name: 'Polynomial Grapher',
+                    file: 'polynomialgrapher.html',
+                    icon: 'fas fa-chart-line',
+                    color: '#28a745',
+                    description: 'Graph polynomial functions and analyze their properties',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Polynomials', 'Graphing', 'Roots', 'Degree'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'quadratic-explorer',
+                    name: 'Quadratic Explorer',
+                    file: 'QuadraticExplorer.html',
+                    icon: 'fas fa-parabola',
+                    color: '#28a745',
+                    description: 'Explore quadratic functions, roots, and parabolas',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Quadratic Equations', 'Parabolas', 'Vertex', 'Roots'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'coordinate-plotter',
+                    name: 'Coordinate Plotter',
+                    file: 'coordinateplotter.html',
+                    icon: 'fas fa-map-marked-alt',
+                    color: '#28a745',
+                    description: 'Plot points and graphs on coordinate planes',
+                    difficulty: 'easy',
+                    duration: '10-15 min',
+                    concepts: ['Coordinates', 'Plotting', 'Cartesian Plane', 'Points'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'equation-balancer',
+                    name: 'Equation Balancer',
+                    file: 'Equationbalancer.html',
+                    icon: 'fas fa-balance-scale',
+                    color: '#28a745',
+                    description: 'Balance chemical and mathematical equations',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Equation Balancing', 'Stoichiometry', 'Coefficients', 'Equality'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'geometric-proof-builder',
+                    name: 'Geometric Proof Builder',
+                    file: 'Geometricproofbuilder.html',
+                    icon: 'fas fa-drafting-compass',
+                    color: '#28a745',
+                    description: 'Construct geometric proofs step by step',
+                    difficulty: 'hard',
+                    duration: '20-25 min',
+                    concepts: ['Geometry Proofs', 'Theorems', 'Deductive Reasoning', 'Logic'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'calculus-visualizer',
+                    name: 'Calculus Visualizer',
+                    file: 'CalculusVisualizer.html',
+                    icon: 'fas fa-infinity',
+                    color: '#28a745',
+                    description: 'Visualize calculus concepts including derivatives and integrals',
+                    difficulty: 'hard',
+                    duration: '25-30 min',
+                    concepts: ['Calculus', 'Derivatives', 'Integrals', 'Limits'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'trigonometry-visualizer',
+                    name: 'Trigonometry Visualizer',
+                    file: 'TrigonometryVisualizer.html',
+                    icon: 'fas fa-triangle',
+                    color: '#28a745',
+                    description: 'Interactive visualization of trigonometric concepts',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Trigonometry', 'Triangles', 'Angles', 'Functions'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'probability-simulator',
+                    name: 'Probability Simulator',
+                    file: 'ProbabilitySimulator.html',
+                    icon: 'fas fa-dice',
+                    color: '#28a745',
+                    description: 'Simulate probability experiments and analyze outcomes',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Probability', 'Experiments', 'Outcomes', 'Statistics'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'interactive-graph-maker',
+                    name: 'Interactive Graph Maker',
+                    file: 'InteractiveGraphMaker.html',
+                    icon: 'fas fa-project-diagram',
+                    color: '#28a745',
+                    description: 'Create and manipulate various types of graphs',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Graphing', 'Functions', 'Relations', 'Visualization'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'ratio-visualizer',
+                    name: 'Ratio Visualizer',
+                    file: 'RatioVisualizer.html',
+                    icon: 'fas fa-percentage',
+                    color: '#28a745',
+                    description: 'Visualize ratios and proportions in different contexts',
+                    difficulty: 'easy',
+                    duration: '10-15 min',
+                    concepts: ['Ratios', 'Proportions', 'Scaling', 'Comparison'],
+                    completed: false,
+                    score: null
+                },
+                { 
+                    id: 'symmetry-explorer',
+                    name: 'Symmetry Explorer',
+                    file: 'SymmetryExplorer.html',
+                    icon: 'fas fa-sync-alt',
+                    color: '#28a745',
+                    description: 'Explore different types of symmetry in geometric shapes',
+                    difficulty: 'easy',
+                    duration: '10-15 min',
+                    concepts: ['Symmetry', 'Reflection', 'Rotation', 'Geometric Shapes'],
+                    completed: false,
+                    score: null
+                }
+            ],
+            chemistry: [
+                { 
+                    id: 'periodic-table-explorer',
+                    name: 'Periodic Table Explorer',
+                    file: '',
+                    icon: 'fas fa-atom',
+                    color: '#ff6b6b',
+                    description: 'Explore the periodic table and element properties (Coming Soon)',
+                    difficulty: 'easy',
+                    duration: '10-15 min',
+                    concepts: ['Elements', 'Periodic Table', 'Properties', 'Classification'],
+                    completed: false,
+                    score: null
+                }
+            ],
+            biology: [
+                { 
+                    id: 'cell-structure-explorer',
+                    name: 'Cell Structure Explorer',
+                    file: '',
+                    icon: 'fas fa-microscope',
+                    color: '#20c997',
+                    description: 'Explore cell structures and organelles (Coming Soon)',
+                    difficulty: 'easy',
+                    duration: '10-15 min',
+                    concepts: ['Cells', 'Organelles', 'Biology', 'Microscopy'],
+                    completed: false,
+                    score: null
+                }
+            ],
+            computer: [
+                { 
+                    id: 'coding-visualizer',
+                    name: 'Coding Visualizer',
+                    file: '',
+                    icon: 'fas fa-code',
+                    color: '#6f42c1',
+                    description: 'Visualize code execution and algorithms (Coming Soon)',
+                    difficulty: 'medium',
+                    duration: '15-20 min',
+                    concepts: ['Programming', 'Algorithms', 'Code Execution', 'Debugging'],
+                    completed: false,
+                    score: null
+                }
+            ]
+        };
+
+        // ================================================================
+        // RATE LIMIT HANDLING
+        // ================================================================
+        function showRateLimitNotification(message) {
+            const notification = document.getElementById('rateLimitNotification');
+            const messageEl = document.getElementById('rateLimitMessage');
+            messageEl.textContent = message;
+            notification.style.display = 'flex';
             
-            // Show selected page
-            document.getElementById(pageId).classList.add('active');
-            
-            // Update nav active state
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            event.currentTarget.classList.add('active');
-            
-            // Load page data
-            loadPageData(pageId);
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
         }
 
         // ================================================================
-        // API HELPER
+        // THROTTLED API CALL
+        // ================================================================
+        async function throttledApiCall(endpoint, options = {}) {
+            const now = Date.now();
+            const timeSinceLastCall = now - lastAPICallTime;
+            
+            // If calls are too frequent, wait
+            if (timeSinceLastCall < API_CALL_DELAY) {
+                await new Promise(resolve => setTimeout(resolve, API_CALL_DELAY - timeSinceLastCall));
+            }
+            
+            lastAPICallTime = Date.now();
+            return await apiCall(endpoint, options);
+        }
+
+        // ================================================================
+        // API HELPER (with improved error handling)
         // ================================================================
         async function apiCall(endpoint, options = {}) {
             try {
@@ -769,64 +1875,585 @@
                     }
                 });
                 
+                // Handle rate limiting
+                if (response.status === 429) {
+                    const retryAfter = response.headers.get('Retry-After') || 5;
+                    showRateLimitNotification(`Too many requests. Please try again in ${retryAfter} seconds.`);
+                    
+                    // Wait before retrying
+                    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+                    return apiCall(endpoint, options); // Retry once
+                }
+                
                 const data = await response.json();
                 
                 if (!response.ok) {
-                    throw new Error(data.message || 'API request failed');
+                    throw new Error(data.message || `API request failed with status ${response.status}`);
                 }
                 
                 return data;
             } catch (error) {
                 console.error('API Error:', error);
-                if (error.message.includes('401') || error.message.includes('token')) {
+                
+                // Handle specific errors
+                if (error.message.includes('429')) {
+                    showRateLimitNotification('Too many requests from this IP. Please try again later.');
+                } else if (error.message.includes('401') || error.message.includes('token')) {
+                    // Clear invalid token
+                    localStorage.removeItem('authToken');
                     window.location.href = '/login.html';
+                } else {
+                    // Show generic error
+                    showRateLimitNotification('Network error. Please check your connection.');
                 }
+                
                 throw error;
             }
         }
 
         // ================================================================
-        // LOAD PAGE DATA
+        // NAVIGATION
         // ================================================================
-        async function loadPageData(pageId) {
+        function showPage(pageId) {
+            // Prevent multiple rapid clicks
+            if (isInitializing) return;
+            
+            // Cleanup charts if they exist
+            cleanupCharts();
+            
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update nav active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Find and activate the clicked nav item
+            const clickedItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+            if (clickedItem) {
+                clickedItem.classList.add('active');
+            }
+            
+            // Load page data (debounced)
+            clearTimeout(window.pageLoadTimeout);
+            window.pageLoadTimeout = setTimeout(() => {
+                loadPageData(pageId);
+            }, 100);
+        }
+
+        // ================================================================
+        // CHART MANAGEMENT
+        // ================================================================
+        function cleanupCharts() {
+            if (performanceChart) {
+                performanceChart.destroy();
+                performanceChart = null;
+            }
+            if (competencyChart) {
+                competencyChart.destroy();
+                competencyChart = null;
+            }
+        }
+
+        // ================================================================
+        // REASONING PAD
+        // ================================================================
+        function openReasoningPad(event) {
+            event.stopPropagation();
+            window.open('Mathscratchpad.html', 'ReasoningPad', 'width=1400,height=900,resizable=yes,scrollbars=yes');
+        }
+
+        // ================================================================
+        // PROFILE PAGE
+        // ================================================================
+        async function loadProfile() {
             showLoading();
             try {
-                switch(pageId) {
-                    case 'overview':
-                        await loadDashboard();
-                        break;
-                    case 'simulations':
-                        await loadSimulations();
-                        break;
-                    case 'challenges':
-                        await loadChallenges();
-                        break;
-                    case 'performance':
-                        await loadPerformance();
-                        break;
-                    case 'competencies':
-                        await loadCompetencies();
-                        break;
-                    case 'reports':
-                        await loadReports();
-                        break;
-                    case 'help':
-                        await loadHelpTickets();
-                        break;
+                const data = await throttledApiCall('/student/profile');
+                const student = data.data.student;
+                
+                // Populate form fields
+                document.getElementById('profileName').value = student.name || '';
+                document.getElementById('profileEmail').value = student.email || '';
+                document.getElementById('profilePhone').value = student.phone || '';
+                document.getElementById('profileDOB').value = student.dateOfBirth ? student.dateOfBirth.split('T')[0] : '';
+                document.getElementById('profilePicture').value = student.profilePicture || '';
+                
+                // Populate read-only fields
+                document.getElementById('profileSchool').value = student.schoolId?.schoolName || 'N/A';
+                document.getElementById('profileTeacher').value = student.teacherId?.name || 'N/A';
+                document.getElementById('profileClass').value = student.class || 'N/A';
+                document.getElementById('profileSection').value = student.section || 'N/A';
+                
+                // Populate statistics
+                document.getElementById('profileJoinedDate').textContent = new Date(student.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+                document.getElementById('profileTotalChallenges').textContent = dashboardData?.stats?.totalChallenges || 0;
+                document.getElementById('profilePI').textContent = student.performanceIndex?.toFixed(1) || '--';
+                
+                // Update user avatar if profile picture exists
+                if (student.profilePicture) {
+                    const avatar = document.getElementById('userAvatar');
+                    avatar.innerHTML = `<img src="${student.profilePicture}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
                 }
+                
             } catch (error) {
-                console.error('Error loading page:', error);
+                console.error('Error loading profile:', error);
+                alert('Failed to load profile. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function updateProfile(event) {
+            event.preventDefault();
+            
+            const updates = {
+                name: document.getElementById('profileName').value,
+                phone: document.getElementById('profilePhone').value,
+                dateOfBirth: document.getElementById('profileDOB').value,
+                profilePicture: document.getElementById('profilePicture').value
+            };
+            
+            // Remove empty fields
+            Object.keys(updates).forEach(key => {
+                if (!updates[key]) delete updates[key];
+            });
+            
+            if (Object.keys(updates).length === 0) {
+                alert('Please make some changes before saving.');
+                return;
+            }
+            
+            showLoading();
+            try {
+                const data = await throttledApiCall('/student/profile', {
+                    method: 'PUT',
+                    body: JSON.stringify(updates)
+                });
+                
+                alert('✅ Profile updated successfully!');
+                
+                // Refresh profile data
+                await loadProfile();
+                
+                // Refresh dashboard if name changed
+                if (updates.name) {
+                    await loadDashboard();
+                }
+                
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                alert('❌ Failed to update profile. Please try again.');
             } finally {
                 hideLoading();
             }
         }
 
         // ================================================================
+        // LOGOUT
+        // ================================================================
+        function logoutStudent(event) {
+            event.stopPropagation();
+            
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear authentication token
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('studentToken');
+                
+                // Clear any cached data
+                dashboardData = null;
+                pageCache = {};
+                
+                // Redirect to login page
+                window.location.href = '/login.html';
+            }
+        }
+
+        // ================================================================
+        // LOAD PAGE DATA (with caching)
+        // ================================================================
+        async function loadPageData(pageId) {
+            // Check cache first (cache for 30 seconds)
+            if (pageCache[pageId] && (Date.now() - pageCache[pageId].timestamp < 30000)) {
+                updatePageContent(pageId, pageCache[pageId].data);
+                return;
+            }
+            
+            showLoading();
+            try {
+                let data;
+                switch(pageId) {
+                    case 'overview':
+                        if (!dashboardData) {
+                            await loadDashboard();
+                        } else {
+                            updateOverviewPage();
+                        }
+                        break;
+                    case 'simulations':
+                        // Load local simulations data
+                        loadSimulationsPage();
+                        break;
+                    case 'challenges':
+                        data = await throttledApiCall('/student/challenges');
+                        pageCache[pageId] = { data, timestamp: Date.now() };
+                        updateChallengesPage(data);
+                        break;
+                    case 'performance':
+                        data = await throttledApiCall('/student/performance');
+                        pageCache[pageId] = { data, timestamp: Date.now() };
+                        updatePerformancePage(data);
+                        break;
+                    case 'competencies':
+                        data = await throttledApiCall('/student/performance/competencies');
+                        pageCache[pageId] = { data, timestamp: Date.now() };
+                        updateCompetenciesPage(data);
+                        break;
+                    case 'reports':
+                        data = await throttledApiCall('/student/reports/nep');
+                        pageCache[pageId] = { data, timestamp: Date.now() };
+                        updateReportsPage(data);
+                        break;
+                    case 'profile':
+                        await loadProfile();
+                        break;
+                    case 'help':
+                        data = await throttledApiCall('/student/help-tickets');
+                        pageCache[pageId] = { data, timestamp: Date.now() };
+                        updateHelpPage(data);
+                        break;
+                }
+            } catch (error) {
+                console.error(`Error loading ${pageId}:`, error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // ================================================================
+        // UPDATE PAGE CONTENT FUNCTIONS
+        // ================================================================
+        function updatePageContent(pageId, data) {
+            switch(pageId) {
+                case 'simulations':
+                    loadSimulationsPage();
+                    break;
+                case 'challenges':
+                    updateChallengesPage(data);
+                    break;
+                case 'performance':
+                    updatePerformancePage(data);
+                    break;
+                case 'competencies':
+                    updateCompetenciesPage(data);
+                    break;
+                case 'reports':
+                    updateReportsPage(data);
+                    break;
+                case 'help':
+                    updateHelpPage(data);
+                    break;
+            }
+        }
+
+        // ================================================================
+        // SIMULATIONS PAGE FUNCTIONS
+        // ================================================================
+        function loadSimulationsPage() {
+            const grid = document.getElementById('simulationsGrid');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const activeSubject = document.querySelector('.filter-btn.active')?.dataset.subject || 'all';
+            
+            // Clear existing content
+            grid.innerHTML = '';
+            
+            // Prepare all simulations
+            let allSimulations = [];
+            
+            // Add physics simulations
+            SIMULATIONS_DATA.physics.forEach(sim => {
+                sim.subject = 'physics';
+                sim.subjectName = 'Physics';
+                sim.available = sim.file !== '';
+                allSimulations.push(sim);
+            });
+            
+            // Add math simulations
+            SIMULATIONS_DATA.math.forEach(sim => {
+                sim.subject = 'math';
+                sim.subjectName = 'Mathematics';
+                sim.available = sim.file !== '';
+                allSimulations.push(sim);
+            });
+            
+            // Add coming soon subjects
+            ['chemistry', 'biology', 'computer'].forEach(subject => {
+                SIMULATIONS_DATA[subject].forEach(sim => {
+                    sim.subject = subject;
+                    sim.subjectName = subject.charAt(0).toUpperCase() + subject.slice(1);
+                    sim.available = sim.file !== '';
+                    allSimulations.push(sim);
+                });
+            });
+            
+            // Apply filters
+            let filteredSimulations = allSimulations;
+            
+            // Apply subject filter
+            if (activeSubject !== 'all') {
+                filteredSimulations = filteredSimulations.filter(sim => sim.subject === activeSubject);
+            }
+            
+            // Apply search filter
+            if (searchTerm) {
+                filteredSimulations = filteredSimulations.filter(sim => 
+                    sim.name.toLowerCase().includes(searchTerm) ||
+                    sim.description.toLowerCase().includes(searchTerm) ||
+                    sim.concepts.some(concept => concept.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            // Display simulations
+            if (filteredSimulations.length > 0) {
+                filteredSimulations.forEach(simulation => {
+                    const card = createSimulationCard(simulation);
+                    grid.appendChild(card);
+                });
+            } else {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #888;">
+                        <i class="fas fa-flask" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                        <h3>No simulations found</h3>
+                        <p>Try a different search term or select another subject</p>
+                    </div>
+                `;
+            }
+            
+            // Store in cache
+            pageCache['simulations'] = { data: filteredSimulations, timestamp: Date.now() };
+        }
+
+        function createSimulationCard(simulation) {
+            const card = document.createElement('div');
+            card.className = `simulation-card ${!simulation.available ? 'coming-soon-card' : ''}`;
+            
+            // Set CSS variable for subject color
+            card.style.setProperty('--subject-color', simulation.color);
+            
+            // Get difficulty badge
+            const difficultyBadge = getDifficultyBadge(simulation.difficulty);
+            
+            card.innerHTML = `
+                <div class="simulation-image">
+                    <i class="${simulation.icon}"></i>
+                </div>
+                <div class="simulation-content">
+                    <div class="simulation-title">${simulation.name}</div>
+                    <div class="simulation-desc">${simulation.description}</div>
+                    <div class="simulation-meta">
+                        <span class="simulation-tag">${simulation.subjectName}</span>
+                        <span class="simulation-difficulty">
+                            <span class="difficulty-dot ${difficultyBadge.class}"></span>
+                            ${simulation.difficulty.charAt(0).toUpperCase() + simulation.difficulty.slice(1)}
+                        </span>
+                    </div>
+                    <div class="simulation-stats">
+                        <div class="simulation-stat">
+                            <i class="fas fa-clock"></i>
+                            ${simulation.duration}
+                        </div>
+                        <div class="simulation-stat">
+                            <i class="fas fa-graduation-cap"></i>
+                            ${simulation.concepts.length} concepts
+                        </div>
+                    </div>
+                    <button class="btn ${!simulation.available ? 'btn-secondary' : ''}" 
+                            onclick="${simulation.available ? `viewSimulationDetails('${simulation.id}', '${simulation.subject}')` : 'void(0)'}"
+                            style="margin-top: 15px; width: 100%;"
+                            ${!simulation.available ? 'disabled' : ''}>
+                        <i class="fas fa-${simulation.available ? 'play' : 'clock'}"></i>
+                        ${simulation.available ? 'Start Simulation' : 'Coming Soon'}
+                    </button>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function getDifficultyBadge(difficulty) {
+            const badges = {
+                'easy': { class: 'difficulty-easy', color: '#28a745' },
+                'medium': { class: 'difficulty-medium', color: '#ffc107' },
+                'hard': { class: 'difficulty-hard', color: '#dc3545' }
+            };
+            return badges[difficulty] || badges.medium;
+        }
+
+        function viewSimulationDetails(simId, subject) {
+            const simulation = SIMULATIONS_DATA[subject].find(s => s.id === simId);
+            if (!simulation) return;
+            
+            currentSelectedSimulation = simulation;
+            
+            // Update modal content
+            document.getElementById('modalSimulationTitle').textContent = simulation.name;
+            document.getElementById('modalSubject').textContent = subject.charAt(0).toUpperCase() + subject.slice(1);
+            document.getElementById('modalDifficulty').innerHTML = `
+                <span class="difficulty-dot ${getDifficultyBadge(simulation.difficulty).class}"></span>
+                ${simulation.difficulty.charAt(0).toUpperCase() + simulation.difficulty.slice(1)}
+            `;
+            document.getElementById('modalDuration').textContent = simulation.duration;
+            document.getElementById('modalConcepts').textContent = simulation.concepts.join(', ');
+            document.getElementById('modalDescription').textContent = simulation.description;
+            
+            // Update launch button
+            const launchBtn = document.getElementById('launchBtn');
+            launchBtn.onclick = () => launchSimulation();
+            launchBtn.innerHTML = `<i class="fas fa-rocket"></i> Launch Simulation`;
+            
+            // Show modal
+            document.getElementById('simulationModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('simulationModal').style.display = 'none';
+            currentSelectedSimulation = null;
+        }
+
+        function launchSimulation() {
+            if (!currentSelectedSimulation) return;
+            
+            const simulation = currentSelectedSimulation;
+            
+            if (!simulation.file) {
+                alert('This simulation is not available yet. Coming soon!');
+                return;
+            }
+            
+            // Construct the correct path based on subject
+            let filePath = '';
+            switch(simulation.subject) {
+                case 'physics':
+                    filePath = `sims/physics/${simulation.file}`;
+                    break;
+                case 'math':
+                    filePath = `sims/math/${simulation.file}`;
+                    break;
+                default:
+                    alert('Simulation path not configured for this subject');
+                    return;
+            }
+            
+            // Open simulation in a new tab
+            window.open(filePath, '_blank');
+            
+            // Log simulation start (optional - can be sent to backend)
+            logSimulationStart(simulation.id, simulation.subject);
+            
+            // Close modal
+            closeModal();
+        }
+
+        function logSimulationStart(simId, subject) {
+            // This function can be extended to log simulation starts to the backend
+            console.log(`Simulation started: ${simId} (${subject})`);
+            
+            // Example of sending to backend (uncomment if you have API endpoint)
+            /*
+            throttledApiCall('/student/simulations/log', {
+                method: 'POST',
+                body: JSON.stringify({
+                    simulationId: simId,
+                    subject: subject,
+                    timestamp: new Date().toISOString()
+                })
+            }).catch(console.error);
+            */
+        }
+
+        function generateChallengeForSimulation() {
+            if (!currentSelectedSimulation) return;
+            
+            const simulation = currentSelectedSimulation;
+            
+            // Open challenge.html in new tab
+            window.open('challenge.html', '_blank');
+            
+            closeModal();
+        }
+
+        // ================================================================
+        // SUBJECT FILTER FUNCTIONALITY
+        // ================================================================
+        function setupSubjectFilters() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Reload simulations with new filter
+                    loadSimulationsPage();
+                });
+            });
+        }
+
+        // ================================================================
+        // SEARCH FUNCTIONALITY FOR SIMULATIONS
+        // ================================================================
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            let searchTimeout;
+            
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    if (document.getElementById('simulations').classList.contains('active')) {
+                        loadSimulationsPage();
+                    }
+                }, 300);
+            });
+            
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (document.getElementById('simulations').classList.contains('active')) {
+                        loadSimulationsPage();
+                    } else {
+                        // If not on simulations page, switch to it
+                        showPage('simulations');
+                        setTimeout(() => loadSimulationsPage(), 100);
+                    }
+                }
+            });
+        }
+
+        // ================================================================
         // DASHBOARD
         // ================================================================
         async function loadDashboard() {
-            const data = await apiCall('/student/dashboard');
-            dashboardData = data.data;
+            try {
+                const data = await throttledApiCall('/student/dashboard');
+                dashboardData = data.data;
+                updateOverviewPage();
+                return dashboardData;
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                throw error;
+            }
+        }
+
+        function updateOverviewPage() {
+            if (!dashboardData) return;
             
             // Update user info
             document.getElementById('userName').textContent = dashboardData.student.name;
@@ -842,59 +2469,89 @@
             
             // Update recent challenges
             const tbody = document.getElementById('recentChallengesBody');
-            tbody.innerHTML = dashboardData.recentChallenges.map(ch => `
-                <tr>
-                    <td>${ch.title || ch.challengeId}</td>
-                    <td>${ch.simulationType}</td>
-                    <td>${ch.score ? ch.score.toFixed(1) : 'N/A'}</td>
-                    <td><span class="badge badge-${ch.status === 'evaluated' ? 'success' : 'warning'}">${ch.status}</span></td>
-                    <td>${new Date(ch.generatedAt).toLocaleDateString()}</td>
-                </tr>
-            `).join('');
+            if (dashboardData.recentChallenges && dashboardData.recentChallenges.length > 0) {
+                tbody.innerHTML = dashboardData.recentChallenges.map(ch => `
+                    <tr>
+                        <td>${ch.title || ch.challengeId}</td>
+                        <td>${ch.simulationType}</td>
+                        <td>${ch.score ? ch.score.toFixed(1) : 'N/A'}</td>
+                        <td><span class="badge badge-${ch.status === 'evaluated' ? 'success' : 'warning'}">${ch.status}</span></td>
+                        <td>${new Date(ch.generatedAt).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No challenges completed yet</td></tr>';
+            }
         }
 
         // ================================================================
-        // SIMULATIONS
-        // ================================================================
-        async function loadSimulations() {
-            const data = await apiCall('/student/simulations');
-            // Implement simulations grid
-        }
-
-        // ================================================================
-        // CHALLENGES
+        // CHALLENGES PAGE
         // ================================================================
         async function loadChallenges() {
-            const [limitsData, challengesData] = await Promise.all([
-                apiCall('/student/challenges/limits'),
-                apiCall('/student/challenges')
-            ]);
-            
-            document.getElementById('dailyLimit').textContent = limitsData.data.daily.remaining;
+            try {
+                const [limitsData, challengesData] = await Promise.all([
+                    throttledApiCall('/student/challenges/limits'),
+                    throttledApiCall('/student/challenges')
+                ]);
+                
+                updateChallengesPage({ limits: limitsData.data, challenges: challengesData.data });
+            } catch (error) {
+                console.error('Error loading challenges:', error);
+            }
+        }
+
+        function updateChallengesPage(data) {
+            if (data.limits) {
+                document.getElementById('dailyLimit').textContent = data.limits.daily.remaining;
+            }
             
             const tbody = document.getElementById('allChallengesBody');
-            tbody.innerHTML = challengesData.data.challenges.map(ch => `
-                <tr>
-                    <td>${ch.challengeId}</td>
-                    <td>${ch.simulationType}</td>
-                    <td>${ch.difficulty}</td>
-                    <td>${ch.results?.totalScore || 'N/A'}</td>
-                    <td><span class="badge badge-info">${ch.status}</span></td>
-                    <td><button class="btn btn-secondary" onclick="viewChallenge('${ch.challengeId}')">View</button></td>
-                </tr>
-            `).join('');
+            if (data.challenges && data.challenges.challenges && data.challenges.challenges.length > 0) {
+                tbody.innerHTML = data.challenges.challenges.map(ch => `
+                    <tr>
+                        <td>${ch.challengeId}</td>
+                        <td>${ch.simulationType}</td>
+                        <td>${ch.difficulty}</td>
+                        <td>${ch.results?.totalScore || 'N/A'}</td>
+                        <td><span class="badge badge-${getChallengeStatusBadge(ch.status)}">${ch.status}</span></td>
+                        <td><button class="btn btn-secondary" onclick="viewChallenge('${ch.challengeId}')">View</button></td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No challenges yet. Generate one to get started!</td></tr>';
+            }
+        }
+
+        function getChallengeStatusBadge(status) {
+            const badges = {
+                'completed': 'success',
+                'evaluated': 'success',
+                'in_progress': 'warning',
+                'pending': 'info',
+                'generated': 'info'
+            };
+            return badges[status] || 'info';
         }
 
         async function generateNewChallenge() {
-            // Implement challenge generation
-            alert('Challenge generation coming soon!');
+            // Open challenge.html in new tab
+            window.open('challenge.html', '_blank');
+        }
+
+        function viewChallenge(challengeId) {
+            // Open challenge.html in new tab with challenge ID
+            window.open(`challenge.html?id=${challengeId}`, '_blank');
         }
 
         // ================================================================
-        // PERFORMANCE
+        // PERFORMANCE PAGE WITH APEXCHARTS
         // ================================================================
         async function loadPerformance() {
-            const data = await apiCall('/student/performance');
+            const data = await throttledApiCall('/student/performance');
+            updatePerformancePage(data);
+        }
+
+        function updatePerformancePage(data) {
             const perf = data.data;
             
             document.getElementById('perfPI').textContent = perf.performance.performanceIndex.toFixed(1);
@@ -902,97 +2559,351 @@
             document.getElementById('perfTotal').textContent = perf.performance.totalChallenges;
             document.getElementById('perfAvg').textContent = perf.performance.averageScore.toFixed(1) + '%';
             
-            // Draw chart
-            const ctx = document.getElementById('performanceChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: perf.trend.map(t => new Date(t.date).toLocaleDateString()),
-                    datasets: [{
-                        label: 'Score',
-                        data: perf.trend.map(t => t.score),
-                        borderColor: '#007acc',
-                        backgroundColor: 'rgba(0, 122, 204, 0.1)',
-                        borderWidth: 2,
-                        fill: true
-                    }]
+            // Show loading indicator
+            const loadingEl = document.getElementById('performanceChartLoading');
+            loadingEl.style.display = 'flex';
+            
+            // Check if ApexCharts is available
+            // Check if ApexCharts is loaded
+            if (!window.apexChartsLoaded || typeof ApexCharts === 'undefined') {
+                console.error('❌ ApexCharts is not available');
+                loadingEl.innerHTML = '<p style="color: #ff4444; text-align: center;">Chart library failed to load. Please refresh the page.</p>';
+                return;
+            }
+            
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+            
+            // Destroy existing chart
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+            
+            // Create ApexCharts performance chart
+            const options = {
+                series: [{
+                    name: 'Score',
+                    data: perf.trend.map(t => t.score)
+                }],
+                chart: {
+                    type: 'line',
+                    height: 300,
+                    foreColor: '#ffffff',
+                    toolbar: {
+                        show: false
+                    },
+                    zoom: {
+                        enabled: false
+                    }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
+                colors: ['#007acc'],
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                grid: {
+                    borderColor: '#464647',
+                    strokeDashArray: 4
+                },
+                xaxis: {
+                    categories: perf.trend.map(t => new Date(t.date).toLocaleDateString()),
+                    labels: {
+                        style: {
+                            colors: '#888'
+                        }
+                    },
+                    axisBorder: {
+                        show: true,
+                        color: '#464647'
+                    },
+                    axisTicks: {
+                        show: true,
+                        color: '#464647'
+                    }
+                },
+                yaxis: {
+                    min: 0,
+                    max: 100,
+                    labels: {
+                        style: {
+                            colors: '#888'
+                        }
+                    }
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shade: 'dark',
+                        type: "vertical",
+                        shadeIntensity: 0.5,
+                        gradientToColors: ['#00d4ff'],
+                        inverseColors: true,
+                        opacityFrom: 0.8,
+                        opacityTo: 0.2,
+                        stops: [0, 90, 100]
+                    }
+                },
+                tooltip: {
+                    theme: 'dark',
+                    x: {
+                        format: 'dd MMM yyyy'
+                    }
                 }
-            });
+            };
+            
+            const chartElement = document.getElementById('performanceChart');
+            if (chartElement) {
+                try {
+                    performanceChart = new ApexCharts(chartElement, options);
+                    performanceChart.render().then(() => {
+                        loadingEl.style.display = 'none';
+                        console.log('✅ Performance chart rendered successfully');
+                    }).catch(error => {
+                        console.error('❌ Error rendering performance chart:', error);
+                        loadingEl.innerHTML = '<p style="color: #ff4444; text-align: center;">Error rendering chart</p>';
+                    });
+                } catch (error) {
+                    console.error('❌ Error creating performance chart:', error);
+                    loadingEl.innerHTML = '<p style="color: #ff4444; text-align: center;">Error creating chart</p>';
+                }
+            }
         }
 
         // ================================================================
-        // COMPETENCIES
+        // COMPETENCIES PAGE WITH APEXCHARTS
         // ================================================================
         async function loadCompetencies() {
-            const data = await apiCall('/student/competencies');
+            const data = await throttledApiCall('/student/performance/competencies');
+            updateCompetenciesPage(data);
+        }
+
+        function updateCompetenciesPage(data) {
             const competencies = data.data.competencies;
+            const labels = Object.keys(competencies);
+            const values = Object.values(competencies);
             
-            // Draw radar chart
-            const ctx = document.getElementById('competencyChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: Object.keys(competencies),
-                    datasets: [{
-                        label: 'Your Scores',
-                        data: Object.values(competencies),
-                        borderColor: '#007acc',
-                        backgroundColor: 'rgba(0, 122, 204, 0.2)',
-                        borderWidth: 2
-                    }]
+            // Update competency cards
+            const grid = document.getElementById('competencyGrid');
+            grid.innerHTML = labels.map((name, index) => {
+                const score = values[index];
+                return `
+                    <div class="competency-card">
+                        <div class="competency-name">${name}</div>
+                        <div class="competency-bar">
+                            <div class="competency-fill" style="width: ${score}%"></div>
+                        </div>
+                        <div class="competency-value">${score}/100</div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Show loading indicator
+            const loadingEl = document.getElementById('competencyChartLoading');
+            loadingEl.style.display = 'flex';
+            
+            // Check if ApexCharts is available
+            if (!window.apexChartsLoaded || typeof ApexCharts === 'undefined') {
+                console.error('❌ ApexCharts is not available');
+                loadingEl.innerHTML = '<p style="color: #ff4444; text-align: center;">Chart library failed to load. Please refresh the page.</p>';
+                return;
+            }
+            
+            // Destroy existing chart
+            if (competencyChart) {
+                competencyChart.destroy();
+            }
+            
+            // Create ApexCharts radar chart
+            const options = {
+                series: [{
+                    name: 'Competency Score',
+                    data: values
+                }],
+                chart: {
+                    height: 300,
+                    type: 'radar',
+                    foreColor: '#ffffff',
+                    toolbar: {
+                        show: false
+                    }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            max: 100
+                colors: ['#007acc'],
+                xaxis: {
+                    categories: labels,
+                    labels: {
+                        style: {
+                            colors: '#ffffff',
+                            fontSize: '13px',
+                            fontWeight: 500
+                        }
+                    }
+                },
+                yaxis: {
+                    min: 0,
+                    max: 100,
+                    tickAmount: 5,
+                    labels: {
+                        style: {
+                            colors: '#888'
+                        }
+                    }
+                },
+                fill: {
+                    opacity: 0.2
+                },
+                stroke: {
+                    width: 2
+                },
+                markers: {
+                    size: 4,
+                    hover: {
+                        size: 7
+                    }
+                },
+                tooltip: {
+                    theme: 'dark',
+                    y: {
+                        formatter: function(val) {
+                            return val + '/100';
+                        }
+                    }
+                },
+                plotOptions: {
+                    radar: {
+                        polygons: {
+                            strokeColors: '#464647',
+                            fill: {
+                                colors: ['transparent']
+                            }
                         }
                     }
                 }
-            });
+            };
             
-            // Display competency cards
-            const grid = document.getElementById('competencyGrid');
-            grid.innerHTML = Object.entries(competencies).map(([name, score]) => `
-                <div class="competency-card">
-                    <div class="competency-name">${name}</div>
-                    <div class="competency-bar">
-                        <div class="competency-fill" style="width: ${score}%"></div>
-                    </div>
-                    <div class="competency-value">${score}/100</div>
-                </div>
-            `).join('');
+            const chartElement = document.getElementById('competencyChart');
+            if (chartElement) {
+                try {
+                    competencyChart = new ApexCharts(chartElement, options);
+                    competencyChart.render().then(() => {
+                        loadingEl.style.display = 'none';
+                        console.log('✅ Competency chart rendered successfully');
+                    }).catch(error => {
+                        console.error('❌ Error rendering competency chart:', error);
+                        loadingEl.innerHTML = '<p style="color: #ff4444; text-align: center;">Error rendering chart</p>';
+                    });
+                } catch (error) {
+                    console.error('❌ Error creating competency chart:', error);
+                    loadingEl.innerHTML = '<p style="color: #ff4444; text-align: center;">Error creating chart</p>';
+                }
+            }
         }
 
         // ================================================================
-        // REPORTS
+        // REPORTS PAGE
         // ================================================================
         async function loadReports() {
-            const data = await apiCall('/student/reports/nep');
+            const data = await throttledApiCall('/student/reports/nep');
+            updateReportsPage(data);
+        }
+
+        function updateReportsPage(data) {
             const reports = data.data.reports;
-            
             const list = document.getElementById('reportsList');
-            list.innerHTML = reports.map(report => `
-                <div style="padding: 15px; background: #333337; margin-bottom: 10px; border-radius: 6px;">
-                    <h3>${report.reportId}</h3>
-                    <p>${report.reportType} - ${new Date(report.generatedAt).toLocaleDateString()}</p>
-                    <button class="btn btn-secondary" onclick="viewReport('${report.reportId}')">View</button>
-                </div>
-            `).join('');
+            
+            if (reports && reports.length > 0) {
+                list.innerHTML = reports.map(report => `
+                    <div style="padding: 15px; background: #333337; margin-bottom: 10px; border-radius: 6px; border: 1px solid #464647;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="margin-bottom: 5px;">${report.reportId}</h3>
+                                <p style="color: #888; font-size: 0.9rem; margin-bottom: 10px;">${report.reportType} - ${new Date(report.generatedAt).toLocaleDateString()}</p>
+                            </div>
+                            <div>
+                                <button class="btn" onclick="downloadReport('${report.reportId}')">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                                <button class="btn btn-secondary" onclick="viewReport('${report.reportId}')" style="margin-left: 10px;">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                list.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #888;">
+                        <i class="fas fa-file-alt" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                        <h3>No reports available</h3>
+                        <p>Your reports will appear here once generated</p>
+                    </div>
+                `;
+            }
+        }
+
+        function viewReport(reportId) {
+            alert(`Viewing report: ${reportId}`);
+            // Implement report viewing logic
+        }
+
+        function downloadReport(reportId) {
+            alert(`Downloading report: ${reportId}`);
+            // Implement report download logic
         }
 
         // ================================================================
         // HELP TICKETS
         // ================================================================
         async function loadHelpTickets() {
-            const data = await apiCall('/student/help-tickets');
-            // Implement tickets display
+            const data = await throttledApiCall('/student/help-tickets');
+            updateHelpPage(data);
+        }
+
+        function updateHelpPage(data) {
+            const ticketsList = document.getElementById('ticketsList');
+            
+            if (data.data && data.data.tickets && data.data.tickets.length > 0) {
+                ticketsList.innerHTML = data.data.tickets.map(ticket => `
+                    <div style="padding: 15px; background: #333337; margin-bottom: 10px; border-radius: 6px; border: 1px solid #464647;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h3 style="margin-bottom: 5px;">${ticket.subject}</h3>
+                                <p style="color: #888; font-size: 0.9rem; margin-bottom: 10px;">${ticket.description}</p>
+                                <div style="display: flex; gap: 10px; font-size: 0.8rem;">
+                                    <span class="badge badge-${getTicketStatusBadge(ticket.status)}">${ticket.status}</span>
+                                    <span style="color: #aaa;">Created: ${new Date(ticket.createdAt).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-secondary" onclick="viewTicket('${ticket.ticketId}')">
+                                    <i class="fas fa-eye"></i> Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                ticketsList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #888;">
+                        <i class="fas fa-question-circle" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                        <h3>No tickets yet</h3>
+                        <p>Submit a ticket above to get help</p>
+                    </div>
+                `;
+            }
+        }
+
+        function getTicketStatusBadge(status) {
+            const badges = {
+                'open': 'info',
+                'in_progress': 'warning',
+                'resolved': 'success',
+                'closed': 'success'
+            };
+            return badges[status] || 'info';
         }
 
         async function createHelpTicket(event) {
@@ -1000,13 +2911,62 @@
             const subject = document.getElementById('ticketSubject').value;
             const description = document.getElementById('ticketDescription').value;
             
-            await apiCall('/student/help-tickets', {
-                method: 'POST',
-                body: JSON.stringify({ subject, description })
-            });
+            if (!subject.trim() || !description.trim()) {
+                alert('Please fill in both subject and description');
+                return;
+            }
             
-            alert('Ticket created successfully!');
-            document.getElementById('helpTicketForm').reset();
+            showLoading();
+            try {
+                await throttledApiCall('/student/help-tickets', {
+                    method: 'POST',
+                    body: JSON.stringify({ subject, description })
+                });
+                
+                alert('Ticket created successfully!');
+                document.getElementById('helpTicketForm').reset();
+                
+                // Reload tickets
+                await loadHelpTickets();
+            } catch (error) {
+                console.error('Error creating ticket:', error);
+                alert('Failed to create ticket. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function viewTicket(ticketId) {
+            alert(`Viewing ticket: ${ticketId}`);
+            // Implement ticket viewing logic
+        }
+
+        // ================================================================
+        // NOTIFICATIONS
+        // ================================================================
+        async function loadNotifications() {
+            try {
+                const data = await throttledApiCall('/student/notifications');
+                const count = data.data.unreadCount || 0;
+                document.getElementById('notificationCount').textContent = count;
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        // ================================================================
+        // SESSION TIMER
+        // ================================================================
+        function startSessionTimer() {
+            let sessionSeconds = 0;
+            setInterval(() => {
+                sessionSeconds++;
+                const minutes = Math.floor(sessionSeconds / 60);
+                document.getElementById('sessionTime').textContent = `Session: ${minutes} min`;
+            }, 60000); // Update every minute
+            
+            // Initial update
+            document.getElementById('sessionTime').textContent = 'Session: 0 min';
         }
 
         // ================================================================
@@ -1021,23 +2981,138 @@
         }
 
         // ================================================================
-        // INIT
+        // INITIALIZATION
         // ================================================================
         async function init() {
+            if (isInitializing) return;
+            isInitializing = true;
+            
+            // Check for token
+            authToken = localStorage.getItem('authToken');
             if (!authToken) {
                 window.location.href = '/login.html';
                 return;
             }
             
-            await loadDashboard();
-            hideLoading();
+            // Show loading initially
+            showLoading();
             
-            // Update date
-            document.getElementById('currentDate').textContent = new Date().toLocaleDateString();
+            try {
+                // Wait a bit for ApexCharts to fully load
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                if (!window.apexChartsLoaded) {
+                    console.warn('⚠️ ApexCharts did not load. Charts will be disabled.');
+                }
+                
+                // Continue with initialization...
+                console.log('🚀 Initializing dashboard...');
+                
+                // Update date
+                document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+            } catch (error) {
+                console.error('❌ Initialization error:', error);
+                if (error.message.includes('401')) {
+                    window.location.href = '/login.html';
+                }
+            } finally {
+                hideLoading();
+                isInitializing = false;
+            }
         }
 
-        // Start app
-        init();
+        // ================================================================
+        // EVENT LISTENERS
+        // ================================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add click handler to nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(event) {
+                    const pageId = this.getAttribute('data-page');
+                    if (pageId) {
+                        showPage(pageId);
+                    }
+                });
+            });
+            
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const searchTerm = e.target.value.trim();
+                    if (searchTerm) {
+                        if (document.getElementById('simulations').classList.contains('active')) {
+                            loadSimulationsPage();
+                        } else {
+                            showPage('simulations');
+                            setTimeout(() => {
+                                document.getElementById('searchInput').value = searchTerm;
+                                loadSimulationsPage();
+                            }, 100);
+                        }
+                    }
+                }
+            });
+            
+            // Notification bell click
+            document.getElementById('notificationBell').addEventListener('click', () => {
+                alert('Notifications feature coming soon!');
+                // Implement notifications modal
+            });
+            
+            // User menu click
+            document.getElementById('userMenu').addEventListener('click', () => {
+                // Implement user menu dropdown
+                alert('User menu options coming soon!');
+            });
+            
+            // Start the app
+            init();
+        });
+
+        // ================================================================
+        // ERROR HANDLING FOR UNHANDLED PROMISE REJECTIONS
+        // ================================================================
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Unhandled promise rejection:', event.reason);
+            showRateLimitNotification('An unexpected error occurred. Please refresh the page.');
+        });
+
+        // ================================================================
+        // WINDOW VISIBILITY CHANGE (to prevent unnecessary API calls)
+        // ================================================================
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                // Page became visible again, refresh dashboard if it's been more than 5 minutes
+                if (dashboardData && (Date.now() - pageCache.overview?.timestamp > 300000)) {
+                    loadDashboard();
+                }
+            }
+        });
+
+        // ================================================================
+        // CLOSE MODAL ON ESC KEY
+        // ================================================================
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // ================================================================
+        // CLOSE MODAL ON CLICK OUTSIDE
+        // ================================================================
+        document.getElementById('simulationModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('simulationModal')) {
+                closeModal();
+            }
+        });
     </script>
 </body>
 </html>

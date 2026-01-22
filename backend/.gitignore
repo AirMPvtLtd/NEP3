@@ -5,3 +5,4 @@ backend/coverage/
 *.log
 .cache/
 EOF
+echo -e "\n.env\nbackend/.env" >> .gitignore

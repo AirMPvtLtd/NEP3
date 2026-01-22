@@ -3,138 +3,430 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Probability Simulator - NEP Workbench</title>
+    <title>Probability Exploration Lab - NEP Workbench</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; }
         body { background: var(--bg); color: #fff; }
         .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
-        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header { 
+            background: #333; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-left: 4px solid var(--accent);
+        }
         h1 { font-size: 24px; color: var(--accent); }
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; font-size: 13px; }
         .main { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
-        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
-        .sim-area { background: #000; border-radius: 6px; height: 450px; border: 1px solid #464647; position: relative; overflow: hidden; }
+        .panel { 
+            background: var(--panel); 
+            border-radius: 8px; 
+            padding: 20px; 
+            border: 1px solid #464647;
+        }
+        
+        /* Exploration Zone */
+        .exploration-zone { 
+            background: #000; 
+            border-radius: 6px; 
+            height: 450px; 
+            border: 2px solid #464647;
+            position: relative; 
+            overflow: hidden; 
+        }
         canvas { width: 100%; height: 100%; }
-        .experiment-card { padding: 15px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; cursor: pointer; margin: 8px 0; transition: all 0.3s; }
-        .experiment-card:hover { border-color: var(--accent); background: #3a3a3c; }
-        .experiment-card.active { background: var(--accent); border-color: var(--accent); }
-        input[type="range"] { width: 100%; height: 8px; background: #2d2d30; border-radius: 4px; }
-        input[type="range"]::-webkit-slider-thumb { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
-        .result-bar { height: 25px; background: #2d2d30; border-radius: 4px; margin: 8px 0; overflow: hidden; position: relative; }
-        .result-fill { height: 100%; background: var(--accent); transition: width 0.3s; display: flex; align-items: center; padding: 0 10px; font-size: 12px; font-weight: bold; }
+        
+        /* Exploration Tools */
+        .exploration-tools {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .tool-btn {
+            padding: 12px;
+            background: #2d2d30;
+            border: 2px solid #464647;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .tool-btn:hover {
+            border-color: var(--accent);
+            background: rgba(0, 122, 204, 0.1);
+        }
+        
+        .tool-btn.active {
+            border-color: var(--accent);
+            background: rgba(0, 122, 204, 0.2);
+        }
+        
+        /* Experiment Cards */
+        .experiment-card { 
+            padding: 15px; 
+            background: #2d2d30; 
+            border: 2px solid #464647; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            margin: 8px 0; 
+            transition: all 0.3s; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .experiment-card:hover { 
+            border-color: var(--accent); 
+            transform: translateX(5px);
+        }
+        
+        .experiment-card.active { 
+            background: rgba(0, 122, 204, 0.2); 
+            border-color: var(--accent); 
+        }
+        
+        /* Probability Controls */
+        .probability-controls {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        
+        .slider-group {
+            display: grid;
+            grid-template-columns: 100px 1fr 60px;
+            gap: 10px;
+            margin: 12px 0;
+            align-items: center;
+        }
+        
+        .prob-label {
+            font-size: 13px;
+            color: #aaa;
+        }
+        
+        input[type="range"] { 
+            width: 100%; 
+            height: 8px; 
+            background: #464647; 
+            border-radius: 4px; 
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb { 
+            width: 18px; 
+            height: 18px; 
+            background: var(--accent); 
+            border-radius: 50%; 
+            cursor: pointer; 
+        }
+        
+        .prob-value {
+            width: 60px;
+            padding: 5px;
+            background: #2d2d30;
+            border: 1px solid #464647;
+            border-radius: 4px;
+            color: white;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        /* Pattern Discovery */
+        .pattern-discovery {
+            background: rgba(0, 122, 204, 0.05);
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .pattern-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .pattern-item.revealed {
+            border-left-color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+        
+        .pattern-item:hover {
+            transform: translateX(5px);
+        }
+        
+        /* Result Visualization */
+        .result-viz {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        
+        .result-bar { 
+            height: 25px; 
+            background: #464647; 
+            border-radius: 4px; 
+            margin: 8px 0; 
+            overflow: hidden; 
+            position: relative; 
+        }
+        
+        .result-fill { 
+            height: 100%; 
+            background: var(--accent); 
+            transition: width 0.3s; 
+            display: flex; 
+            align-items: center; 
+            padding: 0 10px; 
+            font-size: 11px; 
+            font-weight: bold; 
+        }
+        
+        /* Exploration Stats */
+        .exploration-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: #2d2d30;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            background: var(--accent);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background: #005a9e;
+            transform: translateY(-2px);
+        }
+        
+        /* Exploration Log */
+        .exploration-log {
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 15px 0;
+            padding: 10px;
+            background: #2d2d30;
+            border-radius: 6px;
+        }
+        
+        .log-entry {
+            padding: 5px;
+            margin: 3px 0;
+            border-bottom: 1px solid #333;
+            font-size: 12px;
+        }
+        
+        .log-time {
+            color: #888;
+            float: right;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div><h1><i class="fas fa-dice"></i> Probability Simulator</h1><p style="color: #888;">Math Lab • Grade 10-11</p></div>
-            <div style="display: flex; gap: 15px;">
-                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
-                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
-                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            <div>
+                <h1><i class="fas fa-chart-bar"></i> Probability Exploration Lab</h1>
+                <p style="color: #888;">Discover Patterns • Law of Large Numbers • Grade 10-11</p>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div style="background: #2d2d30; padding: 8px 15px; border-radius: 20px;">
+                    <i class="fas fa-lightbulb" style="color: #27ae60;"></i>
+                    <span id="discoveries">0</span> Discoveries
+                </div>
+                <button class="btn" onclick="exportExploration()" style="background: #27ae60;">
+                    <i class="fas fa-download"></i> Export
+                </button>
             </div>
         </div>
         
         <div class="main">
             <div class="panel">
-                <h2 style="margin-bottom: 15px;">Probability Visualization</h2>
+                <h2 style="margin-bottom: 15px;">
+                    <i class="fas fa-dice"></i> Probability Canvas
+                </h2>
                 
-                <div class="sim-area">
+                <div class="exploration-zone">
                     <canvas id="canvas"></canvas>
                 </div>
                 
+                <div class="exploration-tools">
+                    <div class="tool-btn active" onclick="selectTool('run')">
+                        <i class="fas fa-play"></i>
+                        <div>Run</div>
+                    </div>
+                    <div class="tool-btn" onclick="selectTool('speed')">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <div>Speed</div>
+                    </div>
+                    <div class="tool-btn" onclick="selectTool('compare')">
+                        <i class="fas fa-exchange-alt"></i>
+                        <div>Compare</div>
+                    </div>
+                </div>
+                
                 <div style="margin-top: 15px;">
-                    <label style="display: block; margin-bottom: 10px; color: #888;">Trials: <span id="trialsDisplay">100</span></label>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <label style="color: #aaa;">Trials: <span id="trialsDisplay">100</span></label>
+                        <label style="color: #aaa;">Speed: <span id="speedDisplay">1x</span></label>
+                    </div>
                     <input type="range" id="trialsSlider" min="10" max="1000" step="10" value="100" oninput="updateTrials()">
+                    <input type="range" id="speedSlider" min="1" max="10" step="1" value="1" oninput="updateSpeed()" style="margin-top: 10px;">
                 </div>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px;">
-                    <button class="btn" onclick="runSimulation()"><i class="fas fa-play"></i> Run</button>
-                    <button class="btn" onclick="runMultiple()"><i class="fas fa-forward"></i> Run 10x</button>
-                    <button class="btn" style="background: #e74c3c;" onclick="resetSim()"><i class="fas fa-undo"></i> Reset</button>
-                </div>
-                
-                <h3 style="margin: 20px 0 10px;">Results Distribution</h3>
-                <div id="resultsDisplay" style="background: #2d2d30; padding: 15px; border-radius: 6px; max-height: 200px; overflow-y: auto;">
-                    <!-- Dynamic results -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                    <button class="btn" onclick="runExploration()" id="runBtn">
+                        <i class="fas fa-bolt"></i> Run Exploration
+                    </button>
+                    <button class="btn" onclick="resetExploration()" style="background: #e74c3c;">
+                        <i class="fas fa-undo"></i> Reset
+                    </button>
                 </div>
             </div>
             
             <div class="panel">
-                <h2 style="margin-bottom: 15px;"><i class="fas fa-flask"></i> Experiments</h2>
+                <h2 style="margin-bottom: 15px;">
+                    <i class="fas fa-flask"></i> Probability Experiments
+                </h2>
                 
                 <div class="experiment-card active" onclick="selectExperiment('coin')">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-coins" style="font-size: 24px;"></i>
-                        <div>
-                            <strong>Coin Flip</strong>
-                            <div style="font-size: 12px; color: #888;">P(H) = 0.5</div>
-                        </div>
+                    <i class="fas fa-coins" style="font-size: 20px; color: var(--accent);"></i>
+                    <div>
+                        <strong>Coin Toss</strong>
+                        <div style="font-size: 12px; color: #888;">Fair coin: P(H)=0.5, P(T)=0.5</div>
                     </div>
                 </div>
                 
                 <div class="experiment-card" onclick="selectExperiment('dice')">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-dice-six" style="font-size: 24px;"></i>
-                        <div>
-                            <strong>Dice Roll</strong>
-                            <div style="font-size: 12px; color: #888;">P(1-6) = 1/6</div>
-                        </div>
+                    <i class="fas fa-dice-six" style="font-size: 20px; color: var(--accent);"></i>
+                    <div>
+                        <strong>Dice Roll</strong>
+                        <div style="font-size: 12px; color: #888;">Fair die: P(1-6)=1/6</div>
                     </div>
                 </div>
                 
-                <div class="experiment-card" onclick="selectExperiment('cards')">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-clone" style="font-size: 24px;"></i>
-                        <div>
-                            <strong>Card Draw</strong>
-                            <div style="font-size: 12px; color: #888;">P(suit) = 1/4</div>
-                        </div>
+                <div class="experiment-card" onclick="selectExperiment('custom')">
+                    <i class="fas fa-sliders-h" style="font-size: 20px; color: var(--accent);"></i>
+                    <div>
+                        <strong>Custom Probability</strong>
+                        <div style="font-size: 12px; color: #888;">Set your own probabilities</div>
                     </div>
                 </div>
                 
-                <div class="experiment-card" onclick="selectExperiment('spinner')">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-circle-notch" style="font-size: 24px;"></i>
-                        <div>
-                            <strong>Spinner</strong>
-                            <div style="font-size: 12px; color: #888;">Custom sectors</div>
-                        </div>
+                <h3 style="margin: 20px 0 10px;">
+                    <i class="fas fa-sliders-h"></i> Probability Controls
+                </h3>
+                
+                <div class="probability-controls" id="probabilityControls">
+                    <!-- Dynamic probability controls will appear here -->
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">
+                    <i class="fas fa-chart-line"></i> Results Visualization
+                </h3>
+                
+                <div class="result-viz" id="resultsViz">
+                    <!-- Results will be visualized here -->
+                </div>
+                
+                <h3 style="margin: 20px 0 10px;">
+                    <i class="fas fa-search"></i> Pattern Discovery
+                </h3>
+                
+                <div class="pattern-discovery">
+                    <div class="pattern-item" id="pattern1">
+                        <i class="fas fa-question-circle"></i>
+                        What happens as you run more trials?
+                    </div>
+                    
+                    <div class="pattern-item" id="pattern2">
+                        <i class="fas fa-question-circle"></i>
+                        Change probability to 0.8. How many trials to see convergence?
+                    </div>
+                    
+                    <div class="pattern-item" id="pattern3">
+                        <i class="fas fa-question-circle"></i>
+                        Try extreme probabilities (0.1 or 0.9). What do you notice?
+                    </div>
+                    
+                    <div class="pattern-item" id="pattern4">
+                        <i class="fas fa-question-circle"></i>
+                        Compare fast vs slow trials. Is convergence different?
                     </div>
                 </div>
                 
-                <h3 style="margin: 20px 0 10px;">Statistics</h3>
-                <div style="background: #2d2d30; padding: 15px; border-radius: 6px;">
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
-                        <span>Total Trials:</span>
-                        <strong id="totalTrials">0</strong>
+                <div class="exploration-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statExplorations">0</div>
+                        <div class="stat-label">Explorations</div>
                     </div>
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #464647;">
-                        <span>Theoretical P:</span>
-                        <strong id="theoreticalP">0.500</strong>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statTrials">0</div>
+                        <div class="stat-label">Total Trials</div>
                     </div>
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-                        <span>Experimental P:</span>
-                        <strong id="experimentalP" style="color: var(--accent);">0.000</strong>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statPatterns">0</div>
+                        <div class="stat-label">Patterns</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statTime">0</div>
+                        <div class="stat-label">Minutes</div>
                     </div>
                 </div>
                 
-                <div style="background: rgba(0, 122, 204, 0.1); border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 12px; line-height: 1.8;">
-                    <strong style="color: var(--accent);">Law of Large Numbers:</strong><br>
-                    As trials increase, experimental probability converges to theoretical probability<br><br>
-                    P(event) = favorable / total
-                </div>
+                <h3 style="margin: 20px 0 10px;">
+                    <i class="fas fa-history"></i> Exploration Log
+                </h3>
                 
-                <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
-                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
-                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statSims">0</div>
-                        <div style="font-size: 12px; color: #888;">Simulations</div>
-                    </div>
-                    <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
-                        <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statExperiments">1</div>
-                        <div style="font-size: 12px; color: #888;">Experiments</div>
-                    </div>
+                <div class="exploration-log" id="explorationLog">
+                    <!-- Exploration log entries will appear here -->
                 </div>
             </div>
         </div>
@@ -142,216 +434,457 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        const API_BASE_URL = 'http://localhost:3000/api';
-        const authToken = localStorage.getItem('authToken');
-        let eventId = null, sessionStart = Date.now(), canvas, ctx;
-        
-        let experiment = 'coin', trials = 100, results = {};
-        let totalTrialsRun = 0;
-        
-        let interactionData = {
-            actions_count: 0, time_seconds: 0, total_parameter_space: 150,
-            tool_usage: {}, simulations_run: 0, experiments_tested: new Set(['coin']),
-            trial_sizes: new Set()
+        // ABS Exploration Variables
+        let explorationData = {
+            explorations: 0,
+            patternsFound: 0,
+            discoveries: 0,
+            totalTrials: 0,
+            experimentsTested: ['coin'],
+            explorationStart: Date.now(),
+            activityLog: [],
+            discoveredPatterns: [],
+            probabilityHistory: []
         };
         
+        let currentTool = 'run';
+        let currentExperiment = 'coin';
+        let trials = 100;
+        let simulationSpeed = 1;
+        let isRunning = false;
+        let simulationInterval = null;
+        
+        // Results tracking - now generic for all experiments
+        let results = {
+            counts: {},  // Will store counts for each outcome
+            trials: 0
+        };
+        
+        // Probability configurations
         const experiments = {
             coin: {
-                name: 'Coin Flip',
+                name: 'Coin Toss',
                 outcomes: ['Heads', 'Tails'],
                 probabilities: [0.5, 0.5],
-                icon: '🪙'
+                colors: ['#ffd700', '#c0c0c0']
             },
             dice: {
                 name: 'Dice Roll',
                 outcomes: ['1', '2', '3', '4', '5', '6'],
                 probabilities: [1/6, 1/6, 1/6, 1/6, 1/6, 1/6],
-                icon: '🎲'
+                colors: ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c']
             },
-            cards: {
-                name: 'Card Draw',
-                outcomes: ['Hearts', 'Diamonds', 'Clubs', 'Spades'],
+            custom: {
+                name: 'Custom Probability',
+                outcomes: ['Event A', 'Event B', 'Event C', 'Event D'],
                 probabilities: [0.25, 0.25, 0.25, 0.25],
-                icon: '🃏'
-            },
-            spinner: {
-                name: 'Spinner',
-                outcomes: ['Red', 'Blue', 'Green', 'Yellow'],
-                probabilities: [0.3, 0.3, 0.2, 0.2],
-                icon: '🎯'
+                colors: ['#007acc', '#27ae60', '#e74c3c', '#f39c12']
             }
         };
         
-        async function init() {
+        let currentProbabilities = [...experiments.coin.probabilities];
+        let canvas, ctx;
+        
+        // Initialize exploration
+        document.addEventListener('DOMContentLoaded', function() {
+            initExploration();
+            updateProbabilityControls();
+            updateResultsViz();
+            draw();
+            
+            logActivity("Started probability exploration session");
+            startExplorationTimer();
+            updateExplorationStats();
+        });
+        
+        function initExploration() {
             canvas = document.getElementById('canvas');
             ctx = canvas.getContext('2d');
+            
             canvas.width = canvas.parentElement.clientWidth;
             canvas.height = canvas.parentElement.clientHeight;
             
-            if (authToken) {
-                try {
-                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
-                    const res = await fetch(`${API_BASE_URL}/student/event`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ studentId, toolId: 'probability-simulator', toolType: 'LAB', interactionData })
-                    });
-                    if (res.ok) eventId = (await res.json()).data._id;
-                } catch (err) {}
-            }
-            
-            resetSim();
-            setInterval(() => {
-                const e = Math.floor((Date.now() - sessionStart) / 1000);
-                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
-            }, 1000);
-            setInterval(saveProgress, 30000);
+            window.addEventListener('resize', function() {
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = canvas.parentElement.clientHeight;
+                draw();
+            });
         }
         
-        function selectExperiment(exp) {
-            experiment = exp;
+        function selectTool(tool) {
+            currentTool = tool;
+            explorationData.explorations++;
+            
+            // Update UI
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            switch(tool) {
+                case 'run':
+                    logActivity("Selected run tool");
+                    break;
+                case 'speed':
+                    logActivity("Selected speed control tool");
+                    break;
+                case 'compare':
+                    logActivity("Selected comparison tool");
+                    break;
+            }
+            
+            updateExplorationStats();
+        }
+        
+        function selectExperiment(experiment) {
+            currentExperiment = experiment;
+            
+            // Update UI
             document.querySelectorAll('.experiment-card').forEach(card => card.classList.remove('active'));
             event.currentTarget.classList.add('active');
-            interactionData.experiments_tested.add(exp);
-            interactionData.actions_count++;
-            resetSim();
-            updateStats();
+            
+            // Reset to default probabilities for the experiment
+            currentProbabilities = [...experiments[experiment].probabilities];
+            
+            // Reset results
+            resetResults();
+            
+            // Update controls
+            updateProbabilityControls();
+            updateResultsViz();
+            draw();
+            
+            // Log the exploration
+            if (!explorationData.experimentsTested.includes(experiment)) {
+                explorationData.experimentsTested.push(experiment);
+            }
+            
+            logActivity(`Selected ${experiments[experiment].name}`);
+            explorationData.explorations++;
+            updateExplorationStats();
+        }
+        
+        function updateProbabilityControls() {
+            const exp = experiments[currentExperiment];
+            const controlsDiv = document.getElementById('probabilityControls');
+            
+            controlsDiv.innerHTML = exp.outcomes.map((outcome, index) => {
+                const prob = currentProbabilities[index];
+                const percent = (prob * 100).toFixed(1);
+                
+                return `
+                    <div class="slider-group">
+                        <div class="prob-label">${outcome}:</div>
+                        <input type="range" min="0" max="100" step="1" value="${percent}" 
+                               oninput="updateProbability(${index}, this.value)">
+                        <div class="prob-value">${percent}%</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateProbability(index, percent) {
+            const newProb = parseInt(percent) / 100;
+            currentProbabilities[index] = newProb;
+            
+            // Update the displayed value
+            document.querySelectorAll('.prob-value')[index].textContent = percent + '%';
+            
+            // Normalize probabilities to sum to 1
+            const sum = currentProbabilities.reduce((a, b) => a + b, 0);
+            if (sum !== 1) {
+                currentProbabilities = currentProbabilities.map(p => p / sum);
+                updateProbabilityControls();
+            }
+            
+            logActivity(`Changed probability to ${newProb.toFixed(2)}`);
+            explorationData.probabilityHistory.push([...currentProbabilities]);
+            explorationData.explorations++;
+            
+            draw();
+            updateExplorationStats();
         }
         
         function updateTrials() {
             trials = parseInt(document.getElementById('trialsSlider').value);
             document.getElementById('trialsDisplay').textContent = trials;
-            interactionData.trial_sizes.add(Math.floor(trials / 100) * 100);
-            interactionData.actions_count++;
+            logActivity(`Set trials to ${trials}`);
+            explorationData.explorations++;
         }
         
-        function runSimulation() {
-            const exp = experiments[experiment];
-            results = {};
+        function updateSpeed() {
+            simulationSpeed = parseInt(document.getElementById('speedSlider').value);
+            document.getElementById('speedDisplay').textContent = `${simulationSpeed}x`;
             
-            exp.outcomes.forEach(outcome => results[outcome] = 0);
+            // Update any running simulation
+            if (isRunning) {
+                clearInterval(simulationInterval);
+                startSimulation();
+            }
             
-            for (let i = 0; i < trials; i++) {
+            logActivity(`Set simulation speed to ${simulationSpeed}x`);
+            explorationData.explorations++;
+        }
+        
+        function runExploration() {
+            if (isRunning) {
+                stopSimulation();
+                logActivity("Stopped simulation");
+            } else {
+                startSimulation();
+                logActivity("Started simulation");
+            }
+        }
+        
+        function startSimulation() {
+            isRunning = true;
+            const runBtn = document.getElementById('runBtn');
+            runBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Exploration';
+            runBtn.style.background = '#e74c3c';
+            
+            // Clear previous interval if exists
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+            }
+            
+            // Run simulation at specified speed
+            simulationInterval = setInterval(() => {
+                runTrialBatch(10 * simulationSpeed);
+            }, 100);
+        }
+        
+        function stopSimulation() {
+            isRunning = false;
+            clearInterval(simulationInterval);
+            simulationInterval = null;
+            const runBtn = document.getElementById('runBtn');
+            runBtn.innerHTML = '<i class="fas fa-bolt"></i> Run Exploration';
+            runBtn.style.background = '';
+        }
+        
+        function runTrialBatch(batchSize) {
+            const exp = experiments[currentExperiment];
+            
+            // Initialize results counts if not already done
+            if (Object.keys(results.counts).length === 0) {
+                exp.outcomes.forEach(outcome => {
+                    results.counts[outcome] = 0;
+                });
+            }
+            
+            for (let i = 0; i < batchSize; i++) {
                 const rand = Math.random();
                 let cumulative = 0;
                 
                 for (let j = 0; j < exp.outcomes.length; j++) {
-                    cumulative += exp.probabilities[j];
+                    cumulative += currentProbabilities[j];
                     if (rand < cumulative) {
-                        results[exp.outcomes[j]]++;
+                        // Update results for the selected outcome
+                        const outcome = exp.outcomes[j];
+                        results.counts[outcome] = (results.counts[outcome] || 0) + 1;
+                        results.trials++;
+                        
+                        // Check for pattern discoveries
+                        checkPatternDiscovery(outcome);
                         break;
                     }
                 }
             }
             
-            totalTrialsRun += trials;
-            interactionData.simulations_run++;
-            interactionData.actions_count++;
+            explorationData.totalTrials += batchSize;
+            explorationData.explorations++;
             
-            updateDisplay();
+            updateResultsViz();
             draw();
-            updateStats();
-        }
-        
-        function runMultiple() {
-            for (let i = 0; i < 10; i++) {
-                runSimulation();
+            updateExplorationStats();
+            
+            // Stop if we've reached the target trials
+            if (results.trials >= trials) {
+                stopSimulation();
+                const firstOutcome = exp.outcomes[0];
+                const experimentalProb = results.counts[firstOutcome] / results.trials;
+                revealDiscovery('pattern1', `Completed ${trials} trials! Experimental P(${firstOutcome}): ${experimentalProb.toFixed(3)}`);
             }
         }
         
-        function resetSim() {
-            const exp = experiments[experiment];
-            results = {};
-            exp.outcomes.forEach(outcome => results[outcome] = 0);
-            totalTrialsRun = 0;
-            updateDisplay();
-            draw();
+        function checkPatternDiscovery(outcome) {
+            const exp = experiments[currentExperiment];
+            const totalTrials = results.trials;
+            
+            if (totalTrials < 10) return;
+            
+            // Pattern 1: Convergence after many trials
+            if (totalTrials >= 100) {
+                const firstOutcome = exp.outcomes[0];
+                const experimentalProb = results.counts[firstOutcome] / totalTrials;
+                const theoreticalProb = currentProbabilities[0];
+                const difference = Math.abs(experimentalProb - theoreticalProb);
+                
+                if (difference < 0.05) {
+                    revealDiscovery('pattern1', `Law of Large Numbers: After ${totalTrials} trials, experimental (${experimentalProb.toFixed(3)}) ≈ theoretical (${theoreticalProb.toFixed(3)})`);
+                }
+            }
+            
+            // Pattern 2: Extreme probabilities
+            if (currentProbabilities[0] < 0.2 || currentProbabilities[0] > 0.8) {
+                if (totalTrials >= 50) {
+                    revealDiscovery('pattern3', `Extreme probability ${currentProbabilities[0].toFixed(2)}: Results are heavily skewed toward ${currentProbabilities[0] > 0.5 ? exp.outcomes[0] : exp.outcomes[1]}`);
+                }
+            }
+            
+            // Pattern 4: Speed comparison
+            if (totalTrials >= 200) {
+                revealDiscovery('pattern4', `Speed ${simulationSpeed}x: More trials give better convergence regardless of speed`);
+            }
         }
         
-        function updateDisplay() {
-            const exp = experiments[experiment];
-            const resultsDiv = document.getElementById('resultsDisplay');
-            
-            resultsDiv.innerHTML = exp.outcomes.map(outcome => {
-                const count = results[outcome] || 0;
-                const percent = totalTrialsRun > 0 ? (count / totalTrialsRun * 100).toFixed(1) : 0;
-                const width = totalTrialsRun > 0 ? (count / totalTrialsRun * 100) : 0;
+        function revealDiscovery(patternId, message) {
+            const patternElement = document.getElementById(patternId);
+            if (!patternElement.classList.contains('revealed')) {
+                patternElement.classList.add('revealed');
+                patternElement.innerHTML = `
+                    <i class="fas fa-check-circle" style="color: #27ae60;"></i>
+                    ${message}
+                `;
                 
-                return `
+                explorationData.discoveries++;
+                explorationData.patternsFound++;
+                explorationData.discoveredPatterns.push(message);
+                
+                logActivity(`Discovery: ${message}`);
+                document.getElementById('discoveries').textContent = explorationData.discoveries;
+                updateExplorationStats();
+            }
+        }
+        
+        function resetResults() {
+            results = {
+                counts: {},
+                trials: 0
+            };
+            
+            // Initialize counts for current experiment
+            const exp = experiments[currentExperiment];
+            exp.outcomes.forEach(outcome => {
+                results.counts[outcome] = 0;
+            });
+            
+            stopSimulation();
+            updateResultsViz();
+            draw();
+            logActivity("Reset exploration");
+        }
+        
+        function updateResultsViz() {
+            const exp = experiments[currentExperiment];
+            const vizDiv = document.getElementById('resultsViz');
+            const totalTrials = results.trials;
+            
+            let vizHTML = '';
+            
+            exp.outcomes.forEach((outcome, index) => {
+                const count = results.counts[outcome] || 0;
+                const percent = totalTrials > 0 ? (count / totalTrials * 100).toFixed(1) : 0;
+                
+                vizHTML += `
                     <div style="margin-bottom: 10px;">
                         <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px;">
-                            <span>${outcome}</span>
-                            <span>${count} (${percent}%)</span>
+                            <span>${outcome}: ${count} trials</span>
+                            <span>${percent}%</span>
                         </div>
                         <div class="result-bar">
-                            <div class="result-fill" style="width: ${width}%;">
-                                ${width > 15 ? percent + '%' : ''}
+                            <div class="result-fill" style="width: ${percent}%; background: ${exp.colors[index]};">
+                                ${percent > 10 ? percent + '%' : ''}
                             </div>
                         </div>
                     </div>
                 `;
-            }).join('');
+            });
             
-            document.getElementById('totalTrials').textContent = totalTrialsRun;
-            document.getElementById('theoreticalP').textContent = exp.probabilities[0].toFixed(3);
+            // Add theoretical vs experimental comparison
+            if (totalTrials > 0) {
+                const firstOutcome = exp.outcomes[0];
+                const theoretical = (currentProbabilities[0] * 100).toFixed(1);
+                const experimental = ((results.counts[firstOutcome] / totalTrials) * 100).toFixed(1);
+                
+                vizHTML += `
+                    <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #464647;">
+                        <div style="font-size: 11px; color: #888;">
+                            Theoretical P(${firstOutcome}): ${theoretical}% | 
+                            Experimental: ${experimental}%
+                        </div>
+                    </div>
+                `;
+            }
             
-            const firstOutcome = exp.outcomes[0];
-            const experimentalProb = totalTrialsRun > 0 ? (results[firstOutcome] / totalTrialsRun) : 0;
-            document.getElementById('experimentalP').textContent = experimentalProb.toFixed(3);
+            vizDiv.innerHTML = vizHTML;
         }
         
         function draw() {
-            const exp = experiments[experiment];
-            const width = canvas.width;
-            const height = canvas.height;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const exp = experiments[currentExperiment];
             
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, width, height);
-            
-            if (experiment === 'coin') {
-                drawCoinFlip();
-            } else if (experiment === 'dice') {
-                drawDice();
-            } else if (experiment === 'cards') {
-                drawCards();
-            } else if (experiment === 'spinner') {
-                drawSpinner();
+            // Draw based on current experiment
+            switch(currentExperiment) {
+                case 'coin':
+                    drawCoinVisualization();
+                    break;
+                case 'dice':
+                    drawDiceVisualization();
+                    break;
+                case 'custom':
+                    drawCustomVisualization();
+                    break;
             }
         }
         
-        function drawCoinFlip() {
+        function drawCoinVisualization() {
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
+            const radius = 80;
             
+            // Draw coin sides
             ctx.fillStyle = '#ffd700';
             ctx.beginPath();
-            ctx.arc(centerX - 80, centerY, 60, 0, Math.PI * 2);
+            ctx.arc(centerX - 100, centerY, radius, 0, Math.PI * 2);
             ctx.fill();
             
             ctx.fillStyle = '#000';
             ctx.font = 'bold 24px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('H', centerX - 80, centerY);
+            ctx.fillText('H', centerX - 100, centerY);
             
             ctx.fillStyle = '#c0c0c0';
             ctx.beginPath();
-            ctx.arc(centerX + 80, centerY, 60, 0, Math.PI * 2);
+            ctx.arc(centerX + 100, centerY, radius, 0, Math.PI * 2);
             ctx.fill();
             
             ctx.fillStyle = '#000';
-            ctx.fillText('T', centerX + 80, centerY);
+            ctx.fillText('T', centerX + 100, centerY);
             
-            const headsCount = results['Heads'] || 0;
-            const tailsCount = results['Tails'] || 0;
-            
+            // Draw probability labels
             ctx.fillStyle = '#fff';
             ctx.font = '16px Arial';
-            ctx.fillText(`${headsCount}`, centerX - 80, centerY + 90);
-            ctx.fillText(`${tailsCount}`, centerX + 80, centerY + 90);
+            const prob1 = (currentProbabilities[0] * 100).toFixed(1);
+            const prob2 = (currentProbabilities[1] * 100).toFixed(1);
+            
+            ctx.fillText(`P = ${prob1}%`, centerX - 100, centerY + 100);
+            ctx.fillText(`P = ${prob2}%`, centerX + 100, centerY + 100);
+            
+            // Draw results if any
+            if (results.trials > 0) {
+                ctx.fillStyle = '#27ae60';
+                ctx.font = '14px Arial';
+                const headsCount = results.counts['Heads'] || 0;
+                const tailsCount = results.counts['Tails'] || 0;
+                const actual1 = (headsCount / results.trials * 100).toFixed(1);
+                const actual2 = (tailsCount / results.trials * 100).toFixed(1);
+                
+                ctx.fillText(`Actual: ${actual1}%`, centerX - 100, centerY + 120);
+                ctx.fillText(`Actual: ${actual2}%`, centerX + 100, centerY + 120);
+            }
         }
         
-        function drawDice() {
+        function drawDiceVisualization() {
             const exp = experiments.dice;
             const width = canvas.width / 3;
             const height = canvas.height / 2;
@@ -360,59 +893,42 @@
                 const x = (i % 3) * width + width / 2;
                 const y = Math.floor(i / 3) * height + height / 2;
                 
-                ctx.fillStyle = '#fff';
-                ctx.fillRect(x - 40, y - 40, 80, 80);
+                ctx.fillStyle = exp.colors[i];
+                ctx.fillRect(x - 35, y - 35, 70, 70);
                 
-                ctx.fillStyle = '#000';
-                ctx.font = 'bold 32px Arial';
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 20px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(outcome, x, y);
                 
-                const count = results[outcome] || 0;
-                ctx.font = '14px Arial';
-                ctx.fillText(count, x, y + 60);
+                // Draw probability
+                const prob = (currentProbabilities[i] * 100).toFixed(1);
+                ctx.font = '12px Arial';
+                ctx.fillText(`${prob}%`, x, y + 50);
+                
+                // Draw results if any
+                if (results.trials > 0) {
+                    const count = results.counts[outcome] || 0;
+                    const actual = (count / results.trials * 100).toFixed(1);
+                    ctx.fillText(`${actual}%`, x, y + 65);
+                }
             });
         }
         
-        function drawCards() {
-            const suits = ['♥', '♦', '♣', '♠'];
-            const colors = ['#e74c3c', '#e74c3c', '#2c3e50', '#2c3e50'];
-            const labels = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
-            
-            suits.forEach((suit, i) => {
-                const x = (i % 2) * canvas.width / 2 + canvas.width / 4;
-                const y = Math.floor(i / 2) * canvas.height / 2 + canvas.height / 4;
-                
-                ctx.fillStyle = '#fff';
-                ctx.fillRect(x - 50, y - 70, 100, 140);
-                
-                ctx.fillStyle = colors[i];
-                ctx.font = 'bold 48px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(suit, x, y);
-                
-                const count = results[labels[i]] || 0;
-                ctx.font = '14px Arial';
-                ctx.fillText(count, x, y + 90);
-            });
-        }
-        
-        function drawSpinner() {
+        function drawCustomVisualization() {
+            const exp = experiments.custom;
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
             const radius = 120;
-            const exp = experiments.spinner;
             
             let startAngle = -Math.PI / 2;
-            const colors = ['#e74c3c', '#3498db', '#27ae60', '#f39c12'];
             
             exp.outcomes.forEach((outcome, i) => {
-                const sliceAngle = exp.probabilities[i] * Math.PI * 2;
+                const sliceAngle = currentProbabilities[i] * Math.PI * 2;
                 const endAngle = startAngle + sliceAngle;
                 
-                ctx.fillStyle = colors[i];
+                ctx.fillStyle = exp.colors[i];
                 ctx.beginPath();
                 ctx.moveTo(centerX, centerY);
                 ctx.arc(centerX, centerY, radius, startAngle, endAngle);
@@ -424,50 +940,96 @@
                 const labelY = centerY + Math.sin(midAngle) * radius * 0.7;
                 
                 ctx.fillStyle = '#fff';
-                ctx.font = 'bold 14px Arial';
+                ctx.font = 'bold 12px Arial';
                 ctx.textAlign = 'center';
                 ctx.fillText(outcome, labelX, labelY);
                 
-                const count = results[outcome] || 0;
-                ctx.font = '12px Arial';
-                ctx.fillText(count, labelX, labelY + 15);
+                const prob = (currentProbabilities[i] * 100).toFixed(1);
+                ctx.font = '10px Arial';
+                ctx.fillText(`${prob}%`, labelX, labelY + 15);
+                
+                // Draw results if any
+                if (results.trials > 0) {
+                    const count = results.counts[outcome] || 0;
+                    const actual = (count / results.trials * 100).toFixed(1);
+                    ctx.fillText(`${actual}%`, labelX, labelY + 30);
+                }
                 
                 startAngle = endAngle;
             });
+        }
+        
+        function logActivity(message) {
+            const log = document.getElementById('explorationLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
             
-            ctx.fillStyle = '#333';
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, 15, 0, Math.PI * 2);
-            ctx.fill();
+            const now = new Date();
+            const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            entry.innerHTML = `${message} <span class="log-time">${timeString}</span>`;
+            
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
         }
         
-        function updateStats() {
-            document.getElementById('statSims').textContent = interactionData.simulations_run;
-            document.getElementById('statExperiments').textContent = interactionData.experiments_tested.size;
+        function startExplorationTimer() {
+            setInterval(() => {
+                const elapsed = Math.floor((Date.now() - explorationData.explorationStart) / 60000);
+                document.getElementById('statTime').textContent = elapsed;
+            }, 60000);
         }
         
-        async function saveProgress() {
-            if (!eventId) return;
-            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
-            interactionData.experiments_tested = Array.from(interactionData.experiments_tested);
-            interactionData.trial_sizes = Array.from(interactionData.trial_sizes);
-            try {
-                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
-                    method: 'PATCH',
-                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ interactionData })
-                });
-            } catch (err) {}
+        function updateExplorationStats() {
+            document.getElementById('statExplorations').textContent = explorationData.explorations;
+            document.getElementById('statTrials').textContent = explorationData.totalTrials;
+            document.getElementById('statPatterns').textContent = explorationData.patternsFound;
         }
         
-        async function complete() {
-            await saveProgress();
-            alert('Session completed!');
-            window.location.href = '/dashboard';
+        function saveExploration() {
+            const progress = {
+                timestamp: new Date().toISOString(),
+                explorationData: explorationData,
+                currentExperiment: currentExperiment,
+                currentProbabilities: currentProbabilities,
+                results: results
+            };
+            
+            localStorage.setItem('probabilityExplorationProgress', JSON.stringify(progress));
+            logActivity("Exploration progress saved");
+            
+            // Visual feedback
+            alert('Progress saved!');
         }
         
-        window.addEventListener('load', init);
-        window.addEventListener('beforeunload', saveProgress);
+        function exportExploration() {
+            const data = {
+                explorationData: explorationData,
+                currentExperiment: currentExperiment,
+                currentProbabilities: currentProbabilities,
+                results: results,
+                timestamp: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `probability-exploration-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            logActivity("Exported exploration data");
+        }
+        
+        function resetExploration() {
+            resetResults();
+            currentProbabilities = [...experiments[currentExperiment].probabilities];
+            updateProbabilityControls();
+            logActivity("Reset exploration");
+        }
     </script>
-</body>
+</head>
 </html>

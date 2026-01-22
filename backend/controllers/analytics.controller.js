@@ -17,6 +17,9 @@ const {
   AILog
 } = require('../models');
 const logger = require('../utils/logger');
+const attentionService = require('../services/algorithms/attention.algorithm.service');
+const irtService = require('../services/algorithms/irt.algorithm.service');
+const pidService = require('../services/algorithms/pid.algorithm.service');
 
 // ============================================================================
 // STUDENT ANALYTICS
@@ -1492,6 +1495,250 @@ exports.getCustomReport = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error generating custom report',
+      error: error.message
+    });
+  }
+};
+
+
+
+/**
+ * @desc    Get attention statistics
+ * @route   GET /api/analytics/attention/:studentId
+ * @access  Private (Teacher/Admin)
+ */
+exports.getAttentionStatistics = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+
+    const stats = await attentionService.getAttentionStatistics(studentId);
+
+    res.json({
+      success: true,
+      statistics: stats
+    });
+
+  } catch (error) {
+    logger.error('Get attention stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching attention statistics',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Analyze with multi-head attention
+ * @route   POST /api/analytics/attention/:studentId/analyze
+ * @access  Private (Teacher/Admin)
+ */
+exports.analyzeAttention = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const { context, numHeads } = req.body;
+
+    const analysis = await attentionService.analyzeWithMultiHead(
+      studentId,
+      context || {},
+      numHeads || 4
+    );
+
+    res.json({
+      success: true,
+      analysis
+    });
+
+  } catch (error) {
+    logger.error('Analyze attention error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error analyzing attention',
+      error: error.message
+    });
+  }
+};
+
+
+/**
+ * @desc    Get student IRT statistics
+ * @route   GET /api/analytics/irt/:studentId
+ * @access  Private (Teacher/Admin/Student-self)
+ */
+exports.getIRTStatistics = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+
+    // Authorization check
+    if (req.user.userType === 'student' && req.user.userId !== studentId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized'
+      });
+    }
+
+    const stats = await irtService.getIRTStatistics(studentId);
+
+    res.json({
+      success: true,
+      statistics: stats
+    });
+
+  } catch (error) {
+    logger.error('Get IRT statistics error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching IRT statistics',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Recalibrate all items
+ * @route   POST /api/analytics/irt/calibrate-all
+ * @access  Private (Admin)
+ */
+exports.recalibrateAllItems = async (req, res) => {
+  try {
+    const { Challenge } = require('../../models');
+
+    // Get all unique challenges
+    const challenges = await Challenge.distinct('challengeId');
+
+    const results = {
+      total: challenges.length,
+      calibrated: 0,
+      failed: 0,
+      insufficient: 0
+    };
+
+    for (const challengeId of challenges) {
+      const result = await irtService.calibrateItem(challengeId);
+      
+      if (result.calibrated) {
+        results.calibrated++;
+      } else if (result.reason === 'insufficient_data') {
+        results.insufficient++;
+      } else {
+        results.failed++;
+      }
+    }
+
+    res.json({
+      success: true,
+      message: 'Item calibration completed',
+      results
+    });
+
+  } catch (error) {
+    logger.error('Recalibrate all items error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error calibrating items',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Get optimal difficulty recommendation
+ * @route   GET /api/analytics/irt/:studentId/optimal-difficulty
+ * @access  Private (Teacher/Admin)
+ */
+exports.getOptimalDifficultyRecommendation = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+
+    const recommendation = await irtService.getOptimalDifficulty(studentId);
+
+    res.json({
+      success: true,
+      recommendation
+    });
+
+  } catch (error) {
+    logger.error('Get optimal difficulty error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error getting recommendation',
+      error: error.message
+    });
+  }
+};
+
+
+
+/**
+ * @desc    Get PID statistics
+ * @route   GET /api/analytics/pid/:studentId
+ * @access  Private (Teacher/Admin/Student-self)
+ */
+exports.getPIDStatistics = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+
+    const stats = await pidService.getStatistics(studentId);
+
+    res.json({
+      success: true,
+      statistics: stats
+    });
+
+  } catch (error) {
+    logger.error('Get PID statistics error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching PID statistics',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Auto-tune PID parameters
+ * @route   POST /api/analytics/pid/:studentId/auto-tune
+ * @access  Private (Admin)
+ */
+exports.autoTunePID = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+
+    const result = await pidService.autoTune(studentId);
+
+    res.json({
+      success: result.tuned,
+      result
+    });
+
+  } catch (error) {
+    logger.error('Auto-tune PID error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error auto-tuning PID',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Reset PID controller
+ * @route   POST /api/analytics/pid/:studentId/reset
+ * @access  Private (Admin)
+ */
+exports.resetPID = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+
+    const result = await pidService.reset(studentId);
+
+    res.json(result);
+
+  } catch (error) {
+    logger.error('Reset PID error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error resetting PID',
       error: error.message
     });
   }

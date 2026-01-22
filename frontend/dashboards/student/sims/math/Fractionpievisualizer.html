@@ -3,113 +3,665 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fraction Pie Visualizer - NEP Workbench</title>
+    <title>Fraction Exploration Lab - NEP Workbench</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        :root { --bg: #1e1e1e; --panel: #252526; --accent: #007acc; --success: #00b894; }
-        body { background: var(--bg); color: #fff; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .header { background: #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        h1 { font-size: 24px; color: var(--accent); }
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: var(--accent); color: white; transition: all 0.3s; }
-        .btn:hover { transform: translateY(-2px); }
-        .main { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .panel { background: var(--panel); border-radius: 8px; padding: 20px; border: 1px solid #464647; }
-        .canvas-area { background: var(--bg); border-radius: 6px; height: 400px; display: flex; justify-content: center; align-items: center; border: 1px solid #464647; }
-        canvas { max-width: 100%; max-height: 100%; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .input-group { display: flex; flex-direction: column; gap: 8px; }
-        label { font-size: 13px; color: #888; }
-        input, select { padding: 12px; background: #2d2d30; border: 1px solid #464647; border-radius: 4px; color: #fff; font-size: 16px; }
-        input:focus { outline: none; border-color: var(--accent); }
-        .operation-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
-        .op-btn { padding: 15px; background: #2d2d30; border: 2px solid #464647; border-radius: 6px; cursor: pointer; text-align: center; transition: all 0.3s; font-size: 18px; }
-        .op-btn:hover { border-color: var(--accent); background: var(--accent); }
-        .result { background: #2d2d30; padding: 20px; border-radius: 6px; margin-top: 20px; text-align: center; }
-        .result-value { font-size: 36px; color: var(--accent); font-weight: 600; }
-        @media (max-width: 1024px) { .main { grid-template-columns: 1fr; } }
+        :root { 
+            --bg: #1e1e1e; 
+            --panel: #252526; 
+            --accent: #007acc; 
+            --success: #00b894; 
+            --explore: #3498db;
+            --fraction1: #007acc;
+            --fraction2: #00b894;
+            --mixed: #9b59b6;
+        }
+        body { 
+            background: var(--bg); 
+            color: #fff; 
+            overflow-x: hidden;
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .header { 
+            background: #333; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            flex-wrap: wrap;
+            border-left: 4px solid var(--explore);
+            animation: slideDown 0.5s ease-out;
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        h1 { 
+            font-size: 24px; 
+            color: var(--explore); 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            background: var(--accent); 
+            color: white; 
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 5px 15px rgba(0, 122, 204, 0.3);
+        }
+        .main { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+        }
+        @media (max-width: 1024px) { 
+            .main { grid-template-columns: 1fr; } 
+        }
+        .panel { 
+            background: var(--panel); 
+            border-radius: 8px; 
+            padding: 20px; 
+            border: 1px solid #464647;
+            animation: fadeIn 0.6s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Exploration Hub */
+        .exploration-hub {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .fraction-explorer {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 2px solid var(--explore);
+            transition: all 0.3s;
+        }
+        
+        .fraction-explorer:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 122, 204, 0.2);
+        }
+        
+        .pie-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 15px 0;
+        }
+        
+        .pie-svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        
+        .pie-background {
+            fill: #2d2d30;
+            stroke: #464647;
+            stroke-width: 2;
+        }
+        
+        .pie-fill {
+            fill: var(--fraction1);
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .pie-fill.secondary {
+            fill: var(--fraction2);
+        }
+        
+        .fraction-label {
+            font-size: 28px;
+            font-weight: 600;
+            color: white;
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        /* Slider Controls */
+        .slider-container {
+            width: 100%;
+            margin: 15px 0;
+        }
+        
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #2d2d30, var(--accent));
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            border: 2px solid var(--accent);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Comparison Zone */
+        .comparison-zone {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .comparison-zone.active {
+            border-color: var(--explore);
+            background: rgba(0, 122, 204, 0.05);
+            animation: pulse 2s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 10px rgba(0, 122, 204, 0.1); }
+            100% { box-shadow: 0 0 20px rgba(0, 122, 204, 0.3); }
+        }
+        
+        .comparison-bar {
+            height: 40px;
+            background: #2d2d30;
+            border-radius: 20px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            border-radius: 20px;
+            transition: all 0.8s ease;
+            position: absolute;
+        }
+        
+        .bar-fill.frac1 {
+            background: var(--fraction1);
+            left: 0;
+        }
+        
+        .bar-fill.frac2 {
+            background: var(--fraction2);
+            right: 0;
+            direction: rtl;
+        }
+        
+        /* Exploration Tools */
+        .exploration-tools {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        
+        .tool-btn {
+            padding: 15px 10px;
+            background: #2d2d30;
+            border: 2px solid #464647;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .tool-btn:hover {
+            transform: translateY(-3px);
+            border-color: var(--explore);
+            background: rgba(0, 122, 204, 0.1);
+        }
+        
+        .tool-btn i {
+            font-size: 18px;
+        }
+        
+        .tool-btn.combine { border-color: var(--success); }
+        .tool-btn.split { border-color: var(--fraction1); }
+        .tool-btn.compare { border-color: var(--fraction2); }
+        .tool-btn.transform { border-color: var(--mixed); }
+        
+        /* Discovery Panel */
+        .discovery-panel {
+            background: rgba(0, 122, 204, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid var(--explore);
+        }
+        
+        .discovery-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .discovery-item.revealed {
+            border-left-color: var(--success);
+            background: rgba(0, 184, 148, 0.05);
+        }
+        
+        .discovery-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .discovery-icon {
+            width: 30px;
+            height: 30px;
+            background: var(--explore);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        
+        /* Activity Metrics */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .metric-card {
+            background: #2d2d30;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            background: #333;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .metric-value {
+            font-size: 28px;
+            color: var(--explore);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        /* Visual Relationships */
+        .visual-relationship {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 20px;
+            margin: 25px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+        }
+        
+        .relationship-arrow {
+            font-size: 32px;
+            color: var(--explore);
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(10px); }
+        }
+        
+        /* Fraction Cards */
+        .fraction-card {
+            background: rgba(0, 122, 204, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid var(--accent);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .fraction-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 122, 204, 0.2);
+        }
+        
+        .fraction-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: white;
+            margin: 10px 0;
+        }
+        
+        .fraction-equivalents {
+            font-size: 14px;
+            color: #888;
+            margin-top: 10px;
+        }
+        
+        /* Floating Fractions */
+        .floating-fraction {
+            position: absolute;
+            font-size: 24px;
+            opacity: 0.1;
+            animation: float 20s infinite linear;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-1000px) rotate(360deg); }
+        }
+        
+        /* Exploration Log */
+        .exploration-log {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+            padding-right: 10px;
+        }
+        
+        .log-entry {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent);
+            font-size: 13px;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .log-time {
+            color: #888;
+            font-size: 11px;
+            float: right;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div><h1><i class="fas fa-chart-pie"></i> Fraction Pie Visualizer</h1><p style="color: #888;">Math Lab • Grade 6-7</p></div>
-            <div style="display: flex; gap: 15px;">
-                <span><i class="fas fa-clock"></i> <span id="timer">00:00</span></span>
-                <button class="btn" onclick="saveProgress()"><i class="fas fa-save"></i> Save</button>
-                <button class="btn" style="background: #00b894;" onclick="complete()"><i class="fas fa-check"></i> Complete</button>
+            <div>
+                <h1><i class="fas fa-pizza-slice"></i> Fraction Exploration Lab</h1>
+                <p style="color: #888;">Math Lab • Discovery-Based Learning • Grade 6-7</p>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div style="background: #2d2d30; padding: 8px 15px; border-radius: 20px;">
+                    <i class="fas fa-lightbulb" style="color: var(--explore);"></i>
+                    <span id="discoveries">0</span> Discoveries
+                </div>
+                <button class="btn" onclick="exportExploration()">
+                    <i class="fas fa-download"></i> Export
+                </button>
             </div>
         </div>
         
         <div class="main">
             <div class="panel">
-                <h2 style="margin-bottom: 20px;">Fraction 1</h2>
-                <div class="canvas-area">
-                    <canvas id="canvas1" width="350" height="350"></canvas>
-                </div>
-                <div class="controls">
-                    <div class="input-group">
-                        <label>Numerator</label>
-                        <input type="number" id="num1" value="1" min="1" max="20" oninput="update()">
+                <h2 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-sliders-h"></i> Fraction Explorers
+                </h2>
+                
+                <div class="exploration-hub">
+                    <div class="fraction-explorer">
+                        <div class="pie-container">
+                            <svg class="pie-svg" viewBox="0 0 100 100">
+                                <circle class="pie-background" cx="50" cy="50" r="45"/>
+                                <circle class="pie-fill" cx="50" cy="50" r="45" 
+                                        stroke-dasharray="283" stroke-dashoffset="283" 
+                                        stroke-width="10" stroke-linecap="round"/>
+                            </svg>
+                            <div class="fraction-label" id="frac1Display">1/4</div>
+                        </div>
+                        
+                        <div class="slider-container">
+                            <div style="font-size: 12px; color: #888; margin-bottom: 8px;">Adjust Fraction</div>
+                            <input type="range" min="1" max="12" value="1" class="slider" id="num1Slider" oninput="updateFraction(1, 'num')">
+                            <input type="range" min="1" max="12" value="4" class="slider" id="den1Slider" oninput="updateFraction(1, 'den')">
+                            <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                                <span style="font-size: 11px; color: #888;">Numerator</span>
+                                <span style="font-size: 11px; color: #888;">Denominator</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="input-group">
-                        <label>Denominator</label>
-                        <input type="number" id="den1" value="4" min="1" max="20" oninput="update()">
+                    
+                    <div class="fraction-explorer">
+                        <div class="pie-container">
+                            <svg class="pie-svg" viewBox="0 0 100 100">
+                                <circle class="pie-background" cx="50" cy="50" r="45"/>
+                                <circle class="pie-fill secondary" cx="50" cy="50" r="45" 
+                                        stroke-dasharray="283" stroke-dashoffset="283" 
+                                        stroke-width="10" stroke-linecap="round"/>
+                            </svg>
+                            <div class="fraction-label" id="frac2Display">1/2</div>
+                        </div>
+                        
+                        <div class="slider-container">
+                            <div style="font-size: 12px; color: #888; margin-bottom: 8px;">Adjust Fraction</div>
+                            <input type="range" min="1" max="12" value="1" class="slider" id="num2Slider" oninput="updateFraction(2, 'num')">
+                            <input type="range" min="1" max="12" value="2" class="slider" id="den2Slider" oninput="updateFraction(2, 'den')">
+                            <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                                <span style="font-size: 11px; color: #888;">Numerator</span>
+                                <span style="font-size: 11px; color: #888;">Denominator</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(0, 0, 0, 0.15); border-radius: 8px; padding: 25px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                        <div style="font-size: 14px; color: #888; margin-bottom: 15px;">Relationship</div>
+                        <div class="fraction-value" id="relationship">?</div>
+                        <div style="font-size: 13px; color: #aaa; margin-top: 10px; text-align: center;">
+                            How do these fractions compare?
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="comparison-zone" id="comparisonZone">
+                    <div style="font-size: 14px; color: #888; margin-bottom: 15px;">
+                        <i class="fas fa-balance-scale"></i> Visual Comparison
+                    </div>
+                    
+                    <div class="comparison-bar">
+                        <div class="bar-fill frac1" id="bar1" style="width: 25%"></div>
+                        <div class="bar-fill frac2" id="bar2" style="width: 50%"></div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                        <div>
+                            <div style="font-size: 18px; color: var(--fraction1);" id="comparison1">1/4</div>
+                            <div style="font-size: 12px; color: #888;">Decimal: <span id="decimal1">0.25</span></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 18px; color: var(--fraction2);" id="comparison2">1/2</div>
+                            <div style="font-size: 12px; color: #888;">Decimal: <span id="decimal2">0.50</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 25px 0 10px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-tools"></i> Exploration Tools
+                </h3>
+                
+                <div class="exploration-tools">
+                    <div class="tool-btn combine" onclick="exploreOperation('combine')">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Combine</span>
+                    </div>
+                    <div class="tool-btn split" onclick="exploreOperation('split')">
+                        <i class="fas fa-cut"></i>
+                        <span>Split</span>
+                    </div>
+                    <div class="tool-btn compare" onclick="exploreOperation('compare')">
+                        <i class="fas fa-balance-scale-left"></i>
+                        <span>Compare</span>
+                    </div>
+                    <div class="tool-btn transform" onclick="exploreOperation('transform')">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Transform</span>
+                    </div>
+                    <div class="tool-btn" onclick="exploreOperation('equivalent')">
+                        <i class="fas fa-infinity"></i>
+                        <span>Equivalents</span>
+                    </div>
+                    <div class="tool-btn" onclick="exploreOperation('simplify')">
+                        <i class="fas fa-magic"></i>
+                        <span>Simplify</span>
+                    </div>
+                    <div class="tool-btn" onclick="exploreOperation('invert')">
+                        <i class="fas fa-retweet"></i>
+                        <span>Invert</span>
+                    </div>
+                    <div class="tool-btn" onclick="resetExploration()">
+                        <i class="fas fa-redo"></i>
+                        <span>Reset</span>
+                    </div>
+                </div>
+                
+                <div class="visual-relationship">
+                    <div class="fraction-card" onclick="focusFraction(1)">
+                        <div style="font-size: 12px; color: #888;">Fraction A</div>
+                        <div class="fraction-value" id="card1">1/4</div>
+                        <div class="fraction-equivalents" id="equiv1">= 0.25 = 25%</div>
+                    </div>
+                    
+                    <div class="relationship-arrow">
+                        <i class="fas fa-arrows-alt-h"></i>
+                    </div>
+                    
+                    <div class="fraction-card" onclick="focusFraction(2)">
+                        <div style="font-size: 12px; color: #888;">Fraction B</div>
+                        <div class="fraction-value" id="card2">1/2</div>
+                        <div class="fraction-equivalents" id="equiv2">= 0.50 = 50%</div>
                     </div>
                 </div>
             </div>
             
             <div class="panel">
-                <h2 style="margin-bottom: 20px;">Fraction 2</h2>
-                <div class="canvas-area">
-                    <canvas id="canvas2" width="350" height="350"></canvas>
-                </div>
-                <div class="controls">
-                    <div class="input-group">
-                        <label>Numerator</label>
-                        <input type="number" id="num2" value="1" min="1" max="20" oninput="update()">
+                <h2 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-chart-line"></i> Exploration Insights
+                </h2>
+                
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value" id="statFractions">0</div>
+                        <div class="metric-label">Fractions Explored</div>
                     </div>
-                    <div class="input-group">
-                        <label>Denominator</label>
-                        <input type="number" id="den2" value="2" min="1" max="20" oninput="update()">
+                    <div class="metric-card">
+                        <div class="metric-value" id="statOperations">0</div>
+                        <div class="metric-label">Operations</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="statPatterns">0</div>
+                        <div class="metric-label">Patterns Found</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="statTime">0</div>
+                        <div class="metric-label">Exploration Time</div>
                     </div>
                 </div>
-            </div>
-        </div>
-        
-        <div class="panel" style="margin-top: 20px;">
-            <h2 style="margin-bottom: 15px;">Operations</h2>
-            <div class="operation-btns">
-                <div class="op-btn" onclick="calculate('add')">+ Add</div>
-                <div class="op-btn" onclick="calculate('sub')">− Subtract</div>
-                <div class="op-btn" onclick="calculate('mul')">× Multiply</div>
-                <div class="op-btn" onclick="calculate('div')">÷ Divide</div>
-            </div>
-            
-            <div class="result">
-                <div style="color: #888; font-size: 14px; margin-bottom: 10px;">Result</div>
-                <div class="result-value" id="result">?</div>
-                <div style="color: #888; font-size: 14px; margin-top: 10px;">
-                    Decimal: <span id="decimal">?</span> | Percentage: <span id="percent">?</span>
+                
+                <h3 style="margin: 25px 0 10px; color: var(--explore);">
+                    <i class="fas fa-history"></i> Exploration Log
+                </h3>
+                
+                <div class="exploration-log" id="explorationLog">
+                    <div class="log-entry">
+                        Welcome to the Fraction Exploration Lab! Start exploring fractions.
+                        <span class="log-time">Just now</span>
+                    </div>
                 </div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px;">
-                <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
-                    <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statOps">0</div>
-                    <div style="font-size: 12px; color: #888;">Operations</div>
+                
+                <h3 style="margin: 25px 0 10px; color: var(--explore);">
+                    <i class="fas fa-search"></i> Discoveries
+                </h3>
+                
+                <div class="discovery-panel" id="discoveriesPanel">
+                    <div class="discovery-item" id="discovery1">
+                        <span class="discovery-icon">?</span>
+                        What happens when numerator = denominator?
+                    </div>
+                    <div class="discovery-item" id="discovery2">
+                        <span class="discovery-icon">?</span>
+                        Can different fractions represent the same amount?
+                    </div>
+                    <div class="discovery-item" id="discovery3">
+                        <span class="discovery-icon">?</span>
+                        How does changing denominator affect the pie?
+                    </div>
+                    <div class="discovery-item" id="discovery4">
+                        <span class="discovery-icon">?</span>
+                        What patterns do you see in equivalent fractions?
+                    </div>
                 </div>
-                <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
-                    <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statCompare">0</div>
-                    <div style="font-size: 12px; color: #888;">Comparisons</div>
+                
+                <div style="background: rgba(0, 122, 204, 0.08); border-radius: 8px; padding: 20px; margin-top: 20px;">
+                    <strong style="color: var(--explore); display: block; margin-bottom: 10px;">
+                        <i class="fas fa-lightbulb"></i> Exploration Prompts:
+                    </strong>
+                    <div style="font-size: 13px; line-height: 1.8; color: #aaa;">
+                        • Create two fractions that are equal<br>
+                        • Make a fraction greater than 1 (improper)<br>
+                        • Find fractions that add to exactly 1<br>
+                        • Discover all fractions equal to 1/2<br>
+                        • Compare 1/3 vs 2/6 - what do you notice?
+                    </div>
                 </div>
-                <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
-                    <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statSimplify">0</div>
-                    <div style="font-size: 12px; color: #888;">Simplifications</div>
-                </div>
-                <div style="background: #2d2d30; padding: 15px; border-radius: 6px; text-align: center;">
-                    <div style="font-size: 24px; color: var(--accent); font-weight: 600;" id="statConvert">0</div>
-                    <div style="font-size: 12px; color: #888;">Conversions</div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+    
                 </div>
             </div>
         </div>
@@ -117,165 +669,508 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        const API_BASE_URL = 'http://localhost:3000/api';
-        const authToken = localStorage.getItem('authToken');
-        let eventId = null, sessionStart = Date.now();
-        
-        let interactionData = {
-            actions_count: 0, time_seconds: 0, total_parameter_space: 400,
-            tool_usage: {}, operations_performed: 0, comparisons_made: 0, 
-            simplifications: 0, conversions: 0, unique_fractions: []
+        // Activity-Based Exploration Variables
+        let explorationData = {
+            fractionsExplored: 0,
+            operationsPerformed: 0,
+            patternsFound: 0,
+            discoveries: 0,
+            explorationStart: Date.now(),
+            activityLog: [],
+            discoveriesMade: [],
+            fractionHistory: []
         };
         
-        async function init() {
-            if (authToken) {
-                try {
-                    const studentId = JSON.parse(atob(authToken.split('.')[1])).userId;
-                    const res = await fetch(`${API_BASE_URL}/student/event`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ studentId, toolId: 'fraction-pie-visualizer', toolType: 'LAB', interactionData })
-                    });
-                    if (res.ok) eventId = (await res.json()).data._id;
-                } catch (err) {}
+        let currentFractions = {
+            frac1: { numerator: 1, denominator: 4 },
+            frac2: { numerator: 1, denominator: 2 }
+        };
+        
+        // Initialize exploration
+        document.addEventListener('DOMContentLoaded', function() {
+            initExploration();
+            createFloatingFractions();
+            updateVisuals();
+            startExplorationTimer();
+            
+            logActivity("Started fraction exploration session");
+        });
+        
+        function initExploration() {
+            // Set up sliders
+            document.getElementById('num1Slider').value = currentFractions.frac1.numerator;
+            document.getElementById('den1Slider').value = currentFractions.frac1.denominator;
+            document.getElementById('num2Slider').value = currentFractions.frac2.numerator;
+            document.getElementById('den2Slider').value = currentFractions.frac2.denominator;
+            
+            // Update stats display
+            updateStatsDisplay();
+        }
+        
+        function updateFraction(fractionNum, type) {
+            const slider = document.getElementById(`${type}${fractionNum}Slider`);
+            const value = parseInt(slider.value);
+            
+            if (fractionNum === 1) {
+                if (type === 'num') currentFractions.frac1.numerator = value;
+                else currentFractions.frac1.denominator = value;
+            } else {
+                if (type === 'num') currentFractions.frac2.numerator = value;
+                else currentFractions.frac2.denominator = value;
             }
             
-            update();
+            explorationData.fractionsExplored++;
+            
+            updateVisuals();
+            checkForDiscoveries();
+            logActivity(`Adjusted fraction ${fractionNum}: ${getFractionString(fractionNum)}`);
+        }
+        
+        function getFractionString(num) {
+            const frac = num === 1 ? currentFractions.frac1 : currentFractions.frac2;
+            return `${frac.numerator}/${frac.denominator}`;
+        }
+        
+        function updateVisuals() {
+            // Update pie charts
+            updatePieChart(1);
+            updatePieChart(2);
+            
+            // Update displays
+            document.getElementById('frac1Display').textContent = getFractionString(1);
+            document.getElementById('frac2Display').textContent = getFractionString(2);
+            document.getElementById('card1').textContent = getFractionString(1);
+            document.getElementById('card2').textContent = getFractionString(2);
+            
+            // Update comparison bar
+            updateComparisonBar();
+            
+            // Update equivalents
+            updateEquivalents();
+            
+            // Update relationship
+            updateRelationship();
+            
+            // Update stats
+            updateStatsDisplay();
+        }
+        
+        function updatePieChart(fractionNum) {
+            const frac = fractionNum === 1 ? currentFractions.frac1 : currentFractions.frac2;
+            const pieFill = document.querySelectorAll('.pie-fill')[fractionNum - 1];
+            
+            // Calculate percentage
+            const percentage = Math.min(1, frac.numerator / frac.denominator);
+            const circumference = 283; // 2 * π * 45
+            
+            // Update pie fill
+            const dashOffset = circumference * (1 - percentage);
+            pieFill.style.strokeDashoffset = dashOffset;
+            
+            // Store in history
+            const fractionStr = getFractionString(fractionNum);
+            if (!explorationData.fractionHistory.includes(fractionStr)) {
+                explorationData.fractionHistory.push(fractionStr);
+            }
+        }
+        
+        function updateComparisonBar() {
+            const frac1 = currentFractions.frac1.numerator / currentFractions.frac1.denominator;
+            const frac2 = currentFractions.frac2.numerator / currentFractions.frac2.denominator;
+            
+            // Update bar widths
+            document.getElementById('bar1').style.width = `${frac1 * 100}%`;
+            document.getElementById('bar2').style.width = `${frac2 * 100}%`;
+            
+            // Update comparison numbers
+            document.getElementById('comparison1').textContent = getFractionString(1);
+            document.getElementById('comparison2').textContent = getFractionString(2);
+            document.getElementById('decimal1').textContent = frac1.toFixed(3);
+            document.getElementById('decimal2').textContent = frac2.toFixed(3);
+            
+            // Highlight comparison zone if fractions are equal
+            const comparisonZone = document.getElementById('comparisonZone');
+            if (Math.abs(frac1 - frac2) < 0.01) {
+                comparisonZone.classList.add('active');
+                explorationData.patternsFound++;
+            } else {
+                comparisonZone.classList.remove('active');
+            }
+        }
+        
+        function updateEquivalents() {
+            const frac1 = currentFractions.frac1.numerator / currentFractions.frac1.denominator;
+            const frac2 = currentFractions.frac2.numerator / currentFractions.frac2.denominator;
+            
+            document.getElementById('equiv1').textContent = 
+                `= ${frac1.toFixed(3)} = ${(frac1 * 100).toFixed(1)}%`;
+            document.getElementById('equiv2').textContent = 
+                `= ${frac2.toFixed(3)} = ${(frac2 * 100).toFixed(1)}%`;
+        }
+        
+        function updateRelationship() {
+            const frac1 = currentFractions.frac1.numerator / currentFractions.frac1.denominator;
+            const frac2 = currentFractions.frac2.numerator / currentFractions.frac2.denominator;
+            
+            const diff = frac1 - frac2;
+            let relationship;
+            
+            if (Math.abs(diff) < 0.01) {
+                relationship = "Equal";
+                explorationData.patternsFound++;
+            } else if (diff > 0) {
+                relationship = "A > B";
+            } else {
+                relationship = "A < B";
+            }
+            
+            document.getElementById('relationship').textContent = relationship;
+        }
+        
+        function exploreOperation(operation) {
+            explorationData.operationsPerformed++;
+            
+            switch(operation) {
+                case 'combine':
+                    // Create sum of fractions
+                    const sum = (currentFractions.frac1.numerator / currentFractions.frac1.denominator) +
+                               (currentFractions.frac2.numerator / currentFractions.frac2.denominator);
+                    showOperationResult('Combine', `Sum ≈ ${sum.toFixed(3)}`);
+                    checkDiscovery('combineFractions');
+                    break;
+                    
+                case 'split':
+                    // Split into equal parts
+                    showOperationResult('Split', 'Each fraction can be split into smaller equal parts');
+                    checkDiscovery('fractionSplitting');
+                    break;
+                    
+                case 'compare':
+                    // Detailed comparison
+                    const comparison = compareFractions();
+                    showOperationResult('Compare', comparison);
+                    checkDiscovery('fractionComparison');
+                    break;
+                    
+                case 'transform':
+                    // Find equivalent fractions
+                    const equivalents = findEquivalents();
+                    showOperationResult('Transform', equivalents);
+                    checkDiscovery('equivalentFractions');
+                    break;
+                    
+                case 'equivalent':
+                    // Show multiple equivalents
+                    showMultipleEquivalents();
+                    checkDiscovery('multipleEquivalents');
+                    break;
+                    
+                case 'simplify':
+                    // Simplify fractions
+                    simplifyFractions();
+                    checkDiscovery('simplification');
+                    break;
+                    
+                case 'invert':
+                    // Invert fractions
+                    invertFractions();
+                    checkDiscovery('inverseFractions');
+                    break;
+            }
+            
+            logActivity(`Explored: ${operation} operation`);
+            updateStatsDisplay();
+        }
+        
+        function compareFractions() {
+            const val1 = currentFractions.frac1.numerator / currentFractions.frac1.denominator;
+            const val2 = currentFractions.frac2.numerator / currentFractions.frac2.denominator;
+            
+            if (Math.abs(val1 - val2) < 0.01) {
+                return "Fractions are equal";
+            } else if (val1 > val2) {
+                return `Fraction A (${val1.toFixed(3)}) is greater than B (${val2.toFixed(3)})`;
+            } else {
+                return `Fraction B (${val2.toFixed(3)}) is greater than A (${val1.toFixed(3)})`;
+            }
+        }
+        
+        function findEquivalents() {
+            const frac1 = currentFractions.frac1;
+            const equivalents = [];
+            
+            for (let i = 2; i <= 4; i++) {
+                equivalents.push(`${frac1.numerator * i}/${frac1.denominator * i}`);
+            }
+            
+            return `Equivalent to ${getFractionString(1)}: ${equivalents.join(', ')}`;
+        }
+        
+        function showMultipleEquivalents() {
+            const frac1 = currentFractions.frac1;
+            let message = `Fractions equivalent to ${getFractionString(1)}:\n`;
+            
+            for (let i = 2; i <= 6; i++) {
+                message += `${frac1.numerator * i}/${frac1.denominator * i}\n`;
+            }
+            
+            alert(message);
+            logActivity("Explored multiple equivalent fractions");
+        }
+        
+        function simplifyFractions() {
+            // Simplify both fractions
+            [currentFractions.frac1, currentFractions.frac2].forEach((frac, idx) => {
+                const gcd = findGCD(frac.numerator, frac.denominator);
+                if (gcd > 1) {
+                    const oldFrac = `${frac.numerator}/${frac.denominator}`;
+                    frac.numerator /= gcd;
+                    frac.denominator /= gcd;
+                    logActivity(`Simplified ${oldFrac} to ${frac.numerator}/${frac.denominator}`);
+                }
+            });
+            
+            updateVisuals();
+            updateSliders();
+        }
+        
+        function invertFractions() {
+            // Swap numerator and denominator
+            [currentFractions.frac1, currentFractions.frac2].forEach((frac, idx) => {
+                [frac.numerator, frac.denominator] = [frac.denominator, frac.numerator];
+            });
+            
+            updateVisuals();
+            updateSliders();
+            logActivity("Inverted both fractions");
+        }
+        
+        function findGCD(a, b) {
+            return b === 0 ? a : findGCD(b, a % b);
+        }
+        
+        function updateSliders() {
+            document.getElementById('num1Slider').value = currentFractions.frac1.numerator;
+            document.getElementById('den1Slider').value = currentFractions.frac1.denominator;
+            document.getElementById('num2Slider').value = currentFractions.frac2.numerator;
+            document.getElementById('den2Slider').value = currentFractions.frac2.denominator;
+        }
+        
+        function showOperationResult(title, message) {
+            const log = document.getElementById('explorationLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<strong>${title}:</strong> ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function checkForDiscoveries() {
+            const frac1 = currentFractions.frac1;
+            const frac2 = currentFractions.frac2;
+            
+            // Discovery 1: Numerator equals denominator
+            if (frac1.numerator === frac1.denominator || frac2.numerator === frac2.denominator) {
+                revealDiscovery('discovery1', 'When numerator equals denominator, the fraction equals 1 (whole)!');
+            }
+            
+            // Discovery 2: Equivalent fractions
+            const val1 = frac1.numerator / frac1.denominator;
+            const val2 = frac2.numerator / frac2.denominator;
+            if (Math.abs(val1 - val2) < 0.01 && 
+                (frac1.numerator !== frac2.numerator || frac1.denominator !== frac2.denominator)) {
+                revealDiscovery('discovery2', 'Different fractions can represent the same amount!');
+            }
+            
+            // Discovery 3: Denominator patterns
+            if (frac1.denominator % 2 === 0 || frac2.denominator % 2 === 0) {
+                revealDiscovery('discovery3', 'Even denominators create more equal slices!');
+            }
+            
+            // Discovery 4: Multiple equivalents found
+            if (explorationData.operationsPerformed >= 5) {
+                revealDiscovery('discovery4', 'Every fraction has infinite equivalent forms!');
+            }
+        }
+        
+        function checkDiscovery(discoveryKey) {
+            // Track discovery patterns
+            explorationData.patternsFound++;
+        }
+        
+        function revealDiscovery(discoveryId, message) {
+            const discoveryElement = document.getElementById(discoveryId);
+            if (!discoveryElement.classList.contains('revealed')) {
+                discoveryElement.classList.add('revealed');
+                discoveryElement.innerHTML = `
+                    <span class="discovery-icon">✓</span>
+                    ${message}
+                `;
+                
+                explorationData.discoveries++;
+                explorationData.discoveriesMade.push(message);
+                document.getElementById('discoveries').textContent = explorationData.discoveries;
+                
+                logActivity(`Discovery: ${message}`);
+                
+                // Visual celebration
+                celebrateDiscovery(discoveryElement);
+            }
+        }
+        
+        function celebrateDiscovery(element) {
+            // Create particles
+            const rect = element.getBoundingClientRect();
+            for (let i = 0; i < 8; i++) {
+                createParticle(rect);
+            }
+        }
+        
+        function createParticle(rect) {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.width = '10px';
+            particle.style.height = '10px';
+            particle.style.background = 'var(--explore)';
+            particle.style.borderRadius = '50%';
+            particle.style.pointerEvents = 'none';
+            particle.style.zIndex = '1000';
+            particle.style.left = (rect.left + Math.random() * rect.width) + 'px';
+            particle.style.top = (rect.top + Math.random() * rect.height) + 'px';
+            
+            document.body.appendChild(particle);
+            
+            // Animate
+            setTimeout(() => {
+                particle.style.transition = 'all 1s';
+                particle.style.left = (rect.left + Math.random() * rect.width) + 'px';
+                particle.style.top = (rect.top - 100) + 'px';
+                particle.style.opacity = '0';
+                
+                setTimeout(() => particle.remove(), 1000);
+            }, Math.random() * 300);
+        }
+        
+        function updateStatsDisplay() {
+            document.getElementById('statFractions').textContent = explorationData.fractionsExplored;
+            document.getElementById('statOperations').textContent = explorationData.operationsPerformed;
+            document.getElementById('statPatterns').textContent = explorationData.patternsFound;
+        }
+        
+        function startExplorationTimer() {
             setInterval(() => {
-                const e = Math.floor((Date.now() - sessionStart) / 1000);
-                document.getElementById('timer').textContent = `${Math.floor(e/60).toString().padStart(2,'0')}:${(e%60).toString().padStart(2,'0')}`;
-            }, 1000);
-            setInterval(saveProgress, 30000);
+                const elapsed = Math.floor((Date.now() - explorationData.explorationStart) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                document.getElementById('statTime').textContent = `${minutes}m`;
+            }, 60000);
         }
         
-        function update() {
-            drawPie('canvas1', parseInt(document.getElementById('num1').value), parseInt(document.getElementById('den1').value));
-            drawPie('canvas2', parseInt(document.getElementById('num2').value), parseInt(document.getElementById('den2').value));
-            interactionData.actions_count++;
+        function logActivity(message) {
+            const log = document.getElementById('explorationLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
             
-            const frac = `${document.getElementById('num1').value}/${document.getElementById('den1').value}`;
-            if (!interactionData.unique_fractions.includes(frac)) interactionData.unique_fractions.push(frac);
-        }
-        
-        function drawPie(canvasId, num, den) {
-            const canvas = document.getElementById(canvasId);
-            const ctx = canvas.getContext('2d');
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = 150;
+            const now = new Date();
+            const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
             
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            entry.innerHTML = `${message} <span class="log-time">${timeString}</span>`;
             
-            // Full circle
-            ctx.fillStyle = '#2d2d30';
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#464647';
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
             
-            // Filled portion
-            const angle = (num / den) * 2 * Math.PI;
-            ctx.fillStyle = '#007acc';
-            ctx.beginPath();
-            ctx.moveTo(centerX, centerY);
-            ctx.arc(centerX, centerY, radius, -Math.PI / 2, -Math.PI / 2 + angle);
-            ctx.closePath();
-            ctx.fill();
-            
-            // Draw segments
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 2;
-            for (let i = 0; i < den; i++) {
-                const segAngle = -Math.PI / 2 + (i / den) * 2 * Math.PI;
-                ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.lineTo(
-                    centerX + radius * Math.cos(segAngle),
-                    centerY + radius * Math.sin(segAngle)
-                );
-                ctx.stroke();
+            // Keep log manageable
+            if (log.children.length > 15) {
+                log.removeChild(log.firstChild);
             }
-            
-            // Label
-            ctx.fillStyle = '#fff';
-            ctx.font = 'bold 32px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(`${num}/${den}`, centerX, centerY + 10);
         }
         
-        function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
-        
-        function simplify(num, den) {
-            const g = gcd(num, den);
-            return [num / g, den / g];
+        function focusFraction(num) {
+            const fraction = num === 1 ? currentFractions.frac1 : currentFractions.frac2;
+            logActivity(`Focused on Fraction ${num}: ${fraction.numerator}/${fraction.denominator}`);
         }
         
-        function calculate(op) {
-            const n1 = parseInt(document.getElementById('num1').value);
-            const d1 = parseInt(document.getElementById('den1').value);
-            const n2 = parseInt(document.getElementById('num2').value);
-            const d2 = parseInt(document.getElementById('den2').value);
+        function resetExploration() {
+            currentFractions = {
+                frac1: { numerator: 1, denominator: 4 },
+                frac2: { numerator: 1, denominator: 2 }
+            };
             
-            let num, den;
-            
-            if (op === 'add') {
-                num = n1 * d2 + n2 * d1;
-                den = d1 * d2;
-            } else if (op === 'sub') {
-                num = n1 * d2 - n2 * d1;
-                den = d1 * d2;
-            } else if (op === 'mul') {
-                num = n1 * n2;
-                den = d1 * d2;
-            } else if (op === 'div') {
-                num = n1 * d2;
-                den = d1 * n2;
-            }
-            
-            const [sNum, sDen] = simplify(num, den);
-            const decimal = (sNum / sDen).toFixed(4);
-            const percent = ((sNum / sDen) * 100).toFixed(2) + '%';
-            
-            document.getElementById('result').textContent = `${sNum}/${sDen}`;
-            document.getElementById('decimal').textContent = decimal;
-            document.getElementById('percent').textContent = percent;
-            
-            interactionData.operations_performed++;
-            interactionData.simplifications++;
-            interactionData.conversions += 2;
-            interactionData.tool_usage[op] = (interactionData.tool_usage[op] || 0) + 1;
-            updateStats();
+            updateSliders();
+            updateVisuals();
+            logActivity("Reset exploration to initial state");
         }
         
-        function updateStats() {
-            document.getElementById('statOps').textContent = interactionData.operations_performed;
-            document.getElementById('statCompare').textContent = interactionData.comparisons_made;
-            document.getElementById('statSimplify').textContent = interactionData.simplifications;
-            document.getElementById('statConvert').textContent = interactionData.conversions;
+        function saveExploration() {
+            const progress = {
+                timestamp: new Date().toISOString(),
+                discoveries: explorationData.discoveriesMade,
+                fractionsExplored: explorationData.fractionsExplored,
+                currentFractions: currentFractions
+            };
+            
+            localStorage.setItem('fractionExplorationProgress', JSON.stringify(progress));
+            logActivity("Exploration progress saved");
+            
+            // Visual feedback
+            const saveBtn = document.querySelector('[onclick="saveExploration()"]');
+            saveBtn.innerHTML = '<i class="fas fa-check"></i> Saved!';
+            setTimeout(() => {
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Exploration';
+            }, 2000);
         }
         
-        async function saveProgress() {
-            if (!eventId) return;
-            interactionData.time_seconds = Math.floor((Date.now() - sessionStart) / 1000);
-            try {
-                await fetch(`${API_BASE_URL}/student/event/${eventId}`, {
-                    method: 'PATCH',
-                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ interactionData })
+        function exportExploration() {
+            const data = {
+                explorationData,
+                currentFractions,
+                timestamp: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fraction-exploration-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            logActivity("Exported exploration data");
+        }
+        
+        function shareDiscovery() {
+            const latestDiscovery = explorationData.discoveriesMade[explorationData.discoveriesMade.length - 1];
+            const message = latestDiscovery 
+                ? `I discovered: "${latestDiscovery}" in the Fraction Exploration Lab!` 
+                : `I'm exploring fractions in the Fraction Exploration Lab!`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Fraction Discovery',
+                    text: message,
+                    url: window.location.href
                 });
-            } catch (err) {}
+            } else {
+                navigator.clipboard.writeText(message);
+                logActivity("Discovery copied to clipboard");
+            }
         }
         
-        async function complete() {
-            await saveProgress();
-            alert('Session completed!');
-            window.location.href = '/dashboard';
+        function createFloatingFractions() {
+            const fractions = ['½', '¼', '⅓', '¾', '⅔', '⅛', '⅜', '⅝', '⅞'];
+            
+            for (let i = 0; i < 9; i++) {
+                const element = document.createElement('div');
+                element.className = 'floating-fraction';
+                element.textContent = fractions[i];
+                element.style.left = Math.random() * 100 + 'vw';
+                element.style.animationDelay = Math.random() * 20 + 's';
+                element.style.fontSize = (Math.random() * 25 + 20) + 'px';
+                element.style.color = `rgba(0, 122, 204, ${Math.random() * 0.08 + 0.04})`;
+                document.body.appendChild(element);
+            }
         }
-        
-        window.addEventListener('load', init);
-        window.addEventListener('beforeunload', saveProgress);
     </script>
 </body>
 </html>

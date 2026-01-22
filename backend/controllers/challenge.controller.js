@@ -14,10 +14,27 @@ const {
   ChallengeLimit,
   AILog
 } = require('../models');
-const { generateChallenge: generateAIChallenge, evaluateResponse } = require('../config/mistral');
-const { isValidSimulation, getSimulation } = require('../utils/Simulationhelpers');
-const { CHALLENGE_LIMITS } = require('../config/constants');
+//const { generateChallenge: generateAIChallenge, evaluateResponse } = require('../config/mistral');
+const mistralService = require('../services/mistral.service');
+const { 
+  CHALLENGE_LIMITS,
+  CHALLENGE_SUBJECTS,
+  CHALLENGE_DIFFICULTY,
+  DIFFICULTY_MODE,
+  QUESTION_COUNT_OPTIONS,
+  TOPIC_TYPES,
+  SIMULATION_METADATA,
+  CUSTOM_TOPIC,
+  isValidSubject,
+  isValidDifficulty,
+  isValidQuestionCount,
+  isValidCustomTopic,
+  isValidSimulation
+} = require('../config/constants');
 const logger = require('../utils/logger');
+
+const irtService = require('../services/algorithms/irt.algorithm.service');
+const pidService = require('../services/algorithms/pid.algorithm.service');
 
 // ============================================================================
 // CHALLENGE GENERATION
@@ -28,31 +45,284 @@ const logger = require('../utils/logger');
  * @route   POST /api/challenges/generate
  * @access  Private (Student)
  */
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Helper to extract ID from potentially stringified object
+ * Fixes issue where entire objects are stored as strings in database
+ * 
+ * @param {string} field - The field that might contain stringified JSON
+ * @param {string} idKey - The key to extract (e.g., 'schoolId', 'teacherId')
+ * @returns {string|null} - Extracted ID or null
+ */
+/**
+ * Helper to extract ID from potentially stringified object OR actual object
+ */
+function extractId(field, idKey) {
+  if (!field) return null;
+  
+  // If it's an actual object, extract the ID directly
+  if (typeof field === 'object' && field !== null) {
+    return field[idKey] || null;
+  }
+  
+  // If it's already a clean ID string
+  if (typeof field === 'string' && !field.includes('{') && field.length < 50) {
+    return field;
+  }
+  
+  // If it's a stringified JSON object
+  if (typeof field === 'string' && field.includes('{')) {
+    try {
+      const obj = JSON.parse(field);
+      return obj[idKey] || null;
+    } catch (e) {
+      const regex = new RegExp(`${idKey}:\\s*['"]([^'"]+)['"]`);
+      const match = field.match(regex);
+      return match ? match[1] : null;
+    }
+  }
+  
+  return null;
+}
 exports.generateChallenge = async (req, res) => {
   try {
-    const { simulationType, difficulty, numberOfQuestions = 5 } = req.body;
+    // ========================================================================
+    // 1. EXTRACT FRONTEND PARAMETERS
+    // ========================================================================
     
-    // Validate simulation type
-    if (!isValidSimulation(simulationType)) {
+    let { 
+      subject,              // physics | mathematics | custom
+      simulationType,       // OPTIONAL: simulation ID
+      customTopic,          // OPTIONAL: custom topic name
+      difficulty,           // easy | medium | hard | auto
+      numberOfQuestions = 5 // 3 | 5 | 7 | 10
+    } = req.body;
+    
+    const studentId = req.user.userId;
+    
+    logger.info('🎯 Challenge Generation Request:', {
+      subject,
+      simulationType: simulationType || 'N/A',
+      customTopic: customTopic || 'N/A',
+      difficulty,
+      numberOfQuestions
+    });
+    
+    // ========================================================================
+    // 2. VALIDATION
+    // ========================================================================
+    
+    // Validate subject
+    if (!subject || !isValidSubject(subject)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid subject. Must be: physics, mathematics, or custom',
+        validSubjects: Object.values(CHALLENGE_SUBJECTS)
+      });
+    }
+    
+    // Validate topic (EITHER simulationType OR customTopic)
+    if (!simulationType && !customTopic) {
+      return res.status(400).json({
+        success: false,
+        message: 'Either simulationType or customTopic must be provided'
+      });
+    }
+    
+    if (simulationType && customTopic) {
+      return res.status(400).json({
+        success: false,
+        message: 'Provide either simulationType or customTopic, not both'
+      });
+    }
+    
+    // Validate simulationType if provided
+    if (simulationType && !isValidSimulation(simulationType)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid simulation type'
       });
     }
     
-    // Get student
-    const student = await Student.findById(req.user.userId);
+    // Validate customTopic if provided
+    if (customTopic && !isValidCustomTopic(customTopic)) {
+      return res.status(400).json({
+        success: false,
+        message: `Custom topic must be between ${CUSTOM_TOPIC.MIN_LENGTH} and ${CUSTOM_TOPIC.MAX_LENGTH} characters`
+      });
+    }
     
+    // Validate difficulty
+    if (!difficulty || !isValidDifficulty(difficulty)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid difficulty. Must be: easy, medium, hard, or auto',
+        validDifficulties: Object.values(CHALLENGE_DIFFICULTY)
+      });
+    }
+    
+    // Validate numberOfQuestions
+    if (!isValidQuestionCount(numberOfQuestions)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid number of questions. Must be: 3, 5, 7, or 10',
+        validCounts: QUESTION_COUNT_OPTIONS
+      });
+    }
+    
+    // ========================================================================
+    // 3. GET STUDENT DATA (DATABASE)
+    // ========================================================================
+    
+// ========================================================================
+// 3. GET STUDENT DATA (DATABASE) + FIX IDs
+// ========================================================================
+
+    const student = await Student.findById(studentId);
+
     if (!student) {
       return res.status(404).json({
         success: false,
         message: 'Student not found'
       });
     }
+
+    // ✅ FIX: Extract actual IDs from potentially stringified objects
+    let actualSchoolId = extractId(student.schoolId, 'schoolId');
+    let actualTeacherId = extractId(student.teacherId, 'teacherId');
+
+    // Set defaults if still null
+    if (!actualSchoolId) {
+      actualSchoolId = req.user.schoolId || 'SYSTEM-DEFAULT';
+      logger.warn(`Student ${student.studentId} missing schoolId, using default`);
+    }
+
+    if (!actualTeacherId) {
+      actualTeacherId = req.user.teacherId || 'SYSTEM-DEFAULT';
+      logger.warn(`Student ${student.studentId} missing teacherId, using default`);
+    }
+
+    // Update student document if IDs changed
+    if (student.schoolId !== actualSchoolId || student.teacherId !== actualTeacherId) {
+      student.schoolId = actualSchoolId;
+      student.teacherId = actualTeacherId;
+      await student.save({ validateBeforeSave: false });
+      logger.info(`✅ Fixed student IDs: schoolId=${actualSchoolId}, teacherId=${actualTeacherId}`);
+    }
     
-    // Check if student can generate challenge
+    // ========================================================================
+    // 4. GET SIMULATION METADATA (FROM constants.js)
+    // ========================================================================
+    
+    let simulationMetadata = null;
+    
+    if (simulationType) {
+      simulationMetadata = SIMULATION_METADATA[simulationType];
+      
+      if (!simulationMetadata) {
+        logger.warn(`⚠️ No metadata found for simulation: ${simulationType}`);
+      } else {
+        logger.info('📚 Simulation metadata loaded:', {
+          topics: simulationMetadata.topics?.length || 0,
+          tools: simulationMetadata.tools?.length || 0,
+          difficultyFactors: simulationMetadata.difficulty_factors?.length || 0
+        });
+      }
+    }
+    
+    // ========================================================================
+    // 5. GET RECENT PERFORMANCE (DATABASE)
+    // ========================================================================
+    
+    const recentChallenges = await Challenge.find({ 
+      studentId: student.studentId, 
+      status: 'evaluated' 
+    })
+      .sort({ evaluatedAt: -1 })
+      .limit(10)
+      .lean();
+    
+    const recentAvgScore = recentChallenges.length > 0
+      ? recentChallenges.reduce((sum, c) => sum + (c.results?.totalScore || 0), 0) / recentChallenges.length
+      : 50;
+    
+    logger.info(`📊 Recent average score: ${recentAvgScore.toFixed(2)}%`);
+    
+    // ========================================================================
+    // 6. FERRARI ENGINE: AUTO DIFFICULTY (IRT + PID)
+    // ========================================================================
+    
+    let irtResult = null;
+    let pidResult = null;
+    let ferrariEngineUsed = false;
+    const originalDifficulty = difficulty;
+    
+    if (difficulty === CHALLENGE_DIFFICULTY.AUTO) {
+      logger.info('🏎️ FERRARI ENGINE: Auto difficulty mode activated');
+      ferrariEngineUsed = true;
+      
+      try {
+        // ✅ ALGORITHM #1: IRT - Student ability
+        logger.info('🎓 IRT: Calculating optimal difficulty...');
+        
+        try {
+          irtResult = await irtService.getOptimalDifficulty(studentId);
+          
+          if (irtResult && irtResult.difficulty) {
+            difficulty = irtResult.difficulty;
+            logger.info(`✅ IRT selected: ${difficulty} (ability: ${irtResult.studentAbility?.toFixed(2)})`);
+          }
+        } catch (irtError) {
+          logger.warn('⚠️ IRT failed:', irtError.message);
+        }
+        
+        // ✅ ALGORITHM #2: PID - Performance adjustment
+        logger.info('🎛️ PID: Calculating adjustment...');
+        
+        try {
+          pidResult = await pidService.getRecommendedDifficulty(studentId);
+          
+          if (pidResult && pidResult.difficulty) {
+            // PID can override if strong signal
+            if (!irtResult || pidResult.confidence > 0.7) {
+              difficulty = pidResult.difficulty;
+              logger.info(`✅ PID selected: ${difficulty} (adjustment: ${pidResult.adjustment?.toFixed(2)})`);
+            } else {
+              logger.info(`📊 PID suggests: ${pidResult.difficulty} (using IRT)`);
+            }
+          }
+        } catch (pidError) {
+          logger.warn('⚠️ PID failed:', pidError.message);
+        }
+        
+        // Fallback
+        if (!irtResult && !pidResult) {
+          difficulty = 'medium';
+          logger.warn('⚠️ Both algorithms failed, using: medium');
+        }
+        
+        logger.info(`🏎️ FERRARI ENGINE: Final difficulty: ${difficulty}`);
+        
+      } catch (ferrariError) {
+        logger.error('❌ Ferrari Engine error:', ferrariError);
+        difficulty = 'medium';
+      }
+    } else {
+      logger.info(`📝 MANUAL DIFFICULTY: ${difficulty} (user-selected)`);
+    }
+    
+    // ========================================================================
+    // 7. CHECK LIMITS
+    // ========================================================================
+    
+    const topicForLimit = simulationType || customTopic;
+    
     const canGenerate = student.canGenerateChallenge(
-      simulationType,
+      topicForLimit,
       CHALLENGE_LIMITS.DAILY_LIMIT,
       CHALLENGE_LIMITS.PER_SIMULATION_LIMIT
     );
@@ -62,43 +332,77 @@ exports.generateChallenge = async (req, res) => {
         success: false,
         message: canGenerate.reason === 'daily_limit'
           ? 'Daily challenge limit reached. Please try again tomorrow.'
-          : `You have reached the limit for ${simulationType} challenges today.`,
+          : `You have reached the limit for this topic today.`,
         remaining: canGenerate.remaining
       });
     }
     
-    // Generate challenge using Mistral AI
-    logger.info(`Generating challenge for student ${student.studentId}`, {
-      simulationType,
-      difficulty,
-      studentLevel: student.class
-    });
+    // ========================================================================
+    // 8. GENERATE CHALLENGE WITH MISTRAL AI
+    // Pass ALL data: frontend, database, constants.js, Ferrari Engine
+    // ========================================================================
+    
+    logger.info(`🤖 MISTRAL AI: Generating challenge with all data`);
     
     const startTime = Date.now();
     
-    const challengeData = await generateAIChallenge({
+    const challengeData = await mistralService.generateChallenge({
+      // From Frontend (1-4)
+      subject,
       simulationType,
-      difficulty: difficulty || 'medium',
+      customTopic,
+      difficulty,
+      numberOfQuestions,
+      
+      // From Database (5)
       studentLevel: student.class,
-      weakCompetencies: student.weakCompetencies,
-      numberOfQuestions
+      weakCompetencies: student.weakCompetencies || [],
+      
+      // From constants.js (6) - topics, tools, difficulty_factors
+      simulationMetadata: simulationMetadata ? {
+        topics: simulationMetadata.topics || [],
+        tools: simulationMetadata.tools || [],
+        difficultyFactors: simulationMetadata.difficulty_factors || []
+      } : null,
+      
+      // Ferrari Engine context
+      context: {
+        irtAbility: irtResult?.studentAbility,
+        pidAdjustment: pidResult?.adjustment,
+        recentAvgScore: recentAvgScore,
+        ferrariEngineUsed
+      }
     });
     
     const generationTime = Date.now() - startTime;
     
-    // Validate generated challenge
+    // Validate
     if (!challengeData || !challengeData.questions || challengeData.questions.length === 0) {
       throw new Error('Failed to generate valid challenge');
     }
     
-    // Create challenge in database
+    logger.info(`✅ Challenge generated in ${generationTime}ms with ${challengeData.questions.length} questions`);
+    
+    // ========================================================================
+    // 9. CREATE CHALLENGE IN DATABASE
+    // ========================================================================
+    
     const challenge = await Challenge.create({
       studentId: student.studentId,
-      schoolId: student.schoolId,
-      teacherId: student.teacherId,
-      simulationType,
-      difficulty: challengeData.difficulty || difficulty || 'medium',
-      title: challengeData.title,
+      schoolId: actualSchoolId,    // ← UPDATED
+      teacherId: actualTeacherId,  // ← UPDATED
+      
+      // Subject and topic
+      subject,
+      simulationType: simulationType || null,
+      customTopic: customTopic || null,
+      topicType: simulationType ? TOPIC_TYPES.SIMULATION : TOPIC_TYPES.CUSTOM,
+      
+      // Challenge details
+      difficulty: difficulty,
+      difficultyMode: originalDifficulty,
+      title: challengeData.title || `${subject} Challenge`,
+      
       questions: challengeData.questions.map((q, index) => ({
         questionId: `Q${index + 1}`,
         type: q.type || 'SHORT_ANSWER',
@@ -107,120 +411,188 @@ exports.generateChallenge = async (req, res) => {
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
         competencies: q.competencies || [],
-        points: q.points || 100
+        points: Math.min(q.points || 100, 100),  // ← Already fixed
+        hint: q.hint || ''
       })),
+      
       totalPoints: challengeData.totalPoints || (numberOfQuestions * 100),
       passingScore: challengeData.passingScore || 70,
-      estimatedTime: challengeData.estimatedTime || 10,
+      estimatedTime: challengeData.estimatedTime || Math.max(10, numberOfQuestions * 2),
       status: 'generated',
+      
+      // AI metadata
       aiMetadata: {
         mistralModel: process.env.MISTRAL_MODEL || 'mistral-large-2411',
         tokensUsed: challengeData.tokensUsed || 0,
+        cost: challengeData.cost || 0,
         generationTime,
-        metaLearningApplied: false,
-        kalmanFilterApplied: false,
-        pidControllerApplied: false
+        
+        // Ferrari Engine
+        ferrariEngine: {
+          enabled: ferrariEngineUsed,
+          mode: ferrariEngineUsed ? DIFFICULTY_MODE.AUTO : DIFFICULTY_MODE.MANUAL,
+          
+          irt: irtResult ? {
+            studentAbility: irtResult.studentAbility,
+            recommendedDifficulty: irtResult.difficulty,
+            expectedSuccess: irtResult.expectedSuccessRate,
+            reasoning: irtResult.reasoning
+          } : null,
+          
+          pid: pidResult ? {
+            adjustment: pidResult.adjustment,
+            recommendedDifficulty: pidResult.difficulty,
+            currentPerformance: pidResult.currentPerformance,
+            targetPerformance: pidResult.targetPerformance
+          } : null
+        },
+        
+        // Simulation metadata used
+        simulationMetadata: simulationMetadata ? {
+          topicCount: simulationMetadata.topics?.length || 0,
+          toolCount: simulationMetadata.tools?.length || 0,
+          difficultyFactorCount: simulationMetadata.difficulty_factors?.length || 0
+        } : null
       }
     });
     
-    // Record challenge generation
-    await student.recordChallengeGeneration(simulationType);
+    // ========================================================================
+    // 10. UPDATE STUDENT & LOG
+    // ========================================================================
     
-    // Update student streak
-    await student.updateStreak();
+// ========================================================================
+// 10. UPDATE STUDENT & LOG
+// ========================================================================
+
+    try {
+      await student.recordChallengeGeneration(topicForLimit);
+      await student.updateStreak();
+    } catch (studentError) {
+      // Silently ignore - student stats are optional
+      logger.debug('Student stats update skipped:', studentError.message);
+    }
     
-    // Log AI usage
     await AILog.create({
       userId: student._id,
       userType: 'student',
-      schoolId: student.schoolId,
+      schoolId: actualSchoolId,  // ← NEW (extracted ID)
       operation: 'challenge_generation',
-      model: process.env.MISTRAL_MODEL || 'mistral-large-latest',
+      model: process.env.MISTRAL_MODEL || 'mistral-large-2411',
       tokensUsed: challengeData.tokensUsed || 0,
-      cost: (challengeData.tokensUsed || 0) * 0.000002, // Estimated cost
+      cost: challengeData.cost || 0,
       responseTime: generationTime,
-      success: true
+      success: true,
+      metadata: {
+        subject,
+        topicType: simulationType ? 'simulation' : 'custom',
+        difficultyMode: originalDifficulty,
+        numberOfQuestions,
+        ferrariEngineUsed,
+        hasSimulationMetadata: !!simulationMetadata
+      }
     });
     
-    // Log activity
     await Activity.log({
       userId: student._id.toString(),
       userType: 'student',
-      schoolId: student.schoolId,
+      schoolId: actualSchoolId,  // ← NEW (extracted ID)
       activityType: 'challenge_generated',
-      action: `Challenge generated for ${simulationType}`,
+      action: ferrariEngineUsed 
+        ? `🏎️ Ferrari Engine: ${subject} - ${simulationType || customTopic}`
+        : `Challenge: ${subject} - ${simulationType || customTopic}`,
       metadata: {
         challengeId: challenge.challengeId,
+        subject,
         simulationType,
+        customTopic,
         difficulty: challenge.difficulty,
-        numberOfQuestions
+        numberOfQuestions,
+        ferrariEngineUsed
       },
       ipAddress: req.ip,
       success: true
     });
     
-    logger.info(`Challenge ${challenge.challengeId} generated successfully in ${generationTime}ms`);
+    // ========================================================================
+    // 11. RESPONSE
+    // ========================================================================
     
     res.status(201).json({
       success: true,
-      message: 'Challenge generated successfully',
+      message: ferrariEngineUsed
+        ? '🏎️ Challenge generated with Ferrari Engine (IRT + PID)'
+        : 'Challenge generated successfully',
       data: {
         challenge: {
           challengeId: challenge.challengeId,
           title: challenge.title,
-          simulationType: challenge.simulationType,
+          subject: challenge.subject,
+          topic: simulationType || customTopic,
+          topicType: challenge.topicType,
           difficulty: challenge.difficulty,
+          difficultyMode: challenge.difficultyMode,
           questions: challenge.questions.map(q => ({
             questionId: q.questionId,
             type: q.type,
             question: q.question,
             options: q.options,
-            points: q.points
-            // Do NOT send correctAnswer or explanation
+            points: q.points,
+            hint: q.hint
           })),
           totalPoints: challenge.totalPoints,
           passingScore: challenge.passingScore,
           estimatedTime: challenge.estimatedTime,
           generatedAt: challenge.generatedAt
         },
+        
+        ferrariEngine: ferrariEngineUsed ? {
+          enabled: true,
+          mode: DIFFICULTY_MODE.AUTO,
+          
+          irt: irtResult ? {
+            studentAbility: Math.round(irtResult.studentAbility * 100) / 100,
+            recommendedDifficulty: irtResult.difficulty,
+            expectedSuccess: Math.round(irtResult.expectedSuccessRate * 100)
+          } : null,
+          
+          pid: pidResult ? {
+            adjustment: Math.round(pidResult.adjustment * 100) / 100,
+            recommendedDifficulty: pidResult.difficulty
+          } : null,
+          
+          finalDifficulty: difficulty
+        } : null,
+        
         limits: {
-          dailyRemaining: CHALLENGE_LIMITS.DAILY_LIMIT - (student.challengeLimits.totalToday + 1),
-          simulationRemaining: CHALLENGE_LIMITS.PER_SIMULATION_LIMIT - ((student.challengeLimits.bySimulation.get(simulationType) || 0) + 1)
+          dailyRemaining: CHALLENGE_LIMITS.DAILY_LIMIT - (student.challengeLimits?.totalToday || 0) - 1,
+          topicRemaining: CHALLENGE_LIMITS.PER_SIMULATION_LIMIT - ((student.challengeLimits?.bySimulation?.get(topicForLimit) || 0) + 1)
         }
       }
     });
     
   } catch (error) {
-    logger.error('Generate challenge error:', error);
+    logger.error('❌ Generate challenge error:', error);
     
-    // Log failed AI operation
-    await AILog.create({
-      userId: req.user.userId,
-      userType: 'student',
-      operation: 'challenge_generation',
-      model: process.env.MISTRAL_MODEL || 'mistral-large-latest',
-      success: false,
-      errorMessage: error.message
-    });
-    
-    // Log failed activity
-    await Activity.log({
-      userId: req.user.userId,
-      userType: 'student',
-      activityType: 'challenge_generated',
-      action: 'Failed to generate challenge',
-      success: false,
-      errorMessage: error.message
-    });
+    try {
+      await AILog.create({
+        userId: req.user.userId,
+        userType: 'student',
+        operation: 'challenge_generation',
+        model: process.env.MISTRAL_MODEL || 'mistral-large-2411',  // ← ADD THIS
+        success: false,
+        errorMessage: error.message
+      });
+    } catch (logError) {
+      logger.error('Failed to log error:', logError);
+    }
     
     res.status(500).json({
       success: false,
       message: 'Error generating challenge',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
 };
-
 /**
  * @desc    Preview challenge (before generation)
  * @route   GET /api/challenges/preview
@@ -287,6 +659,87 @@ exports.previewChallenge = async (req, res) => {
  * @route   GET /api/challenges/:challengeId
  * @access  Private
  */
+// exports.getChallengeDetails = async (req, res) => {
+//   try {
+//     const challenge = await Challenge.findOne({
+//       challengeId: req.params.challengeId
+//     });
+    
+//     if (!challenge) {
+//       return res.status(404).json({
+//         success: false,
+//         message: 'Challenge not found'
+//       });
+//     }
+    
+//     // Add logging to see the mismatch
+//     logger.info('Authorization debug:', {
+//       challengeStudentId: challenge.studentId,
+//       reqUserStudentId: req.user.studentId,
+//       reqUserRole: req.user.role,
+//       match: challenge.studentId === req.user.studentId
+//     });
+//     // Authorization check
+//     const isStudent = req.user.role === 'student' && challenge.studentId === req.user.studentId;
+//     const isTeacher = req.user.role === 'teacher' && challenge.teacherId === req.user.teacherId;
+//     const isAdmin = req.user.role === 'admin';
+    
+//     if (!isStudent && !isTeacher && !isAdmin) {
+//       return res.status(403).json({
+//         success: false,
+//         message: 'You do not have access to this challenge'
+//       });
+//     }
+    
+//     // Return challenge without answers if not evaluated (for students)
+//     const response = {
+//       challengeId: challenge.challengeId,
+//       title: challenge.title,
+//       simulationType: challenge.simulationType,
+//       difficulty: challenge.difficulty,
+//       status: challenge.status,
+//       totalPoints: challenge.totalPoints,
+//       passingScore: challenge.passingScore,
+//       estimatedTime: challenge.estimatedTime,
+//       generatedAt: challenge.generatedAt,
+//       startedAt: challenge.startedAt,
+//       submittedAt: challenge.submittedAt,
+//       evaluatedAt: challenge.evaluatedAt
+//     };
+    
+//     // Include questions without answers if not started or in progress
+//     if (challenge.status === 'generated' || challenge.status === 'in-progress') {
+//       response.questions = challenge.questions.map(q => ({
+//         questionId: q.questionId,
+//         type: q.type,
+//         question: q.question,
+//         options: q.options,
+//         points: q.points
+//       }));
+//     }
+    
+//     // Include full results if evaluated (or if teacher/admin)
+//     if (challenge.status === 'evaluated' || isTeacher || isAdmin) {
+//       response.questions = challenge.questions;
+//       response.answers = challenge.answers;
+//       response.results = challenge.results;
+//     }
+    
+//     res.json({
+//       success: true,
+//       data: { challenge: response }
+//     });
+    
+//   } catch (error) {
+//     logger.error('Get challenge details error:', error);
+//     res.status(500).json({
+//       success: false,
+//       message: 'Error fetching challenge',
+//       error: error.message
+//     });
+//   }
+// };
+
 exports.getChallengeDetails = async (req, res) => {
   try {
     const challenge = await Challenge.findOne({
@@ -300,10 +753,33 @@ exports.getChallengeDetails = async (req, res) => {
       });
     }
     
+    // Extract teacher ID if stringified (same as extractId for schoolId)
+    let challengeTeacherId = challenge.teacherId;
+    if (typeof challengeTeacherId === 'object' || 
+        (typeof challengeTeacherId === 'string' && challengeTeacherId.includes('{'))) {
+      challengeTeacherId = extractId(challengeTeacherId, 'teacherId');
+    }
+    
     // Authorization check
-    const isStudent = req.user.role === 'student' && challenge.studentId === req.user.studentId;
-    const isTeacher = req.user.role === 'teacher' && challenge.teacherId === req.user.teacherId;
+    const isStudent = req.user.role === 'student' && 
+                      challenge.studentId === req.user.studentId;
+    
+    const isTeacher = req.user.role === 'teacher' && 
+                      challengeTeacherId === req.user.teacherId;
+    
     const isAdmin = req.user.role === 'admin';
+    
+    // Debug logging
+    logger.info('Authorization debug:', {
+      challengeStudentId: challenge.studentId,
+      challengeTeacherId: challengeTeacherId,
+      reqUserStudentId: req.user.studentId,
+      reqUserTeacherId: req.user.teacherId,
+      reqUserRole: req.user.role,
+      isStudent,
+      isTeacher,
+      isAdmin
+    });
     
     if (!isStudent && !isTeacher && !isAdmin) {
       return res.status(403).json({
@@ -519,7 +995,9 @@ exports.getChallengeResults = async (req, res) => {
     
     // Authorization check
     const isStudent = req.user.role === 'student' && challenge.studentId === req.user.studentId;
-    const isTeacher = req.user.role === 'teacher' && challenge.teacherId === req.user.teacherId;
+    const isTeacher = req.user.role === 'teacher' && 
+                      (challengeTeacherId === req.user.teacherId || 
+                       challengeTeacherId === 'SYSTEM-DEFAULT');
     const isAdmin = req.user.role === 'admin';
     
     if (!isStudent && !isTeacher && !isAdmin) {
@@ -595,14 +1073,15 @@ async function evaluateChallengeWithAI(challenge) {
       if (!question) continue;
       
       // Call Mistral AI for evaluation
-      const aiEvaluation = await evaluateResponse({
+      // NEW (correct)
+      const aiEvaluation = await mistralService.evaluateResponse({
         question: question.question,
+        questionType: question.type,
         correctAnswer: question.correctAnswer,
         studentAnswer: answer.studentAnswer,
         studentReasoning: answer.studentReasoning,
         expectedExplanation: question.explanation
       });
-      
       // Calculate final score (Answer: 70%, Reasoning: 30%)
       const answerScore = aiEvaluation.answerScore || 0; // 0-70
       const reasoningScore = aiEvaluation.reasoningScore || 0; // 0-30
@@ -1277,32 +1756,96 @@ exports.getAvailableSimulations = async (req, res) => {
  * @route   GET /api/challenges/recommended
  * @access  Private (Student)
  */
+// exports.getRecommendedChallenges = async (req, res) => {
+//   try {
+//     const student = await Student.findById(req.user.userId);
+//     const { getRecommendedSimulations } = require('../utils/simulationHelpers');
+    
+//     const recommended = getRecommendedSimulations(student);
+    
+//     const recommendations = recommended.slice(0, 5).map(simId => {
+//       const sim = getSimulation(simId);
+//       const canGenerate = student.canGenerateChallenge(simId, CHALLENGE_LIMITS.DAILY_LIMIT, CHALLENGE_LIMITS.PER_SIMULATION_LIMIT);
+      
+//       return {
+//         simulationType: simId,
+//         name: sim.name,
+//         type: sim.type,
+//         difficulty: sim.difficulty,
+//         reason: 'Based on your performance and weak competencies',
+//         canGenerate: canGenerate.allowed
+//       };
+//     });
+    
+//     res.json({
+//       success: true,
+//       data: {
+//         recommendations,
+//         weakCompetencies: student.weakCompetencies
+//       }
+//     });
+    
+//   } catch (error) {
+//     logger.error('Get recommended challenges error:', error);
+//     res.status(500).json({
+//       success: false,
+//       message: 'Error fetching recommendations',
+//       error: error.message
+//     });
+//   }
+// };
+
 exports.getRecommendedChallenges = async (req, res) => {
   try {
     const student = await Student.findById(req.user.userId);
-    const { getRecommendedSimulations } = require('../utils/simulationHelpers');
     
-    const recommended = getRecommendedSimulations(student);
+    // Get weak competencies
+    const weakCompetencies = student.weakCompetencies || [];
     
-    const recommendations = recommended.slice(0, 5).map(simId => {
-      const sim = getSimulation(simId);
-      const canGenerate = student.canGenerateChallenge(simId, CHALLENGE_LIMITS.DAILY_LIMIT, CHALLENGE_LIMITS.PER_SIMULATION_LIMIT);
-      
-      return {
-        simulationType: simId,
-        name: sim.name,
-        type: sim.type,
-        difficulty: sim.difficulty,
-        reason: 'Based on your performance and weak competencies',
-        canGenerate: canGenerate.allowed
-      };
+    // Simple recommendation: suggest simulations student hasn't tried much
+    const { SIMULATION_METADATA } = require('../config/constants');
+    const allSimulations = Object.keys(SIMULATION_METADATA);
+    
+    // Get student's challenge history
+    const recentChallenges = await Challenge.find({
+      studentId: student.studentId
+    }).limit(10).lean();
+    
+    // Count by simulation
+    const simulationCounts = {};
+    recentChallenges.forEach(c => {
+      if (c.simulationType) {
+        simulationCounts[c.simulationType] = (simulationCounts[c.simulationType] || 0) + 1;
+      }
     });
+    
+    // Recommend simulations with fewer attempts
+    const recommendations = allSimulations
+      .map(simId => {
+        const metadata = SIMULATION_METADATA[simId];
+        const attempts = simulationCounts[simId] || 0;
+        const canGenerate = student.canGenerateChallenge(simId, CHALLENGE_LIMITS.DAILY_LIMIT, CHALLENGE_LIMITS.PER_SIMULATION_LIMIT);
+        
+        return {
+          simulationType: simId,
+          name: simId.replace(/-/g, ' ').toUpperCase(),
+          type: 'physics', // You can determine this from metadata
+          difficulty: 'medium',
+          reason: attempts === 0 
+            ? 'New simulation - try this!' 
+            : `Based on your weak areas: ${weakCompetencies.slice(0, 2).join(', ')}`,
+          canGenerate: canGenerate.allowed,
+          attempts
+        };
+      })
+      .sort((a, b) => a.attempts - b.attempts) // Least attempted first
+      .slice(0, 5);
     
     res.json({
       success: true,
       data: {
         recommendations,
-        weakCompetencies: student.weakCompetencies
+        weakCompetencies
       }
     });
     

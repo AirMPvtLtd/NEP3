@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Force Simulator - NEP Workbench</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        :root { 
+            --bg: #1e1e1e; 
+            --panel: #252526; 
+            --accent: #007acc;
+            --border: #464647;
+            --card-bg: #2d2d30;
+            --card-hover: #3a3a3c;
+        }
+        body { background: var(--bg); color: #fff; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        
+        .header { 
+            background: #333; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+        
+        h1 { font-size: 24px; color: var(--accent); }
+        .subtitle { color: #888; font-size: 14px; margin-top: 5px; }
+        
+        .btn { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            background: var(--accent); 
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .btn:hover { background: #005a9e; transform: translateY(-2px); }
+        .btn:active { transform: translateY(0); }
+        .btn-danger { background: #e74c3c; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-secondary { background: #464647; }
+        .btn-secondary:hover { background: #5a5a5c; }
+        
+        .main { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+        
+        .panel { 
+            background: var(--panel); 
+            border-radius: 8px; 
+            padding: 20px; 
+            border: 1px solid var(--border);
+        }
+        
+        .sim-area { 
+            background: var(--bg); 
+            border-radius: 6px; 
+            height: 500px; 
+            border: 1px solid var(--border); 
+            position: relative; 
+            overflow: hidden; 
+        }
+        canvas { width: 100%; height: 100%; }
+        
+        h2 { margin-bottom: 15px; color: #fff; font-size: 18px; }
+        h3 { margin: 15px 0 10px; color: #ddd; font-size: 16px; }
+        
+        .control-group { margin-bottom: 20px; }
+        .control-group:last-child { margin-bottom: 0; }
+        
+        .slider-container { margin: 15px 0; }
+        .slider-container label { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 8px;
+            color: #ddd;
+        }
+        .slider-value { color: var(--accent); font-weight: 500; }
+        
+        input[type="range"] { 
+            width: 100%; 
+            height: 8px; 
+            background: #2d2d30; 
+            border-radius: 4px; 
+            -webkit-appearance: none;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb { 
+            width: 20px; 
+            height: 20px; 
+            background: var(--accent); 
+            border-radius: 50%; 
+            cursor: pointer; 
+        }
+        
+        input[type="checkbox"] { 
+            margin-right: 10px; 
+            transform: scale(1.2);
+            accent-color: var(--accent);
+        }
+        
+        .checkbox-label { 
+            display: flex; 
+            align-items: center; 
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        
+        .button-group { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            margin-top: 15px;
+        }
+        
+        .object-controls { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            margin-top: 15px;
+        }
+        
+        .status-bar { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 15px; 
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .status-card { 
+            background: var(--card-bg); 
+            padding: 15px; 
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+        
+        .status-value { 
+            font-size: 24px; 
+            color: var(--accent); 
+            font-weight: 600; 
+            margin: 5px 0;
+        }
+        
+        .status-label { 
+            font-size: 12px; 
+            color: #888;
+        }
+        
+        .legend { 
+            display: flex; 
+            justify-content: space-around; 
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .legend-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+            font-size: 12px;
+        }
+        
+        .legend-color { 
+            width: 12px; 
+            height: 12px; 
+            border-radius: 50%;
+        }
+        
+        .force-color { background: #ff4081; }
+        .velocity-color { background: #2196f3; }
+        .acceleration-color { background: #ff9800; }
+        
+        .info-box { 
+            background: rgba(0, 122, 204, 0.1); 
+            border: 1px solid var(--accent); 
+            border-radius: 6px; 
+            padding: 15px; 
+            margin-top: 20px; 
+            font-size: 12px; 
+            line-height: 1.6;
+        }
+        
+        .equation-card { 
+            background: var(--card-bg); 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 6px; 
+            border-left: 3px solid var(--accent);
+        }
+        
+        .equation { 
+            font-family: 'Courier New', monospace; 
+            font-size: 14px; 
+            color: var(--accent); 
+            margin: 5px 0;
+        }
+        
+        .explanation { 
+            font-size: 11px; 
+            color: #888; 
+            margin-top: 5px; 
+            line-height: 1.4;
+        }
+        
+        .simulation-info { 
+            position: absolute; 
+            bottom: 10px; 
+            left: 10px; 
+            background: rgba(0, 0, 0, 0.8); 
+            padding: 8px 12px; 
+            border-radius: 4px; 
+            font-size: 11px;
+            border: 1px solid var(--border);
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-atom"></i> Physics Force Simulator</h1>
+                <p class="subtitle">Interactive Physics Lab • Grade 9-10 • NEP Workbench</p>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <div style="text-align: right;">
+            
+            
+                </div>
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="panel">
+                <h2>Force & Motion Simulation</h2>
+                
+                <div class="sim-area">
+                    <canvas id="physicsCanvas"></canvas>
+                    <div class="simulation-info">
+                        <i class="fas fa-mouse-pointer"></i> Drag objects • Click to apply force • Right-click to delete
+                    </div>
+                </div>
+                
+                <div class="status-bar">
+                    <div class="status-card">
+                        <div class="status-value" id="objectCount">1</div>
+                        <div class="status-label">Objects</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-value" id="timeDisplay">0.0s</div>
+                        <div class="status-label">Time</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-value" id="speedDisplay">0.0 m/s</div>
+                        <div class="status-label">Speed</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-value" id="energyDisplay">0.0 J</div>
+                        <div class="status-label">Energy</div>
+                    </div>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color force-color"></div>
+                        <span>Force Vector</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color velocity-color"></div>
+                        <span>Velocity</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color acceleration-color"></div>
+                        <span>Acceleration</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2><i class="fas fa-sliders-h"></i> Controls</h2>
+                
+                <div class="control-group">
+                    <h3>Simulation Control</h3>
+                    <div class="button-group">
+                        <button class="btn" onclick="toggleSimulation()" id="playPauseBtn">
+                            <i class="fas fa-pause"></i> Pause
+                        </button>
+                        <button class="btn btn-danger" onclick="resetSimulation()">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Force Application</h3>
+                    <div class="slider-container">
+                        <label>
+                            <span>Force Magnitude</span>
+                            <span class="slider-value" id="forceValue">50 N</span>
+                        </label>
+                        <input type="range" id="forceSlider" min="1" max="100" value="50" oninput="updateForce(this.value)">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label>
+                            <span>Force Angle</span>
+                            <span class="slider-value" id="angleValue">0°</span>
+                        </label>
+                        <input type="range" id="angleSlider" min="0" max="360" value="0" oninput="updateAngle(this.value)">
+                    </div>
+                    
+                    <div class="object-controls">
+                        <button class="btn btn-secondary" onclick="addObject()">
+                            <i class="fas fa-plus"></i> Add Object
+                        </button>
+                        <button class="btn btn-danger" onclick="clearObjects()">
+                            <i class="fas fa-trash"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Environment Settings</h3>
+                    <div class="slider-container">
+                        <label>
+                            <span>Gravity</span>
+                            <span class="slider-value" id="gravityValue">9.8 m/s²</span>
+                        </label>
+                        <input type="range" id="gravitySlider" min="0" max="20" value="9.8" step="0.1" oninput="updateGravity(this.value)">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label>
+                            <span>Friction Coefficient</span>
+                            <span class="slider-value" id="frictionValue">0.1</span>
+                        </label>
+                        <input type="range" id="frictionSlider" min="0" max="1" value="0.1" step="0.01" oninput="updateFriction(this.value)">
+                    </div>
+                    
+                    <div class="checkbox-label">
+                        <input type="checkbox" id="showVectors" checked onchange="toggleVectors()">
+                        <span>Show Force Vectors</span>
+                    </div>
+                    
+                    <div class="checkbox-label">
+                        <input type="checkbox" id="showGrid" checked onchange="toggleGrid()">
+                        <span>Show Grid</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Object Properties</h3>
+                    <div class="slider-container">
+                        <label>
+                            <span>Object Mass</span>
+                            <span class="slider-value" id="massValue">5 kg</span>
+                        </label>
+                        <input type="range" id="massSlider" min="1" max="20" value="5" oninput="updateMass(this.value)">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label>
+                            <span>Object Size</span>
+                            <span class="slider-value" id="sizeValue">30 px</span>
+                        </label>
+                        <input type="range" id="sizeSlider" min="10" max="60" value="30" oninput="updateSize(this.value)">
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <strong style="color: var(--accent);">Newton's Laws:</strong><br>
+                    • F = ma (Force = mass × acceleration)<br>
+                    • F<sub>friction</sub> = μ × F<sub>normal</sub><br>
+                    • Forces can be resolved into components
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel" style="margin-top: 20px;">
+            <h2><i class="fas fa-calculator"></i> Physics Equations</h2>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                <div class="equation-card">
+                    <h4>Newton's Second Law</h4>
+                    <div class="equation">F = m × a</div>
+                    <p class="explanation">Force equals mass times acceleration. This is the fundamental equation of motion.</p>
+                </div>
+                
+                <div class="equation-card">
+                    <h4>Force Components</h4>
+                    <div class="equation">F<sub>x</sub> = F × cos(θ)</div>
+                    <div class="equation">F<sub>y</sub> = F × sin(θ)</div>
+                    <p class="explanation">Forces can be broken into x and y components using trigonometry.</p>
+                </div>
+                
+                <div class="equation-card">
+                    <h4>Friction Force</h4>
+                    <div class="equation">F<sub>friction</sub> = μ × F<sub>normal</sub></div>
+                    <p class="explanation">Friction force equals coefficient of friction times normal force.</p>
+                </div>
+                
+                <div class="equation-card">
+                    <h4>Kinetic Energy</h4>
+                    <div class="equation">KE = ½ × m × v²</div>
+                    <p class="explanation">Kinetic energy equals one-half mass times velocity squared.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Physics simulation variables
+        let canvas, ctx;
+        let simulationRunning = true;
+        let lastTime = 0;
+        let simulationTime = 0;
+        let sessionStart = Date.now();
+        
+        // Environment variables
+        let gravity = 9.8;
+        let frictionCoefficient = 0.1;
+        let showVectors = true;
+        let showGrid = true;
+        
+        // Force variables
+        let forceMagnitude = 50;
+        let forceAngle = 0; // in degrees
+        let selectedMass = 5;
+        let selectedSize = 30;
+        
+        // Objects in the simulation
+        let objects = [];
+        let selectedObject = null;
+        let isDragging = false;
+        
+        // Statistics
+        let interactionData = {
+            simulations_run: 0,
+            objects_created: 0,
+            forces_applied: 0,
+            time_seconds: 0
+        };
+        
+        // Initialize the simulation
+        function init() {
+            canvas = document.getElementById('physicsCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas dimensions
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            // Create initial object
+            createObject(canvas.width / 2, canvas.height / 2, selectedSize, selectedMass);
+            
+            // Set up event listeners
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('click', handleCanvasClick);
+            canvas.addEventListener('contextmenu', handleRightClick);
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+            });
+            
+            // Update timer
+            setInterval(() => {
+                const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('timer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                interactionData.time_seconds = elapsed;
+            }, 1000);
+            
+            // Start animation loop
+            requestAnimationFrame(updateSimulation);
+        }
+        
+        // Create a physics object
+        function createObject(x, y, radius, mass) {
+            const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c'];
+            const color = colors[objects.length % colors.length];
+            
+            const object = {
+                x: x,
+                y: y,
+                radius: radius,
+                mass: mass,
+                vx: 0, // velocity x
+                vy: 0, // velocity y
+                ax: 0, // acceleration x
+                ay: 0, // acceleration y
+                color: color,
+                forces: [],
+                fixed: false,
+                id: Date.now() + Math.random()
+            };
+            
+            objects.push(object);
+            interactionData.objects_created++;
+            updateObjectCount();
+            return object;
+        }
+        
+        // Update simulation
+        function updateSimulation(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const deltaTime = (timestamp - lastTime) / 1000; // Convert to seconds
+            lastTime = timestamp;
+            
+            if (simulationRunning) {
+                simulationTime += deltaTime;
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw background
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw grid if enabled
+                if (showGrid) {
+                    drawGrid();
+                }
+                
+                // Update and draw each object
+                objects.forEach(obj => {
+                    if (!obj.fixed) {
+                        updateObjectPhysics(obj, deltaTime);
+                    }
+                    drawObject(obj);
+                    
+                    if (showVectors) {
+                        drawVectors(obj);
+                    }
+                });
+                
+                // Update display values
+                updateDisplay();
+            }
+            
+            requestAnimationFrame(updateSimulation);
+        }
+        
+        // Update object physics
+        function updateObjectPhysics(obj, deltaTime) {
+            // Reset acceleration
+            obj.ax = 0;
+            obj.ay = 0;
+            
+            // Apply gravity
+            obj.ay += gravity;
+            
+            // Apply friction (opposite to velocity direction)
+            if (obj.vx !== 0 || obj.vy !== 0) {
+                const speed = Math.sqrt(obj.vx * obj.vx + obj.vy * obj.vy);
+                const frictionForce = frictionCoefficient * obj.mass * gravity;
+                obj.ax -= (obj.vx / speed) * (frictionForce / obj.mass);
+                obj.ay -= (obj.vy / speed) * (frictionForce / obj.mass);
+            }
+            
+            // Apply additional forces
+            obj.forces.forEach(force => {
+                const fx = force.magnitude * Math.cos(force.angle);
+                const fy = force.magnitude * Math.sin(force.angle);
+                obj.ax += fx / obj.mass;
+                obj.ay += fy / obj.mass;
+            });
+            
+            // Update velocity
+            obj.vx += obj.ax * deltaTime;
+            obj.vy += obj.ay * deltaTime;
+            
+            // Update position
+            obj.x += obj.vx * deltaTime;
+            obj.y += obj.vy * deltaTime;
+            
+            // Handle boundaries with bounce
+            if (obj.x < obj.radius) {
+                obj.x = obj.radius;
+                obj.vx = -obj.vx * 0.8; // Bounce with energy loss
+            }
+            if (obj.x > canvas.width - obj.radius) {
+                obj.x = canvas.width - obj.radius;
+                obj.vx = -obj.vx * 0.8;
+            }
+            if (obj.y < obj.radius) {
+                obj.y = obj.radius;
+                obj.vy = -obj.vy * 0.8;
+            }
+            if (obj.y > canvas.height - obj.radius) {
+                obj.y = canvas.height - obj.radius;
+                obj.vy = -obj.vy * 0.8;
+            }
+        }
+        
+        // Draw object
+        function drawObject(obj) {
+            // Create gradient for object
+            const gradient = ctx.createRadialGradient(
+                obj.x - obj.radius/3, obj.y - obj.radius/3, 0,
+                obj.x, obj.y, obj.radius
+            );
+            gradient.addColorStop(0, obj.color);
+            gradient.addColorStop(1, adjustColor(obj.color, -30));
+            
+            ctx.beginPath();
+            ctx.arc(obj.x, obj.y, obj.radius, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // Draw border
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.stroke();
+            
+            // Draw mass label
+            ctx.fillStyle = 'white';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${obj.mass} kg`, obj.x, obj.y + 4);
+            
+            // Highlight selected object
+            if (obj === selectedObject) {
+                ctx.beginPath();
+                ctx.arc(obj.x, obj.y, obj.radius + 5, 0, Math.PI * 2);
+                ctx.strokeStyle = '#ffeb3b';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+        
+        // Draw force vectors
+        function drawVectors(obj) {
+            const scale = 0.5; // Scale factor for vector visualization
+            
+            // Force vector (pink)
+            const totalForceX = obj.ax * obj.mass;
+            const totalForceY = obj.ay * obj.mass;
+            if (Math.abs(totalForceX) > 0.1 || Math.abs(totalForceY) > 0.1) {
+                drawVector(obj.x, obj.y, totalForceX * scale, totalForceY * scale, '#ff4081', 'F');
+            }
+            
+            // Velocity vector (blue)
+            if (Math.abs(obj.vx) > 0.1 || Math.abs(obj.vy) > 0.1) {
+                drawVector(obj.x, obj.y, obj.vx * 10, obj.vy * 10, '#2196f3', 'v');
+            }
+            
+            // Acceleration vector (orange)
+            if (Math.abs(obj.ax) > 0.1 || Math.abs(obj.ay) > 0.1) {
+                drawVector(obj.x, obj.y, obj.ax * 100, obj.ay * 100, '#ff9800', 'a');
+            }
+        }
+        
+        // Draw a single vector
+        function drawVector(x, y, dx, dy, color, label) {
+            const length = Math.sqrt(dx * dx + dy * dy);
+            if (length < 0.5) return; // Don't draw very small vectors
+            
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + dx, y + dy);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw arrowhead
+            const angle = Math.atan2(dy, dx);
+            ctx.beginPath();
+            ctx.moveTo(x + dx, y + dy);
+            ctx.lineTo(
+                x + dx - 10 * Math.cos(angle - Math.PI/6),
+                y + dy - 10 * Math.sin(angle - Math.PI/6)
+            );
+            ctx.lineTo(
+                x + dx - 10 * Math.cos(angle + Math.PI/6),
+                y + dy - 10 * Math.sin(angle + Math.PI/6)
+            );
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+            
+            // Draw label
+            ctx.fillStyle = color;
+            ctx.font = 'bold 11px Arial';
+            ctx.fillText(
+                `${label} (${length.toFixed(1)})`,
+                x + dx/2,
+                y + dy/2 - 8
+            );
+        }
+        
+        // Draw grid for reference
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            // Vertical lines
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // Horizontal lines
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Center lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.beginPath();
+            ctx.moveTo(canvas.width/2, 0);
+            ctx.lineTo(canvas.width/2, canvas.height);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height/2);
+            ctx.lineTo(canvas.width, canvas.height/2);
+            ctx.stroke();
+        }
+        
+        // Event handlers
+        function handleMouseDown(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Check if clicked on an object
+            for (let i = objects.length - 1; i >= 0; i--) {
+                const obj = objects[i];
+                const dx = x - obj.x;
+                const dy = y - obj.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < obj.radius) {
+                    selectedObject = obj;
+                    isDragging = true;
+                    
+                    // Apply force if not dragging (quick click)
+                    if (!e.shiftKey) {
+                        applyForceToObject(obj);
+                        interactionData.forces_applied++;
+                    }
+                    break;
+                }
+            }
+            
+            e.preventDefault();
+        }
+        
+        function handleMouseMove(e) {
+            if (isDragging && selectedObject) {
+                const rect = canvas.getBoundingClientRect();
+                selectedObject.x = e.clientX - rect.left;
+                selectedObject.y = e.clientY - rect.top;
+                
+                // Reset velocity when dragging
+                selectedObject.vx = 0;
+                selectedObject.vy = 0;
+            }
+        }
+        
+        function handleMouseUp() {
+            isDragging = false;
+        }
+        
+        function handleCanvasClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            let clickedOnObject = false;
+            for (let obj of objects) {
+                const dx = x - obj.x;
+                const dy = y - obj.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < obj.radius) {
+                    clickedOnObject = true;
+                    break;
+                }
+            }
+            
+            if (!clickedOnObject && e.shiftKey) {
+                // Add new object where clicked
+                createObject(x, y, selectedSize, selectedMass);
+            }
+        }
+        
+        function handleRightClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Check if right-clicked on an object
+            for (let i = objects.length - 1; i >= 0; i--) {
+                const obj = objects[i];
+                const dx = x - obj.x;
+                const dy = y - obj.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < obj.radius) {
+                    if (obj === selectedObject) {
+                        selectedObject = null;
+                    }
+                    objects.splice(i, 1);
+                    updateObjectCount();
+                    e.preventDefault();
+                    return;
+                }
+            }
+        }
+        
+        // Apply force to selected object
+        function applyForceToObject(obj) {
+            const angleRad = forceAngle * Math.PI / 180;
+            obj.forces = [{
+                magnitude: forceMagnitude,
+                angle: angleRad
+            }];
+            
+            // Clear forces after 0.5 seconds
+            setTimeout(() => {
+                obj.forces = [];
+            }, 500);
+        }
+        
+        // Control functions
+        function toggleSimulation() {
+            simulationRunning = !simulationRunning;
+            const btn = document.getElementById('playPauseBtn');
+            btn.innerHTML = simulationRunning ? 
+                '<i class="fas fa-pause"></i> Pause' : 
+                '<i class="fas fa-play"></i> Play';
+            btn.className = simulationRunning ? 'btn' : 'btn btn-secondary';
+            interactionData.simulations_run++;
+        }
+        
+        function resetSimulation() {
+            objects = [];
+            selectedObject = null;
+            simulationTime = 0;
+            createObject(canvas.width / 2, canvas.height / 2, selectedSize, selectedMass);
+            interactionData.simulations_run++;
+        }
+        
+        function addObject() {
+            const x = 50 + Math.random() * (canvas.width - 100);
+            const y = 50 + Math.random() * (canvas.height - 100);
+            createObject(x, y, selectedSize, selectedMass);
+        }
+        
+        function clearObjects() {
+            objects = [];
+            selectedObject = null;
+            updateObjectCount();
+        }
+        
+        function updateForce(value) {
+            forceMagnitude = parseFloat(value);
+            document.getElementById('forceValue').textContent = `${value} N`;
+        }
+        
+        function updateAngle(value) {
+            forceAngle = parseFloat(value);
+            document.getElementById('angleValue').textContent = `${value}°`;
+        }
+        
+        function updateGravity(value) {
+            gravity = parseFloat(value);
+            document.getElementById('gravityValue').textContent = `${value} m/s²`;
+        }
+        
+        function updateFriction(value) {
+            frictionCoefficient = parseFloat(value);
+            document.getElementById('frictionValue').textContent = value;
+        }
+        
+        function updateMass(value) {
+            selectedMass = parseFloat(value);
+            document.getElementById('massValue').textContent = `${value} kg`;
+            if (selectedObject) {
+                selectedObject.mass = selectedMass;
+            }
+        }
+        
+        function updateSize(value) {
+            selectedSize = parseFloat(value);
+            document.getElementById('sizeValue').textContent = `${value} px`;
+            if (selectedObject) {
+                selectedObject.radius = selectedSize;
+            }
+        }
+        
+        function toggleVectors() {
+            showVectors = document.getElementById('showVectors').checked;
+        }
+        
+        function toggleGrid() {
+            showGrid = document.getElementById('showGrid').checked;
+        }
+        
+        // Update display values
+        function updateDisplay() {
+            document.getElementById('timeDisplay').textContent = `${simulationTime.toFixed(1)}s`;
+            
+            if (objects.length > 0) {
+                let totalSpeed = 0;
+                let totalEnergy = 0;
+                
+                objects.forEach(obj => {
+                    const speed = Math.sqrt(obj.vx * obj.vx + obj.vy * obj.vy);
+                    totalSpeed += speed;
+                    
+                    // Calculate kinetic energy
+                    const ke = 0.5 * obj.mass * speed * speed;
+                    totalEnergy += ke;
+                });
+                
+                const avgSpeed = totalSpeed / objects.length;
+                document.getElementById('speedDisplay').textContent = `${avgSpeed.toFixed(2)} m/s`;
+                document.getElementById('energyDisplay').textContent = `${totalEnergy.toFixed(2)} J`;
+            } else {
+                document.getElementById('speedDisplay').textContent = `0.00 m/s`;
+                document.getElementById('energyDisplay').textContent = `0.00 J`;
+            }
+        }
+        
+        function updateObjectCount() {
+            document.getElementById('objectCount').textContent = objects.length;
+        }
+        
+        // Helper function to adjust color brightness
+        function adjustColor(color, amount) {
+            let usePound = false;
+            
+            if (color[0] === "#") {
+                color = color.slice(1);
+                usePound = true;
+            }
+            
+            const num = parseInt(color, 16);
+            let r = (num >> 16) + amount;
+            if (r > 255) r = 255;
+            else if (r < 0) r = 0;
+            
+            let g = ((num >> 8) & 0x00FF) + amount;
+            if (g > 255) g = 255;
+            else if (g < 0) g = 0;
+            
+            let b = (num & 0x0000FF) + amount;
+            if (b > 255) b = 255;
+            else if (b < 0) b = 0;
+            
+            return (usePound ? "#" : "") + (b | (g << 8) | (r << 16)).toString(16).padStart(6, '0');
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
