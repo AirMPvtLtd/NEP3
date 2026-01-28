@@ -18,6 +18,7 @@ const {
 // ============================================================================
 // NEP REPORTS (LEDGER-ANCHORED)
 // ============================================================================
+console.log('REPORT CONTROLLER KEYS:', Object.keys(reportController));
 
 /**
  * @route   POST /api/reports/nep/generate

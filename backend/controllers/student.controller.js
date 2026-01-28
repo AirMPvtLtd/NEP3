@@ -10,6 +10,12 @@ const { getRecommendedSimulations, isValidSimulation, getSimulation, getAllSimul
 const mistralService = require('../services/mistral.service');
 const { SIMULATION_METADATA, CHALLENGE_LIMITS, NEP_COMPETENCIES } = require('../config/constants');
 const logger = require('../utils/logger');
+//const Student = require('../models/Student');
+const Teacher = require('../models/Teacher');
+const School  = require('../models/School');
+const { evaluateChallenge } = require('../services/challengeEvaluation.service');
+
+
 
 // ============================================================================
 // PROFILE & DASHBOARD
@@ -24,38 +30,180 @@ const logger = require('../utils/logger');
 // ============================================================================
 // GET STUDENT PROFILE
 // ============================================================================
-exports.getProfile = async (req, res) => {
-  try {
-    // 1️⃣ Fetch student by Mongo _id (JWT se)
-    const student = await Student.findById(req.user.userId)
-      .populate('teacherId', 'teacherId name email subjects')
-      .populate('schoolId', 'schoolId schoolName address city state')
-      .lean();
+// exports.getProfile = async (req, res) => {
+//   try {
+//     // 1️⃣ Fetch student by Mongo _id (JWT se)
+//     const student = await Student.findById(req.user.userId)
+//       .populate('teacherId', 'teacherId name email subjects')
+//       .populate('schoolId', 'schoolId schoolName address city state')
+//       .lean();
 
-    if (!student) {
-      return res.status(404).json({
-        success: false,
-        message: 'Student not found'
-      });
+//     if (!student) {
+//       return res.status(404).json({
+//         success: false,
+//         message: 'Student not found'
+//       });
+//     }
+
+//     // 2️⃣ Return combined response (similar to teacher profile)
+//     return res.json({
+//       success: true,
+//       data: {
+//         student
+//       }
+//     });
+
+//   } catch (error) {
+//     logger.error('Get student profile error:', error);
+//     return res.status(500).json({
+//       success: false,
+//       message: 'Error fetching profile'
+//     });
+//   }
+// };
+
+    function extractId(field, idKey) {
+      if (!field) return null;
+      if (typeof field === 'object' && field !== null) {
+        return field[idKey] || null;
+      }
+      if (typeof field === 'string' && !field.includes('{') && field.length < 50) {
+        return field;
+      }
+      if (typeof field === 'string' && field.includes('{')) {
+        try {
+          const obj = JSON.parse(field);
+          return obj[idKey] || null;
+        } catch (e) {
+          const regex = new RegExp(`${idKey}:\\s*['"]([^'"]+)['"]`);
+          const match = field.match(regex);
+          return match ? match[1] : null;
+        }
+      }
+      return null;
     }
 
-    // 2️⃣ Return combined response (similar to teacher profile)
-    return res.json({
-      success: true,
-      data: {
-        student
+    // exports.getProfile = async (req, res) => {
+    //   try {
+    //     // 1️⃣ Fetch student by Mongo _id (JWT se)
+    //     const student = await Student.findById(req.user.userId).lean();
+        
+    //     if (!student) {
+    //       return res.status(404).json({
+    //         success: false,
+    //         message: 'Student not found'
+    //       });
+    //     }
+        
+    //     // 2️⃣ Fetch teacher if valid teacherId
+    //     let teacher = null;
+    //     if (student.teacherId && student.teacherId !== 'SYSTEM-DEFAULT') {
+    //       try {
+    //         teacher = await Teacher.findOne({teacherId: student.teacherId})
+    //           .select('teacherId name email subjects')
+    //           .lean();
+    //       } catch (err) {
+    //         logger.warn('Teacher not found:', student.teacherId);
+    //       }
+    //     }
+        
+    //     // 3️⃣ Fetch school if valid schoolId
+    //     let school = null;
+    //     if (student.schoolId && student.schoolId !== 'SYSTEM-DEFAULT') {
+    //       try {
+    //         school = await School.findOne({schoolId: student.schoolId})
+    //           .select('schoolId schoolName address city state')
+    //           .lean();
+    //       } catch (err) {
+    //         logger.warn('School not found:', student.schoolId);
+    //       }
+    //     }
+        
+    //     // 4️⃣ Return combined response
+    //     return res.json({
+    //       success: true,
+    //       data: {
+    //         student: {
+    //           ...student,
+    //           teacher,
+    //           school
+    //         }
+    //       }
+    //     });
+    //   } catch (error) {
+    //     logger.error('Get student profile error:', error);
+    //     return res.status(500).json({
+    //       success: false,
+    //       message: 'Error fetching profile'
+    //     });
+    //   }
+    // };
+
+    exports.getProfile = async (req, res) => {
+      try {
+        const student = await Student.findById(req.user.userId).lean();
+        
+        if (!student) {
+          return res.status(404).json({
+            success: false,
+            message: 'Student not found'
+          });
+        }
+        
+        // Extract clean IDs
+        const actualTeacherId = extractId(student.teacherId, 'teacherId');
+        const actualSchoolId = extractId(student.schoolId, 'schoolId');
+        
+        // Fetch teacher
+        let teacher = null;
+        if (actualTeacherId && actualTeacherId !== 'SYSTEM-DEFAULT') {
+          try {
+            teacher = await Teacher.findOne({teacherId: actualTeacherId})
+              .select('teacherId name email subjects')
+              .lean();
+            logger.info('✅ Teacher fetched', {teacherId: actualTeacherId, teacherName: teacher?.name});
+          } catch (err) {
+            logger.error('🔥 Teacher query failed', {teacherId: actualTeacherId, error: err.message});
+          }
+        }
+        
+        // Fetch school
+        let school = null;
+        if (actualSchoolId && actualSchoolId !== 'SYSTEM-DEFAULT') {
+          try {
+            school = await School.findOne({schoolId: actualSchoolId})
+              .select('schoolId schoolName address city state')
+              .lean();
+            logger.info('✅ School fetched', {schoolId: actualSchoolId, schoolName: school?.schoolName});
+          } catch (err) {
+            logger.error('🔥 School query failed', {schoolId: actualSchoolId, error: err.message});
+          }
+        }
+        
+        logger.info('📤 Student profile response ready', {
+          studentId: student.studentId,
+          teacherAttached: !!teacher,
+          schoolAttached: !!school
+        });
+        
+        return res.json({
+          success: true,
+          data: {
+            student: {
+              ...student,
+              teacher,
+              school
+            }
+          }
+        });
+      } catch (error) {
+        logger.error('Get student profile error:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Error fetching profile'
+        });
       }
-    });
-
-  } catch (error) {
-    logger.error('Get student profile error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error fetching profile'
-    });
-  }
-};
-
+    };
 // ============================================================================
 // UPDATE STUDENT PROFILE
 // ============================================================================
@@ -642,49 +790,69 @@ exports.startChallenge = async (req, res) => {
 
 exports.submitChallenge = async (req, res) => {
   try {
-    const { answers } = req.body; // Array of { questionId, studentAnswer, studentReasoning }
-    
+    const { answers } = req.body;
+
     const challenge = await Challenge.findOne({
       challengeId: req.params.challengeId,
       studentId: req.user.studentId
     });
-    
+
     if (!challenge) {
       return res.status(404).json({
         success: false,
         message: 'Challenge not found'
       });
     }
-    
+
     if (challenge.status === 'evaluated') {
       return res.status(400).json({
         success: false,
         message: 'Challenge already evaluated'
       });
     }
-    
-    // Validate answers
+
     if (!answers || answers.length !== challenge.questions.length) {
       return res.status(400).json({
         success: false,
         message: 'Invalid number of answers'
       });
     }
-    
-    // Submit challenge
+
+    // 1️⃣ Save submission
     await challenge.submit(answers);
-    
-    logger.info(`Challenge ${challenge.challengeId} submitted, starting AI evaluation`);
-    
-    // Trigger AI evaluation asynchronously
+
+    logger.info('Challenge submitted, auto-evaluation scheduled', {
+      challengeId: challenge.challengeId
+    });
+
+    // 2️⃣ Async auto-evaluation + ledger anchoring
     setImmediate(async () => {
       try {
-        await evaluateChallengeWithAI(challenge);
-      } catch (evalError) {
-        logger.error('Async evaluation error:', evalError);
+        // 🔹 Auto evaluate (PURE ENGINE)
+        const evaluation = await evaluateChallenge(challenge);
+        if (!evaluation) return;
+
+        // 🔹 Anchor immutable ledger event
+        await writeChallengeEvaluationEvent({
+          studentId: challenge.studentId,
+          teacherId: challenge.teacherId || 'SYSTEM',
+          schoolId: challenge.schoolId,
+          challenge,
+          evaluation,
+          ipAddress: req.ip || 'system',
+          userAgent: req.get('user-agent') || 'auto-evaluator'
+        });
+
+        logger.info('Ledger anchored for challenge evaluation', {
+          challengeId: challenge.challengeId
+        });
+
+      } catch (err) {
+        logger.error('Auto-evaluation / ledger anchoring failed', err);
       }
     });
-    
+
+    // 3️⃣ Immediate response to client
     res.json({
       success: true,
       message: 'Challenge submitted successfully. Evaluation in progress.',
@@ -694,7 +862,7 @@ exports.submitChallenge = async (req, res) => {
         status: 'submitted'
       }
     });
-    
+
   } catch (error) {
     logger.error('Submit challenge error:', error);
     res.status(500).json({
@@ -705,109 +873,6 @@ exports.submitChallenge = async (req, res) => {
   }
 };
 
-// Helper function: AI Evaluation
-async function evaluateChallengeWithAI(challenge) {
-  try {
-    const evaluatedAnswers = [];
-    let totalScore = 0;
-    let correctAnswers = 0;
-    
-    // Evaluate each answer with AI
-    for (let i = 0; i < challenge.answers.length; i++) {
-      const answer = challenge.answers[i];
-      const question = challenge.questions.find(q => q.questionId === answer.questionId);
-      
-      if (!question) continue;
-      
-      // Call Mistral AI for evaluation
-      const aiEvaluation = await evaluateResponse({
-        question: question.question,
-        correctAnswer: question.correctAnswer,
-        studentAnswer: answer.studentAnswer,
-        studentReasoning: answer.studentReasoning,
-        expectedExplanation: question.explanation
-      });
-      
-      // Calculate final score (Answer: 70%, Reasoning: 30%)
-      const answerScore = aiEvaluation.answerScore || 0; // 0-70
-      const reasoningScore = aiEvaluation.reasoningScore || 0; // 0-30
-      const finalScore = answerScore + reasoningScore;
-      
-      if (aiEvaluation.answerCorrect) {
-        correctAnswers++;
-      }
-      
-      totalScore += finalScore;
-      
-      evaluatedAnswers.push({
-        questionId: answer.questionId,
-        studentAnswer: answer.studentAnswer,
-        studentReasoning: answer.studentReasoning,
-        aiEvaluation,
-        finalScore,
-        evaluatedAt: new Date()
-      });
-    }
-    
-    // Calculate overall results
-    const averageScore = totalScore / challenge.questions.length;
-    const passed = averageScore >= challenge.passingScore;
-    
-    // Identify competencies
-    const competencyScores = {};
-    challenge.questions.forEach((q, index) => {
-      q.competencies.forEach(comp => {
-        if (!competencyScores[comp]) {
-          competencyScores[comp] = [];
-        }
-        competencyScores[comp].push(evaluatedAnswers[index]?.finalScore || 0);
-      });
-    });
-    
-    const competenciesAssessed = Object.entries(competencyScores).map(([comp, scores]) => ({
-      competency: comp,
-      score: scores.reduce((a, b) => a + b, 0) / scores.length
-    }));
-    
-    // Update challenge with results
-    await challenge.evaluate({
-      totalScore: averageScore,
-      percentage: averageScore,
-      passed,
-      correctAnswers,
-      totalQuestions: challenge.questions.length,
-      competenciesAssessed
-    });
-    
-    challenge.answers = evaluatedAnswers;
-    await challenge.save();
-    
-    // Update student performance
-    const student = await Student.findOne({ studentId: challenge.studentId });
-    
-    if (student) {
-      // Add challenge to recent history
-      await student.addChallengeResult(
-        challenge.challengeId,
-        averageScore,
-        challenge.simulationType
-      );
-      
-      // Update competency scores
-      for (const compAssessment of competenciesAssessed) {
-        await student.updateCompetency(compAssessment.competency, compAssessment.score);
-      }
-      
-      await student.save();
-    }
-    
-    logger.info(`Challenge ${challenge.challengeId} evaluated: ${averageScore}% (${passed ? 'PASSED' : 'FAILED'})`);
-    
-  } catch (error) {
-    logger.error('Evaluation error:', error);
-    throw error;
-  }
-}
 
 exports.getChallengeResults = async (req, res) => {
   try {

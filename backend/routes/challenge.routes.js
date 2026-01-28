@@ -92,12 +92,12 @@ router.get(
 // EVALUATION (TEACHER / ADMIN)
 // ============================================================================
 
-router.post(
-  '/:challengeId/evaluate',
-  authenticate,
-  authorize('teacher', 'admin'),
-  challengeController.evaluateChallenge
-);
+// router.post(
+//   '/:challengeId/evaluate',
+//   authenticate,
+//   authorize('teacher', 'admin'),
+//   challengeController.evaluateChallenge
+// );
 
 //If you need consistent scores, lower temperature to 0.1 or add more strict scoring rubrics in the prompt. 
 // router.post(
@@ -182,13 +182,13 @@ router.get(
   challengeController.getSchoolChallenges
 );
 
-router.post(
-  '/bulk-evaluate',
-  authenticate,
-  authorize('admin'),
-  validateRequest('bulkEvaluate'),
-  challengeController.bulkEvaluateChallenges
-);
+// router.post(
+//   '/bulk-evaluate',
+//   authenticate,
+//   authorize('admin'),
+//   validateRequest('bulkEvaluate'),
+//   challengeController.bulkEvaluateChallenges
+// );
 
 // ============================================================================
 // ANALYTICS

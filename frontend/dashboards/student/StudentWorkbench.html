@@ -1,10 +1,10 @@
-<!-- <!-- <!-- <!-- <!-- <!-- <!-- <!-- <!-- <!-- <!-- <!DOCTYPE html>
+<!--<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Fix CSP to allow external resources -->
+    <! Fix CSP to allow external resources -->
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
         script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;
@@ -874,6 +874,127 @@
             to { transform: rotate(360deg); }
         }
 
+
+        /* ============================================================ */
+        /* PROFILE PAGE SPECIFIC STYLES */
+        /* ============================================================ */
+
+        .profile-activity-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background: #333337;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid #007acc;
+            transition: all 0.3s;
+        }
+
+        .profile-activity-item:hover {
+            background: #3e3e42;
+            transform: translateX(5px);
+        }
+
+        .profile-activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .profile-activity-content {
+            flex: 1;
+        }
+
+        .profile-activity-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: white;
+        }
+
+        .profile-activity-desc {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .profile-activity-time {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .competency-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            background: #333337;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #464647;
+        }
+
+        .competency-badge-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .competency-badge-icon.strong {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+
+        .competency-badge-icon.weak {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .competency-badge-content {
+            flex: 1;
+        }
+
+        .competency-badge-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+            text-transform: capitalize;
+        }
+
+        .competency-badge-score {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        /* Profile Form Enhancements */
+        #profileForm input:focus {
+            outline: none;
+            border-color: #007acc;
+            box-shadow: 0 0 0 3px rgba(0, 122, 204, 0.1);
+        }
+
+        /* Profile Header Responsive */
+        @media (max-width: 768px) {
+            .panel > div[style*="display: flex"] {
+                flex-direction: column !important;
+                text-align: center;
+            }
+            
+            #profileAvatarLarge {
+                margin: 0 auto;
+            }
+        }
+
         /* ============================================================ */
         /* RATE LIMIT NOTIFICATION */
         /* ============================================================ */
@@ -907,10 +1028,10 @@
                 NEP Workbench
             </div>
             
-<!--             <div class="search-box">
+             <div class="search-box">
                 <i class="fas fa-search" style="color: #888; margin-right: 8px;"></i>
                 <input type="text" placeholder="Search simulations..." id="searchInput">
-            </div> -->
+            </div> 
             
             <div class="header-right">
                 <div class="notification-bell" id="notificationBell">
@@ -1196,6 +1317,283 @@
                 <div class="panel">
                     <h2>My Tickets</h2>
                     <div id="ticketsList"></div>
+                </div>
+            </div>
+
+                    <!-- ============================================================ -->
+            <!-- PROFILE PAGE -->
+            <!-- ============================================================ -->
+            <div class="page" id="profile">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <div>
+                        <h1><i class="fas fa-user-circle"></i> My Profile</h1>
+                        <p style="color: #888; margin-top: 10px;">Manage your profile and track your learning journey</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="loadProfile()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+
+                <!-- Profile Header Card -->
+                <div class="panel" style="background: linear-gradient(135deg, #007acc, #00d4ff); border: none; margin-bottom: 30px;">
+                    <div style="display: flex; gap: 30px; align-items: center;">
+                        <div style="width: 120px; height: 120px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: bold; color: #007acc; box-shadow: 0 4px 15px rgba(0,0,0,0.2);" id="profileAvatarLarge">
+                            S
+                        </div>
+                        <div style="flex: 1; color: white;">
+                            <h2 style="font-size: 2rem; margin-bottom: 10px;" id="profileDisplayName">Student Name</h2>
+                            <div style="display: flex; gap: 20px; margin-bottom: 15px; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-id-card"></i>
+                                    <span id="profileStudentId">STU-XXXXX</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    <span id="profileClassSection">Class -- Section --</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-school"></i>
+                                    <span id="profileSchoolName">School Name</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 15px;">
+                                <div style="background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px; backdrop-filter: blur(10px);">
+                                    <div style="font-size: 1.5rem; font-weight: bold;" id="profileHeaderPI">--</div>
+                                    <div style="font-size: 0.85rem; opacity: 0.9;">Performance Index</div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px; backdrop-filter: blur(10px);">
+                                    <div style="font-size: 1.5rem; font-weight: bold;" id="profileHeaderStreak">0</div>
+                                    <div style="font-size: 0.85rem; opacity: 0.9;">Day Streak</div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px; backdrop-filter: blur(10px);">
+                                    <div style="font-size: 1.5rem; font-weight: bold;" id="profileHeaderTotal">0</div>
+                                    <div style="font-size: 0.85rem; opacity: 0.9;">Challenges</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Two Column Layout -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px; margin-bottom: 25px;">
+                    
+                    <!-- Left Column: Personal Information -->
+                    <div class="panel">
+                        <h2 style="margin-bottom: 20px;"><i class="fas fa-user-edit"></i> Personal Information</h2>
+                        <form id="profileForm" onsubmit="updateProfile(event)">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; color: #00d4ff; font-weight: 600;">
+                                        <i class="fas fa-user"></i> Full Name <span style="color: #ff4444;">*</span>
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="profileName" 
+                                        placeholder="Enter your name"
+                                        style="width: 100%; padding: 12px; background: #333337; border: 1px solid #464647; color: white; border-radius: 4px;"
+                                        required>
+                                </div>
+                                
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; color: #00d4ff; font-weight: 600;">
+                                        <i class="fas fa-envelope"></i> Email
+                                    </label>
+                                    <input 
+                                        type="email" 
+                                        id="profileEmail" 
+                                        placeholder="Email address"
+                                        style="width: 100%; padding: 12px; background: #1e1e1e; border: 1px solid #464647; color: #888; border-radius: 4px;"
+                                        disabled>
+                                </div>
+                                
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; color: #00d4ff; font-weight: 600;">
+                                        <i class="fas fa-phone"></i> Phone Number
+                                    </label>
+                                    <input 
+                                        type="tel" 
+                                        id="profilePhone" 
+                                        placeholder="Phone number"
+                                        style="width: 100%; padding: 12px; background: #333337; border: 1px solid #464647; color: white; border-radius: 4px;">
+                                </div>
+                                
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; color: #00d4ff; font-weight: 600;">
+                                        <i class="fas fa-calendar"></i> Date of Birth
+                                    </label>
+                                    <input 
+                                        type="date" 
+                                        id="profileDOB" 
+                                        style="width: 100%; padding: 12px; background: #333337; border: 1px solid #464647; color: white; border-radius: 4px;">
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; color: #00d4ff; font-weight: 600;">
+                                    <i class="fas fa-image"></i> Profile Picture URL
+                                </label>
+                                <input 
+                                    type="url" 
+                                    id="profilePicture" 
+                                    placeholder="Enter profile picture URL (optional)"
+                                    style="width: 100%; padding: 12px; background: #333337; border: 1px solid #464647; color: white; border-radius: 4px;">
+                                <small style="color: #888; font-size: 0.85rem; margin-top: 5px; display: block;">
+                                    <i class="fas fa-info-circle"></i> Upload an image to Imgur or similar and paste the URL here
+                                </small>
+                            </div>
+                            
+                            <div style="display: flex; gap: 15px;">
+                                <button type="submit" class="btn">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="loadProfile()">
+                                    <i class="fas fa-undo"></i> Reset
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Right Column: Quick Stats -->
+                    <div>
+                        <div class="panel" style="margin-bottom: 20px;">
+                            <h3 style="margin-bottom: 15px;"><i class="fas fa-info-circle"></i> Account Details</h3>
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <div style="display: flex; justify-content: space-between; padding: 10px; background: #333337; border-radius: 4px;">
+                                    <span style="color: #888;"><i class="fas fa-school"></i> School</span>
+                                    <span id="profileSchoolDetail">Loading...</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 10px; background: #333337; border-radius: 4px;">
+                                    <span style="color: #888;"><i class="fas fa-chalkboard-teacher"></i> Teacher</span>
+                                    <span id="profileTeacherDetail">Loading...</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 10px; background: #333337; border-radius: 4px;">
+                                    <span style="color: #888;"><i class="fas fa-graduation-cap"></i> Class</span>
+                                    <span id="profileClassDetail">-- / --</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 10px; background: #333337; border-radius: 4px;">
+                                    <span style="color: #888;"><i class="fas fa-calendar-check"></i> Member Since</span>
+                                    <span id="profileJoinedDate">--</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 10px; background: #333337; border-radius: 4px;">
+                                    <span style="color: #888;"><i class="fas fa-sign-in-alt"></i> Last Login</span>
+                                    <span id="profileLastLogin">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel">
+                            <h3 style="margin-bottom: 15px;"><i class="fas fa-shield-alt"></i> Account Status</h3>
+                            <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: rgba(40, 167, 69, 0.1); border: 1px solid #28a745; border-radius: 6px;">
+                                <i class="fas fa-check-circle" style="color: #28a745; font-size: 1.5rem;"></i>
+                                <div>
+                                    <div style="font-weight: 600; color: #28a745;">Active</div>
+                                    <div style="font-size: 0.85rem; color: #888;">Your account is in good standing</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Charts Section -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;">
+                    
+                    <!-- Competency Radar Chart -->
+                    <div class="panel">
+                        <h2 style="margin-bottom: 20px;"><i class="fas fa-star"></i> Competency Overview</h2>
+                        <div style="display: flex; justify-content: center;">
+                            <div class="radar-chart" id="profileCompetencyRadar">
+                                <!-- Radar chart will be generated here -->
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px; text-align: center; color: #888; font-size: 0.85rem;">
+                            <i class="fas fa-info-circle"></i> Based on your recent challenge performance
+                        </div>
+                    </div>
+
+                    <!-- Performance Trend Chart -->
+                    <div class="panel">
+                        <h2 style="margin-bottom: 20px;"><i class="fas fa-chart-line"></i> Performance Trend</h2>
+                        <div class="simple-chart" id="profilePerformanceChart" style="height: 250px;">
+                            <!-- Performance trend bars will be generated here -->
+                        </div>
+                        <div style="margin-top: 20px; text-align: center; color: #888; font-size: 0.85rem;">
+                            <i class="fas fa-info-circle"></i> Last 7 days average scores
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Grid -->
+                <div class="panel">
+                    <h2 style="margin-bottom: 20px;"><i class="fas fa-chart-bar"></i> Learning Statistics</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                        <div style="background: #333337; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #464647;">
+                            <i class="fas fa-trophy" style="font-size: 2.5rem; color: #ffd700; margin-bottom: 10px;"></i>
+                            <div style="font-size: 1.8rem; font-weight: bold; color: #00d4ff; margin-bottom: 5px;" id="profileTotalChallenges">0</div>
+                            <div style="color: #888; font-size: 0.9rem;">Total Challenges</div>
+                        </div>
+                        
+                        <div style="background: #333337; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #464647;">
+                            <i class="fas fa-check-circle" style="font-size: 2.5rem; color: #28a745; margin-bottom: 10px;"></i>
+                            <div style="font-size: 1.8rem; font-weight: bold; color: #00d4ff; margin-bottom: 5px;" id="profileCompleted">0</div>
+                            <div style="color: #888; font-size: 0.9rem;">Completed</div>
+                        </div>
+                        
+                        <div style="background: #333337; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #464647;">
+                            <i class="fas fa-percentage" style="font-size: 2.5rem; color: #007acc; margin-bottom: 10px;"></i>
+                            <div style="font-size: 1.8rem; font-weight: bold; color: #00d4ff; margin-bottom: 5px;" id="profileAvgScore">0%</div>
+                            <div style="color: #888; font-size: 0.9rem;">Average Score</div>
+                        </div>
+                        
+                        <div style="background: #333337; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #464647;">
+                            <i class="fas fa-fire" style="font-size: 2.5rem; color: #ff4444; margin-bottom: 10px;"></i>
+                            <div style="font-size: 1.8rem; font-weight: bold; color: #00d4ff; margin-bottom: 5px;" id="profileStreakDays">0</div>
+                            <div style="color: #888; font-size: 0.9rem;">Day Streak</div>
+                        </div>
+                        
+                        <div style="background: #333337; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #464647;">
+                            <i class="fas fa-clock" style="font-size: 2.5rem; color: #17a2b8; margin-bottom: 10px;"></i>
+                            <div style="font-size: 1.8rem; font-weight: bold; color: #00d4ff; margin-bottom: 5px;" id="profileTotalTime">0h</div>
+                            <div style="color: #888; font-size: 0.9rem;">Total Time Spent</div>
+                        </div>
+                        
+                        <div style="background: #333337; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #464647;">
+                            <i class="fas fa-chart-line" style="font-size: 2.5rem; color: #20c997; margin-bottom: 10px;"></i>
+                            <div style="font-size: 1.8rem; font-weight: bold; color: #00d4ff; margin-bottom: 5px;" id="profilePI">--</div>
+                            <div style="color: #888; font-size: 0.9rem;">Performance Index</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="panel">
+                    <h2 style="margin-bottom: 20px;"><i class="fas fa-history"></i> Recent Activity</h2>
+                    <div id="profileRecentActivity">
+                        <!-- Activity timeline will be generated here -->
+                    </div>
+                </div>
+
+                <!-- Strong & Weak Competencies -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                    
+                    <!-- Strong Competencies -->
+                    <div class="panel">
+                        <h2 style="margin-bottom: 20px; color: #28a745;">
+                            <i class="fas fa-thumbs-up"></i> Strong Competencies
+                        </h2>
+                        <div id="profileStrongCompetencies">
+                            <!-- Strong competencies list will be generated here -->
+                        </div>
+                    </div>
+
+                    <!-- Weak Competencies -->
+                    <div class="panel">
+                        <h2 style="margin-bottom: 20px; color: #ffc107;">
+                            <i class="fas fa-exclamation-triangle"></i> Areas for Improvement
+                        </h2>
+                        <div id="profileWeakCompetencies">
+                            <!-- Weak competencies list will be generated here -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -2033,6 +2431,462 @@
         }
 
         // ================================================================
+        // PROFILE PAGE - COMPLETE IMPLEMENTATION
+        // ================================================================
+
+        /**
+         * Load complete profile data
+         */
+        async function loadProfile() {
+            showLoading();
+            try {
+                const data = await throttledApiCall('/student/profile');
+                const student = data.data.student;
+                
+                console.log('Profile data loaded:', student);
+                
+                // Update profile header
+                updateProfileHeader(student);
+                
+                // Populate personal information form
+                populateProfileForm(student);
+                
+                // Update account details
+                updateAccountDetails(student);
+                
+                // Update statistics
+                updateProfileStatistics(student);
+                
+                // Create competency radar chart
+                createProfileCompetencyRadar(student.competencyScores);
+                
+                // Create performance trend chart
+                createProfilePerformanceChart(student);
+                
+                // Display recent activity
+                displayRecentActivity(student.recentChallenges);
+                
+                // Display strong/weak competencies
+                displayCompetencyLists(student);
+                
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                alert('Failed to load profile. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        /**
+         * Update profile header section
+         */
+        function updateProfileHeader(student) {
+            // Update avatar
+            const avatarLarge = document.getElementById('profileAvatarLarge');
+            if (student.profilePicture) {
+                avatarLarge.innerHTML = `<img src="${student.profilePicture}" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+            } else {
+                avatarLarge.textContent = student.name.charAt(0).toUpperCase();
+            }
+            
+            // Update name and IDs
+            document.getElementById('profileDisplayName').textContent = student.name;
+            document.getElementById('profileStudentId').textContent = student.studentId;
+            document.getElementById('profileClassSection').textContent = `Class ${student.class} Section ${student.section}`;
+            document.getElementById('profileSchoolName').textContent = student.school?.schoolName || 'N/A';
+            
+            // Update header stats
+            document.getElementById('profileHeaderPI').textContent = student.performanceIndex?.toFixed(1) || '--';
+            document.getElementById('profileHeaderStreak').textContent = student.stats?.dailyStreak || 0;
+            document.getElementById('profileHeaderTotal').textContent = student.stats?.totalChallenges || 0;
+        }
+
+        /**
+         * Populate profile form fields
+         */
+        function populateProfileForm(student) {
+            document.getElementById('profileName').value = student.name || '';
+            document.getElementById('profileEmail').value = student.email || '';
+            document.getElementById('profilePhone').value = student.phone || '';
+            document.getElementById('profileDOB').value = student.dateOfBirth ? student.dateOfBirth.split('T')[0] : '';
+            document.getElementById('profilePicture').value = student.profilePicture || '';
+        }
+
+        /**
+         * Update account details sidebar
+         */
+        function updateAccountDetails(student) {
+            document.getElementById('profileSchoolDetail').textContent = student.school?.schoolName || 'N/A';
+            document.getElementById('profileTeacherDetail').textContent = student.teacher?.name || 'N/A';
+            document.getElementById('profileClassDetail').textContent = `${student.class} / ${student.section}`;
+            
+            // Format member since date
+            const joinedDate = new Date(student.createdAt);
+            document.getElementById('profileJoinedDate').textContent = joinedDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short' 
+            });
+            
+            // Last login (if available)
+            document.getElementById('profileLastLogin').textContent = student.lastLoginAt 
+                ? new Date(student.lastLoginAt).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric' 
+                  })
+                : 'Today';
+        }
+
+        /**
+         * Update learning statistics
+         */
+        function updateProfileStatistics(student) {
+            const stats = student.stats || {};
+            
+            document.getElementById('profileTotalChallenges').textContent = stats.totalChallenges || 0;
+            document.getElementById('profileCompleted').textContent = stats.totalChallengesCompleted || 0;
+            document.getElementById('profileAvgScore').textContent = (stats.averageChallengeScore || 0).toFixed(1) + '%';
+            document.getElementById('profileStreakDays').textContent = stats.dailyStreak || 0;
+            
+            // Calculate total time (estimate: 10 min per challenge)
+            const totalMinutes = (stats.totalChallengesCompleted || 0) * 10;
+            const totalHours = Math.floor(totalMinutes / 60);
+            document.getElementById('profileTotalTime').textContent = totalHours + 'h';
+            
+            document.getElementById('profilePI').textContent = student.performanceIndex?.toFixed(1) || '--';
+        }
+
+        /**
+         * Create competency radar chart for profile
+         */
+        function createProfileCompetencyRadar(competencyScores) {
+            const radarContainer = document.getElementById('profileCompetencyRadar');
+            if (!radarContainer) return;
+            
+            // Convert competency scores to arrays
+            const competencies = competencyScores || {};
+            const labels = Object.keys(competencies);
+            const values = Object.values(competencies);
+            
+            // Clear existing content
+            radarContainer.innerHTML = '';
+            
+            // Create radar grid circles
+            for (let i = 0; i < 5; i++) {
+                const grid = document.createElement('div');
+                grid.className = 'radar-grid';
+                radarContainer.appendChild(grid);
+            }
+            
+            // Create axes
+            const numAxes = labels.length;
+            for (let i = 0; i < numAxes; i++) {
+                const angle = (i * 360) / numAxes;
+                const axis = document.createElement('div');
+                axis.className = 'radar-axis';
+                axis.style.transform = `rotate(${angle}deg)`;
+                radarContainer.appendChild(axis);
+            }
+            
+            // Calculate points for the polygon
+            const points = [];
+            const centerX = 150;
+            const centerY = 150;
+            const maxRadius = 120;
+            
+            for (let i = 0; i < numAxes; i++) {
+                const angle = (i * 360) / numAxes - 90;
+                const radians = (angle * Math.PI) / 180;
+                const score = values[i] || 0;
+                const radius = (score / 100) * maxRadius;
+                
+                const x = centerX + radius * Math.cos(radians);
+                const y = centerY + radius * Math.sin(radians);
+                
+                points.push(`${x},${y}`);
+                
+                // Add labels (abbreviated for space)
+                const labelRadius = maxRadius + 30;
+                const labelX = centerX + labelRadius * Math.cos(radians);
+                const labelY = centerY + labelRadius * Math.sin(radians);
+                
+                const label = document.createElement('div');
+                label.className = 'radar-label';
+                label.textContent = labels[i].split('-')[0].substring(0, 8) + '...';
+                label.style.left = `${labelX}px`;
+                label.style.top = `${labelY}px`;
+                label.title = labels[i]; // Full name on hover
+                radarContainer.appendChild(label);
+                
+                // Add point marker
+                const point = document.createElement('div');
+                point.className = 'radar-point';
+                point.style.left = `${x}px`;
+                point.style.top = `${y}px`;
+                radarContainer.appendChild(point);
+            }
+            
+            // Create polygon
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', '300');
+            svg.setAttribute('height', '300');
+            svg.setAttribute('class', 'radar-polygon');
+            
+            const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            polygon.setAttribute('points', points.join(' '));
+            svg.appendChild(polygon);
+            
+            radarContainer.appendChild(svg);
+        }
+
+        /**
+         * Create performance trend chart
+         */
+        function createProfilePerformanceChart(student) {
+            const chartContainer = document.getElementById('profilePerformanceChart');
+            if (!chartContainer) return;
+            
+            // Get last 7 challenges or generate sample data
+            const recentChallenges = student.recentChallenges || [];
+            
+            // Prepare data (last 7 days)
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const performanceData = days.map((day, index) => {
+                const challenge = recentChallenges[index];
+                return {
+                    day,
+                    value: challenge ? challenge.score : 0
+                };
+            });
+            
+            // Find max value for scaling
+            const maxValue = Math.max(...performanceData.map(d => d.value), 100);
+            
+            // Clear existing content
+            chartContainer.innerHTML = '';
+            
+            // Create bars
+            performanceData.forEach((item, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar';
+                bar.style.height = `${(item.value / maxValue) * 100}%`;
+                bar.style.minHeight = '10px';
+                
+                // Color based on score
+                let color = '#007acc';
+                if (item.value >= 80) color = '#28a745';
+                else if (item.value >= 60) color = '#ffc107';
+                else if (item.value > 0) color = '#dc3545';
+                
+                bar.style.background = `linear-gradient(to top, ${color}, ${adjustColor(color, 30)})`;
+                
+                const barValue = document.createElement('div');
+                barValue.className = 'bar-value';
+                barValue.textContent = item.value > 0 ? `${item.value}%` : '-';
+                bar.appendChild(barValue);
+                
+                const barLabel = document.createElement('div');
+                barLabel.className = 'bar-label';
+                barLabel.textContent = item.day;
+                bar.appendChild(barLabel);
+                
+                chartContainer.appendChild(bar);
+            });
+        }
+
+        /**
+         * Display recent activity timeline
+         */
+        function displayRecentActivity(recentChallenges) {
+            const activityContainer = document.getElementById('profileRecentActivity');
+            if (!activityContainer) return;
+            
+            if (!recentChallenges || recentChallenges.length === 0) {
+                activityContainer.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #888;">
+                        <i class="fas fa-history" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                        <p>No recent activity yet. Start a challenge to see your activity here!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            activityContainer.innerHTML = recentChallenges.slice(0, 5).map(challenge => {
+                const date = new Date(challenge.completedAt);
+                const timeAgo = getTimeAgo(date);
+                const score = challenge.score || 0;
+                const passed = score >= 70;
+                
+                return `
+                    <div class="profile-activity-item">
+                        <div class="profile-activity-icon" style="background: ${passed ? 'linear-gradient(135deg, #28a745, #20c997)' : 'linear-gradient(135deg, #dc3545, #c82333)'};">
+                            <i class="fas fa-${passed ? 'check' : 'times'}"></i>
+                        </div>
+                        <div class="profile-activity-content">
+                            <div class="profile-activity-title">
+                                ${challenge.simulationType || 'Challenge'} - Score: ${score}%
+                            </div>
+                            <div class="profile-activity-desc">
+                                Challenge ID: ${challenge.challengeId}
+                            </div>
+                            <div class="profile-activity-time">
+                                <i class="fas fa-clock"></i> ${timeAgo}
+                            </div>
+                        </div>
+                        <div>
+                            <span class="badge badge-${passed ? 'success' : 'danger'}" style="font-size: 0.9rem;">
+                                ${passed ? 'Passed' : 'Failed'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /**
+         * Display strong and weak competencies
+         */
+        function displayCompetencyLists(student) {
+            // Strong competencies
+            const strongContainer = document.getElementById('profileStrongCompetencies');
+            const strongCompetencies = student.strongCompetencies || [];
+            const competencyScores = student.competencyScores || {};
+            
+            if (strongCompetencies.length === 0) {
+                strongContainer.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #888;">
+                        <i class="fas fa-star" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                        <p>Complete more challenges to identify your strengths!</p>
+                    </div>
+                `;
+            } else {
+                strongContainer.innerHTML = strongCompetencies.map(comp => {
+                    const score = competencyScores[comp] || 0;
+                    return `
+                        <div class="competency-badge">
+                            <div class="competency-badge-icon strong">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="competency-badge-content">
+                                <div class="competency-badge-name">${comp.replace(/-/g, ' ')}</div>
+                                <div class="competency-badge-score">Score: ${score.toFixed(1)}/100</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Weak competencies
+            const weakContainer = document.getElementById('profileWeakCompetencies');
+            const weakCompetencies = student.weakCompetencies || [];
+            
+            if (weakCompetencies.length === 0) {
+                weakContainer.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #888;">
+                        <i class="fas fa-thumbs-up" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                        <p>Great job! No weak areas identified yet.</p>
+                    </div>
+                `;
+            } else {
+                weakContainer.innerHTML = weakCompetencies.map(comp => {
+                    const score = competencyScores[comp] || 0;
+                    return `
+                        <div class="competency-badge">
+                            <div class="competency-badge-icon weak">
+                                <i class="fas fa-exclamation"></i>
+                            </div>
+                            <div class="competency-badge-content">
+                                <div class="competency-badge-name">${comp.replace(/-/g, ' ')}</div>
+                                <div class="competency-badge-score">Score: ${score.toFixed(1)}/100 - Needs practice</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        /**
+         * Update profile (save changes)
+         */
+        async function updateProfile(event) {
+            event.preventDefault();
+            
+            const updates = {
+                name: document.getElementById('profileName').value,
+                phone: document.getElementById('profilePhone').value,
+                dateOfBirth: document.getElementById('profileDOB').value,
+                profilePicture: document.getElementById('profilePicture').value
+            };
+            
+            // Remove empty fields
+            Object.keys(updates).forEach(key => {
+                if (!updates[key]) delete updates[key];
+            });
+            
+            if (Object.keys(updates).length === 0) {
+                alert('⚠️ Please make some changes before saving.');
+                return;
+            }
+            
+            showLoading();
+            try {
+                const data = await throttledApiCall('/student/profile', {
+                    method: 'PUT',
+                    body: JSON.stringify(updates)
+                });
+                
+                alert('✅ Profile updated successfully!');
+                
+                // Refresh profile data
+                await loadProfile();
+                
+                // Update dashboard header if name changed
+                if (updates.name) {
+                    document.getElementById('userName').textContent = updates.name;
+                    document.getElementById('welcomeName').textContent = updates.name;
+                    document.getElementById('userAvatar').textContent = updates.name.charAt(0).toUpperCase();
+                }
+                
+                // Update avatar if profile picture changed
+                if (updates.profilePicture) {
+                    const avatar = document.getElementById('userAvatar');
+                    avatar.innerHTML = `<img src="${updates.profilePicture}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                }
+                
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                alert('❌ Failed to update profile: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        /**
+         * Helper: Get time ago string
+         */
+        function getTimeAgo(date) {
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            
+            const intervals = {
+                year: 31536000,
+                month: 2592000,
+                week: 604800,
+                day: 86400,
+                hour: 3600,
+                minute: 60
+            };
+            
+            for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+                const interval = Math.floor(seconds / secondsInUnit);
+                if (interval >= 1) {
+                    return `${interval} ${unit}${interval > 1 ? 's' : ''} ago`;
+                }
+            }
+            
+            return 'Just now';
+        }
+
+        // ================================================================
         // NAVIGATION
         // ================================================================
         function showPage(pageId) {
@@ -2077,6 +2931,9 @@
         // PROFILE PAGE
         // ================================================================
         async function loadProfile() {
+
+            console.log('🔄 Loading profile...');
+            console.log('Token:', authToken);
             showLoading();
             try {
                 const data = await throttledApiCall('/student/profile');

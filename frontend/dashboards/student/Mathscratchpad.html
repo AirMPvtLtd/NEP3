@@ -6,9 +6,10 @@
     <title>Math Scratchpad - NEP Workbench</title>
     
     <!-- KaTeX for LaTeX rendering -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+        onload="initKaTeX()"></script>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -447,6 +448,26 @@
             color: #00d4ff;
             font-family: 'Courier New', monospace;
         }
+
+        /* Loading indicator for KaTeX */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #00d4ff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .katex-loading {
+            color: #888;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -625,7 +646,9 @@
                                 <i class="fas fa-eye"></i>
                                 Live Preview
                             </div>
-                            <div id="latexPreview" class="latex-preview"></div>
+                            <div id="latexPreview" class="latex-preview">
+                                <span class="katex-loading">Loading KaTeX... <span class="loading"></span></span>
+                            </div>
                         </div>
 
                         <div style="display: flex; gap: 10px; margin-top: 15px;">
@@ -719,10 +742,24 @@
         let brushSize = 3;
         let currentColor = '#000000';
         let canvas, ctx;
+        let katexLoaded = false;
 
         // ================================================================
         // INITIALIZATION
         // ================================================================
+        function initKaTeX() {
+            katexLoaded = true;
+            const preview = document.getElementById('latexPreview');
+            preview.innerHTML = '';
+            preview.style.minHeight = '150px';
+            
+            // Check if there's any existing LaTeX to render
+            const latexInput = document.getElementById('latexInput');
+            if (latexInput && latexInput.value.trim()) {
+                renderLatex();
+            }
+        }
+
         window.onload = function() {
             canvas = document.getElementById('drawingCanvas');
             ctx = canvas.getContext('2d');
@@ -730,6 +767,8 @@
             // Setup canvas
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = brushSize;
             
             // Canvas event listeners
             canvas.addEventListener('mousedown', startDrawing);
@@ -741,6 +780,13 @@
             canvas.addEventListener('touchstart', handleTouch);
             canvas.addEventListener('touchmove', handleTouch);
             canvas.addEventListener('touchend', stopDrawing);
+            
+            // Check if KaTeX is already loaded (in case onload event fired before ours)
+            if (typeof katex !== 'undefined') {
+                katexLoaded = true;
+                const preview = document.getElementById('latexPreview');
+                preview.innerHTML = '';
+            }
         };
 
         // ================================================================
@@ -784,7 +830,15 @@
                 return;
             }
             
+            if (!katexLoaded) {
+                preview.innerHTML = '<span style="color: #ff9800;">KaTeX is still loading. Please wait...</span>';
+                return;
+            }
+            
             try {
+                // Clear previous content
+                preview.innerHTML = '';
+                
                 // Render LaTeX using KaTeX
                 katex.render(input, preview, {
                     throwOnError: false,
@@ -792,7 +846,7 @@
                     output: 'html'
                 });
             } catch (error) {
-                preview.innerHTML = `<span style="color: #dc3545;">Error: ${error.message}</span>`;
+                preview.innerHTML = `<span style="color: #dc3545;">LaTeX Error: ${error.message}</span>`;
             }
         }
 
@@ -812,7 +866,19 @@
                     return;
                 }
                 
-                newContent = `\n\n--- Mathematical Expression ---\n${latex}\n(Rendered: ${document.getElementById('latexPreview').textContent})\n`;
+                // Get the rendered text if possible
+                let renderedText = '';
+                try {
+                    if (katexLoaded) {
+                        const tempDiv = document.createElement('div');
+                        katex.render(latex, tempDiv, { throwOnError: false, displayMode: true });
+                        renderedText = tempDiv.textContent || tempDiv.innerText;
+                    }
+                } catch (e) {
+                    renderedText = '[Could not render]';
+                }
+                
+                newContent = `\n\n--- Mathematical Expression ---\nLaTeX: ${latex}\nRendered: ${renderedText}\n`;
             } else if (source === 'canvas') {
                 newContent = `\n\n--- Drawing Added ---\n[See attached drawing/diagram for visual explanation]\n`;
             }
@@ -842,10 +908,12 @@
         function updateBrushSize() {
             brushSize = document.getElementById('brushSize').value;
             document.getElementById('brushSizeValue').textContent = brushSize;
+            ctx.lineWidth = brushSize;
         }
 
         function updateColor() {
             currentColor = document.getElementById('colorPicker').value;
+            ctx.strokeStyle = currentColor;
         }
 
         function startDrawing(e) {
@@ -866,27 +934,46 @@
             const y = e.clientY - rect.top;
             
             if (currentTool === 'pen') {
-                ctx.strokeStyle = currentColor;
-                ctx.lineWidth = brushSize;
                 ctx.lineTo(x, y);
                 ctx.stroke();
             } else if (currentTool === 'eraser') {
-                ctx.clearRect(x - brushSize * 2, y - brushSize * 2, brushSize * 4, brushSize * 4);
+                // Save current settings
+                const originalStrokeStyle = ctx.strokeStyle;
+                const originalLineWidth = ctx.lineWidth;
+                
+                // Set eraser settings
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = brushSize * 2;
+                
+                // Draw with white to "erase"
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                
+                // Restore settings
+                ctx.strokeStyle = originalStrokeStyle;
+                ctx.lineWidth = originalLineWidth;
+                
+                // Start new path to avoid connecting lines
+                ctx.beginPath();
+                ctx.moveTo(x, y);
             }
         }
 
         function stopDrawing() {
             isDrawing = false;
+            ctx.beginPath(); // Start a new path for the next drawing
         }
 
         function handleTouch(e) {
             e.preventDefault();
-            const touch = e.touches[0];
-            const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 'mousemove', {
-                clientX: touch.clientX,
-                clientY: touch.clientY
-            });
-            canvas.dispatchEvent(mouseEvent);
+            if (e.touches.length > 0) {
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 'mousemove', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                canvas.dispatchEvent(mouseEvent);
+            }
         }
 
         function clearCanvas() {
@@ -897,8 +984,8 @@
 
         function downloadCanvas() {
             const link = document.createElement('a');
-            link.download = 'math-drawing.png';
-            link.href = canvas.toDataURL();
+            link.download = 'math-drawing-' + new Date().toISOString().slice(0, 10) + '.png';
+            link.href = canvas.toDataURL('image/png');
             link.click();
         }
 
@@ -914,18 +1001,30 @@
             }
             
             output.select();
-            document.execCommand('copy');
+            output.setSelectionRange(0, 99999); // For mobile devices
             
-            // Show success message
-            const btn = event.target.closest('button');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-            btn.style.background = '#28a745';
-            
-            setTimeout(() => {
-                btn.innerHTML = originalHTML;
-                btn.style.background = '';
-            }, 2000);
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    // Show success message
+                    const btn = event.target.closest('button');
+                    const originalHTML = btn.innerHTML;
+                    const originalBackground = btn.style.background;
+                    
+                    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    btn.style.background = '#28a745';
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                        btn.style.background = originalBackground;
+                    }, 2000);
+                } else {
+                    alert('Failed to copy. Please try again or use Ctrl+C.');
+                }
+            } catch (err) {
+                console.error('Copy failed:', err);
+                alert('Copy failed. Please select the text and copy manually (Ctrl+C).');
+            }
         }
 
         function downloadOutput() {
@@ -936,11 +1035,12 @@
                 return;
             }
             
-            const blob = new Blob([output], { type: 'text/plain' });
+            const blob = new Blob([output], { type: 'text/plain;charset=utf-8' });
             const link = document.createElement('a');
-            link.download = 'math-work.txt';
+            link.download = 'math-work-' + new Date().toISOString().slice(0, 10) + '.txt';
             link.href = URL.createObjectURL(blob);
             link.click();
+            URL.revokeObjectURL(link.href);
         }
 
         function clearOutput() {

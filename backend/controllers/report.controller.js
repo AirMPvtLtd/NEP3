@@ -80,334 +80,591 @@ const extractReportForStorage = (aiReport) => {
  * @route   POST /api/reports/nep/generate
  * @access  Private (Student/Teacher/Admin/Parent)
  */
+// exports.generateNEPReport = async (req, res) => {
+//   try {
+//     const { studentId, reportType = 'comprehensive' } = req.body;
+    
+//     if (!studentId) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Student ID is required'
+//       });
+//     }
+    
+//     // Get student
+//     const student = await Student.findOne({ studentId });
+    
+//     if (!student) {
+//       return res.status(404).json({
+//         success: false,
+//         message: 'Student not found'
+//       });
+//     }
+    
+//     // Authorization check
+//     const isStudent = req.user.role === 'student' && req.user.studentId === studentId;
+//     const isTeacher = req.user.role === 'teacher' && student.teacherId === req.user.teacherId;
+//     const isAdmin = req.user.role === 'admin';
+//     const isParent = req.user.role === 'parent' && req.user.studentId === studentId;
+    
+//     if (!isStudent && !isTeacher && !isAdmin && !isParent) {
+//       return res.status(403).json({
+//         success: false,
+//         message: 'You do not have permission to generate this report'
+//       });
+//     }
+    
+//     logger.info(`Generating NEP report for student ${studentId}`, {
+//       reportType,
+//       requestedBy: req.user.userId
+//     });
+    
+//     // ============================================================================
+//     // STEP 1: GATHER AUTHORITATIVE DATA (NO AI YET)
+//     // ============================================================================
+    
+//     // Get ledger events for this student (last 100 assessment events)
+//     const ledgerEvents = await Ledger.getEventsForMerkleTree(student.studentId, 100);
+    
+//     if (ledgerEvents.length === 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'No assessment data found for this student'
+//       });
+//     }
+    
+//     // Get competency master data (12 NEP competencies)
+//     const competencyMaster = await CompetencyMaster.findOne({ 
+//       isActive: true,
+//       version: 'NEP2020'
+//     });
+    
+//     if (!competencyMaster) {
+//       return res.status(500).json({
+//         success: false,
+//         message: 'Competency master data not configured'
+//       });
+//     }
+    
+//     // ============================================================================
+//     // STEP 2: COMPUTE ANALYTICS (ALGORITHMS, NOT AI)
+//     // ============================================================================
+    
+//     // Generate CPI (Competency Performance Index)
+//     const cpiResults = await generateCPI(student.studentId, ledgerEvents);
+    
+//     // Calculate trends from ledger data
+//     const competencyTrends = await calculateCompetencyTrends(student.studentId, ledgerEvents);
+    
+//     // Smooth CPI for better trend analysis
+//     const smoothedCPI = smoothCPI(cpiResults.cpi, cpiResults.history || []);
+    
+//     // ============================================================================
+//     // STEP 3: CREATE MERKLE TREE AND REPORT HASH (LEDGER ANCHORING)
+//     // ============================================================================
+    
+//     const merkleTree = await Ledger.createMerkleTree(student.studentId);
+    
+//     const reportDataForHash = {
+//       studentId: student.studentId,
+//       generatedAt: new Date().toISOString(),
+//       cpi: cpiResults.cpi,
+//       smoothedCPI: smoothedCPI,
+//       competencyScores: cpiResults.competencyScores,
+//       ledgerEventCount: ledgerEvents.length,
+//       reportVersion: '2.0'
+//     };
+    
+//     const reportHash = generateReportHash(reportDataForHash, merkleTree.merkleRoot);
+    
+//     // ============================================================================
+//     // STEP 4: PREPARE AUTHORITATIVE OPTIONS FOR AI (NO RAW DATA)
+//     // ============================================================================
+    
+//     const authoritativeOptions = {
+//       // Student identity (from DB)
+//       studentProfile: {
+//         studentId: student.studentId,
+//         name: student.name,
+//         class: student.class,
+//         section: student.section,
+//         schoolId: student.schoolId,
+//         grade: student.grade
+//       },
+      
+//       // Ledger metadata (verifiable)
+//       ledgerMetadata: {
+//         merkleRoot: merkleTree.merkleRoot,
+//         reportHash: reportHash,
+//         anchoredAt: new Date(),
+//         eventCount: ledgerEvents.length,
+//         periodCovered: {
+//           start: ledgerEvents[ledgerEvents.length - 1]?.timestamp || new Date(),
+//           end: ledgerEvents[0]?.timestamp || new Date()
+//         }
+//       },
+      
+//       // Analytics (from algorithms)
+//       analytics: {
+//         cpi: cpiResults.cpi,
+//         smoothedCPI: smoothedCPI,
+//         competencyScores: cpiResults.competencyScores,
+//         trends: competencyTrends,
+//         strengthAreas: cpiResults.strengthAreas || [],
+//         improvementAreas: cpiResults.improvementAreas || [],
+//         consistencyScore: cpiResults.consistencyScore || 0,
+//         growthRate: cpiResults.growthRate || 0,
+//         assessmentCount: ledgerEvents.length,
+//         driftDetected: cpiResults.driftDetected || false
+//       },
+      
+//       // Competency framework (master data)
+//       competencyFramework: {
+//         competencies: competencyMaster.competencies,
+//         version: competencyMaster.version,
+//         domains: competencyMaster.domains
+//       },
+      
+//       // Report metadata
+//       metadata: {
+//         reportType,
+//         generatedAt: new Date().toISOString(),
+//         generatedBy: req.user.userId,
+//         algorithmVersion: '1.2',
+//         complianceLevel: 'NEP2020_FULL'
+//       }
+//     };
+    
+//     // ============================================================================
+//     // STEP 5: GENERATE AI NARRATION (FORMATTING ONLY)
+//     // ============================================================================
+    
+//     const startTime = Date.now();
+//     const aiResult = await generateAINEPReport(authoritativeOptions);
+//     const generationTime = Date.now() - startTime;
+    
+//     // Check for errors in AI generation
+//     if (!aiResult.success || aiResult.error) {
+//       logger.error('AI report generation failed:', aiResult.error);
+//       throw new Error(`AI narration failed: ${aiResult.error || 'Unknown error'}`);
+//     }
+    
+//     // Extract the structured data for storage
+//     const extractedData = extractReportForStorage(aiResult.report);
+    
+//     // ============================================================================
+//     // STEP 6: CREATE NEP REPORT WITH LEDGER ANCHORING
+//     // ============================================================================
+    
+//     const nepReport = await NEPReport.create({
+//       // Identifiers
+//       studentId: student.studentId,
+//       schoolId: student.schoolId,
+//       teacherId: student.teacherId,
+//       reportType,
+//       generatedBy: req.user.userId,
+//       generatedByRole: req.user.role,
+      
+//       // Ledger-anchored data
+//       ledgerMetadata: {
+//         merkleRoot: merkleTree.merkleRoot,
+//         reportHash: reportHash,
+//         anchoredAt: new Date(),
+//         eventCount: ledgerEvents.length,
+//         periodCovered: authoritativeOptions.ledgerMetadata.periodCovered
+//       },
+      
+//       // Competency data (from algorithms, enriched with AI observations)
+//       competencies: Object.entries(cpiResults.competencyScores).map(([competency, score]) => ({
+//         competency,
+//         score,
+//         cpi: cpiResults.cpi,
+//         trend: competencyTrends[competency]?.trend || 'stable',
+//         lastAssessed: competencyTrends[competency]?.lastAssessment || null,
+//         teacherObservation: extractedData.competencyAnalysis?.find(c => c.competency === competency)?.observation || ''
+//       })),
+      
+//       // AI narration (stored separately)
+//       narration: {
+//         summary: extractedData.summary,
+//         keyStrengths: extractedData.keyStrengths,
+//         areasForGrowth: extractedData.areasForGrowth,
+//         recommendations: extractedData.recommendations,
+//         generatedAt: new Date()
+//       },
+      
+//       // Performance metrics (from algorithms)
+//       performanceMetrics: {
+//         cpi: cpiResults.cpi,
+//         smoothedCPI: smoothedCPI,
+//         assessmentCount: ledgerEvents.length,
+//         consistencyScore: cpiResults.consistencyScore || 0,
+//         growthRate: cpiResults.growthRate || 0,
+//         grade: student.grade,
+//         performanceIndex: student.performanceIndex
+//       },
+      
+//       // Compliance statement
+//       complianceStatement: {
+//         standard: 'NEP2020',
+//         version: '2.0',
+//         auditorVerifiable: true,
+//         aiAssisted: true,
+//         ledgerAnchored: true,
+//         generated: new Date()
+//       },
+      
+//       // Metadata
+//       metadata: {
+//         reportVersion: '2.0',
+//         generationTime,
+//         aiModel: process.env.MISTRAL_MODEL || 'mistral-large-latest',
+//         aiTokensUsed: aiResult.tokensUsed || 0,
+//         algorithmVersion: authoritativeOptions.metadata.algorithmVersion,
+//         aiGenerationId: crypto.randomBytes(8).toString('hex')
+//       },
+      
+//       status: 'completed'
+//     });
+    
+//     // ============================================================================
+//     // STEP 7: LOG LEDGER EVENT FOR REPORT GENERATION
+//     // ============================================================================
+    
+//     await Ledger.createReportEvent({
+//       studentId: student.studentId,
+//       teacherId: student.teacherId,
+//       schoolId: student.schoolId,
+//       reportId: nepReport.reportId,
+//       reportType,
+//       cpi: cpiResults.cpi,
+//       hash: reportHash,
+//       createdBy: req.user.userId,
+//       createdByRole: req.user.role,
+//       ipAddress: req.ip,
+//       userAgent: req.get('user-agent')
+//     });
+    
+//     // Log activity
+//     await Activity.log({
+//       userId: req.user.userId,
+//       userType: req.user.role,
+//       schoolId: student.schoolId,
+//       activityType: 'report_generated',
+//       action: `NEP report generated for student ${studentId}`,
+//       metadata: {
+//         reportId: nepReport.reportId,
+//         reportType,
+//         studentId,
+//         reportHash,
+//         cpi: cpiResults.cpi,
+//         generationTime
+//       },
+//       ipAddress: req.ip,
+//       success: true
+//     });
+    
+//     logger.info(`NEP report ${nepReport.reportId} generated successfully`, {
+//       generationTime: `${generationTime}ms`,
+//       cpi: cpiResults.cpi,
+//       reportHash,
+//       ledgerEvents: ledgerEvents.length
+//     });
+    
+//     res.status(201).json({
+//       success: true,
+//       message: 'NEP report generated successfully with ledger anchoring',
+//       data: { 
+//         report: {
+//           reportId: nepReport.reportId,
+//           studentId: nepReport.studentId,
+//           generatedAt: nepReport.generatedAt,
+//           cpi: nepReport.performanceMetrics.cpi,
+//           reportHash: nepReport.ledgerMetadata.reportHash,
+//           merkleRoot: nepReport.ledgerMetadata.merkleRoot,
+//           verificationUrl: `${process.env.API_URL}/api/reports/nep/verify/${nepReport.reportId}`
+//         }
+//       }
+//     });
+    
+//   } catch (error) {
+//     logger.error('Generate NEP report error:', error);
+    
+//     await Activity.log({
+//       userId: req.user?.userId,
+//       userType: req.user?.role,
+//       activityType: 'report_generated',
+//       action: 'Failed to generate NEP report',
+//       success: false,
+//       errorMessage: error.message,
+//       studentId: req.body?.studentId
+//     });
+    
+//     res.status(500).json({
+//       success: false,
+//       message: 'Error generating NEP report',
+//       error: error.message,
+//       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+//     });
+//   }
+// };
+
 exports.generateNEPReport = async (req, res) => {
   try {
     const { studentId, reportType = 'comprehensive' } = req.body;
-    
+
     if (!studentId) {
       return res.status(400).json({
         success: false,
         message: 'Student ID is required'
       });
     }
-    
-    // Get student
-    const student = await Student.findOne({ studentId });
-    
+
+    // ============================================================================
+    // STEP 0: RESOLVE STUDENT (BUSINESS ID OR MONGO _id)
+    // ============================================================================
+    const student =
+      await Student.findOne({ studentId }) ||
+      await Student.findById(studentId);
+
     if (!student) {
       return res.status(404).json({
         success: false,
         message: 'Student not found'
       });
     }
-    
-    // Authorization check
-    const isStudent = req.user.role === 'student' && req.user.studentId === studentId;
+
+    const resolvedStudentId = student.studentId; // authoritative business ID
+
+    // ============================================================================
+    // AUTHORIZATION
+    // ============================================================================
+    const isStudent = req.user.role === 'student' && req.user.studentId === resolvedStudentId;
     const isTeacher = req.user.role === 'teacher' && student.teacherId === req.user.teacherId;
     const isAdmin = req.user.role === 'admin';
-    const isParent = req.user.role === 'parent' && req.user.studentId === studentId;
-    
+    const isParent = req.user.role === 'parent' && req.user.studentId === resolvedStudentId;
+
     if (!isStudent && !isTeacher && !isAdmin && !isParent) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to generate this report'
       });
     }
-    
-    logger.info(`Generating NEP report for student ${studentId}`, {
+
+    logger.info(`Generating NEP report for student ${resolvedStudentId}`, {
       reportType,
       requestedBy: req.user.userId
     });
-    
+
     // ============================================================================
-    // STEP 1: GATHER AUTHORITATIVE DATA (NO AI YET)
+    // STEP 1: FETCH LEDGER EVENTS (AUTHORITATIVE)
     // ============================================================================
-    
-    // Get ledger events for this student (last 100 assessment events)
-    const ledgerEvents = await Ledger.getEventsForMerkleTree(student.studentId, 100);
-    
-    if (ledgerEvents.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'No assessment data found for this student'
-      });
+    let ledgerEvents = await Ledger.getEventsForMerkleTree(resolvedStudentId, 100);
+
+    // ============================================================================
+    // 🔥 FIX: BACKFILL LEDGER FROM EVALUATED CHALLENGES (ONCE ONLY)
+    // ============================================================================
+    if (!ledgerEvents || ledgerEvents.length === 0) {
+      logger.warn(`Ledger empty for ${resolvedStudentId}. Attempting backfill from evaluated challenges.`);
+
+      const evaluatedChallenges = await Challenge.find({
+        studentId: student._id,
+        status: 'evaluated'
+      }).sort({ evaluatedAt: 1 });
+
+      if (!evaluatedChallenges.length) {
+        return res.status(400).json({
+          success: false,
+          message: 'No assessment data found for this student'
+        });
+      }
+
+      for (const challenge of evaluatedChallenges) {
+        await Ledger.createAssessmentEvent({
+          studentId: resolvedStudentId,
+          teacherId: challenge.teacherId,
+          schoolId: challenge.schoolId,
+          challengeId: challenge.challengeId,
+          competencies: challenge.results?.competencyMap || {},
+          score: challenge.results?.percentage || 0,
+          evaluatedAt: challenge.evaluatedAt
+        });
+      }
+
+      ledgerEvents = await Ledger.getEventsForMerkleTree(resolvedStudentId, 100);
     }
-    
-    // Get competency master data (12 NEP competencies)
-    const competencyMaster = await CompetencyMaster.findOne({ 
+
+    // ============================================================================
+    // STEP 2: LOAD COMPETENCY MASTER (NEP 2020)
+    // ============================================================================
+    const competencyMaster = await CompetencyMaster.findOne({
       isActive: true,
       version: 'NEP2020'
     });
-    
+
     if (!competencyMaster) {
       return res.status(500).json({
         success: false,
         message: 'Competency master data not configured'
       });
     }
-    
+
     // ============================================================================
-    // STEP 2: COMPUTE ANALYTICS (ALGORITHMS, NOT AI)
+    // STEP 3: COMPUTE ANALYTICS (NO AI)
     // ============================================================================
-    
-    // Generate CPI (Competency Performance Index)
-    const cpiResults = await generateCPI(student.studentId, ledgerEvents);
-    
-    // Calculate trends from ledger data
-    const competencyTrends = await calculateCompetencyTrends(student.studentId, ledgerEvents);
-    
-    // Smooth CPI for better trend analysis
+    const cpiResults = await generateCPI(resolvedStudentId, ledgerEvents);
+    const competencyTrends = await calculateCompetencyTrends(resolvedStudentId, ledgerEvents);
     const smoothedCPI = smoothCPI(cpiResults.cpi, cpiResults.history || []);
-    
+
     // ============================================================================
-    // STEP 3: CREATE MERKLE TREE AND REPORT HASH (LEDGER ANCHORING)
+    // STEP 4: MERKLE TREE + REPORT HASH
     // ============================================================================
-    
-    const merkleTree = await Ledger.createMerkleTree(student.studentId);
-    
+    const merkleTree = await Ledger.createMerkleTree(resolvedStudentId);
+
     const reportDataForHash = {
-      studentId: student.studentId,
+      studentId: resolvedStudentId,
       generatedAt: new Date().toISOString(),
       cpi: cpiResults.cpi,
-      smoothedCPI: smoothedCPI,
+      smoothedCPI,
       competencyScores: cpiResults.competencyScores,
       ledgerEventCount: ledgerEvents.length,
       reportVersion: '2.0'
     };
-    
+
     const reportHash = generateReportHash(reportDataForHash, merkleTree.merkleRoot);
-    
+
     // ============================================================================
-    // STEP 4: PREPARE AUTHORITATIVE OPTIONS FOR AI (NO RAW DATA)
+    // STEP 5: PREPARE AI INPUT (FORMATTING ONLY)
     // ============================================================================
-    
     const authoritativeOptions = {
-      // Student identity (from DB)
       studentProfile: {
-        studentId: student.studentId,
+        studentId: resolvedStudentId,
         name: student.name,
         class: student.class,
         section: student.section,
-        schoolId: student.schoolId,
-        grade: student.grade
+        schoolId: student.schoolId
       },
-      
-      // Ledger metadata (verifiable)
       ledgerMetadata: {
         merkleRoot: merkleTree.merkleRoot,
-        reportHash: reportHash,
-        anchoredAt: new Date(),
-        eventCount: ledgerEvents.length,
-        periodCovered: {
-          start: ledgerEvents[ledgerEvents.length - 1]?.timestamp || new Date(),
-          end: ledgerEvents[0]?.timestamp || new Date()
-        }
+        reportHash,
+        eventCount: ledgerEvents.length
       },
-      
-      // Analytics (from algorithms)
       analytics: {
         cpi: cpiResults.cpi,
-        smoothedCPI: smoothedCPI,
+        smoothedCPI,
         competencyScores: cpiResults.competencyScores,
         trends: competencyTrends,
-        strengthAreas: cpiResults.strengthAreas || [],
-        improvementAreas: cpiResults.improvementAreas || [],
-        consistencyScore: cpiResults.consistencyScore || 0,
-        growthRate: cpiResults.growthRate || 0,
-        assessmentCount: ledgerEvents.length,
         driftDetected: cpiResults.driftDetected || false
       },
-      
-      // Competency framework (master data)
-      competencyFramework: {
-        competencies: competencyMaster.competencies,
-        version: competencyMaster.version,
-        domains: competencyMaster.domains
-      },
-      
-      // Report metadata
+      competencyFramework: competencyMaster,
       metadata: {
         reportType,
-        generatedAt: new Date().toISOString(),
         generatedBy: req.user.userId,
         algorithmVersion: '1.2',
         complianceLevel: 'NEP2020_FULL'
       }
     };
-    
+
     // ============================================================================
-    // STEP 5: GENERATE AI NARRATION (FORMATTING ONLY)
+    // STEP 6: AI NARRATION (STRICT FORMAT)
     // ============================================================================
-    
     const startTime = Date.now();
     const aiResult = await generateAINEPReport(authoritativeOptions);
     const generationTime = Date.now() - startTime;
-    
-    // Check for errors in AI generation
-    if (!aiResult.success || aiResult.error) {
-      logger.error('AI report generation failed:', aiResult.error);
-      throw new Error(`AI narration failed: ${aiResult.error || 'Unknown error'}`);
+
+    if (!aiResult.success) {
+      throw new Error('AI narration failed');
     }
-    
-    // Extract the structured data for storage
+
     const extractedData = extractReportForStorage(aiResult.report);
-    
+
     // ============================================================================
-    // STEP 6: CREATE NEP REPORT WITH LEDGER ANCHORING
+    // STEP 7: SAVE NEP REPORT
     // ============================================================================
-    
     const nepReport = await NEPReport.create({
-      // Identifiers
-      studentId: student.studentId,
+      studentId: resolvedStudentId,
       schoolId: student.schoolId,
       teacherId: student.teacherId,
       reportType,
       generatedBy: req.user.userId,
       generatedByRole: req.user.role,
-      
-      // Ledger-anchored data
+
       ledgerMetadata: {
         merkleRoot: merkleTree.merkleRoot,
-        reportHash: reportHash,
-        anchoredAt: new Date(),
-        eventCount: ledgerEvents.length,
-        periodCovered: authoritativeOptions.ledgerMetadata.periodCovered
+        reportHash,
+        eventCount: ledgerEvents.length
       },
-      
-      // Competency data (from algorithms, enriched with AI observations)
+
       competencies: Object.entries(cpiResults.competencyScores).map(([competency, score]) => ({
         competency,
         score,
-        cpi: cpiResults.cpi,
-        trend: competencyTrends[competency]?.trend || 'stable',
-        lastAssessed: competencyTrends[competency]?.lastAssessment || null,
-        teacherObservation: extractedData.competencyAnalysis?.find(c => c.competency === competency)?.observation || ''
+        trend: competencyTrends[competency]?.trend || 'stable'
       })),
-      
-      // AI narration (stored separately)
-      narration: {
-        summary: extractedData.summary,
-        keyStrengths: extractedData.keyStrengths,
-        areasForGrowth: extractedData.areasForGrowth,
-        recommendations: extractedData.recommendations,
-        generatedAt: new Date()
-      },
-      
-      // Performance metrics (from algorithms)
+
+      narration: extractedData,
       performanceMetrics: {
         cpi: cpiResults.cpi,
-        smoothedCPI: smoothedCPI,
-        assessmentCount: ledgerEvents.length,
-        consistencyScore: cpiResults.consistencyScore || 0,
-        growthRate: cpiResults.growthRate || 0,
-        grade: student.grade,
-        performanceIndex: student.performanceIndex
+        smoothedCPI,
+        assessmentCount: ledgerEvents.length
       },
-      
-      // Compliance statement
+
       complianceStatement: {
         standard: 'NEP2020',
-        version: '2.0',
-        auditorVerifiable: true,
-        aiAssisted: true,
         ledgerAnchored: true,
-        generated: new Date()
+        auditReady: true
       },
-      
-      // Metadata
+
       metadata: {
-        reportVersion: '2.0',
         generationTime,
-        aiModel: process.env.MISTRAL_MODEL || 'mistral-large-latest',
-        aiTokensUsed: aiResult.tokensUsed || 0,
-        algorithmVersion: authoritativeOptions.metadata.algorithmVersion,
-        aiGenerationId: crypto.randomBytes(8).toString('hex')
+        aiModel: process.env.MISTRAL_MODEL,
+        aiTokensUsed: aiResult.tokensUsed || 0
       },
-      
+
       status: 'completed'
     });
-    
+
     // ============================================================================
-    // STEP 7: LOG LEDGER EVENT FOR REPORT GENERATION
+    // STEP 8: LEDGER EVENT + ACTIVITY LOG
     // ============================================================================
-    
     await Ledger.createReportEvent({
-      studentId: student.studentId,
-      teacherId: student.teacherId,
-      schoolId: student.schoolId,
+      studentId: resolvedStudentId,
       reportId: nepReport.reportId,
-      reportType,
-      cpi: cpiResults.cpi,
       hash: reportHash,
-      createdBy: req.user.userId,
-      createdByRole: req.user.role,
-      ipAddress: req.ip,
-      userAgent: req.get('user-agent')
+      createdBy: req.user.userId
     });
-    
-    // Log activity
+
     await Activity.log({
       userId: req.user.userId,
       userType: req.user.role,
-      schoolId: student.schoolId,
       activityType: 'report_generated',
-      action: `NEP report generated for student ${studentId}`,
-      metadata: {
-        reportId: nepReport.reportId,
-        reportType,
-        studentId,
-        reportHash,
-        cpi: cpiResults.cpi,
-        generationTime
-      },
-      ipAddress: req.ip,
+      action: `NEP report generated for ${resolvedStudentId}`,
+      metadata: { reportId: nepReport.reportId },
       success: true
     });
-    
-    logger.info(`NEP report ${nepReport.reportId} generated successfully`, {
-      generationTime: `${generationTime}ms`,
-      cpi: cpiResults.cpi,
-      reportHash,
-      ledgerEvents: ledgerEvents.length
-    });
-    
-    res.status(201).json({
+
+    return res.status(201).json({
       success: true,
-      message: 'NEP report generated successfully with ledger anchoring',
-      data: { 
-        report: {
-          reportId: nepReport.reportId,
-          studentId: nepReport.studentId,
-          generatedAt: nepReport.generatedAt,
-          cpi: nepReport.performanceMetrics.cpi,
-          reportHash: nepReport.ledgerMetadata.reportHash,
-          merkleRoot: nepReport.ledgerMetadata.merkleRoot,
-          verificationUrl: `${process.env.API_URL}/api/reports/nep/verify/${nepReport.reportId}`
-        }
+      message: 'NEP report generated successfully',
+      data: {
+        reportId: nepReport.reportId,
+        studentId: resolvedStudentId,
+        cpi: nepReport.performanceMetrics.cpi,
+        reportHash,
+        merkleRoot: nepReport.ledgerMetadata.merkleRoot
       }
     });
-    
+
   } catch (error) {
     logger.error('Generate NEP report error:', error);
-    
-    await Activity.log({
-      userId: req.user?.userId,
-      userType: req.user?.role,
-      activityType: 'report_generated',
-      action: 'Failed to generate NEP report',
-      success: false,
-      errorMessage: error.message,
-      studentId: req.body?.studentId
-    });
-    
-    res.status(500).json({
+
+    return res.status(500).json({
       success: false,
       message: 'Error generating NEP report',
-      error: error.message,
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: error.message
     });
   }
 };
+
 
 /**
  * @desc    Verify NEP report integrity

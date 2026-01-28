@@ -16,6 +16,7 @@ const {
   HelpTicket
 } = require('../models');
 const logger = require('../utils/logger');
+const School = require('../models/School');
 
 // ============================================================================
 // PROFILE & DASHBOARD
@@ -28,31 +29,46 @@ const logger = require('../utils/logger');
  */
 exports.getProfile = async (req, res) => {
   try {
-    const parent = await Parent.findById(req.user.userId)
-      .populate('studentId', 'studentId name class section')
-      .populate('schoolId', 'schoolName address city state');
-    
+    const parent = await Parent.findById(req.user.userId).lean();
+
     if (!parent) {
       return res.status(404).json({
         success: false,
         message: 'Parent not found'
       });
     }
-    
-    res.json({
+
+    // ✅ IMPORTANT FIX: use findOne({ studentId })
+    const student = await Student.findOne({
+      studentId: parent.studentId
+    })
+    .select('studentId name class section schoolId')
+    .lean();
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: 'Linked student not found'
+      });
+    }
+
+    return res.json({
       success: true,
-      data: { parent }
+      data: {
+        parent,
+        student
+      }
     });
-    
+
   } catch (error) {
     logger.error('Get parent profile error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching profile',
-      error: error.message
+      message: 'Error fetching parent profile'
     });
   }
 };
+
 
 /**
  * @desc    Update parent profile
@@ -246,32 +262,61 @@ exports.getDashboard = async (req, res) => {
  */
 exports.getChildDetails = async (req, res) => {
   try {
-    const parent = await Parent.findById(req.user.userId);
-    
+    // 1️⃣ Parent
+    const parent = await Parent.findById(req.user.userId).lean();
+    if (!parent) {
+      return res.status(404).json({
+        success: false,
+        message: 'Parent not found'
+      });
+    }
+
+    // 2️⃣ Student
     const student = await Student.findOne({
       studentId: parent.studentId
-    })
-      .populate('teacherId', 'name email phone subjects')
-      .populate('schoolId', 'schoolName address phone');
-    
+    }).lean();
+
     if (!student) {
       return res.status(404).json({
         success: false,
         message: 'Student not found'
       });
     }
-    
-    res.json({
+
+    // 3️⃣ School (string lookup)
+    const school = await School.findOne({
+      schoolId: student.schoolId
+    })
+      .select('schoolId schoolName phone address')
+      .lean();
+
+    // 4️⃣ Teachers (MULTIPLE support – future safe)
+    const teachers = await Teacher.find({
+      schoolId: student.schoolId,
+      active: true
+    })
+      .select('teacherId name email phone subjects qualification experience')
+      .lean();
+
+    return res.json({
       success: true,
-      data: { student }
+      data: {
+        student: {
+          studentId: student.studentId,
+          name: student.name,
+          class: student.class,
+          section: student.section
+        },
+        school,
+        teachers
+      }
     });
-    
+
   } catch (error) {
     logger.error('Get child details error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: 'Error fetching child details',
-      error: error.message
+      message: 'Error fetching child details'
     });
   }
 };
@@ -1225,44 +1270,79 @@ exports.updateNotificationPreferences = async (req, res) => {
  */
 exports.getTeacherInfo = async (req, res) => {
   try {
-    const parent = await Parent.findById(req.user.userId);
-    
+    // 1️⃣ Parent fetch from token
+    const parent = await Parent.findById(req.user.userId).lean();
+
+    if (!parent || !parent.active) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid parent account'
+      });
+    }
+
+    // 2️⃣ Fetch student linked to parent
     const student = await Student.findOne({
-      studentId: parent.studentId
-    });
-    
+      studentId: parent.studentId,
+      active: true
+    }).lean();
+
     if (!student) {
       return res.status(404).json({
         success: false,
         message: 'Student not found'
       });
     }
-    
-    const teacher = await Teacher.findOne({
-      teacherId: student.teacherId
-    }).select('teacherId name email phone subjects qualification experience');
-    
-    if (!teacher) {
+
+    // 3️⃣ Resolve teacher IDs (current + future ready)
+    let teacherIds = [];
+
+    if (Array.isArray(student.teacherIds) && student.teacherIds.length > 0) {
+      teacherIds = student.teacherIds;
+    } else if (student.teacherId && student.teacherId !== 'SYSTEM-DEFAULT') {
+      teacherIds = [student.teacherId];
+    }
+
+    if (teacherIds.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Teacher not found'
+        message: 'No teachers linked to this student'
       });
     }
-    
-    res.json({
+
+    // 4️⃣ Fetch only linked teachers
+    const teachers = await Teacher.find({
+      teacherId: { $in: teacherIds },
+      schoolId: student.schoolId,
+      active: true
+    })
+      .select('teacherId name email phone subjects qualification experience')
+      .lean();
+
+    return res.json({
       success: true,
-      data: { teacher }
+      data: {
+        student: {
+          studentId: student.studentId,
+          class: student.class,
+          section: student.section
+        },
+        teachers
+      }
     });
-    
+
   } catch (error) {
-    logger.error('Get teacher info error:', error);
-    res.status(500).json({
+    logger.error('Get teacher info error:', {
+      error: error.message,
+      parentId: req.user?.userId
+    });
+
+    return res.status(500).json({
       success: false,
-      message: 'Error fetching teacher information',
-      error: error.message
+      message: 'Error fetching teacher information'
     });
   }
 };
+
 
 /**
  * @desc    Send message to teacher
@@ -1271,65 +1351,99 @@ exports.getTeacherInfo = async (req, res) => {
  */
 exports.sendMessageToTeacher = async (req, res) => {
   try {
-    const { subject, message } = req.body;
-    
-    if (!subject || !message) {
+    const { subject, message, teacherId } = req.body;
+
+    if (!subject || !message || !teacherId) {
       return res.status(400).json({
         success: false,
-        message: 'Subject and message are required'
+        message: 'Subject, message, and teacherId are required'
       });
     }
-    
+
+    // 1️⃣ Parent
     const parent = await Parent.findById(req.user.userId);
-    
-    const student = await Student.findOne({
-      studentId: parent.studentId
-    });
-    
+    if (!parent) {
+      return res.status(404).json({
+        success: false,
+        message: 'Parent not found'
+      });
+    }
+
+    // 2️⃣ Student
+    const student = await Student.findOne({ studentId: parent.studentId });
     if (!student) {
       return res.status(404).json({
         success: false,
         message: 'Student not found'
       });
     }
-    
-    // Create help ticket for communication
-    const ticket = await HelpTicket.createTicket({
+
+    // 3️⃣ Teacher validation (🔥 CRITICAL)
+    const teacher = await Teacher.findOne({
+      teacherId,
+      schoolId: parent.schoolId,
+      active: true
+    });
+
+    if (!teacher) {
+      return res.status(404).json({
+        success: false,
+        message: 'Teacher not found or not linked to this school'
+      });
+    }
+
+    // 4️⃣ Create help ticket
+    const ticket = await HelpTicket.create({
       studentId: student.studentId,
-      teacherId: student.teacherId,
+      teacherId: teacher.teacherId,
       schoolId: parent.schoolId,
       subject,
       description: message,
       category: 'parent_communication',
-      priority: 'medium'
+      priority: 'medium',
+      createdBy: req.user.userId,
+      createdByRole: 'parent'
     });
-    
+
+    // 5️⃣ Activity log
     await Activity.log({
       userId: req.user.userId,
       userType: 'parent',
       schoolId: parent.schoolId,
-      activityType: 'other',
-      action: 'Message sent to teacher',
-      metadata: { ticketId: ticket.ticketId, subject },
+      activityType: 'parent_message',
+      action: 'Parent sent message to teacher',
+      metadata: {
+        ticketId: ticket.ticketId,
+        teacherId: teacher.teacherId,
+        studentId: student.studentId
+      },
       ipAddress: req.ip,
       success: true
     });
-    
-    res.status(201).json({
+
+    return res.status(201).json({
       success: true,
       message: 'Message sent to teacher successfully',
-      data: { ticket }
+      data: {
+        ticketId: ticket.ticketId,
+        teacher: {
+          teacherId: teacher.teacherId,
+          name: teacher.name,
+          subjects: teacher.subjects
+        }
+      }
     });
-    
+
   } catch (error) {
     logger.error('Send message to teacher error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error sending message',
       error: error.message
     });
   }
 };
+
 
 /**
  * @desc    Get communication history

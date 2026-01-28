@@ -55,7 +55,7 @@ const helpTicketSchema = new mongoose.Schema({
   
   category: {
     type: String,
-    enum: ['technical', 'content', 'general', 'other'],
+    enum: ['technical', 'content', 'general', 'parent_communication', 'other'],
     default: 'general'
   },
   
