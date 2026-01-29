@@ -3067,9 +3067,56 @@
                         updateChallengesPage(data);
                         break;
                     case 'performance':
-                        data = await throttledApiCall('/student/performance');
-                        pageCache[pageId] = { data, timestamp: Date.now() };
-                        updatePerformancePage(data);
+                        try {
+                            console.log('🔄 Performance page loading started...');
+                            
+                            // Get student ID from profile API
+                            console.log('📞 Calling /student/profile API...');
+                            const profileData = await throttledApiCall('/student/profile');
+                            console.log('✅ Profile API response:', profileData);
+                            
+                            if (!profileData || !profileData.data || !profileData.data.student) {
+                                console.error('❌ Invalid profile response:', profileData);
+                                throw new Error('Invalid profile data received');
+                            }
+                            
+                            const studentId = profileData.data.student.studentId;
+                            console.log('🎯 Student ID found:', studentId);
+                            
+                            console.log(`📞 Calling CPI API: /analytics/student/${studentId}/cpi`);
+                            console.log('🔑 Token available:', authToken ? 'Yes' : 'No');
+                            
+                            data = await throttledApiCall(`/analytics/student/${studentId}/cpi`);
+                            console.log('✅ CPI API response received:', data);
+                            
+                            if (!data || !data.success) {
+                                console.error('❌ CPI API returned error:', data);
+                                throw new Error(data?.message || 'Failed to fetch CPI data');
+                            }
+                            
+                            console.log('📊 CPI data structure:', {
+                                hasData: !!data.data,
+                                hasCPI: !!data.data?.cpi,
+                                hasCompetencies: !!data.data?.competencyScores,
+                                competencyCount: Object.keys(data.data?.competencyScores || {}).length,
+                                assessmentCount: data.data?.assessmentCount
+                            });
+                            
+                            pageCache[pageId] = { data, timestamp: Date.now() };
+                            
+                            console.log('🎨 Calling updatePerformancePage...');
+                            updatePerformancePage(data);
+                            
+                            console.log('✅ Performance page loaded successfully');
+                            
+                        } catch (error) {
+                            console.error('❌ Error in performance case:', {
+                                error: error.message,
+                                stack: error.stack
+                            });
+                            throw error;
+                        }
+                        break;
                         break;
                     case 'competencies':
                         data = await throttledApiCall('/student/performance/competencies');
@@ -3096,7 +3143,6 @@
                 hideLoading();
             }
         }
-
         // ================================================================
         // UPDATE PAGE CONTENT FUNCTIONS
         // ================================================================

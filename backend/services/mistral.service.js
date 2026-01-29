@@ -1249,6 +1249,17 @@ const logger = require('../utils/logger');
 // ============================================================================
 // API CLIENT
 // ============================================================================
+function extractStrictJSON(text) {
+  if (!text) return null;
+
+  // Remove ```json ... ``` or ``` ... ```
+  const match = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (match && match[1]) {
+    return match[1].trim();
+  }
+
+  return text.trim();
+}
 
 const mistralClient = axios.create({
   baseURL: mistralConfig.baseURL,
@@ -1876,24 +1887,32 @@ OUTPUT STRUCTURE (STRICT JSON):
     maxTokens: 3000
   });
 
+  const raw = response.content;
+  const cleanedJSON = extractStrictJSON(raw);
+
+  let parsedReport;
   try {
-    return {
-      success: true,
-      report: JSON.parse(response.content),
-      metadata: {
-        model: response.model,
-        tokensUsed: response.usage?.total_tokens,
-        cost: calculateCost(
-          response.usage?.prompt_tokens,
-          response.usage?.completion_tokens,
-          response.model
-        )
-      }
-    };
-  } catch (error) {
-    throw new Error('Failed to parse NEP report: ' + error.message);
+    parsedReport = JSON.parse(cleanedJSON);
+  } catch (err) {
+    logger.error('NEP AI raw output (unparsed):', raw);
+    throw new Error('Failed to parse NEP report: ' + err.message);
   }
+
+  return {
+    success: true,
+    report: parsedReport,
+    metadata: {
+      model: response.model,
+      tokensUsed: response.usage?.total_tokens,
+      cost: calculateCost(
+        response.usage?.prompt_tokens,
+        response.usage?.completion_tokens,
+        response.model
+      )
+    }
+  };
 };
+
 
 // ============================================================================
 // RECOMMENDATIONS

@@ -20,89 +20,191 @@ const logger = require('../utils/logger');
  * @param {Array} ledgerEvents - Ledger events
  * @returns {Promise<Object>} CPI results
  */
+// const generateCPI = async (studentId, ledgerEvents) => {
+//   try {
+//     if (!ledgerEvents || ledgerEvents.length === 0) {
+//       throw new Error('No ledger events found for CPI calculation');
+//     }
+
+//     // Extract competency scores from ledger events
+//     const competencyScores = {};
+//     const competencyHistory = {};
+//     const competencyTimestamps = {};
+    
+//     ledgerEvents.forEach(event => {
+//       if (event.eventType === Ledger.EVENT_TYPES.COMPETENCY_ASSESSED && event.assessment) {
+//         const { competency, score, level } = event.assessment;
+//         if (!competencyScores[competency]) {
+//           competencyScores[competency] = [];
+//           competencyHistory[competency] = [];
+//           competencyTimestamps[competency] = [];
+//         }
+//         competencyScores[competency].push(score);
+//         competencyHistory[competency].push({
+//           score,
+//           level,
+//           timestamp: event.timestamp,
+//           eventId: event.eventId,
+//           hash: event.hash
+//         });
+//         competencyTimestamps[competency].push(event.timestamp);
+//       } else if (event.eventType === Ledger.EVENT_TYPES.CHALLENGE_EVALUATED && event.challenge?.competenciesAssessed) {
+//         event.challenge.competenciesAssessed.forEach(assessment => {
+//           const { competency, score, level } = assessment;
+//           if (!competencyScores[competency]) {
+//             competencyScores[competency] = [];
+//             competencyHistory[competency] = [];
+//             competencyTimestamps[competency] = [];
+//           }
+//           competencyScores[competency].push(score);
+//           competencyHistory[competency].push({
+//             score,
+//             level,
+//             timestamp: event.timestamp,
+//             eventId: event.eventId,
+//             hash: event.hash,
+//             source: 'challenge'
+//           });
+//           competencyTimestamps[competency].push(event.timestamp);
+//         });
+//       }
+//     });
+    
+//     // Calculate weighted average for each competency (recent scores weighted higher)
+//     const weightedScores = {};
+//     const latestScores = {};
+    
+//     Object.keys(competencyScores).forEach(competency => {
+//       const scores = competencyScores[competency];
+//       const timestamps = competencyTimestamps[competency];
+      
+//       if (scores.length === 0) return;
+      
+//       // Get latest score
+//       latestScores[competency] = scores[scores.length - 1];
+      
+//       // Calculate weighted average (recent scores have higher weight)
+//       let weightedSum = 0;
+//       let weightSum = 0;
+      
+//       scores.forEach((score, index) => {
+//         const age = scores.length - index; // Recent scores get higher weight
+//         const weight = Math.sqrt(age); // Square root weighting
+//         weightedSum += score * weight;
+//         weightSum += weight;
+//       });
+      
+//       weightedScores[competency] = weightedSum / weightSum;
+//     });
+    
+//     // Calculate overall CPI (weighted average of competency scores)
+//     const competencies = Object.keys(weightedScores);
+//     if (competencies.length === 0) {
+//       return {
+//         cpi: 0,
+//         competencyScores: {},
+//         strengthAreas: [],
+//         improvementAreas: [],
+//         consistencyScore: 0,
+//         growthRate: 0,
+//         assessmentCount: 0,
+//         driftDetected: false
+//       };
+//     }
+    
+//     const totalScore = competencies.reduce((sum, comp) => sum + weightedScores[comp], 0);
+//     const cpi = totalScore / competencies.length;
+    
+//     // Identify strength and improvement areas
+//     const sortedCompetencies = competencies.sort((a, b) => weightedScores[b] - weightedScores[a]);
+//     const strengthCount = Math.max(2, Math.ceil(competencies.length * 0.3));
+//     const improvementCount = Math.max(2, Math.ceil(competencies.length * 0.3));
+    
+//     const strengthAreas = sortedCompetencies.slice(0, strengthCount);
+//     const improvementAreas = sortedCompetencies.slice(-improvementCount).reverse();
+    
+//     // Calculate consistency (standard deviation)
+//     const consistencyScore = calculateConsistency(competencyScores);
+    
+//     // Calculate growth rate
+//     const growthRate = calculateGrowthRate(competencyHistory);
+    
+//     // Check for data drift (sudden changes in performance)
+//     const driftDetected = checkForDataDrift(competencyHistory);
+    
+//     return {
+//       cpi: Math.round(cpi * 100) / 100,
+//       competencyScores: Object.keys(weightedScores).reduce((acc, comp) => {
+//         acc[comp] = Math.round(weightedScores[comp] * 100) / 100;
+//         return acc;
+//       }, {}),
+//       latestScores,
+//       strengthAreas,
+//       improvementAreas,
+//       consistencyScore,
+//       growthRate,
+//       assessmentCount: ledgerEvents.length,
+//       driftDetected,
+//       competencyHistorySummary: Object.keys(competencyHistory).reduce((acc, comp) => {
+//         acc[comp] = {
+//           count: competencyHistory[comp].length,
+//           latest: competencyHistory[comp].length > 0 ? competencyHistory[comp][competencyHistory[comp].length - 1] : null,
+//           first: competencyHistory[comp].length > 0 ? competencyHistory[comp][0] : null
+//         };
+//         return acc;
+//       }, {})
+//     };
+//   } catch (error) {
+//     logger.error('CPI generation error:', error);
+//     throw new Error(`CPI calculation failed: ${error.message}`);
+//   }
+// };
+
 const generateCPI = async (studentId, ledgerEvents) => {
   try {
-    if (!ledgerEvents || ledgerEvents.length === 0) {
+    if (!Array.isArray(ledgerEvents) || ledgerEvents.length === 0) {
       throw new Error('No ledger events found for CPI calculation');
     }
 
-    // Extract competency scores from ledger events
     const competencyScores = {};
     const competencyHistory = {};
-    const competencyTimestamps = {};
-    
+
+    // ===============================
+    // 1️⃣ COLLECT DATA FROM LEDGER
+    // ===============================
     ledgerEvents.forEach(event => {
-      if (event.eventType === Ledger.EVENT_TYPES.COMPETENCY_ASSESSED && event.assessment) {
-        const { competency, score, level } = event.assessment;
+      if (
+        event.eventType !== Ledger.EVENT_TYPES.CHALLENGE_EVALUATED ||
+        !event.challenge?.competenciesAssessed
+      ) {
+        return;
+      }
+
+      event.challenge.competenciesAssessed.forEach(assessment => {
+        const { competency, score, level } = assessment;
+
         if (!competencyScores[competency]) {
           competencyScores[competency] = [];
           competencyHistory[competency] = [];
-          competencyTimestamps[competency] = [];
         }
+
         competencyScores[competency].push(score);
         competencyHistory[competency].push({
           score,
           level,
-          timestamp: event.timestamp,
-          eventId: event.eventId,
+          timestamp: new Date(event.timestamp),
           hash: event.hash
         });
-        competencyTimestamps[competency].push(event.timestamp);
-      } else if (event.eventType === Ledger.EVENT_TYPES.CHALLENGE_EVALUATED && event.challenge?.competenciesAssessed) {
-        event.challenge.competenciesAssessed.forEach(assessment => {
-          const { competency, score, level } = assessment;
-          if (!competencyScores[competency]) {
-            competencyScores[competency] = [];
-            competencyHistory[competency] = [];
-            competencyTimestamps[competency] = [];
-          }
-          competencyScores[competency].push(score);
-          competencyHistory[competency].push({
-            score,
-            level,
-            timestamp: event.timestamp,
-            eventId: event.eventId,
-            hash: event.hash,
-            source: 'challenge'
-          });
-          competencyTimestamps[competency].push(event.timestamp);
-        });
-      }
-    });
-    
-    // Calculate weighted average for each competency (recent scores weighted higher)
-    const weightedScores = {};
-    const latestScores = {};
-    
-    Object.keys(competencyScores).forEach(competency => {
-      const scores = competencyScores[competency];
-      const timestamps = competencyTimestamps[competency];
-      
-      if (scores.length === 0) return;
-      
-      // Get latest score
-      latestScores[competency] = scores[scores.length - 1];
-      
-      // Calculate weighted average (recent scores have higher weight)
-      let weightedSum = 0;
-      let weightSum = 0;
-      
-      scores.forEach((score, index) => {
-        const age = scores.length - index; // Recent scores get higher weight
-        const weight = Math.sqrt(age); // Square root weighting
-        weightedSum += score * weight;
-        weightSum += weight;
       });
-      
-      weightedScores[competency] = weightedSum / weightSum;
     });
-    
-    // Calculate overall CPI (weighted average of competency scores)
-    const competencies = Object.keys(weightedScores);
+
+    const competencies = Object.keys(competencyScores);
+
     if (competencies.length === 0) {
       return {
         cpi: 0,
         competencyScores: {},
+        latestScores: {},
         strengthAreas: [],
         improvementAreas: [],
         consistencyScore: 0,
@@ -111,31 +213,69 @@ const generateCPI = async (studentId, ledgerEvents) => {
         driftDetected: false
       };
     }
-    
-    const totalScore = competencies.reduce((sum, comp) => sum + weightedScores[comp], 0);
-    const cpi = totalScore / competencies.length;
-    
-    // Identify strength and improvement areas
-    const sortedCompetencies = competencies.sort((a, b) => weightedScores[b] - weightedScores[a]);
-    const strengthCount = Math.max(2, Math.ceil(competencies.length * 0.3));
-    const improvementCount = Math.max(2, Math.ceil(competencies.length * 0.3));
-    
-    const strengthAreas = sortedCompetencies.slice(0, strengthCount);
-    const improvementAreas = sortedCompetencies.slice(-improvementCount).reverse();
-    
-    // Calculate consistency (standard deviation)
+
+    // ===============================
+    // 2️⃣ WEIGHTED COMPETENCY SCORES
+    // ===============================
+    const weightedScores = {};
+    const latestScores = {};
+
+    competencies.forEach(competency => {
+      const scores = competencyScores[competency];
+      if (scores.length === 0) return;
+
+      latestScores[competency] = scores[scores.length - 1];
+
+      let weightedSum = 0;
+      let weightSum = 0;
+
+      scores.forEach((score, index) => {
+        const age = scores.length - index; // recent → higher
+        const weight = Math.sqrt(age);
+        weightedSum += score * weight;
+        weightSum += weight;
+      });
+
+      weightedScores[competency] = weightedSum / weightSum;
+    });
+
+    // ===============================
+    // 3️⃣ CPI CALCULATION (0–1)
+    // ===============================
+    const totalWeightedScore = Object.values(weightedScores)
+      .reduce((sum, v) => sum + v, 0);
+
+    const avgScore = totalWeightedScore / competencies.length;
+
+    // Normalize to 0–1
+    const cpi = Math.min(1, Math.max(0, avgScore / 100));
+
+    // ===============================
+    // 4️⃣ INSIGHTS
+    // ===============================
+    const sortedCompetencies = [...competencies]
+      .sort((a, b) => weightedScores[b] - weightedScores[a]);
+
+    const sliceSize = Math.max(2, Math.ceil(competencies.length * 0.3));
+
+    const strengthAreas = sortedCompetencies.slice(0, sliceSize);
+    const improvementAreas =
+      sortedCompetencies.slice(-sliceSize).reverse();
+
     const consistencyScore = calculateConsistency(competencyScores);
-    
-    // Calculate growth rate
     const growthRate = calculateGrowthRate(competencyHistory);
-    
-    // Check for data drift (sudden changes in performance)
     const driftDetected = checkForDataDrift(competencyHistory);
-    
+
+    const assessmentCount = Object.values(competencyHistory)
+      .reduce((sum, arr) => sum + arr.length, 0);
+
+    // ===============================
+    // 5️⃣ FINAL OUTPUT
+    // ===============================
     return {
-      cpi: Math.round(cpi * 100) / 100,
+      cpi: parseFloat(cpi.toFixed(3)), // 0–1
       competencyScores: Object.keys(weightedScores).reduce((acc, comp) => {
-        acc[comp] = Math.round(weightedScores[comp] * 100) / 100;
+        acc[comp] = Math.round(weightedScores[comp] * 100) / 100; // 0–100
         return acc;
       }, {}),
       latestScores,
@@ -143,16 +283,20 @@ const generateCPI = async (studentId, ledgerEvents) => {
       improvementAreas,
       consistencyScore,
       growthRate,
-      assessmentCount: ledgerEvents.length,
+      assessmentCount,
       driftDetected,
-      competencyHistorySummary: Object.keys(competencyHistory).reduce((acc, comp) => {
-        acc[comp] = {
-          count: competencyHistory[comp].length,
-          latest: competencyHistory[comp].length > 0 ? competencyHistory[comp][competencyHistory[comp].length - 1] : null,
-          first: competencyHistory[comp].length > 0 ? competencyHistory[comp][0] : null
-        };
-        return acc;
-      }, {})
+      competencyHistorySummary: Object.keys(competencyHistory).reduce(
+        (acc, comp) => {
+          const history = competencyHistory[comp];
+          acc[comp] = {
+            count: history.length,
+            first: history[0] || null,
+            latest: history[history.length - 1] || null
+          };
+          return acc;
+        },
+        {}
+      )
     };
   } catch (error) {
     logger.error('CPI generation error:', error);
@@ -166,77 +310,196 @@ const generateCPI = async (studentId, ledgerEvents) => {
  * @param {Array} ledgerEvents - Ledger events
  * @returns {Promise<Object>} Competency trends
  */
+// const calculateCompetencyTrends = async (studentId, ledgerEvents) => {
+//   try {
+//     const trends = {};
+    
+//     // Group events by competency and time
+//     const competencyData = {};
+    
+//     ledgerEvents.forEach(event => {
+//       let assessments = [];
+      
+//       if (event.eventType === Ledger.EVENT_TYPES.COMPETENCY_ASSESSED && event.assessment) {
+//         assessments.push(event.assessment);
+//       } else if (event.eventType === Ledger.EVENT_TYPES.CHALLENGE_EVALUATED && event.challenge?.competenciesAssessed) {
+//         assessments = event.challenge.competenciesAssessed;
+//       }
+      
+//       assessments.forEach(assessment => {
+//         const { competency, score, level } = assessment;
+//         if (!competencyData[competency]) {
+//           competencyData[competency] = [];
+//         }
+//         competencyData[competency].push({
+//           score,
+//           level,
+//           timestamp: new Date(event.timestamp),
+//           eventId: event.eventId,
+//           eventType: event.eventType,
+//           hash: event.hash
+//         });
+//       });
+//     });
+    
+//     // Calculate trend for each competency
+//     Object.keys(competencyData).forEach(competency => {
+//       const data = competencyData[competency];
+//       if (data.length === 0) {
+//         trends[competency] = {
+//           trend: 'unknown',
+//           improvement: 0,
+//           dataPoints: 0,
+//           lastAssessment: null
+//         };
+//         return;
+//       }
+      
+//       // Sort by timestamp
+//       data.sort((a, b) => a.timestamp - b.timestamp);
+      
+//       if (data.length === 1) {
+//         trends[competency] = {
+//           trend: 'stable',
+//           improvement: 0,
+//           dataPoints: 1,
+//           lastAssessment: data[0].timestamp,
+//           confidence: 'low'
+//         };
+//         return;
+//       }
+      
+//       const firstScore = data[0].score;
+//       const lastScore = data[data.length - 1].score;
+//       const improvement = lastScore - firstScore;
+      
+//       // Calculate moving average for smoother trend detection
+//       const movingAverage = calculateMovingAverage(data.map(d => d.score));
+//       const slope = calculateSlope(movingAverage);
+      
+//       // Determine trend based on slope and improvement
+//       let trend = 'stable';
+//       let confidence = 'medium';
+      
+//       if (slope > 0.5 || improvement > 15) {
+//         trend = 'improving';
+//         confidence = slope > 1 ? 'high' : 'medium';
+//       } else if (slope < -0.5 || improvement < -15) {
+//         trend = 'declining';
+//         confidence = slope < -1 ? 'high' : 'medium';
+//       }
+      
+//       // Calculate volatility
+//       const volatility = calculateVolatility(data.map(d => d.score));
+      
+//       trends[competency] = {
+//         trend,
+//         improvement,
+//         percentageChange: firstScore > 0 ? (improvement / firstScore * 100).toFixed(2) : 0,
+//         dataPoints: data.length,
+//         firstAssessment: data[0].timestamp,
+//         lastAssessment: data[data.length - 1].timestamp,
+//         averageScore: data.reduce((sum, d) => sum + d.score, 0) / data.length,
+//         volatility: Math.round(volatility * 100) / 100,
+//         confidence,
+//         slope: Math.round(slope * 100) / 100,
+//         recentAssessments: data.slice(-3).map(d => ({
+//           score: d.score,
+//           timestamp: d.timestamp,
+//           level: d.level
+//         }))
+//       };
+//     });
+    
+//     return trends;
+//   } catch (error) {
+//     logger.error('Trend calculation error:', error);
+//     throw new Error(`Trend calculation failed: ${error.message}`);
+//   }
+// };
 const calculateCompetencyTrends = async (studentId, ledgerEvents) => {
   try {
     const trends = {};
-    
-    // Group events by competency and time
     const competencyData = {};
-    
+
+    // ===============================
+    // 1️⃣ COLLECT DATA FROM LEDGER
+    // ===============================
     ledgerEvents.forEach(event => {
-      let assessments = [];
-      
-      if (event.eventType === Ledger.EVENT_TYPES.COMPETENCY_ASSESSED && event.assessment) {
-        assessments.push(event.assessment);
-      } else if (event.eventType === Ledger.EVENT_TYPES.CHALLENGE_EVALUATED && event.challenge?.competenciesAssessed) {
-        assessments = event.challenge.competenciesAssessed;
+      if (
+        event.eventType !== Ledger.EVENT_TYPES.CHALLENGE_EVALUATED ||
+        !event.challenge?.competenciesAssessed
+      ) {
+        return;
       }
-      
-      assessments.forEach(assessment => {
+
+      event.challenge.competenciesAssessed.forEach(assessment => {
         const { competency, score, level } = assessment;
+
         if (!competencyData[competency]) {
           competencyData[competency] = [];
         }
+
         competencyData[competency].push({
           score,
           level,
           timestamp: new Date(event.timestamp),
-          eventId: event.eventId,
-          eventType: event.eventType,
+          eventId: event._id,
           hash: event.hash
         });
       });
     });
-    
-    // Calculate trend for each competency
+
+    // ===============================
+    // 2️⃣ CALCULATE TRENDS
+    // ===============================
     Object.keys(competencyData).forEach(competency => {
       const data = competencyData[competency];
+
       if (data.length === 0) {
         trends[competency] = {
           trend: 'unknown',
           improvement: 0,
           dataPoints: 0,
-          lastAssessment: null
+          confidence: 'low'
         };
         return;
       }
-      
-      // Sort by timestamp
+
+      // Sort by time
       data.sort((a, b) => a.timestamp - b.timestamp);
-      
+
       if (data.length === 1) {
         trends[competency] = {
           trend: 'stable',
           improvement: 0,
           dataPoints: 1,
+          firstAssessment: data[0].timestamp,
           lastAssessment: data[0].timestamp,
-          confidence: 'low'
+          averageScore: data[0].score,
+          volatility: 0,
+          slope: 0,
+          confidence: 'low',
+          recentAssessments: [{
+            score: data[0].score,
+            timestamp: data[0].timestamp,
+            level: data[0].level
+          }]
         };
         return;
       }
-      
+
       const firstScore = data[0].score;
       const lastScore = data[data.length - 1].score;
       const improvement = lastScore - firstScore;
-      
-      // Calculate moving average for smoother trend detection
-      const movingAverage = calculateMovingAverage(data.map(d => d.score));
-      const slope = calculateSlope(movingAverage);
-      
-      // Determine trend based on slope and improvement
+
+      // Smooth trend detection
+      const movingAvg = calculateMovingAverage(data.map(d => d.score));
+      const slope = calculateSlope(movingAvg);
+
       let trend = 'stable';
       let confidence = 'medium';
-      
+
       if (slope > 0.5 || improvement > 15) {
         trend = 'improving';
         confidence = slope > 1 ? 'high' : 'medium';
@@ -244,21 +507,25 @@ const calculateCompetencyTrends = async (studentId, ledgerEvents) => {
         trend = 'declining';
         confidence = slope < -1 ? 'high' : 'medium';
       }
-      
-      // Calculate volatility
+
       const volatility = calculateVolatility(data.map(d => d.score));
-      
+      const avgScore =
+        data.reduce((sum, d) => sum + d.score, 0) / data.length;
+
       trends[competency] = {
         trend,
         improvement,
-        percentageChange: firstScore > 0 ? (improvement / firstScore * 100).toFixed(2) : 0,
+        percentageChange:
+          firstScore > 0
+            ? Math.round((improvement / firstScore) * 10000) / 100
+            : 0,
         dataPoints: data.length,
         firstAssessment: data[0].timestamp,
         lastAssessment: data[data.length - 1].timestamp,
-        averageScore: data.reduce((sum, d) => sum + d.score, 0) / data.length,
+        averageScore: Math.round(avgScore * 100) / 100,
         volatility: Math.round(volatility * 100) / 100,
-        confidence,
         slope: Math.round(slope * 100) / 100,
+        confidence,
         recentAssessments: data.slice(-3).map(d => ({
           score: d.score,
           timestamp: d.timestamp,
@@ -266,7 +533,7 @@ const calculateCompetencyTrends = async (studentId, ledgerEvents) => {
         }))
       };
     });
-    
+
     return trends;
   } catch (error) {
     logger.error('Trend calculation error:', error);
@@ -280,52 +547,125 @@ const calculateCompetencyTrends = async (studentId, ledgerEvents) => {
  * @param {Array} history - Historical data for smoothing
  * @returns {Array|number} Smoothed CPI
  */
+// const smoothCPI = (cpiData, history = []) => {
+//   try {
+//     // If it's a single value, apply exponential smoothing with history
+//     if (typeof cpiData === 'number' && history.length > 0) {
+//       const alpha = 0.3; // Smoothing factor
+//       let smoothed = cpiData;
+      
+//       // Apply exponential smoothing backwards through history
+//       for (let i = history.length - 1; i >= 0; i--) {
+//         smoothed = alpha * history[i] + (1 - alpha) * smoothed;
+//       }
+      
+//       return Math.round(smoothed * 100) / 100;
+//     }
+    
+//     // If it's an array, apply weighted moving average
+//     if (Array.isArray(cpiData)) {
+//       if (cpiData.length < 3) return cpiData;
+      
+//       const weights = [0.25, 0.5, 0.25]; // Center-weighted
+//       const smoothed = [];
+      
+//       for (let i = 0; i < cpiData.length; i++) {
+//         if (i === 0) {
+//           smoothed.push(cpiData[i]); // Keep first
+//         } else if (i === cpiData.length - 1) {
+//           smoothed.push(cpiData[i]); // Keep last
+//         } else {
+//           let weightedSum = 0;
+//           let weightSum = 0;
+          
+//           for (let j = -1; j <= 1; j++) {
+//             const idx = i + j;
+//             if (idx >= 0 && idx < cpiData.length) {
+//               const weight = weights[j + 1];
+//               weightedSum += cpiData[idx] * weight;
+//               weightSum += weight;
+//             }
+//           }
+          
+//           smoothed.push(parseFloat((weightedSum / weightSum).toFixed(2)));
+//         }
+//       }
+//       return smoothed;
+//     }
+    
+//     return cpiData;
+//   } catch (error) {
+//     logger.error('CPI smoothing error:', error);
+//     return cpiData;
+//   }
+// };
+
 const smoothCPI = (cpiData, history = []) => {
   try {
-    // If it's a single value, apply exponential smoothing with history
-    if (typeof cpiData === 'number' && history.length > 0) {
-      const alpha = 0.3; // Smoothing factor
-      let smoothed = cpiData;
-      
-      // Apply exponential smoothing backwards through history
-      for (let i = history.length - 1; i >= 0; i--) {
+    // ===============================
+    // CASE 1: SINGLE CPI VALUE (EMA)
+    // ===============================
+    if (typeof cpiData === 'number') {
+      if (!Array.isArray(history) || history.length === 0) {
+        // No history → return bounded CPI
+        return Math.min(1, Math.max(0, parseFloat(cpiData.toFixed(3))));
+      }
+
+      // Exponential Moving Average
+      const alpha = 0.35; // NEP-friendly responsiveness
+      let smoothed = history[0];
+
+      for (let i = 1; i < history.length; i++) {
         smoothed = alpha * history[i] + (1 - alpha) * smoothed;
       }
-      
-      return Math.round(smoothed * 100) / 100;
+
+      // Blend latest CPI
+      smoothed = alpha * cpiData + (1 - alpha) * smoothed;
+
+      return Math.min(1, Math.max(0, parseFloat(smoothed.toFixed(3))));
     }
-    
-    // If it's an array, apply weighted moving average
+
+    // ===============================
+    // CASE 2: CPI SERIES (SMOOTHED CURVE)
+    // ===============================
     if (Array.isArray(cpiData)) {
-      if (cpiData.length < 3) return cpiData;
-      
-      const weights = [0.25, 0.5, 0.25]; // Center-weighted
-      const smoothed = [];
-      
-      for (let i = 0; i < cpiData.length; i++) {
-        if (i === 0) {
-          smoothed.push(cpiData[i]); // Keep first
-        } else if (i === cpiData.length - 1) {
-          smoothed.push(cpiData[i]); // Keep last
-        } else {
-          let weightedSum = 0;
-          let weightSum = 0;
-          
-          for (let j = -1; j <= 1; j++) {
-            const idx = i + j;
-            if (idx >= 0 && idx < cpiData.length) {
-              const weight = weights[j + 1];
-              weightedSum += cpiData[idx] * weight;
-              weightSum += weight;
-            }
-          }
-          
-          smoothed.push(parseFloat((weightedSum / weightSum).toFixed(2)));
-        }
+      if (cpiData.length < 3) {
+        return cpiData.map(v =>
+          Math.min(1, Math.max(0, parseFloat(v.toFixed(3))))
+        );
       }
+
+      const weights = [0.25, 0.5, 0.25]; // centered smoothing
+      const smoothed = [];
+
+      for (let i = 0; i < cpiData.length; i++) {
+        if (i === 0 || i === cpiData.length - 1) {
+          smoothed.push(
+            Math.min(1, Math.max(0, parseFloat(cpiData[i].toFixed(3))))
+          );
+          continue;
+        }
+
+        let weightedSum = 0;
+        let weightSum = 0;
+
+        for (let j = -1; j <= 1; j++) {
+          const idx = i + j;
+          if (idx >= 0 && idx < cpiData.length) {
+            weightedSum += cpiData[idx] * weights[j + 1];
+            weightSum += weights[j + 1];
+          }
+        }
+
+        const value = weightedSum / weightSum;
+        smoothed.push(
+          Math.min(1, Math.max(0, parseFloat(value.toFixed(3))))
+        );
+      }
+
       return smoothed;
     }
-    
+
     return cpiData;
   } catch (error) {
     logger.error('CPI smoothing error:', error);

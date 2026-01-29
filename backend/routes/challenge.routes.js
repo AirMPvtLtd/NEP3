@@ -40,12 +40,12 @@ router.post(
 // CHALLENGE LIFECYCLE
 // ============================================================================
 
-router.get(
-  '/statistics',
-  authenticate,
-  authorize('student'),
-  challengeController.getChallengeStatistics
-);
+// router.get(
+//   '/statistics',
+//   authenticate,
+//   authorize('student'),
+//   challengeController.getChallengeStatistics
+// );
 
 router.get(
   '/recent',
@@ -82,11 +82,11 @@ router.post(
   challengeController.submitChallenge
 );
 
-router.get(
-  '/:challengeId/results',
-  authenticate,
-  challengeController.getChallengeResults
-);
+// router.get(
+//   '/:challengeId/results',
+//   authenticate,
+//   challengeController.getChallengeResults
+// );
 
 // ============================================================================
 // EVALUATION (TEACHER / ADMIN)

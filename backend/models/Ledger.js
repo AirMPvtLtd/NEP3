@@ -539,7 +539,7 @@ ledgerSchema.statics.createChallengeEvaluation = async function(params) {
 /**
  * Create a report generation event
  */
-ledgerSchema.statics.createReportEvent = async function(params) {
+ledgerSchema.statics.createReportEvent = async function (params) {
   const {
     studentId,
     teacherId,
@@ -548,39 +548,51 @@ ledgerSchema.statics.createReportEvent = async function(params) {
     reportType,
     cpi,
     hash,
-    eventType = EVENT_TYPES.REPORT_GENERATED,
     createdBy,
     createdByRole,
     ipAddress,
     userAgent
   } = params;
-  
+
   const event = new this({
-    eventType,
+    eventType: EVENT_TYPES.REPORT_GENERATED,
+
     studentId,
     teacherId,
     schoolId,
+
     report: {
       reportId,
       reportType,
       cpi,
       hash
     },
+
     data: {
       reportId,
       reportType,
       cpi,
-      hash,
-      eventType
+      hash
     },
+
+    // 🔴 YE 2 CHEEZ MISSING THI — AB ADD KI
+    hash,
+    metadata: {
+      timestamp: new Date()
+    },
+
     createdBy,
     createdByRole,
     ipAddress,
-    userAgent
+    userAgent,
+
+    status: 'confirmed',
+    timestamp: new Date()
   });
-  
+
   return event.save();
 };
+
 
 /**
  * Get student's ledger events

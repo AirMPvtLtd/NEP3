@@ -2721,3 +2721,921 @@
 {"level":"info","message":"Challenge CHL-1769592550617 submitted, starting AI evaluation","service":"nep-workbench","timestamp":"2026-01-28 14:59:59"}
 {"0":"C","1":"H","10":"2","11":"5","12":"5","13":"0","14":"6","15":"1","16":"7","2":"L","3":"-","4":"1","5":"7","6":"6","7":"9","8":"5","9":"9","level":"info","message":"✅ Ledger entry created for challenge:","service":"nep-workbench","timestamp":"2026-01-28 15:00:15"}
 {"level":"info","message":"Challenge CHL-1769592550617 auto-evaluated: 100.00% in 15837ms","service":"nep-workbench","timestamp":"2026-01-28 15:00:15"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 18:10:53"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 18:10:53"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 18:10:53"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 18:10:53"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 18:10:53"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 18:10:53"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 18:10:53"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 18:10:53"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":470879,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 18:10:53"}
+{"level":"info","message":"Generating NEP report for student STU-NCYVN","reportType":"comprehensive","requestedBy":"6968e40559a15d8b32741981","service":"nep-workbench","timestamp":"2026-01-28 18:13:49"}
+{"level":"info","message":"Generating NEP report for student STU-NCYVN","reportType":"comprehensive","requestedBy":"6968e40559a15d8b32741981","service":"nep-workbench","timestamp":"2026-01-28 18:25:42"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 18:25:58"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 18:25:58"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 18:25:58"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 18:25:58"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 18:25:58"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 18:25:58"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 18:25:58"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 18:25:58"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":471750,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 18:25:58"}
+{"level":"info","message":"Generating NEP report for student STU-NCYVN","reportType":"comprehensive","requestedBy":"6968e40559a15d8b32741981","service":"nep-workbench","timestamp":"2026-01-28 18:26:02"}
+{"level":"info","message":"Generating NEP report for student STU-NCYVN","reportType":"comprehensive","requestedBy":"6968e40559a15d8b32741981","service":"nep-workbench","timestamp":"2026-01-28 18:30:44"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 18:30:48"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 18:30:48"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 18:30:48"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 18:30:48"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 18:30:48"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 18:30:48"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 18:30:48"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 18:30:48"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":472067,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 18:30:48"}
+{"level":"info","message":"Generating NEP report for student STU-NCYVN","reportType":"comprehensive","requestedBy":"6968e40559a15d8b32741981","service":"nep-workbench","timestamp":"2026-01-28 18:30:55"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 18:35:47"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 18:35:47"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 18:35:47"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 18:35:47"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 18:35:47"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 18:35:47"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 18:35:47"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 18:35:47"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":472516,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 18:35:47"}
+{"level":"info","message":"Generating NEP report for student STU-NCYVN","reportType":"comprehensive","requestedBy":"6968e40559a15d8b32741981","service":"nep-workbench","timestamp":"2026-01-28 18:35:56"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 19:34:12"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 19:34:12"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 19:34:12"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 19:34:12"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 19:34:12"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 19:34:12"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 19:34:12"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 19:34:12"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":477564,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 19:34:12"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 19:37:16"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 19:37:16"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 19:37:16"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 19:37:16"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 19:37:16"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 19:37:16"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 19:37:16"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 19:37:16"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":477828,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 19:37:16"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"ray-diagram-builder","subject":"physics","timestamp":"2026-01-28 19:44:07"}
+{"difficultyFactors":19,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-28 19:44:07","tools":19,"topics":29}
+{"level":"info","message":"📊 Recent average score: 34.86%","service":"nep-workbench","timestamp":"2026-01-28 19:44:07"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-28 19:44:07"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-28 19:44:07"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-28 19:44:07","topic":"ray-diagram-builder"}
+{"level":"info","message":"✅ Mistral AI responded in 23908ms","service":"nep-workbench","timestamp":"2026-01-28 19:44:31"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-28 19:44:31"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-28 19:44:31"}
+{"MCQ":2,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-28 19:44:31"}
+{"level":"info","message":"✅ Challenge generated in 23911ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-28 19:44:31"}
+{"level":"info","message":"Challenge CHL-1769609671421 submitted, starting AI evaluation","service":"nep-workbench","timestamp":"2026-01-28 19:46:00"}
+{"0":"C","1":"H","10":"9","11":"6","12":"7","13":"1","14":"4","15":"2","16":"1","2":"L","3":"-","4":"1","5":"7","6":"6","7":"9","8":"6","9":"0","level":"info","message":"✅ Ledger entry created for challenge:","service":"nep-workbench","timestamp":"2026-01-28 19:46:14"}
+{"level":"info","message":"Challenge CHL-1769609671421 auto-evaluated: 95.00% in 13920ms","service":"nep-workbench","timestamp":"2026-01-28 19:46:14"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 20:11:30"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 20:11:30"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 20:11:30"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 20:11:30"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 20:11:30"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 20:11:30"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 20:11:30"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 20:11:30"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":479806,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 20:11:30"}
+{"0":"l","1":"e","10":"i","11":"c","12":"e","13":".","14":"c","15":"a","16":"l","17":"c","18":"u","19":"l","2":"d","20":"a","21":"t","22":"e","23":"C","24":"P","25":"I","26":" ","27":"i","28":"s","29":" ","3":"g","30":"n","31":"o","32":"t","33":" ","34":"a","35":" ","36":"f","37":"u","38":"n","39":"c","4":"e","40":"t","41":"i","42":"o","43":"n","5":"r","6":"S","7":"e","8":"r","9":"v","level":"warn","message":"CPI calculation failed for STU-JGETF","service":"nep-workbench","timestamp":"2026-01-28 20:12:06"}
+{"0":"l","1":"e","10":"i","11":"c","12":"e","13":".","14":"c","15":"a","16":"l","17":"c","18":"u","19":"l","2":"d","20":"a","21":"t","22":"e","23":"C","24":"P","25":"I","26":" ","27":"i","28":"s","29":" ","3":"g","30":"n","31":"o","32":"t","33":" ","34":"a","35":" ","36":"f","37":"u","38":"n","39":"c","4":"e","40":"t","41":"i","42":"o","43":"n","5":"r","6":"S","7":"e","8":"r","9":"v","level":"warn","message":"CPI calculation failed for STU-0WMAI","service":"nep-workbench","timestamp":"2026-01-28 20:12:06"}
+{"0":"l","1":"e","10":"i","11":"c","12":"e","13":".","14":"c","15":"a","16":"l","17":"c","18":"u","19":"l","2":"d","20":"a","21":"t","22":"e","23":"C","24":"P","25":"I","26":" ","27":"i","28":"s","29":" ","3":"g","30":"n","31":"o","32":"t","33":" ","34":"a","35":" ","36":"f","37":"u","38":"n","39":"c","4":"e","40":"t","41":"i","42":"o","43":"n","5":"r","6":"S","7":"e","8":"r","9":"v","level":"warn","message":"CPI calculation failed for STU-C7AY3","service":"nep-workbench","timestamp":"2026-01-28 20:12:06"}
+{"0":"l","1":"e","10":"i","11":"c","12":"e","13":".","14":"c","15":"a","16":"l","17":"c","18":"u","19":"l","2":"d","20":"a","21":"t","22":"e","23":"C","24":"P","25":"I","26":" ","27":"i","28":"s","29":" ","3":"g","30":"n","31":"o","32":"t","33":" ","34":"a","35":" ","36":"f","37":"u","38":"n","39":"c","4":"e","40":"t","41":"i","42":"o","43":"n","5":"r","6":"S","7":"e","8":"r","9":"v","level":"warn","message":"CPI calculation failed for STU-TMB_A","service":"nep-workbench","timestamp":"2026-01-28 20:12:06"}
+{"0":"l","1":"e","10":"i","11":"c","12":"e","13":".","14":"c","15":"a","16":"l","17":"c","18":"u","19":"l","2":"d","20":"a","21":"t","22":"e","23":"C","24":"P","25":"I","26":" ","27":"i","28":"s","29":" ","3":"g","30":"n","31":"o","32":"t","33":" ","34":"a","35":" ","36":"f","37":"u","38":"n","39":"c","4":"e","40":"t","41":"i","42":"o","43":"n","5":"r","6":"S","7":"e","8":"r","9":"v","level":"warn","message":"CPI calculation failed for STU-AMQZM","service":"nep-workbench","timestamp":"2026-01-28 20:12:06"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"ray-diagram-builder","subject":"physics","timestamp":"2026-01-28 20:16:25"}
+{"difficultyFactors":19,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-28 20:16:25","tools":19,"topics":29}
+{"level":"info","message":"📊 Recent average score: 50.00%","service":"nep-workbench","timestamp":"2026-01-28 20:16:25"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-28 20:16:25"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-28 20:16:25"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-28 20:16:25","topic":"ray-diagram-builder"}
+{"level":"info","message":"✅ Mistral AI responded in 23929ms","service":"nep-workbench","timestamp":"2026-01-28 20:16:49"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-28 20:16:49"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-28 20:16:49"}
+{"MCQ":2,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-28 20:16:49"}
+{"level":"info","message":"✅ Challenge generated in 23932ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-28 20:16:49"}
+{"level":"info","message":"Challenge CHL-1769611609466 submitted, starting AI evaluation","service":"nep-workbench","timestamp":"2026-01-28 20:17:49"}
+{"0":"C","1":"H","10":"1","11":"6","12":"0","13":"9","14":"4","15":"6","16":"6","2":"L","3":"-","4":"1","5":"7","6":"6","7":"9","8":"6","9":"1","level":"info","message":"✅ Ledger entry created for challenge:","service":"nep-workbench","timestamp":"2026-01-28 20:18:07"}
+{"level":"info","message":"Challenge CHL-1769611609466 auto-evaluated: 87.00% in 18781ms","service":"nep-workbench","timestamp":"2026-01-28 20:18:07"}
+{"0":"l","1":"e","10":"i","11":"c","12":"e","13":".","14":"c","15":"a","16":"l","17":"c","18":"u","19":"l","2":"d","20":"a","21":"t","22":"e","23":"C","24":"P","25":"I","26":" ","27":"i","28":"s","29":" ","3":"g","30":"n","31":"o","32":"t","33":" ","34":"a","35":" ","36":"f","37":"u","38":"n","39":"c","4":"e","40":"t","41":"i","42":"o","43":"n","5":"r","6":"S","7":"e","8":"r","9":"v","level":"warn","message":"CPI calculation failed for STU-JGETF","service":"nep-workbench","timestamp":"2026-01-28 20:22:05"}
+{"0":"l","1":"e","10":"i","11":"c","12":"e","13":".","14":"c","15":"a","16":"l","17":"c","18":"u","19":"l","2":"d","20":"a","21":"t","22":"e","23":"C","24":"P","25":"I","26":" ","27":"i","28":"s","29":" ","3":"g","30":"n","31":"o","32":"t","33":" ","34":"a","35":" ","36":"f","37":"u","38":"n","39":"c","4":"e","40":"t","41":"i","42":"o","43":"n","5":"r","6":"S","7":"e","8":"r","9":"v","level":"warn","message":"CPI calculation failed for STU-0WMAI","service":"nep-workbench","timestamp":"2026-01-28 20:22:05"}
+{"0":"l","1":"e","10":"i","11":"c","12":"e","13":".","14":"c","15":"a","16":"l","17":"c","18":"u","19":"l","2":"d","20":"a","21":"t","22":"e","23":"C","24":"P","25":"I","26":" ","27":"i","28":"s","29":" ","3":"g","30":"n","31":"o","32":"t","33":" ","34":"a","35":" ","36":"f","37":"u","38":"n","39":"c","4":"e","40":"t","41":"i","42":"o","43":"n","5":"r","6":"S","7":"e","8":"r","9":"v","level":"warn","message":"CPI calculation failed for STU-C7AY3","service":"nep-workbench","timestamp":"2026-01-28 20:22:05"}
+{"0":"l","1":"e","10":"i","11":"c","12":"e","13":".","14":"c","15":"a","16":"l","17":"c","18":"u","19":"l","2":"d","20":"a","21":"t","22":"e","23":"C","24":"P","25":"I","26":" ","27":"i","28":"s","29":" ","3":"g","30":"n","31":"o","32":"t","33":" ","34":"a","35":" ","36":"f","37":"u","38":"n","39":"c","4":"e","40":"t","41":"i","42":"o","43":"n","5":"r","6":"S","7":"e","8":"r","9":"v","level":"warn","message":"CPI calculation failed for STU-TMB_A","service":"nep-workbench","timestamp":"2026-01-28 20:22:05"}
+{"0":"l","1":"e","10":"i","11":"c","12":"e","13":".","14":"c","15":"a","16":"l","17":"c","18":"u","19":"l","2":"d","20":"a","21":"t","22":"e","23":"C","24":"P","25":"I","26":" ","27":"i","28":"s","29":" ","3":"g","30":"n","31":"o","32":"t","33":" ","34":"a","35":" ","36":"f","37":"u","38":"n","39":"c","4":"e","40":"t","41":"i","42":"o","43":"n","5":"r","6":"S","7":"e","8":"r","9":"v","level":"warn","message":"CPI calculation failed for STU-AMQZM","service":"nep-workbench","timestamp":"2026-01-28 20:22:05"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 20:35:12"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 20:35:12"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 20:35:12"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 20:35:12"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 20:35:12"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 20:35:12"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 20:35:12"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 20:35:12"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":481312,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 20:35:12"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 20:39:08"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 20:39:09"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 20:39:09"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 20:39:09"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 20:39:09"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 20:39:09"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 20:39:09"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 20:39:09"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":481582,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 20:39:09"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 21:01:46"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 21:01:46"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 21:01:46"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 21:01:46"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 21:01:46"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 21:01:46"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 21:01:46"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 21:01:46"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":483026,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 21:01:46"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 21:03:00"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 21:03:01"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 21:03:01"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 21:03:01"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 21:03:01"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 21:03:01"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 21:03:01"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 21:03:01"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":483151,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 21:03:01"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 21:03:55"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 21:03:55"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 21:03:55"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 21:03:55"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 21:03:55"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 21:03:55"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 21:03:55"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 21:03:55"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":483289,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 21:03:55"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 21:05:50"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 21:05:50"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 21:05:50"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 21:05:50"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 21:05:50"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 21:05:50"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 21:05:50"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 21:05:50"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":483432,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 21:05:50"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 21:07:35"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 21:07:35"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 21:07:35"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 21:07:35"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 21:07:35"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 21:07:35"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 21:07:35"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 21:07:35"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":483634,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 21:07:35"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-28 21:08:51","topic":"ray-diagram-builder"}
+{"level":"error","message":"❌ Mistral AI generation error: Cannot read properties of undefined (reading 'slice')","service":"nep-workbench","stack":"TypeError: Cannot read properties of undefined (reading 'slice')\n    at Object.generateChallenge (/home/popeye/Downloads/NEP3/backend/services/mistral.service.js:1457:40)\n    at exports.generateChallenge (/home/popeye/Downloads/NEP3/backend/controllers/challenge.controller.js:2634:44)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-28 21:08:51"}
+{"level":"error","message":"Cannot read properties of undefined (reading 'slice')","service":"nep-workbench","stack":"TypeError: Cannot read properties of undefined (reading 'slice')\n    at Object.generateChallenge (/home/popeye/Downloads/NEP3/backend/services/mistral.service.js:1457:40)\n    at exports.generateChallenge (/home/popeye/Downloads/NEP3/backend/controllers/challenge.controller.js:2634:44)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-28 21:08:51"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 21:10:40"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 21:10:40"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 21:10:40"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 21:10:40"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 21:10:40"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 21:10:40"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 21:10:40"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 21:10:40"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":483870,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 21:10:40"}
+{"difficulty":"medium","level":"info","message":"Generating challenge for student STU-AMQZM","service":"nep-workbench","simulationType":"ray-diagram-builder","studentLevel":10,"timestamp":"2026-01-28 21:10:50"}
+{"level":"error","message":"Generate challenge error: generateAIChallenge is not a function","service":"nep-workbench","stack":"TypeError: generateAIChallenge is not a function\n    at exports.generateChallenge (/home/popeye/Downloads/NEP3/backend/controllers/challenge.controller.js:79:33)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-28 21:10:50"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 21:12:24"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 21:12:24"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 21:12:24"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 21:12:24"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 21:12:24"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 21:12:24"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 21:12:24"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 21:12:24"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":484131,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 21:12:24"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"ray-diagram-builder","subject":"physics","timestamp":"2026-01-28 21:12:28"}
+{"difficultyFactors":19,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-28 21:12:28","tools":19,"topics":29}
+{"level":"info","message":"📊 Recent average score: 87.00%","service":"nep-workbench","timestamp":"2026-01-28 21:12:28"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-28 21:12:28"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-28 21:12:28"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-28 21:12:28","topic":"ray-diagram-builder"}
+{"level":"info","message":"✅ Mistral AI responded in 22544ms","service":"nep-workbench","timestamp":"2026-01-28 21:12:50"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-28 21:12:50"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-28 21:12:50"}
+{"MCQ":1,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":2,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-28 21:12:50"}
+{"level":"info","message":"✅ Challenge generated in 22546ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-28 21:12:50"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 21:15:55"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 21:15:55"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 21:15:55"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 21:15:55"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 21:15:55"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 21:15:55"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 21:15:55"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 21:15:55"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":484388,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 21:15:55"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"ray-diagram-builder","subject":"physics","timestamp":"2026-01-28 21:16:05"}
+{"difficultyFactors":19,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-28 21:16:05","tools":19,"topics":29}
+{"level":"info","message":"📊 Recent average score: 87.00%","service":"nep-workbench","timestamp":"2026-01-28 21:16:05"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-28 21:16:05"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-28 21:16:05"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-28 21:16:05","topic":"ray-diagram-builder"}
+{"level":"info","message":"✅ Mistral AI responded in 17780ms","service":"nep-workbench","timestamp":"2026-01-28 21:16:23"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-28 21:16:23"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-28 21:16:23"}
+{"MCQ":2,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-28 21:16:23"}
+{"level":"info","message":"✅ Challenge generated in 17782ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-28 21:16:23"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 21:29:52"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 21:29:52"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 21:29:52"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 21:29:53"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 21:29:53"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 21:29:53"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 21:29:53"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 21:29:53"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":485345,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 21:29:53"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"ray-diagram-builder","subject":"physics","timestamp":"2026-01-28 21:30:02"}
+{"difficultyFactors":19,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-28 21:30:02","tools":19,"topics":29}
+{"level":"info","message":"📊 Recent average score: 87.00%","service":"nep-workbench","timestamp":"2026-01-28 21:30:02"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-28 21:30:02"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 21:37:34"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 21:37:34"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 21:37:34"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 21:37:34"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 21:37:34"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 21:37:34"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 21:37:34"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 21:37:34"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":485964,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 21:37:34"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 21:44:34"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 21:44:34"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 21:44:34"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 21:44:34"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 21:44:34"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 21:44:34"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 21:44:34"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 21:44:34"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":486540,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 21:44:34"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"magnetic-field-visualizer","subject":"physics","timestamp":"2026-01-28 21:46:27"}
+{"difficultyFactors":16,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-28 21:46:27","tools":15,"topics":20}
+{"level":"info","message":"📊 Recent average score: 87.00%","service":"nep-workbench","timestamp":"2026-01-28 21:46:27"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-28 21:46:27"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-28 21:46:27"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-28 21:46:27","topic":"magnetic-field-visualizer"}
+{"level":"info","message":"✅ Mistral AI responded in 17146ms","service":"nep-workbench","timestamp":"2026-01-28 21:46:44"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-28 21:46:44"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-28 21:46:44"}
+{"MCQ":2,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-28 21:46:44"}
+{"level":"info","message":"✅ Challenge generated in 17149ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-28 21:46:44"}
+{"level":"info","message":"Challenge CHL-1769617004944 submitted, starting AI evaluation","service":"nep-workbench","timestamp":"2026-01-28 21:47:35"}
+{"0":"L","1":"e","10":"i","100":"B","101":"y","102":"`","103":" ","104":"i","105":"s","106":" ","107":"r","108":"e","109":"q","11":"d","110":"u","111":"i","112":"r","113":"e","114":"d","115":".","116":",","117":" ","118":"m","119":"e","12":"a","120":"t","121":"a","122":"d","123":"a","124":"t","125":"a","126":":","127":" ","128":"P","129":"a","13":"t","130":"t","131":"h","132":" ","133":"`","134":"m","135":"e","136":"t","137":"a","138":"d","139":"a","14":"i","140":"t","141":"a","142":"`","143":" ","144":"i","145":"s","146":" ","147":"r","148":"e","149":"q","15":"o","150":"u","151":"i","152":"r","153":"e","154":"d","155":".","156":",","157":" ","158":"h","159":"a","16":"n","160":"s","161":"h","162":":","163":" ","164":"P","165":"a","166":"t","167":"h","168":" ","169":"`","17":" ","170":"h","171":"a","172":"s","173":"h","174":"`","175":" ","176":"i","177":"s","178":" ","179":"r","18":"f","180":"e","181":"q","182":"u","183":"i","184":"r","185":"e","186":"d","187":".","19":"a","2":"d","20":"i","21":"l","22":"e","23":"d","24":":","25":" ","26":"c","27":"r","28":"e","29":"a","3":"g","30":"t","31":"e","32":"d","33":"B","34":"y","35":"R","36":"o","37":"l","38":"e","39":":","4":"e","40":" ","41":"P","42":"a","43":"t","44":"h","45":" ","46":"`","47":"c","48":"r","49":"e","5":"r","50":"a","51":"t","52":"e","53":"d","54":"B","55":"y","56":"R","57":"o","58":"l","59":"e","6":" ","60":"`","61":" ","62":"i","63":"s","64":" ","65":"r","66":"e","67":"q","68":"u","69":"i","7":"v","70":"r","71":"e","72":"d","73":".","74":",","75":" ","76":"c","77":"r","78":"e","79":"a","8":"a","80":"t","81":"e","82":"d","83":"B","84":"y","85":":","86":" ","87":"P","88":"a","89":"t","9":"l","90":"h","91":" ","92":"`","93":"c","94":"r","95":"e","96":"a","97":"t","98":"e","99":"d","level":"error","message":"❌ Ledger write failed:","service":"nep-workbench","timestamp":"2026-01-28 21:47:56"}
+{"level":"info","message":"Challenge CHL-1769617004944 evaluated in 20355ms","service":"nep-workbench","timestamp":"2026-01-28 21:47:56"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 21:50:57"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 21:50:57"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 21:50:57"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 21:50:57"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 21:50:57"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 21:50:57"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 21:50:57"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 21:50:57"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":487004,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 21:50:57"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"magnetic-field-visualizer","subject":"physics","timestamp":"2026-01-28 21:51:14"}
+{"difficultyFactors":16,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-28 21:51:14","tools":15,"topics":20}
+{"level":"info","message":"📊 Recent average score: 82.50%","service":"nep-workbench","timestamp":"2026-01-28 21:51:14"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-28 21:51:14"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-28 21:51:14"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-28 21:51:14","topic":"magnetic-field-visualizer"}
+{"level":"info","message":"✅ Mistral AI responded in 22253ms","service":"nep-workbench","timestamp":"2026-01-28 21:51:36"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-28 21:51:36"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-28 21:51:36"}
+{"MCQ":2,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-28 21:51:36"}
+{"level":"info","message":"✅ Challenge generated in 22256ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-28 21:51:36"}
+{"level":"info","message":"Challenge CHL-1769617296813 submitted, starting AI evaluation","service":"nep-workbench","timestamp":"2026-01-28 21:52:37"}
+{"0":"c","1":"p","10":"t","11":" ","12":"i","13":"s","14":" ","15":"n","16":"o","17":"t","18":" ","19":"d","2":"i","20":"e","21":"f","22":"i","23":"n","24":"e","25":"d","3":"S","4":"n","5":"a","6":"p","7":"s","8":"h","9":"o","level":"error","message":"❌ Ledger write failed:","service":"nep-workbench","timestamp":"2026-01-28 21:52:55"}
+{"level":"info","message":"Challenge CHL-1769617296813 evaluated in 18738ms","service":"nep-workbench","timestamp":"2026-01-28 21:52:55"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 21:59:44"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 21:59:44"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 21:59:44"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 21:59:44"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 21:59:44"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 21:59:44"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 21:59:44"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 21:59:44"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":487649,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 21:59:44"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"magnetic-field-visualizer","subject":"physics","timestamp":"2026-01-28 22:02:19"}
+{"difficultyFactors":16,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-28 22:02:19","tools":15,"topics":20}
+{"level":"info","message":"📊 Recent average score: 83.00%","service":"nep-workbench","timestamp":"2026-01-28 22:02:19"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-28 22:02:19"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-28 22:02:19"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-28 22:02:19","topic":"magnetic-field-visualizer"}
+{"level":"info","message":"✅ Mistral AI responded in 35728ms","service":"nep-workbench","timestamp":"2026-01-28 22:02:55"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-28 22:02:55"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-28 22:02:55"}
+{"MCQ":2,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-28 22:02:55"}
+{"level":"info","message":"✅ Challenge generated in 35733ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-28 22:02:55"}
+{"level":"info","message":"Challenge CHL-1769617975554 submitted, starting AI evaluation","service":"nep-workbench","timestamp":"2026-01-28 22:03:53"}
+{"0":"a","1":"n","10":"e","11":"r","12":"v","13":"i","14":"c","15":"e","16":" ","17":"i","18":"s","19":" ","2":"a","20":"n","21":"o","22":"t","23":" ","24":"d","25":"e","26":"f","27":"i","28":"n","29":"e","3":"l","30":"d","4":"y","5":"t","6":"i","7":"c","8":"s","9":"S","level":"warn","message":"CPI snapshot skipped:","service":"nep-workbench","timestamp":"2026-01-28 22:04:10"}
+{"0":"L","1":"e","10":"i","100":"y","101":":","102":" ","103":"P","104":"a","105":"t","106":"h","107":" ","108":"`","109":"a","11":"d","110":"s","111":"s","112":"e","113":"s","114":"s","115":"e","116":"d","117":"B","118":"y","119":"`","12":"a","120":" ","121":"i","122":"s","123":" ","124":"r","125":"e","126":"q","127":"u","128":"i","129":"r","13":"t","130":"e","131":"d","132":".","133":",","134":" ","135":"c","136":"h","137":"a","138":"l","139":"l","14":"i","140":"e","141":"n","142":"g","143":"e","144":".","145":"c","146":"o","147":"m","148":"p","149":"e","15":"o","150":"t","151":"e","152":"n","153":"c","154":"i","155":"e","156":"s","157":"A","158":"s","159":"s","16":"n","160":"e","161":"s","162":"s","163":"e","164":"d","165":".","166":"0","167":".","168":"l","169":"e","17":" ","170":"v","171":"e","172":"l","173":":","174":" ","175":"P","176":"a","177":"t","178":"h","179":" ","18":"f","180":"`","181":"l","182":"e","183":"v","184":"e","185":"l","186":"`","187":" ","188":"i","189":"s","19":"a","190":" ","191":"r","192":"e","193":"q","194":"u","195":"i","196":"r","197":"e","198":"d","199":".","2":"d","20":"i","200":",","201":" ","202":"c","203":"h","204":"a","205":"l","206":"l","207":"e","208":"n","209":"g","21":"l","210":"e","211":".","212":"c","213":"o","214":"m","215":"p","216":"e","217":"t","218":"e","219":"n","22":"e","220":"c","221":"i","222":"e","223":"s","224":"A","225":"s","226":"s","227":"e","228":"s","229":"s","23":"d","230":"e","231":"d","232":".","233":"1","234":".","235":"a","236":"s","237":"s","238":"e","239":"s","24":":","240":"s","241":"e","242":"d","243":"B","244":"y","245":":","246":" ","247":"P","248":"a","249":"t","25":" ","250":"h","251":" ","252":"`","253":"a","254":"s","255":"s","256":"e","257":"s","258":"s","259":"e","26":"d","260":"d","261":"B","262":"y","263":"`","264":" ","265":"i","266":"s","267":" ","268":"r","269":"e","27":"a","270":"q","271":"u","272":"i","273":"r","274":"e","275":"d","276":".","277":",","278":" ","279":"c","28":"t","280":"h","281":"a","282":"l","283":"l","284":"e","285":"n","286":"g","287":"e","288":".","289":"c","29":"a","290":"o","291":"m","292":"p","293":"e","294":"t","295":"e","296":"n","297":"c","298":"i","299":"e","3":"g","30":":","300":"s","301":"A","302":"s","303":"s","304":"e","305":"s","306":"s","307":"e","308":"d","309":".","31":" ","310":"1","311":".","312":"l","313":"e","314":"v","315":"e","316":"l","317":":","318":" ","319":"P","32":"P","320":"a","321":"t","322":"h","323":" ","324":"`","325":"l","326":"e","327":"v","328":"e","329":"l","33":"a","330":"`","331":" ","332":"i","333":"s","334":" ","335":"r","336":"e","337":"q","338":"u","339":"i","34":"t","340":"r","341":"e","342":"d","343":".","344":",","345":" ","346":"c","347":"h","348":"a","349":"l","35":"h","350":"l","351":"e","352":"n","353":"g","354":"e","355":".","356":"c","357":"o","358":"m","359":"p","36":" ","360":"e","361":"t","362":"e","363":"n","364":"c","365":"i","366":"e","367":"s","368":"A","369":"s","37":"`","370":"s","371":"e","372":"s","373":"s","374":"e","375":"d","376":".","377":"2","378":".","379":"a","38":"d","380":"s","381":"s","382":"e","383":"s","384":"s","385":"e","386":"d","387":"B","388":"y","389":":","39":"a","390":" ","391":"P","392":"a","393":"t","394":"h","395":" ","396":"`","397":"a","398":"s","399":"s","4":"e","40":"t","400":"e","401":"s","402":"s","403":"e","404":"d","405":"B","406":"y","407":"`","408":" ","409":"i","41":"a","410":"s","411":" ","412":"r","413":"e","414":"q","415":"u","416":"i","417":"r","418":"e","419":"d","42":"`","420":".","421":",","422":" ","423":"c","424":"h","425":"a","426":"l","427":"l","428":"e","429":"n","43":" ","430":"g","431":"e","432":".","433":"c","434":"o","435":"m","436":"p","437":"e","438":"t","439":"e","44":"i","440":"n","441":"c","442":"i","443":"e","444":"s","445":"A","446":"s","447":"s","448":"e","449":"s","45":"s","450":"s","451":"e","452":"d","453":".","454":"2","455":".","456":"l","457":"e","458":"v","459":"e","46":" ","460":"l","461":":","462":" ","463":"P","464":"a","465":"t","466":"h","467":" ","468":"`","469":"l","47":"r","470":"e","471":"v","472":"e","473":"l","474":"`","475":" ","476":"i","477":"s","478":" ","479":"r","48":"e","480":"e","481":"q","482":"u","483":"i","484":"r","485":"e","486":"d","487":".","488":",","489":" ","49":"q","490":"c","491":"h","492":"a","493":"l","494":"l","495":"e","496":"n","497":"g","498":"e","499":".","5":"r","50":"u","500":"c","501":"o","502":"m","503":"p","504":"e","505":"t","506":"e","507":"n","508":"c","509":"i","51":"i","510":"e","511":"s","512":"A","513":"s","514":"s","515":"e","516":"s","517":"s","518":"e","519":"d","52":"r","520":".","521":"3","522":".","523":"a","524":"s","525":"s","526":"e","527":"s","528":"s","529":"e","53":"e","530":"d","531":"B","532":"y","533":":","534":" ","535":"P","536":"a","537":"t","538":"h","539":" ","54":"d","540":"`","541":"a","542":"s","543":"s","544":"e","545":"s","546":"s","547":"e","548":"d","549":"B","55":".","550":"y","551":"`","552":" ","553":"i","554":"s","555":" ","556":"r","557":"e","558":"q","559":"u","56":",","560":"i","561":"r","562":"e","563":"d","564":".","565":",","566":" ","567":"c","568":"h","569":"a","57":" ","570":"l","571":"l","572":"e","573":"n","574":"g","575":"e","576":".","577":"c","578":"o","579":"m","58":"c","580":"p","581":"e","582":"t","583":"e","584":"n","585":"c","586":"i","587":"e","588":"s","589":"A","59":"h","590":"s","591":"s","592":"e","593":"s","594":"s","595":"e","596":"d","597":".","598":"3","599":".","6":" ","60":"a","600":"l","601":"e","602":"v","603":"e","604":"l","605":":","606":" ","607":"P","608":"a","609":"t","61":"l","610":"h","611":" ","612":"`","613":"l","614":"e","615":"v","616":"e","617":"l","618":"`","619":" ","62":"l","620":"i","621":"s","622":" ","623":"r","624":"e","625":"q","626":"u","627":"i","628":"r","629":"e","63":"e","630":"d","631":".","632":",","633":" ","634":"c","635":"h","636":"a","637":"l","638":"l","639":"e","64":"n","640":"n","641":"g","642":"e","643":".","644":"c","645":"o","646":"m","647":"p","648":"e","649":"t","65":"g","650":"e","651":"n","652":"c","653":"i","654":"e","655":"s","656":"A","657":"s","658":"s","659":"e","66":"e","660":"s","661":"s","662":"e","663":"d","664":".","665":"4","666":".","667":"a","668":"s","669":"s","67":".","670":"e","671":"s","672":"s","673":"e","674":"d","675":"B","676":"y","677":":","678":" ","679":"P","68":"c","680":"a","681":"t","682":"h","683":" ","684":"`","685":"a","686":"s","687":"s","688":"e","689":"s","69":"o","690":"s","691":"e","692":"d","693":"B","694":"y","695":"`","696":" ","697":"i","698":"s","699":" ","7":"v","70":"m","700":"r","701":"e","702":"q","703":"u","704":"i","705":"r","706":"e","707":"d","708":".","709":",","71":"p","710":" ","711":"c","712":"h","713":"a","714":"l","715":"l","716":"e","717":"n","718":"g","719":"e","72":"e","720":".","721":"c","722":"o","723":"m","724":"p","725":"e","726":"t","727":"e","728":"n","729":"c","73":"t","730":"i","731":"e","732":"s","733":"A","734":"s","735":"s","736":"e","737":"s","738":"s","739":"e","74":"e","740":"d","741":".","742":"4","743":".","744":"l","745":"e","746":"v","747":"e","748":"l","749":":","75":"n","750":" ","751":"P","752":"a","753":"t","754":"h","755":" ","756":"`","757":"l","758":"e","759":"v","76":"c","760":"e","761":"l","762":"`","763":" ","764":"i","765":"s","766":" ","767":"r","768":"e","769":"q","77":"i","770":"u","771":"i","772":"r","773":"e","774":"d","775":".","78":"e","79":"s","8":"a","80":"A","81":"s","82":"s","83":"e","84":"s","85":"s","86":"e","87":"d","88":".","89":"0","9":"l","90":".","91":"a","92":"s","93":"s","94":"e","95":"s","96":"s","97":"e","98":"d","99":"B","level":"error","message":"❌ Ledger write failed:","service":"nep-workbench","timestamp":"2026-01-28 22:04:10"}
+{"level":"info","message":"Challenge CHL-1769617975554 evaluated in 16462ms","service":"nep-workbench","timestamp":"2026-01-28 22:04:10"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 22:09:22"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 22:09:22"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 22:09:22"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 22:09:22"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 22:09:22"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 22:09:22"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 22:09:22"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 22:09:22"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":488345,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 22:09:22"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"magnetic-field-visualizer","subject":"physics","timestamp":"2026-01-28 22:09:36"}
+{"difficultyFactors":16,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-28 22:09:36","tools":15,"topics":20}
+{"level":"info","message":"📊 Recent average score: 80.15%","service":"nep-workbench","timestamp":"2026-01-28 22:09:36"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-28 22:09:36"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"electric-circuit-builder","subject":"physics","timestamp":"2026-01-28 22:10:26"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"motion-timer-sim","subject":"physics","timestamp":"2026-01-28 22:11:28"}
+{"difficultyFactors":18,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-28 22:11:28","tools":18,"topics":24}
+{"level":"info","message":"📊 Recent average score: 80.15%","service":"nep-workbench","timestamp":"2026-01-28 22:11:28"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-28 22:11:28"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-28 22:11:28"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-28 22:11:28","topic":"motion-timer-sim"}
+{"level":"info","message":"✅ Mistral AI responded in 17906ms","service":"nep-workbench","timestamp":"2026-01-28 22:11:46"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-28 22:11:46"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-28 22:11:46"}
+{"MCQ":2,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-28 22:11:46"}
+{"level":"info","message":"✅ Challenge generated in 17908ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-28 22:11:46"}
+{"level":"info","message":"Challenge CHL-1769618506802 submitted, starting AI evaluation","service":"nep-workbench","timestamp":"2026-01-28 22:12:31"}
+{"0":"a","1":"n","10":"e","11":"r","12":"v","13":"i","14":"c","15":"e","16":" ","17":"i","18":"s","19":" ","2":"a","20":"n","21":"o","22":"t","23":" ","24":"d","25":"e","26":"f","27":"i","28":"n","29":"e","3":"l","30":"d","4":"y","5":"t","6":"i","7":"c","8":"s","9":"S","level":"warn","message":"CPI snapshot skipped:","service":"nep-workbench","timestamp":"2026-01-28 22:12:51"}
+{"0":"L","1":"e","10":"i","100":"s","101":" ","102":"r","103":"e","104":"q","105":"u","106":"i","107":"r","108":"e","109":"d","11":"d","110":".","12":"a","13":"t","14":"i","15":"o","16":"n","17":" ","18":"f","19":"a","2":"d","20":"i","21":"l","22":"e","23":"d","24":":","25":" ","26":"d","27":"a","28":"t","29":"a","3":"g","30":":","31":" ","32":"P","33":"a","34":"t","35":"h","36":" ","37":"`","38":"d","39":"a","4":"e","40":"t","41":"a","42":"`","43":" ","44":"i","45":"s","46":" ","47":"r","48":"e","49":"q","5":"r","50":"u","51":"i","52":"r","53":"e","54":"d","55":".","56":",","57":" ","58":"a","59":"s","6":" ","60":"s","61":"e","62":"s","63":"s","64":"m","65":"e","66":"n","67":"t","68":".","69":"a","7":"v","70":"s","71":"s","72":"e","73":"s","74":"s","75":"e","76":"d","77":"B","78":"y","79":":","8":"a","80":" ","81":"P","82":"a","83":"t","84":"h","85":" ","86":"`","87":"a","88":"s","89":"s","9":"l","90":"e","91":"s","92":"s","93":"e","94":"d","95":"B","96":"y","97":"`","98":" ","99":"i","level":"error","message":"❌ Ledger write failed:","service":"nep-workbench","timestamp":"2026-01-28 22:12:51"}
+{"level":"info","message":"Challenge CHL-1769618506802 evaluated in 20425ms","service":"nep-workbench","timestamp":"2026-01-28 22:12:51"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 22:22:50"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 22:22:50"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 22:22:50"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 22:22:50"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 22:22:50"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 22:22:50"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 22:22:50"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 22:22:50"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":489251,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 22:22:50"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"motion-timer-sim","subject":"physics","timestamp":"2026-01-28 22:23:10"}
+{"difficultyFactors":18,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-28 22:23:10","tools":18,"topics":24}
+{"level":"info","message":"📊 Recent average score: 83.52%","service":"nep-workbench","timestamp":"2026-01-28 22:23:10"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-28 22:23:10"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-28 22:23:10"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-28 22:23:10","topic":"motion-timer-sim"}
+{"level":"info","message":"✅ Mistral AI responded in 41955ms","service":"nep-workbench","timestamp":"2026-01-28 22:23:51"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-28 22:23:52"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-28 22:23:52"}
+{"MCQ":2,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-28 22:23:52"}
+{"level":"info","message":"✅ Challenge generated in 41966ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-28 22:23:52"}
+{"level":"info","message":"Challenge CHL-1769619232020 submitted, starting AI evaluation","service":"nep-workbench","timestamp":"2026-01-28 22:24:50"}
+{"0":"a","1":"n","10":"e","11":"r","12":"v","13":"i","14":"c","15":"e","16":" ","17":"i","18":"s","19":" ","2":"a","20":"n","21":"o","22":"t","23":" ","24":"d","25":"e","26":"f","27":"i","28":"n","29":"e","3":"l","30":"d","4":"y","5":"t","6":"i","7":"c","8":"s","9":"S","level":"warn","message":"CPI snapshot skipped:","service":"nep-workbench","timestamp":"2026-01-28 22:25:06"}
+{"0":"C","1":"H","10":"9","11":"2","12":"3","13":"2","14":"0","15":"2","16":"0","2":"L","3":"-","4":"1","5":"7","6":"6","7":"9","8":"6","9":"1","level":"info","message":"✅ Ledger entry created for challenge:","service":"nep-workbench","timestamp":"2026-01-28 22:25:06"}
+{"level":"info","message":"Challenge CHL-1769619232020 evaluated in 16388ms","service":"nep-workbench","timestamp":"2026-01-28 22:25:06"}
+{"level":"info","message":"Generating NEP report for student STU-AMQZM","reportType":"comprehensive","requestedBy":"69738e3e3041dd83ab91c6f6","service":"nep-workbench","timestamp":"2026-01-28 22:28:55"}
+{"level":"info","message":"Generating NEP report for student STU-AMQZM","reportType":"comprehensive","requestedBy":"69738e3e3041dd83ab91c6f6","service":"nep-workbench","timestamp":"2026-01-28 22:30:25"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 22:37:13"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 22:37:13"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 22:37:13"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 22:37:13"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 22:37:13"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 22:37:13"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 22:37:13"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 22:37:13"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":490441,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 22:37:13"}
+{"level":"info","message":"Generating NEP report for student STU-AMQZM","reportType":"comprehensive","requestedBy":"69738e3e3041dd83ab91c6f6","service":"nep-workbench","timestamp":"2026-01-28 22:37:26"}
+{"level":"error","message":"Generate NEP report error: Failed to parse NEP report: Unexpected token '`', \"```json\n{\n\"... is not valid JSON","service":"nep-workbench","stack":"Error: Failed to parse NEP report: Unexpected token '`', \"```json\n{\n\"... is not valid JSON\n    at generateNEPReport (/home/popeye/Downloads/NEP3/backend/services/mistral.service.js:1894:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async exports.generateNEPReport (/home/popeye/Downloads/NEP3/backend/controllers/report.controller.js:579:22)","timestamp":"2026-01-28 22:38:05"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 22:43:18"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 22:43:18"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 22:43:18"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 22:43:18"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 22:43:18"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 22:43:18"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 22:43:18"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 22:43:18"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":490907,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 22:43:18"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 22:47:41"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 22:47:41"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 22:47:41"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 22:47:41"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 22:47:41"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 22:47:41"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 22:47:41"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 22:47:41"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":491315,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 22:47:41"}
+{"level":"info","message":"Generating NEP report for student STU-AMQZM","reportType":"comprehensive","requestedBy":"69738e3e3041dd83ab91c6f6","service":"nep-workbench","timestamp":"2026-01-28 22:47:56"}
+{"_message":"NEPReport validation failed","errors":{"periodEnd":{"kind":"required","message":"Path `periodEnd` is required.","name":"ValidatorError","path":"periodEnd","properties":{"message":"Path `periodEnd` is required.","path":"periodEnd","type":"required"}},"periodStart":{"kind":"required","message":"Path `periodStart` is required.","name":"ValidatorError","path":"periodStart","properties":{"message":"Path `periodStart` is required.","path":"periodStart","type":"required"}},"reportType":{"kind":"enum","message":"`comprehensive` is not a valid enum value for path `reportType`.","name":"ValidatorError","path":"reportType","properties":{"enumValues":["weekly","monthly","quarterly","annual"],"length":13,"message":"`comprehensive` is not a valid enum value for path `reportType`.","path":"reportType","type":"enum","value":"comprehensive"},"value":"comprehensive"}},"level":"error","message":"Generate NEP report error: NEPReport validation failed: periodEnd: Path `periodEnd` is required., periodStart: Path `periodStart` is required., reportType: `comprehensive` is not a valid enum value for path `reportType`.","service":"nep-workbench","stack":"ValidationError: NEPReport validation failed: periodEnd: Path `periodEnd` is required., periodStart: Path `periodStart` is required., reportType: `comprehensive` is not a valid enum value for path `reportType`.\n    at Document.invalidate (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3373:32)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3134:17\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1446:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)","timestamp":"2026-01-28 22:48:22"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 22:56:35"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 22:56:35"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 22:56:35"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 22:56:35"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 22:56:35"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 22:56:35"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 22:56:35"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 22:56:35"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":492035,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 22:56:35"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 23:04:18"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 23:04:18"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 23:04:18"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 23:04:18"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 23:04:18"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 23:04:18"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 23:04:18"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 23:04:18"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":492667,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 23:04:18"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 23:06:26"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 23:06:26"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 23:06:26"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 23:06:26"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 23:06:26"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 23:06:26"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 23:06:26"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 23:06:26"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":492891,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 23:06:26"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 23:07:40"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 23:07:40"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 23:07:40"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 23:07:40"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 23:07:40"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 23:07:40"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 23:07:40"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 23:07:40"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":493039,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 23:07:40"}
+{"level":"info","message":"Generating NEP report for student STU-AMQZM","service":"nep-workbench","timestamp":"2026-01-28 23:07:56"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 23:08:37"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 23:08:37"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 23:08:37"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 23:08:37"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 23:08:37"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 23:08:37"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 23:08:37"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 23:08:37"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":493144,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 23:08:37"}
+{"level":"info","message":"Generating NEP report for student STU-AMQZM","reportType":"comprehensive","requestedBy":"69738e3e3041dd83ab91c6f6","service":"nep-workbench","timestamp":"2026-01-28 23:08:45"}
+{"_message":"NEPReport validation failed","errors":{"periodEnd":{"kind":"required","message":"Path `periodEnd` is required.","name":"ValidatorError","path":"periodEnd","properties":{"message":"Path `periodEnd` is required.","path":"periodEnd","type":"required"}},"periodStart":{"kind":"required","message":"Path `periodStart` is required.","name":"ValidatorError","path":"periodStart","properties":{"message":"Path `periodStart` is required.","path":"periodStart","type":"required"}},"reportType":{"kind":"enum","message":"`comprehensive` is not a valid enum value for path `reportType`.","name":"ValidatorError","path":"reportType","properties":{"enumValues":["weekly","monthly","quarterly","annual"],"length":13,"message":"`comprehensive` is not a valid enum value for path `reportType`.","path":"reportType","type":"enum","value":"comprehensive"},"value":"comprehensive"}},"level":"error","message":"Generate NEP report error: NEPReport validation failed: periodEnd: Path `periodEnd` is required., periodStart: Path `periodStart` is required., reportType: `comprehensive` is not a valid enum value for path `reportType`.","service":"nep-workbench","stack":"ValidationError: NEPReport validation failed: periodEnd: Path `periodEnd` is required., periodStart: Path `periodStart` is required., reportType: `comprehensive` is not a valid enum value for path `reportType`.\n    at Document.invalidate (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3373:32)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3134:17\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1446:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)","timestamp":"2026-01-28 23:08:56"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 23:09:49"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 23:09:49"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 23:09:49"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 23:09:49"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 23:09:49"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 23:09:49"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 23:09:49"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 23:09:49"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":493312,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 23:09:49"}
+{"level":"info","message":"Generating NEP report for student STU-AMQZM","reportType":"comprehensive","requestedBy":"69738e3e3041dd83ab91c6f6","service":"nep-workbench","timestamp":"2026-01-28 23:09:52"}
+{"_message":"NEPReport validation failed","errors":{"periodEnd":{"kind":"required","message":"Path `periodEnd` is required.","name":"ValidatorError","path":"periodEnd","properties":{"message":"Path `periodEnd` is required.","path":"periodEnd","type":"required"}},"periodStart":{"kind":"required","message":"Path `periodStart` is required.","name":"ValidatorError","path":"periodStart","properties":{"message":"Path `periodStart` is required.","path":"periodStart","type":"required"}},"reportType":{"kind":"enum","message":"`comprehensive` is not a valid enum value for path `reportType`.","name":"ValidatorError","path":"reportType","properties":{"enumValues":["weekly","monthly","quarterly","annual"],"length":13,"message":"`comprehensive` is not a valid enum value for path `reportType`.","path":"reportType","type":"enum","value":"comprehensive"},"value":"comprehensive"}},"level":"error","message":"Generate NEP report error: NEPReport validation failed: periodEnd: Path `periodEnd` is required., periodStart: Path `periodStart` is required., reportType: `comprehensive` is not a valid enum value for path `reportType`.","service":"nep-workbench","stack":"ValidationError: NEPReport validation failed: periodEnd: Path `periodEnd` is required., periodStart: Path `periodStart` is required., reportType: `comprehensive` is not a valid enum value for path `reportType`.\n    at Document.invalidate (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3373:32)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3134:17\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1446:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)","timestamp":"2026-01-28 23:10:06"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 23:11:32"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 23:11:32"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 23:11:32"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 23:11:32"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 23:11:32"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 23:11:32"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 23:11:32"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 23:11:32"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":493492,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 23:11:32"}
+{"level":"info","message":"Generating NEP report for student STU-AMQZM","reportType":"comprehensive","requestedBy":"69738e3e3041dd83ab91c6f6","service":"nep-workbench","timestamp":"2026-01-28 23:11:36"}
+{"_message":"NEPReport validation failed","errors":{"periodEnd":{"kind":"required","message":"Path `periodEnd` is required.","name":"ValidatorError","path":"periodEnd","properties":{"message":"Path `periodEnd` is required.","path":"periodEnd","type":"required"}},"periodStart":{"kind":"required","message":"Path `periodStart` is required.","name":"ValidatorError","path":"periodStart","properties":{"message":"Path `periodStart` is required.","path":"periodStart","type":"required"}},"reportType":{"kind":"enum","message":"`comprehensive` is not a valid enum value for path `reportType`.","name":"ValidatorError","path":"reportType","properties":{"enumValues":["weekly","monthly","quarterly","annual"],"length":13,"message":"`comprehensive` is not a valid enum value for path `reportType`.","path":"reportType","type":"enum","value":"comprehensive"},"value":"comprehensive"}},"level":"error","message":"Generate NEP report error: NEPReport validation failed: periodEnd: Path `periodEnd` is required., periodStart: Path `periodStart` is required., reportType: `comprehensive` is not a valid enum value for path `reportType`.","service":"nep-workbench","stack":"ValidationError: NEPReport validation failed: periodEnd: Path `periodEnd` is required., periodStart: Path `periodStart` is required., reportType: `comprehensive` is not a valid enum value for path `reportType`.\n    at Document.invalidate (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3373:32)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3134:17\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1446:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)","timestamp":"2026-01-28 23:12:08"}
+{"level":"info","message":"Generating NEP report for student STU-AMQZM","reportType":"competency-focused","requestedBy":"69738e3e3041dd83ab91c6f6","service":"nep-workbench","timestamp":"2026-01-28 23:13:33"}
+{"_message":"NEPReport validation failed","errors":{"periodEnd":{"kind":"required","message":"Path `periodEnd` is required.","name":"ValidatorError","path":"periodEnd","properties":{"message":"Path `periodEnd` is required.","path":"periodEnd","type":"required"}},"periodStart":{"kind":"required","message":"Path `periodStart` is required.","name":"ValidatorError","path":"periodStart","properties":{"message":"Path `periodStart` is required.","path":"periodStart","type":"required"}},"reportType":{"kind":"enum","message":"`competency-focused` is not a valid enum value for path `reportType`.","name":"ValidatorError","path":"reportType","properties":{"enumValues":["weekly","monthly","quarterly","annual"],"length":18,"message":"`competency-focused` is not a valid enum value for path `reportType`.","path":"reportType","type":"enum","value":"competency-focused"},"value":"competency-focused"}},"level":"error","message":"Generate NEP report error: NEPReport validation failed: periodEnd: Path `periodEnd` is required., periodStart: Path `periodStart` is required., reportType: `competency-focused` is not a valid enum value for path `reportType`.","service":"nep-workbench","stack":"ValidationError: NEPReport validation failed: periodEnd: Path `periodEnd` is required., periodStart: Path `periodStart` is required., reportType: `competency-focused` is not a valid enum value for path `reportType`.\n    at Document.invalidate (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3373:32)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3134:17\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1446:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)","timestamp":"2026-01-28 23:13:57"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 23:18:52"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 23:18:52"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 23:18:52"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 23:18:52"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 23:18:52"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 23:18:52"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 23:18:52"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 23:18:52"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":494115,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 23:18:52"}
+{"level":"info","message":"Generating NEP report for student STU-AMQZM","reportType":"weekly","requestedBy":"69738e3e3041dd83ab91c6f6","service":"nep-workbench","timestamp":"2026-01-28 23:19:38"}
+{"_message":"NEPReport validation failed","errors":{"periodEnd":{"kind":"required","message":"Path `periodEnd` is required.","name":"ValidatorError","path":"periodEnd","properties":{"message":"Path `periodEnd` is required.","path":"periodEnd","type":"required"}},"periodStart":{"kind":"required","message":"Path `periodStart` is required.","name":"ValidatorError","path":"periodStart","properties":{"message":"Path `periodStart` is required.","path":"periodStart","type":"required"}}},"level":"error","message":"Generate NEP report error: NEPReport validation failed: periodEnd: Path `periodEnd` is required., periodStart: Path `periodStart` is required.","service":"nep-workbench","stack":"ValidationError: NEPReport validation failed: periodEnd: Path `periodEnd` is required., periodStart: Path `periodStart` is required.\n    at Document.invalidate (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3373:32)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3134:17\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1446:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)","timestamp":"2026-01-28 23:19:50"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 23:20:57"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 23:20:57"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 23:20:57"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 23:20:57"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 23:20:57"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 23:20:57"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 23:20:57"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 23:20:57"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":494295,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 23:20:57"}
+{"level":"info","message":"Generating NEP report for student STU-AMQZM","reportType":"weekly","requestedBy":"69738e3e3041dd83ab91c6f6","service":"nep-workbench","timestamp":"2026-01-28 23:21:09"}
+{"_message":"NEPReport validation failed","errors":{"periodEnd":{"kind":"required","message":"Path `periodEnd` is required.","name":"ValidatorError","path":"periodEnd","properties":{"message":"Path `periodEnd` is required.","path":"periodEnd","type":"required"}},"periodStart":{"kind":"required","message":"Path `periodStart` is required.","name":"ValidatorError","path":"periodStart","properties":{"message":"Path `periodStart` is required.","path":"periodStart","type":"required"}}},"level":"error","message":"Generate NEP report error: NEPReport validation failed: periodEnd: Path `periodEnd` is required., periodStart: Path `periodStart` is required.","service":"nep-workbench","stack":"ValidationError: NEPReport validation failed: periodEnd: Path `periodEnd` is required., periodStart: Path `periodStart` is required.\n    at Document.invalidate (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3373:32)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3134:17\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1446:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)","timestamp":"2026-01-28 23:21:21"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 23:26:00"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 23:26:00"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 23:26:00"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 23:26:00"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 23:26:00"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 23:26:00"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 23:26:00"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 23:26:00"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":494694,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 23:26:00"}
+{"level":"info","message":"Generating NEP report for student STU-AMQZM","reportType":"weekly","requestedBy":"69738e3e3041dd83ab91c6f6","service":"nep-workbench","timestamp":"2026-01-28 23:26:11"}
+{"level":"error","message":"Generate NEP report error: REPORT_TYPE_MAP is not defined","service":"nep-workbench","stack":"ReferenceError: REPORT_TYPE_MAP is not defined\n    at exports.generateNEPReport (/home/popeye/Downloads/NEP3/backend/controllers/report.controller.js:612:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-28 23:26:23"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 23:27:10"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 23:27:11"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 23:27:11"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 23:27:11"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 23:27:11"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 23:27:11"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 23:27:11"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 23:27:11"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":494856,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 23:27:11"}
+{"level":"info","message":"Generating NEP report for student STU-AMQZM","reportType":"weekly","requestedBy":"69738e3e3041dd83ab91c6f6","service":"nep-workbench","timestamp":"2026-01-28 23:27:18"}
+{"level":"error","message":"Generate NEP report error: Cannot access 'periodStart' before initialization","service":"nep-workbench","stack":"ReferenceError: Cannot access 'periodStart' before initialization\n    at exports.generateNEPReport (/home/popeye/Downloads/NEP3/backend/controllers/report.controller.js:620:7)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-28 23:27:46"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 23:30:38"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 23:30:38"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 23:30:38"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 23:30:38"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 23:30:38"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 23:30:38"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 23:30:38"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 23:30:38"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":495112,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 23:30:38"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 23:31:38"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 23:31:38"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 23:31:38"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 23:31:38"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 23:31:38"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 23:31:38"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 23:31:38"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 23:31:38"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":495249,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 23:31:38"}
+{"level":"info","message":"Generating NEP report for student STU-AMQZM","reportType":"weekly","requestedBy":"69738e3e3041dd83ab91c6f6","service":"nep-workbench","timestamp":"2026-01-28 23:31:50"}
+{"_message":"Ledger validation failed","errors":{"createdByRole":{"kind":"required","message":"Path `createdByRole` is required.","name":"ValidatorError","path":"createdByRole","properties":{"message":"Path `createdByRole` is required.","path":"createdByRole","type":"required"}},"hash":{"kind":"required","message":"Path `hash` is required.","name":"ValidatorError","path":"hash","properties":{"message":"Path `hash` is required.","path":"hash","type":"required"}},"metadata":{"kind":"required","message":"Path `metadata` is required.","name":"ValidatorError","path":"metadata","properties":{"message":"Path `metadata` is required.","path":"metadata","type":"required"}}},"level":"error","message":"Generate NEP report error: Ledger validation failed: metadata: Path `metadata` is required., hash: Path `hash` is required., createdByRole: Path `createdByRole` is required.","service":"nep-workbench","stack":"ValidationError: Ledger validation failed: metadata: Path `metadata` is required., hash: Path `hash` is required., createdByRole: Path `createdByRole` is required.\n    at Document.invalidate (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3373:32)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3134:17\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schema/subdocument.js:297:14\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1446:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)","timestamp":"2026-01-28 23:31:50"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-28 23:34:27"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-28 23:34:27"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-28 23:34:27"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-28 23:34:27"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-28 23:34:27"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-28 23:34:27"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-28 23:34:27"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-28 23:34:27"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":495511,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-28 23:34:27"}
+{"level":"info","message":"Generating NEP report for student STU-AMQZM","reportType":"weekly","requestedBy":"69738e3e3041dd83ab91c6f6","service":"nep-workbench","timestamp":"2026-01-28 23:34:37"}
+{"level":"error","message":"Generate NEP report error: Cannot access 'periodStart' before initialization","service":"nep-workbench","stack":"ReferenceError: Cannot access 'periodStart' before initialization\n    at exports.generateNEPReport (/home/popeye/Downloads/NEP3/backend/controllers/report.controller.js:620:7)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-28 23:34:48"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-28 23:48:21"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-28 23:48:21"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-28 23:48:21"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-28 23:48:30"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-28 23:48:30"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-28 23:48:30"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-28 23:48:31"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-28 23:48:31"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-28 23:48:31"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-28 23:48:32"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-28 23:48:32"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-28 23:48:32"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-28 23:48:41"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-28 23:48:41"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-28 23:48:41"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-28 23:48:43"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-28 23:48:43"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-28 23:48:43"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-28 23:49:10"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-28 23:49:10"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-28 23:49:10"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-28 23:50:27"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-KS--3","schoolName":"Test School","service":"nep-workbench","timestamp":"2026-01-28 23:50:27"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-NCYVN","teacherAttached":true,"timestamp":"2026-01-28 23:50:27"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-28 23:58:36"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-KS--3","schoolName":"Test School","service":"nep-workbench","timestamp":"2026-01-28 23:58:36"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-NCYVN","teacherAttached":true,"timestamp":"2026-01-28 23:58:36"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-29 00:05:03"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-29 00:05:03"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-29 00:05:03"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-29 00:05:03"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-29 00:05:03"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-29 00:05:03"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-29 00:05:03"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-29 00:05:03"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":497818,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-29 00:05:03"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-29 00:07:51"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-29 00:07:51"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-29 00:07:51"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-29 00:07:51"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-29 00:07:51"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-29 00:07:51"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-29 00:07:51"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-29 00:07:51"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":498075,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-29 00:07:51"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-29 00:09:35"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-29 00:09:35"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-29 00:09:35"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-29 00:09:35"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-29 00:09:35"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-29 00:09:35"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-29 00:09:35"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-29 00:09:35"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":498359,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-29 00:09:35"}
+{"level":"error","message":"CPI generation error: No ledger events found for CPI calculation","service":"nep-workbench","stack":"Error: No ledger events found for CPI calculation\n    at Object.generateCPI (/home/popeye/Downloads/NEP3/backend/services/analytics.service.js:166:13)\n    at exports.getStudentCPI (/home/popeye/Downloads/NEP3/backend/controllers/analytics.controller.js:1988:40)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-29 00:10:19"}
+{"level":"error","message":"Ledger CPI error: CPI calculation failed: No ledger events found for CPI calculation","service":"nep-workbench","stack":"Error: CPI calculation failed: No ledger events found for CPI calculation\n    at Object.generateCPI (/home/popeye/Downloads/NEP3/backend/services/analytics.service.js:303:11)\n    at exports.getStudentCPI (/home/popeye/Downloads/NEP3/backend/controllers/analytics.controller.js:1988:40)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-29 00:10:19"}
+{"level":"error","message":"CPI generation error: No ledger events found for CPI calculation","service":"nep-workbench","stack":"Error: No ledger events found for CPI calculation\n    at Object.generateCPI (/home/popeye/Downloads/NEP3/backend/services/analytics.service.js:166:13)\n    at exports.getStudentCPI (/home/popeye/Downloads/NEP3/backend/controllers/analytics.controller.js:1988:40)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-29 00:13:12"}
+{"level":"error","message":"Ledger CPI error: CPI calculation failed: No ledger events found for CPI calculation","service":"nep-workbench","stack":"Error: CPI calculation failed: No ledger events found for CPI calculation\n    at Object.generateCPI (/home/popeye/Downloads/NEP3/backend/services/analytics.service.js:303:11)\n    at exports.getStudentCPI (/home/popeye/Downloads/NEP3/backend/controllers/analytics.controller.js:1988:40)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-29 00:13:12"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-29 00:17:34"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-29 00:17:34"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-29 00:17:34"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-29 00:17:34"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-29 00:17:34"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-29 00:17:34"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-29 00:17:34"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-29 00:17:34"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":499087,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-29 00:17:34"}
+{"level":"error","message":"CPI generation error: No ledger events found for CPI calculation","service":"nep-workbench","stack":"Error: No ledger events found for CPI calculation\n    at Object.generateCPI (/home/popeye/Downloads/NEP3/backend/services/analytics.service.js:166:13)\n    at exports.getStudentCPI (/home/popeye/Downloads/NEP3/backend/controllers/analytics.controller.js:1988:40)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-29 00:17:41"}
+{"level":"error","message":"Ledger CPI error: CPI calculation failed: No ledger events found for CPI calculation","service":"nep-workbench","stack":"Error: CPI calculation failed: No ledger events found for CPI calculation\n    at Object.generateCPI (/home/popeye/Downloads/NEP3/backend/services/analytics.service.js:303:11)\n    at exports.getStudentCPI (/home/popeye/Downloads/NEP3/backend/controllers/analytics.controller.js:1988:40)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-29 00:17:41"}
+{"0":":","1":"s","2":"t","3":"u","4":"d","5":"e","6":"n","7":"t","8":"I","9":"d","level":"info","message":"CPI requested for studentId:","service":"nep-workbench","timestamp":"2026-01-29 00:17:41"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-29 00:21:42"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-29 00:21:42"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-29 00:21:42"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-29 00:21:42"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-29 00:21:42"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-29 00:21:42"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-29 00:21:42"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-29 00:21:42"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":499506,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-29 00:21:42"}
+{"level":"error","message":"CPI generation error: No ledger events found for CPI calculation","service":"nep-workbench","stack":"Error: No ledger events found for CPI calculation\n    at Object.generateCPI (/home/popeye/Downloads/NEP3/backend/services/analytics.service.js:166:13)\n    at exports.getStudentCPI (/home/popeye/Downloads/NEP3/backend/controllers/analytics.controller.js:1988:40)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-29 00:21:50"}
+{"level":"error","message":"Ledger CPI error: CPI calculation failed: No ledger events found for CPI calculation","service":"nep-workbench","stack":"Error: CPI calculation failed: No ledger events found for CPI calculation\n    at Object.generateCPI (/home/popeye/Downloads/NEP3/backend/services/analytics.service.js:303:11)\n    at exports.getStudentCPI (/home/popeye/Downloads/NEP3/backend/controllers/analytics.controller.js:1988:40)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-29 00:21:50"}
+{"0":"$","1":"{","10":"s","11":"t","12":"u","13":"d","14":"e","15":"n","16":"t","17":"I","18":"d","19":"}","2":"s","3":"t","4":"u","5":"d","6":"e","7":"n","8":"t","9":".","level":"info","message":"CPI requested for studentId:","service":"nep-workbench","timestamp":"2026-01-29 00:21:50"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-29 00:31:57"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-29 00:31:57"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-29 00:31:57"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-29 00:31:57"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-29 00:31:57"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-29 00:31:57"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-29 00:31:57"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-29 00:31:57"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":500616,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-29 00:31:57"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-29 00:32:04"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-29 00:32:04"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-29 00:32:04"}
+{"level":"error","message":"CPI generation error: No ledger events found for CPI calculation","service":"nep-workbench","stack":"Error: No ledger events found for CPI calculation\n    at Object.generateCPI (/home/popeye/Downloads/NEP3/backend/services/analytics.service.js:166:13)\n    at exports.getStudentCPI (/home/popeye/Downloads/NEP3/backend/controllers/analytics.controller.js:1988:40)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-29 00:32:05"}
+{"level":"error","message":"Ledger CPI error: CPI calculation failed: No ledger events found for CPI calculation","service":"nep-workbench","stack":"Error: CPI calculation failed: No ledger events found for CPI calculation\n    at Object.generateCPI (/home/popeye/Downloads/NEP3/backend/services/analytics.service.js:303:11)\n    at exports.getStudentCPI (/home/popeye/Downloads/NEP3/backend/controllers/analytics.controller.js:1988:40)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-29 00:32:05"}
+{"0":"u","1":"n","2":"d","3":"e","4":"f","5":"i","6":"n","7":"e","8":"d","level":"info","message":"CPI requested for studentId:","service":"nep-workbench","timestamp":"2026-01-29 00:32:05"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-29 00:33:38"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-29 00:33:38"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-29 00:33:38"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-29 00:33:38"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-29 00:33:38"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-29 00:33:38"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-29 00:33:38"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-29 00:33:38"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":500845,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-29 00:33:38"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-29 00:36:09"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-29 00:36:09"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-29 00:36:09"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-29 00:36:09"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-29 00:36:09"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-29 00:36:09"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-29 00:36:09"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-29 00:36:09"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":501097,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-29 00:36:09"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-29 00:36:25"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-29 00:36:25"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-29 00:36:25"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-29 00:37:18"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-29 00:37:18"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-29 00:37:18"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-29 00:37:46"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-29 00:37:46"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-29 00:37:46"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-29 00:38:13"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-29 00:38:13"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-29 00:38:13"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-29 00:38:19"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-29 00:38:19"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-29 00:38:19"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-29 00:39:38"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-29 00:39:38"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-29 00:39:38"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-29 00:42:32"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-29 00:42:32"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-29 00:42:32"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-29 00:42:48"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-29 00:42:48"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-29 00:42:48"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-29 00:44:42"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-29 00:44:42"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-29 00:44:42"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-29 00:44:42"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-29 00:44:42"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-29 00:44:42"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-29 00:44:42"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-29 00:44:42"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":501773,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-29 00:44:42"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-29 00:44:50"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-29 00:44:50"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-29 00:44:50"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-29 00:49:18"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-29 00:49:18"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-29 00:49:18"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-29 00:49:18"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-29 00:49:18"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-29 00:49:18"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-29 00:49:18"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-29 00:49:18"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":502168,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-29 00:49:18"}
+{"level":"error","message":"CPI generation error: No ledger events found for CPI calculation","service":"nep-workbench","stack":"Error: No ledger events found for CPI calculation\n    at Object.generateCPI (/home/popeye/Downloads/NEP3/backend/services/analytics.service.js:166:13)\n    at exports.getStudentCPI (/home/popeye/Downloads/NEP3/backend/controllers/analytics.controller.js:1988:40)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-29 00:49:23"}
+{"level":"error","message":"Ledger CPI error: CPI calculation failed: No ledger events found for CPI calculation","service":"nep-workbench","stack":"Error: CPI calculation failed: No ledger events found for CPI calculation\n    at Object.generateCPI (/home/popeye/Downloads/NEP3/backend/services/analytics.service.js:303:11)\n    at exports.getStudentCPI (/home/popeye/Downloads/NEP3/backend/controllers/analytics.controller.js:1988:40)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-29 00:49:23"}
+{"0":"u","1":"n","2":"d","3":"e","4":"f","5":"i","6":"n","7":"e","8":"d","level":"info","message":"CPI requested for studentId:","service":"nep-workbench","timestamp":"2026-01-29 00:49:23"}
+{"level":"error","message":"CPI generation error: No ledger events found for CPI calculation","service":"nep-workbench","stack":"Error: No ledger events found for CPI calculation\n    at Object.generateCPI (/home/popeye/Downloads/NEP3/backend/services/analytics.service.js:166:13)\n    at exports.getStudentCPI (/home/popeye/Downloads/NEP3/backend/controllers/analytics.controller.js:1988:40)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-29 00:49:32"}
+{"level":"error","message":"Ledger CPI error: CPI calculation failed: No ledger events found for CPI calculation","service":"nep-workbench","stack":"Error: CPI calculation failed: No ledger events found for CPI calculation\n    at Object.generateCPI (/home/popeye/Downloads/NEP3/backend/services/analytics.service.js:303:11)\n    at exports.getStudentCPI (/home/popeye/Downloads/NEP3/backend/controllers/analytics.controller.js:1988:40)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-29 00:49:32"}
+{"0":"u","1":"n","2":"d","3":"e","4":"f","5":"i","6":"n","7":"e","8":"d","level":"info","message":"CPI requested for studentId:","service":"nep-workbench","timestamp":"2026-01-29 00:49:32"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-29 00:50:05"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-29 00:50:05"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-29 00:50:05"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-29 00:52:14"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-29 00:52:14"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-29 00:52:14"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-29 00:52:14"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-29 00:52:14"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-29 00:52:14"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-29 00:52:14"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-29 00:52:14"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":502575,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-29 00:52:14"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-29 00:56:19"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-29 00:56:19"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-29 00:56:19"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-29 20:03:47"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-29 20:03:47"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-29 20:03:47"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-29 20:03:52"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-29 20:03:52"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-29 20:03:52"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-29 22:56:38"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-29 22:56:38"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-29 22:56:38"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-29 22:56:38"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-29 22:56:38"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-29 22:56:38"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-29 22:56:38"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-29 22:56:38"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":539989,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-29 22:56:38"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-29 22:58:13"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-29 22:58:13"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-29 22:58:13"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-29 22:58:13"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-29 22:58:13"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-29 22:58:13"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-29 22:58:13"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-29 22:58:13"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":540224,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-29 22:58:13"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-29 22:58:34"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-29 22:58:34"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-29 22:58:34"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-29 22:58:34"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-29 22:58:34"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-29 22:58:34"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-29 22:58:34"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-29 22:58:34"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":540322,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-29 22:58:34"}
+{"level":"info","message":"Generating NEP report for student STU-AMQZM","reportType":"weekly","requestedBy":"69738e3e3041dd83ab91c6f6","service":"nep-workbench","timestamp":"2026-01-29 23:03:13"}
+{"level":"error","message":"Generate NEP report error: Cannot access 'periodStart' before initialization","service":"nep-workbench","stack":"ReferenceError: Cannot access 'periodStart' before initialization\n    at exports.generateNEPReport (/home/popeye/Downloads/NEP3/backend/controllers/report.controller.js:620:7)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-29 23:03:40"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-29 23:14:04"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-29 23:14:04"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-29 23:14:04"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-29 23:14:04"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-29 23:14:04"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-29 23:14:04"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-29 23:14:04"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-29 23:14:04"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":5998,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-29 23:14:04"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request:","numberOfQuestions":5,"service":"nep-workbench","simulationType":"motion-timer-sim","subject":"physics","timestamp":"2026-01-30 00:04:50"}
+{"difficultyFactors":18,"level":"info","message":"📚 Simulation metadata loaded:","service":"nep-workbench","timestamp":"2026-01-30 00:04:50","tools":18,"topics":24}
+{"level":"info","message":"📊 Recent average score: 42.38%","service":"nep-workbench","timestamp":"2026-01-30 00:04:50"}
+{"level":"info","message":"📝 MANUAL DIFFICULTY: medium (user-selected)","service":"nep-workbench","timestamp":"2026-01-30 00:04:50"}
+{"level":"info","message":"🤖 MISTRAL AI: Generating challenge with all data","service":"nep-workbench","timestamp":"2026-01-30 00:04:50"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":true,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-01-30 00:04:50","topic":"motion-timer-sim"}
+{"level":"info","message":"✅ Mistral AI responded in 22927ms","service":"nep-workbench","timestamp":"2026-01-30 00:05:13"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-01-30 00:05:13"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-01-30 00:05:13"}
+{"MCQ":2,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-01-30 00:05:13"}
+{"level":"info","message":"✅ Challenge generated in 22929ms with 5 questions","service":"nep-workbench","timestamp":"2026-01-30 00:05:13"}
+{"level":"info","message":"Challenge CHL-1769711713484 submitted, starting AI evaluation","service":"nep-workbench","timestamp":"2026-01-30 00:09:53"}
+{"0":"a","1":"n","10":"e","11":"r","12":"v","13":"i","14":"c","15":"e","16":" ","17":"i","18":"s","19":" ","2":"a","20":"n","21":"o","22":"t","23":" ","24":"d","25":"e","26":"f","27":"i","28":"n","29":"e","3":"l","30":"d","4":"y","5":"t","6":"i","7":"c","8":"s","9":"S","level":"warn","message":"CPI snapshot skipped:","service":"nep-workbench","timestamp":"2026-01-30 00:10:12"}
+{"0":"C","1":"H","10":"1","11":"7","12":"1","13":"3","14":"4","15":"8","16":"4","2":"L","3":"-","4":"1","5":"7","6":"6","7":"9","8":"7","9":"1","level":"info","message":"✅ Ledger entry created for challenge:","service":"nep-workbench","timestamp":"2026-01-30 00:10:12"}
+{"level":"info","message":"Challenge CHL-1769711713484 evaluated in 18106ms","service":"nep-workbench","timestamp":"2026-01-30 00:10:12"}
+{"level":"info","message":"Generating NEP report for student STU-NCYVN","reportType":"comprehensive","requestedBy":"6968e40559a15d8b32741981","service":"nep-workbench","timestamp":"2026-01-30 00:52:47"}
+{"level":"error","message":"Generate NEP report error: Cannot access 'periodStart' before initialization","service":"nep-workbench","stack":"ReferenceError: Cannot access 'periodStart' before initialization\n    at exports.generateNEPReport (/home/popeye/Downloads/NEP3/backend/controllers/report.controller.js:620:7)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-01-30 00:52:58"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-30 00:57:47"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-30 00:57:47"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-30 00:57:47"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-30 00:57:47"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-30 00:57:47"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-30 00:57:47"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-30 00:57:47"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-30 00:57:47"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":14236,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-30 00:57:47"}
+{"level":"info","message":"Generating NEP report for student STU-NCYVN","reportType":"monthly","requestedBy":"6968e40559a15d8b32741981","service":"nep-workbench","timestamp":"2026-01-30 00:57:58"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-30 01:04:29"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-30 01:04:29"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-30 01:04:29"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-30 01:04:29"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-30 01:04:29"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-30 01:04:29"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-30 01:04:29"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-30 01:04:29"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":14666,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-30 01:04:29"}
+{"level":"info","message":"Generating NEP report for student STU-NCYVN","reportType":"monthly","requestedBy":"6968e40559a15d8b32741981","service":"nep-workbench","timestamp":"2026-01-30 01:04:39"}
+{"_message":"Ledger validation failed","errors":{"metadata":{"kind":"required","message":"Path `metadata` is required.","name":"ValidatorError","path":"metadata","properties":{"message":"Path `metadata` is required.","path":"metadata","type":"required"}}},"level":"error","message":"Generate NEP report error: Ledger validation failed: metadata: Path `metadata` is required.","service":"nep-workbench","stack":"ValidationError: Ledger validation failed: metadata: Path `metadata` is required.\n    at Document.invalidate (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3373:32)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3134:17\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schema/subdocument.js:297:14\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1446:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)","timestamp":"2026-01-30 01:04:39"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-30 01:10:22"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-30 01:10:22"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-30 01:10:22"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-30 01:10:22"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-30 01:10:22"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-30 01:10:22"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-30 01:10:22"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-30 01:10:22"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":15092,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-30 01:10:22"}
+{"level":"info","message":"Generating NEP report for student STU-NCYVN","reportType":"monthly","requestedBy":"6968e40559a15d8b32741981","service":"nep-workbench","timestamp":"2026-01-30 01:10:34"}
+{"_message":"Ledger validation failed","errors":{"hash":{"kind":"required","message":"Path `hash` is required.","name":"ValidatorError","path":"hash","properties":{"message":"Path `hash` is required.","path":"hash","type":"required"}},"metadata":{"kind":"required","message":"Path `metadata` is required.","name":"ValidatorError","path":"metadata","properties":{"message":"Path `metadata` is required.","path":"metadata","type":"required"}}},"level":"error","message":"Generate NEP report error: Ledger validation failed: metadata: Path `metadata` is required., hash: Path `hash` is required.","service":"nep-workbench","stack":"ValidationError: Ledger validation failed: metadata: Path `metadata` is required., hash: Path `hash` is required.\n    at Document.invalidate (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3373:32)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3134:17\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schema/subdocument.js:297:14\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1446:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)","timestamp":"2026-01-30 01:10:34"}
+{"level":"info","message":"Generating NEP report for student STU-NCYVN","reportType":"weekly","requestedBy":"6968e40559a15d8b32741981","service":"nep-workbench","timestamp":"2026-01-30 01:10:55"}
+{"_message":"Ledger validation failed","errors":{"hash":{"kind":"required","message":"Path `hash` is required.","name":"ValidatorError","path":"hash","properties":{"message":"Path `hash` is required.","path":"hash","type":"required"}},"metadata":{"kind":"required","message":"Path `metadata` is required.","name":"ValidatorError","path":"metadata","properties":{"message":"Path `metadata` is required.","path":"metadata","type":"required"}}},"level":"error","message":"Generate NEP report error: Ledger validation failed: metadata: Path `metadata` is required., hash: Path `hash` is required.","service":"nep-workbench","stack":"ValidationError: Ledger validation failed: metadata: Path `metadata` is required., hash: Path `hash` is required.\n    at Document.invalidate (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3373:32)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3134:17\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schema/subdocument.js:297:14\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1446:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)","timestamp":"2026-01-30 01:10:55"}
+{"level":"info","message":"Generating NEP report for student STU-NCYVN","reportType":"weekly","requestedBy":"6968e40559a15d8b32741981","service":"nep-workbench","timestamp":"2026-01-30 01:11:21"}
+{"_message":"Ledger validation failed","errors":{"hash":{"kind":"required","message":"Path `hash` is required.","name":"ValidatorError","path":"hash","properties":{"message":"Path `hash` is required.","path":"hash","type":"required"}},"metadata":{"kind":"required","message":"Path `metadata` is required.","name":"ValidatorError","path":"metadata","properties":{"message":"Path `metadata` is required.","path":"metadata","type":"required"}}},"level":"error","message":"Generate NEP report error: Ledger validation failed: metadata: Path `metadata` is required., hash: Path `hash` is required.","service":"nep-workbench","stack":"ValidationError: Ledger validation failed: metadata: Path `metadata` is required., hash: Path `hash` is required.\n    at Document.invalidate (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3373:32)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3134:17\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schema/subdocument.js:297:14\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1446:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)","timestamp":"2026-01-30 01:11:21"}
+{"level":"info","message":"✅ Teacher fetched","service":"nep-workbench","teacherId":"TCH-YW9ZD","teacherName":"Test2","timestamp":"2026-01-30 01:11:53"}
+{"level":"info","message":"✅ School fetched","schoolId":"SCH-2026-M42RM","schoolName":"Test School 123","service":"nep-workbench","timestamp":"2026-01-30 01:11:53"}
+{"level":"info","message":"📤 Student profile response ready","schoolAttached":true,"service":"nep-workbench","studentId":"STU-AMQZM","teacherAttached":true,"timestamp":"2026-01-30 01:11:53"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-30 01:17:24"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-30 01:17:24"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-30 01:17:24"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-30 01:17:24"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-30 01:17:24"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-30 01:17:24"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-30 01:17:24"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-30 01:17:24"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":15570,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-30 01:17:24"}
+{"level":"info","message":"Generating NEP report for student STU-NCYVN","reportType":"weekly","requestedBy":"6968e40559a15d8b32741981","service":"nep-workbench","timestamp":"2026-01-30 01:17:35"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-30 01:24:16"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-30 01:24:16"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-30 01:24:16"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-30 01:24:16"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-30 01:24:16"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-30 01:24:16"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-30 01:24:16"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-30 01:24:16"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":16015,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-30 01:24:16"}
+{"level":"info","message":"Generating NEP report for student STU-NCYVN","reportType":"weekly","requestedBy":"6968e40559a15d8b32741981","service":"nep-workbench","timestamp":"2026-01-30 01:24:25"}
+{"_message":"NEPReport validation failed","errors":{"competencies.0.status":{"kind":"enum","message":"`derived` is not a valid enum value for path `status`.","name":"ValidatorError","path":"status","properties":{"enumValues":["improving","stable","declining"],"length":7,"message":"`derived` is not a valid enum value for path `status`.","path":"status","type":"enum","value":"derived"},"value":"derived"},"competencies.1.status":{"kind":"enum","message":"`derived` is not a valid enum value for path `status`.","name":"ValidatorError","path":"status","properties":{"enumValues":["improving","stable","declining"],"length":7,"message":"`derived` is not a valid enum value for path `status`.","path":"status","type":"enum","value":"derived"},"value":"derived"},"competencies.2.status":{"kind":"enum","message":"`derived` is not a valid enum value for path `status`.","name":"ValidatorError","path":"status","properties":{"enumValues":["improving","stable","declining"],"length":7,"message":"`derived` is not a valid enum value for path `status`.","path":"status","type":"enum","value":"derived"},"value":"derived"},"competencies.3.status":{"kind":"enum","message":"`derived` is not a valid enum value for path `status`.","name":"ValidatorError","path":"status","properties":{"enumValues":["improving","stable","declining"],"length":7,"message":"`derived` is not a valid enum value for path `status`.","path":"status","type":"enum","value":"derived"},"value":"derived"},"competencies.4.status":{"kind":"enum","message":"`derived` is not a valid enum value for path `status`.","name":"ValidatorError","path":"status","properties":{"enumValues":["improving","stable","declining"],"length":7,"message":"`derived` is not a valid enum value for path `status`.","path":"status","type":"enum","value":"derived"},"value":"derived"}},"level":"error","message":"Generate NEP report error: NEPReport validation failed: competencies.0.status: `derived` is not a valid enum value for path `status`., competencies.1.status: `derived` is not a valid enum value for path `status`., competencies.2.status: `derived` is not a valid enum value for path `status`., competencies.3.status: `derived` is not a valid enum value for path `status`., competencies.4.status: `derived` is not a valid enum value for path `status`.","service":"nep-workbench","stack":"ValidationError: NEPReport validation failed: competencies.0.status: `derived` is not a valid enum value for path `status`., competencies.1.status: `derived` is not a valid enum value for path `status`., competencies.2.status: `derived` is not a valid enum value for path `status`., competencies.3.status: `derived` is not a valid enum value for path `status`., competencies.4.status: `derived` is not a valid enum value for path `status`.\n    at Document.invalidate (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3373:32)\n    at Subdocument.invalidate (/home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/types/subdocument.js:257:12)\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/document.js:3134:17\n    at /home/popeye/Downloads/NEP3/backend/node_modules/mongoose/lib/schemaType.js:1446:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)","timestamp":"2026-01-30 01:24:25"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-30 01:25:33"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-30 01:25:33"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-30 01:25:33"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-30 01:25:33"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-30 01:25:33"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-30 01:25:33"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-30 01:25:33"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-30 01:25:33"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":16168,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-30 01:25:33"}
+{"level":"info","message":"Generating NEP report for student STU-NCYVN","reportType":"weekly","requestedBy":"6968e40559a15d8b32741981","service":"nep-workbench","timestamp":"2026-01-30 01:25:37"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-30 01:41:35"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-30 01:41:35"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-30 01:41:35"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-30 01:41:35"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-30 01:41:35"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-30 01:41:35"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-30 01:41:35"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-30 01:41:35"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":17381,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-30 01:41:35"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-30 01:45:20"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-30 01:45:20"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-30 01:45:20"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-30 01:45:20"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-30 01:45:20"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-30 01:45:20"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-30 01:45:20"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-30 01:45:20"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":17620,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-30 01:45:20"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-30 01:46:33"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-30 01:46:33"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-30 01:46:33"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-30 01:46:33"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-30 01:46:33"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-30 01:46:33"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-30 01:46:33"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-30 01:46:33"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":17745,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-30 01:46:33"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-30 01:48:40"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-30 01:48:40"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-30 01:48:40"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-30 01:48:40"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-30 01:48:40"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-30 01:48:40"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-30 01:48:40"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-30 01:48:40"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":17927,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-30 01:48:40"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-30 01:54:32"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-30 01:54:32"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-30 01:54:32"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-30 01:54:32"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-30 01:54:32"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-30 01:54:32"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-30 01:54:32"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-30 01:54:32"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":18294,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-30 01:54:32"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-01-30 01:55:42"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-01-30 01:55:42"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-01-30 01:55:42"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-01-30 01:55:42"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-01-30 01:55:42"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-01-30 01:55:42"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-01-30 01:55:42"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-01-30 01:55:42"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":18405,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-01-30 01:55:42"}
+{"level":"info","message":"Running daily IRT calibration...","service":"nep-workbench","timestamp":"2026-01-30 02:00:00"}
+{"level":"info","message":"Starting IRT calibration job...","service":"nep-workbench","timestamp":"2026-01-30 02:00:00"}
+{"level":"info","message":"IRT calibration complete: 0 calibrated, 15 insufficient data","service":"nep-workbench","timestamp":"2026-01-30 02:00:00"}

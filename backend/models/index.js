@@ -19,7 +19,7 @@ exports.Ledger = require('./Ledger');
 
 // Feature Models
 exports.ClassSection = require('./ClassSection');
-exports.CompetencyMaster = require('./CompetencyMaster');
+//exports.CompetencyMaster = require('./CompetencyMaster');
 exports.InstitutionalReport = require('./InstitutionalReport');
 exports.ChallengeLimit = require('./ChallengeLimit');
 exports.HelpTicket = require('./HelpTicket');

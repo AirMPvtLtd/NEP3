@@ -36,38 +36,14 @@ const logger = require('../utils/logger');
 const irtService = require('../services/algorithms/irt.algorithm.service');
 const pidService = require('../services/algorithms/pid.algorithm.service');
 
-// ============================================================================
-// CHALLENGE GENERATION
-// ============================================================================
 
-/**
- * @desc    Generate new challenge
- * @route   POST /api/challenges/generate
- * @access  Private (Student)
- */
-
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
-/**
- * Helper to extract ID from potentially stringified object
- * Fixes issue where entire objects are stored as strings in database
- * 
- * @param {string} field - The field that might contain stringified JSON
- * @param {string} idKey - The key to extract (e.g., 'schoolId', 'teacherId')
- * @returns {string|null} - Extracted ID or null
- */
-/**
- * Helper to extract ID from potentially stringified object OR actual object
- */
 
 // ✅ Helper function to determine level
 function determineLevel(score) {
   if (score >= 80) return 'advanced';
   if (score >= 60) return 'proficient';
   if (score >= 40) return 'developing';
-  return 'beginning';
+  return 'emerging';
 }
 
 function extractId(field, idKey) {
@@ -186,10 +162,6 @@ exports.generateChallenge = async (req, res) => {
     // ========================================================================
     // 3. GET STUDENT DATA (DATABASE)
     // ========================================================================
-    
-// ========================================================================
-// 3. GET STUDENT DATA (DATABASE) + FIX IDs
-// ========================================================================
 
     const student = await Student.findById(studentId);
 
@@ -659,95 +631,6 @@ exports.previewChallenge = async (req, res) => {
   }
 };
 
-// ============================================================================
-// CHALLENGE LIFECYCLE
-// ============================================================================
-
-/**
- * @desc    Get challenge details
- * @route   GET /api/challenges/:challengeId
- * @access  Private
- */
-// exports.getChallengeDetails = async (req, res) => {
-//   try {
-//     const challenge = await Challenge.findOne({
-//       challengeId: req.params.challengeId
-//     });
-    
-//     if (!challenge) {
-//       return res.status(404).json({
-//         success: false,
-//         message: 'Challenge not found'
-//       });
-//     }
-    
-//     // Add logging to see the mismatch
-//     logger.info('Authorization debug:', {
-//       challengeStudentId: challenge.studentId,
-//       reqUserStudentId: req.user.studentId,
-//       reqUserRole: req.user.role,
-//       match: challenge.studentId === req.user.studentId
-//     });
-//     // Authorization check
-//     const isStudent = req.user.role === 'student' && challenge.studentId === req.user.studentId;
-//     const isTeacher = req.user.role === 'teacher' && challenge.teacherId === req.user.teacherId;
-//     const isAdmin = req.user.role === 'admin';
-    
-//     if (!isStudent && !isTeacher && !isAdmin) {
-//       return res.status(403).json({
-//         success: false,
-//         message: 'You do not have access to this challenge'
-//       });
-//     }
-    
-//     // Return challenge without answers if not evaluated (for students)
-//     const response = {
-//       challengeId: challenge.challengeId,
-//       title: challenge.title,
-//       simulationType: challenge.simulationType,
-//       difficulty: challenge.difficulty,
-//       status: challenge.status,
-//       totalPoints: challenge.totalPoints,
-//       passingScore: challenge.passingScore,
-//       estimatedTime: challenge.estimatedTime,
-//       generatedAt: challenge.generatedAt,
-//       startedAt: challenge.startedAt,
-//       submittedAt: challenge.submittedAt,
-//       evaluatedAt: challenge.evaluatedAt
-//     };
-    
-//     // Include questions without answers if not started or in progress
-//     if (challenge.status === 'generated' || challenge.status === 'in-progress') {
-//       response.questions = challenge.questions.map(q => ({
-//         questionId: q.questionId,
-//         type: q.type,
-//         question: q.question,
-//         options: q.options,
-//         points: q.points
-//       }));
-//     }
-    
-//     // Include full results if evaluated (or if teacher/admin)
-//     if (challenge.status === 'evaluated' || isTeacher || isAdmin) {
-//       response.questions = challenge.questions;
-//       response.answers = challenge.answers;
-//       response.results = challenge.results;
-//     }
-    
-//     res.json({
-//       success: true,
-//       data: { challenge: response }
-//     });
-    
-//   } catch (error) {
-//     logger.error('Get challenge details error:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Error fetching challenge',
-//       error: error.message
-//     });
-//   }
-// };
 
 exports.getChallengeDetails = async (req, res) => {
   try {
@@ -1064,183 +947,31 @@ exports.getChallengeResults = async (req, res) => {
   }
 };
 
-/**
- * Helper function: AI Evaluation
- */
-// async function evaluateChallengeWithAI(challenge) {
-//   try {
-//     const startTime = Date.now();
-//     const evaluatedAnswers = [];
-//     let totalScore = 0;
-//     let correctAnswers = 0;
-    
-//     // Evaluate each answer with AI
-//     for (let i = 0; i < challenge.answers.length; i++) {
-//       const answer = challenge.answers[i];
-//       const question = challenge.questions.find(q => q.questionId === answer.questionId);
-      
-//       if (!question) continue;
-      
-//       // Call Mistral AI for evaluation
-//       // NEW (correct)
-//       const aiEvaluation = await mistralService.evaluateResponse({
-//         question: question.question,
-//         questionType: question.type,
-//         correctAnswer: question.correctAnswer,
-//         studentAnswer: answer.studentAnswer,
-//         studentReasoning: answer.studentReasoning,
-//         expectedExplanation: question.explanation
-//       });
-//       // Calculate final score (Answer: 70%, Reasoning: 30%)
-//       const answerScore = aiEvaluation.answerScore || 0; // 0-70
-//       const reasoningScore = aiEvaluation.reasoningScore || 0; // 0-30
-//       const finalScore = answerScore + reasoningScore;
-      
-//       if (aiEvaluation.answerCorrect) {
-//         correctAnswers++;
-//       }
-      
-//       totalScore += finalScore;
-      
-//       evaluatedAnswers.push({
-//         questionId: answer.questionId,
-//         studentAnswer: answer.studentAnswer,
-//         studentReasoning: answer.studentReasoning,
-//         aiEvaluation,
-//         finalScore,
-//         evaluatedAt: new Date()
-//       });
-//     }
-    
-//     const evaluationTime = Date.now() - startTime;
-    
-//     // Calculate overall results
-//     const averageScore = totalScore / challenge.questions.length;
-//     const passed = averageScore >= challenge.passingScore;
-    
-//     // Identify competencies
-//     const competencyScores = {};
-//     challenge.questions.forEach((q, index) => {
-//       q.competencies.forEach(comp => {
-//         if (!competencyScores[comp]) {
-//           competencyScores[comp] = [];
-//         }
-//         competencyScores[comp].push(evaluatedAnswers[index]?.finalScore || 0);
-//       });
-//     });
-    
-//     const competenciesAssessed = Object.entries(competencyScores).map(([comp, scores]) => ({
-//       competency: comp,
-//       score: scores.reduce((a, b) => a + b, 0) / scores.length
-//     }));
-    
-//     // Update challenge with results
-//     await challenge.evaluate({
-//       totalScore: averageScore,
-//       percentage: averageScore,
-//       passed,
-//       correctAnswers,
-//       totalQuestions: challenge.questions.length,
-//       competenciesAssessed
-//     });
-    
-//     challenge.answers = evaluatedAnswers;
-//     challenge.aiMetadata.evaluationTime = evaluationTime;
-//     await challenge.save();
-    
-//     // Log AI usage
-//     await AILog.create({
-//       userId: challenge.studentId,
-//       userType: 'student',
-//       schoolId: challenge.schoolId,
-//       operation: 'challenge_evaluation',
-//       model: process.env.MISTRAL_MODEL || 'mistral-large-latest',
-//       tokensUsed: evaluatedAnswers.reduce((sum, a) => sum + (a.aiEvaluation?.tokensUsed || 0), 0),
-//       cost: evaluatedAnswers.reduce((sum, a) => sum + (a.aiEvaluation?.tokensUsed || 0), 0) * 0.000002,
-//       responseTime: evaluationTime,
-//       success: true
-//     });
-    
-//     // Update student performance
-//     const student = await Student.findOne({ studentId: challenge.studentId });
-    
-//     if (student) {
-//       // Add challenge to recent history
-//       await student.addChallengeResult(
-//         challenge.challengeId,
-//         averageScore,
-//         challenge.simulationType
-//       );
-      
-//       // Update competency scores
-//       for (const compAssessment of competenciesAssessed) {
-//         await student.updateCompetency(compAssessment.competency, compAssessment.score);
-//       }
-      
-//       await student.save();
-//     }
-    
-//     // Log activity
-//     await Activity.log({
-//       userId: challenge.studentId,
-//       userType: 'student',
-//       schoolId: challenge.schoolId,
-//       activityType: 'challenge_evaluated',
-//       action: `Challenge evaluated: ${averageScore.toFixed(2)}% (${passed ? 'PASSED' : 'FAILED'})`,
-//       metadata: {
-//         challengeId: challenge.challengeId,
-//         score: averageScore,
-//         passed
-//       },
-//       success: true
-//     });
-    
-//     logger.info(`Challenge ${challenge.challengeId} evaluated: ${averageScore}% (${passed ? 'PASSED' : 'FAILED'}) in ${evaluationTime}ms`);
-    
-//   } catch (error) {
-//     logger.error('Evaluation error:', error);
-    
-//     // Log failed AI operation
-//     await AILog.create({
-//       userId: challenge.studentId,
-//       userType: 'student',
-//       schoolId: challenge.schoolId,
-//       operation: 'challenge_evaluation',
-//       model: process.env.MISTRAL_MODEL || 'mistral-large-latest',
-//       success: false,
-//       errorMessage: error.message
-//     });
-    
-//     throw error;
-//   }
-// }
 
-async function evaluateChallengeWithAI(challenge, req = {}) {  // ← Add req parameter
-  
-  // Helper function for competency level
-  function determineLevel(score) {
-    if (score >= 80) return 'advanced';
-    if (score >= 60) return 'proficient';
-    if (score >= 40) return 'developing';
-    return 'emerging';
-  }
-  
+
+async function evaluateChallengeWithAI(challenge, req = {}) {
+
   // 🛡️ Idempotency guard
   if (challenge.status === 'evaluated') {
     logger.warn(`Duplicate evaluation blocked for ${challenge.challengeId}`);
     return;
   }
-  
+
   const startTime = Date.now();
   const evaluatedAnswers = [];
   let totalScore = 0;
   let correctAnswers = 0;
-  
+
+  // =====================================================
+  // 1️⃣ AI EVALUATION
+  // =====================================================
   for (let i = 0; i < challenge.answers.length; i++) {
     const answer = challenge.answers[i];
-    const question = challenge.questions.find(q => q.questionId === answer.questionId);
+    const question = challenge.questions.find(
+      q => q.questionId === answer.questionId
+    );
     if (!question) continue;
-    
+
     const aiEvaluation = await mistralService.evaluateResponse({
       question: question.question,
       questionType: question.type,
@@ -1249,12 +980,14 @@ async function evaluateChallengeWithAI(challenge, req = {}) {  // ← Add req pa
       studentReasoning: answer.studentReasoning,
       expectedExplanation: question.explanation
     });
-    
-    const finalScore = (aiEvaluation.answerScore || 0) + (aiEvaluation.reasoningScore || 0);
-    
+
+    const finalScore =
+      (aiEvaluation.answerScore || 0) +
+      (aiEvaluation.reasoningScore || 0);
+
     if (aiEvaluation.answerCorrect) correctAnswers++;
     totalScore += finalScore;
-    
+
     evaluatedAnswers.push({
       questionId: answer.questionId,
       studentAnswer: answer.studentAnswer,
@@ -1264,25 +997,40 @@ async function evaluateChallengeWithAI(challenge, req = {}) {  // ← Add req pa
       evaluatedAt: new Date()
     });
   }
-  
+
   const avgScore = totalScore / challenge.questions.length;
   const passed = avgScore >= challenge.passingScore;
-  
-  // Calculate competencies
+
+  // =====================================================
+  // 2️⃣ COMPETENCY AGGREGATION
+  // =====================================================
   const competencyMap = {};
   challenge.questions.forEach((q, idx) => {
+    if (!Array.isArray(q.competencies)) return;
     q.competencies.forEach(c => {
       competencyMap[c] ??= [];
       competencyMap[c].push(evaluatedAnswers[idx]?.finalScore || 0);
     });
   });
-  
-  const competenciesAssessed = Object.entries(competencyMap).map(([c, scores]) => ({
-    competency: c,
-    score: scores.reduce((a, b) => a + b, 0) / scores.length
-  }));
-  
-  // ✅ Update challenge (ONCE)
+
+  const competenciesAssessed = Object.entries(competencyMap).map(
+    ([competency, scores]) => {
+      const score = scores.reduce((a, b) => a + b, 0) / scores.length;
+      return {
+        competency,
+        score,
+        level: determineLevel(score),
+        assessedBy: 'system',
+        evidence: `Challenge ${challenge.challengeId} AI evaluation`,
+        timestamp: new Date()
+      };
+    }
+  );
+
+
+  // =====================================================
+  // 3️⃣ UPDATE CHALLENGE (ONCE)
+  // =====================================================
   await challenge.evaluate({
     totalScore: avgScore,
     percentage: avgScore,
@@ -1291,15 +1039,45 @@ async function evaluateChallengeWithAI(challenge, req = {}) {  // ← Add req pa
     totalQuestions: challenge.questions.length,
     competenciesAssessed
   });
-  
+
   challenge.answers = evaluatedAnswers;
   challenge.aiMetadata.evaluationTime = Date.now() - startTime;
+  challenge.evaluatedAt = new Date();
   await challenge.save();
-  
-  // ✅ Extract clean IDs
-  let actualSchoolId = extractId(challenge.schoolId, 'schoolId') || 'SYSTEM-DEFAULT';
-  let actualTeacherId = extractId(challenge.teacherId, 'teacherId') || 'SYSTEM-DEFAULT';
-  
+
+  // =====================================================
+  // 4️⃣ CPI SNAPSHOT (🔥 FIXED)
+  // =====================================================
+  let cpiSnapshot = null;
+
+  try {
+    const ledgerEvents = await Ledger.find({
+      studentId: challenge.studentId,
+      eventType: Ledger.EVENT_TYPES.CHALLENGE_EVALUATED
+    })
+      .sort({ timestamp: 1 })
+      .lean();
+
+    const cpiResult = await analyticsService.generateCPI(
+      challenge.studentId,
+      ledgerEvents
+    );
+
+    if (typeof cpiResult?.cpi === 'number') {
+      cpiSnapshot = cpiResult.cpi;
+    }
+  } catch (err) {
+    logger.warn('CPI snapshot skipped:', err.message);
+  }
+
+  // =====================================================
+  // 5️⃣ LEDGER WRITE (STRICT & SAFE)
+  // =====================================================
+  const actualSchoolId =
+    extractId(challenge.schoolId, 'schoolId') || 'SYSTEM';
+  const actualTeacherId =
+    extractId(challenge.teacherId, 'teacherId') || 'SYSTEM';
+
   // ✅ LEDGER WRITE (COMPLETE WITH ALL REQUIRED FIELDS)
   try {
     await Ledger.create({
@@ -1322,7 +1100,10 @@ async function evaluateChallengeWithAI(challenge, req = {}) {  // ← Add req pa
           ? Math.floor((new Date() - new Date(challenge.startedAt)) / 1000) 
           : 0,
         evaluatedAt: new Date(),
-        evaluationType: 'ai_automatic'
+        evaluationType: 'ai_automatic',
+
+        // 🆕 CPI SNAPSHOT (OPTIONAL, SAFE)
+        cpiSnapshot: cpiSnapshot
       },
       
       // ✅ challenge field (REQUIRED)
@@ -1340,7 +1121,8 @@ async function evaluateChallengeWithAI(challenge, req = {}) {  // ← Add req pa
           score: comp.score,
           level: determineLevel(comp.score),
           assessedBy: 'system',
-          evidence: `Challenge ${challenge.challengeId} - AI Evaluation`
+          evidence: `Challenge ${challenge.challengeId} - AI Evaluation`,
+          timestamp: new Date()
         }))
       },
       
@@ -1369,10 +1151,12 @@ async function evaluateChallengeWithAI(challenge, req = {}) {  // ← Add req pa
     logger.info('✅ Ledger entry created for challenge:', challenge.challengeId);
   } catch (ledgerError) {
     logger.error('❌ Ledger entry failed:', ledgerError.message);
-    // Don't fail evaluation if Ledger fails
   }
-  
-  // ✅ Activity log
+
+
+  // =====================================================
+  // 6️⃣ ACTIVITY LOG
+  // =====================================================
   await Activity.log({
     userId: challenge.studentId,
     userType: 'student',
@@ -1382,332 +1166,21 @@ async function evaluateChallengeWithAI(challenge, req = {}) {  // ← Add req pa
     metadata: { challengeId: challenge.challengeId },
     success: true
   });
-  
+
   logger.info(
-    `Challenge ${challenge.challengeId} auto-evaluated: ${avgScore.toFixed(2)}% in ${Date.now() - startTime}ms`
+    `Challenge ${challenge.challengeId} evaluated in ${
+      Date.now() - startTime
+    }ms`
   );
 }
 
-// ============================================================================
-// CHALLENGE EVALUATION
-// ============================================================================
 
-/**
- * @desc    Evaluate challenge (manual trigger)
- * @route   POST /api/challenges/:challengeId/evaluate
- * @access  Private (Teacher/Admin)
- */
-// exports.evaluateChallenge = async (req, res) => {
-//   try {
-//     const challenge = await Challenge.findOne({
-//       challengeId: req.params.challengeId
-//     });
-    
-//     if (!challenge) {
-//       return res.status(404).json({
-//         success: false,
-//         message: 'Challenge not found'
-//       });
-//     }
-    
-//     if (challenge.status !== 'submitted') {
-//       return res.status(400).json({
-//         success: false,
-//         message: 'Challenge must be in submitted status'
-//       });
-//     }
-    
-//     // Trigger evaluation
-//     await evaluateChallengeWithAI(challenge);
-    
-//     res.json({
-//       success: true,
-//       message: 'Challenge evaluated successfully',
-//       data: {
-//         challengeId: challenge.challengeId,
-//         results: challenge.results
-//       }
-//     });
-    
-//   } catch (error) {
-//     logger.error('Evaluate challenge error:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Error evaluating challenge',
-//       error: error.message
-//     });
-//   }
-// };
+
 
 const Ledger = require('../models/Ledger');
 
-// exports.evaluateChallenge = async (req, res) => {
-//   try {
-//     const challenge = await Challenge.findOne({
-//       challengeId: req.params.challengeId
-//     });
 
-//     if (!challenge) {
-//       return res.status(404).json({
-//         success: false,
-//         message: 'Challenge not found'
-//       });
-//     }
-
-//     if (challenge.status !== 'submitted') {
-//       return res.status(400).json({
-//         success: false,
-//         message: 'Challenge must be in submitted status'
-//       });
-//     }
-
-//     // 1️⃣ Run AI evaluation (fills challenge.results)
-//     await evaluateChallengeWithAI(challenge);
-
-//     if (
-//       !challenge.results ||
-//       !Array.isArray(challenge.results.competenciesAssessed)
-//     ) {
-//       throw new Error('Competency assessment missing after evaluation');
-//     }
-
-//     // 2️⃣ CREATE ONE LEDGER EVENT (challenge evaluation)
-//     await Ledger.createChallengeEvaluation({
-//       studentId: challenge.studentId,              // "STU-NCYVN"
-//       teacherId: challenge.teacherId || 'system',
-//       schoolId: challenge.schoolId,
-
-//       challengeId: challenge.challengeId,
-//       simulationType: challenge.simulationType,
-//       difficulty: challenge.difficulty,
-//       totalScore: challenge.results.percentage,
-//       passed: challenge.results.passed,
-//       timeTaken: challenge.timeTaken || null,
-
-//       competenciesAssessed: challenge.results.competenciesAssessed.map(c => ({
-//         competency: c.competency,
-//         score: c.score,
-//         level:
-//           c.score >= 85 ? 'advanced' :
-//           c.score >= 70 ? 'proficient' :
-//           c.score >= 50 ? 'developing' : 'emerging',
-//         evidence: 'challenge_evaluation',
-//         assessedBy: req.user?.teacherId || 'system'
-//       })),
-
-//       createdBy: req.user.userId,
-//       createdByRole: req.user.role,
-//       ipAddress: req.ip,
-//       userAgent: req.get('user-agent')
-//     });
-
-//     // 3️⃣ OPTIONAL (STRONGLY RECOMMENDED): per-competency events
-//     for (const comp of challenge.results.competenciesAssessed) {
-//       await Ledger.createCompetencyAssessment({
-//         studentId: challenge.studentId,
-//         teacherId: challenge.teacherId || 'system',
-//         schoolId: challenge.schoolId,
-
-//         competency: comp.competency,
-//         score: comp.score,
-//         level:
-//           comp.score >= 85 ? 'advanced' :
-//           comp.score >= 70 ? 'proficient' :
-//           comp.score >= 50 ? 'developing' : 'emerging',
-
-//         evidence: `challenge:${challenge.challengeId}`,
-//         assessedBy: req.user?.teacherId || 'system',
-
-//         createdBy: req.user.userId,
-//         createdByRole: req.user.role,
-//         ipAddress: req.ip,
-//         userAgent: req.get('user-agent')
-//       });
-//     }
-
-//     // 4️⃣ Activity log
-//     await Activity.log({
-//       userId: req.user.userId,
-//       userType: req.user.role,
-//       schoolId: challenge.schoolId,
-//       activityType: 'challenge_evaluated',
-//       action: `Challenge evaluated and ledger updated`,
-//       metadata: {
-//         challengeId: challenge.challengeId,
-//         studentId: challenge.studentId
-//       },
-//       ipAddress: req.ip,
-//       success: true
-//     });
-
-//     res.json({
-//       success: true,
-//       message: 'Challenge evaluated and ledger updated successfully',
-//       data: {
-//         challengeId: challenge.challengeId,
-//         results: challenge.results
-//       }
-//     });
-
-//   } catch (error) {
-//     logger.error('Evaluate challenge error:', error);
-
-//     res.status(500).json({
-//       success: false,
-//       message: 'Error evaluating challenge',
-//       error: error.message
-//     });
-//   }
-// };
-
-
-
-/**
- * @desc    Re-evaluate challenge
- * @route   POST /api/challenges/:challengeId/re-evaluate
- * @access  Private (Admin)
- */
-// exports.reEvaluateChallenge = async (req, res) => {
-//   try {
-//     const challenge = await Challenge.findOne({
-//       challengeId: req.params.challengeId
-//     });
-    
-//     if (!challenge) {
-//       return res.status(404).json({
-//         success: false,
-//         message: 'Challenge not found'
-//       });
-//     }
-    
-//     if (challenge.status !== 'evaluated') {
-//       return res.status(400).json({
-//         success: false,
-//         message: 'Challenge must be evaluated first'
-//       });
-//     }
-    
-//     // Store old results
-//     const oldResults = { ...challenge.results };
-    
-//     // Re-evaluate
-//     challenge.status = 'submitted'; // Reset status
-//     await challenge.save();
-    
-//     await evaluateChallengeWithAI(challenge);
-    
-//     await Activity.log({
-//       userId: req.user.userId,
-//       userType: req.user.role,
-//       activityType: 'challenge_re_evaluated',
-//       action: 'Challenge re-evaluated',
-//       metadata: {
-//         challengeId: challenge.challengeId,
-//         oldScore: oldResults.totalScore,
-//         newScore: challenge.results.totalScore
-//       },
-//       success: true
-//     });
-    
-//     res.json({
-//       success: true,
-//       message: 'Challenge re-evaluated successfully',
-//       data: {
-//         challengeId: challenge.challengeId,
-//         oldResults,
-//         newResults: challenge.results
-//       }
-//     });
-    
-//   } catch (error) {
-//     logger.error('Re-evaluate challenge error:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Error re-evaluating challenge',
-//       error: error.message
-//     });
-//   }
-// };
-
-/**
- * @desc    Override challenge score
- * @route   PUT /api/challenges/:challengeId/override
- * @access  Private (Teacher)
- */
-// exports.overrideChallengeScore = async (req, res) => {
-//   try {
-//     const { score, feedback } = req.body;
-    
-//     if (score === undefined || score < 0 || score > 100) {
-//       return res.status(400).json({
-//         success: false,
-//         message: 'Valid score (0-100) is required'
-//       });
-//     }
-    
-//     const challenge = await Challenge.findOne({
-//       challengeId: req.params.challengeId
-//     });
-    
-//     if (!challenge) {
-//       return res.status(404).json({
-//         success: false,
-//         message: 'Challenge not found'
-//       });
-//     }
-    
-//     if (challenge.status !== 'evaluated') {
-//       return res.status(400).json({
-//         success: false,
-//         message: 'Can only override score for evaluated challenges'
-//       });
-//     }
-    
-//     await challenge.overrideScore(req.user.userId, score, feedback);
-    
-//     await Activity.log({
-//       userId: req.user.userId,
-//       userType: req.user.role,
-//       activityType: 'score_override',
-//       action: 'Challenge score overridden',
-//       metadata: {
-//         challengeId: challenge.challengeId,
-//         originalScore: challenge.results.totalScore,
-//         newScore: score
-//       },
-//       success: true
-//     });
-    
-//     res.json({
-//       success: true,
-//       message: 'Score overridden successfully',
-//       data: {
-//         challenge: {
-//           challengeId: challenge.challengeId,
-//           results: challenge.results
-//         }
-//       }
-//     });
-    
-//   } catch (error) {
-//     logger.error('Override challenge score error:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Error overriding score',
-//       error: error.message
-//     });
-//   }
-// };
-
-// ============================================================================
-// CHALLENGE HISTORY
-// ============================================================================
-
-/**
- * @desc    Get student challenge history
- * @route   GET /api/challenges/student/:studentId
- * @access  Private
- */
+ 
 exports.getStudentChallenges = async (req, res) => {
   try {
     const { status, simulationType, limit = 50, page = 1 } = req.query;
@@ -2052,53 +1525,7 @@ exports.getAvailableSimulations = async (req, res) => {
   }
 };
 
-// ============================================================================
-// RECOMMENDATIONS
-// ============================================================================
 
-/**
- * @desc    Get recommended challenges
- * @route   GET /api/challenges/recommended
- * @access  Private (Student)
- */
-// exports.getRecommendedChallenges = async (req, res) => {
-//   try {
-//     const student = await Student.findById(req.user.userId);
-//     const { getRecommendedSimulations } = require('../utils/simulationHelpers');
-    
-//     const recommended = getRecommendedSimulations(student);
-    
-//     const recommendations = recommended.slice(0, 5).map(simId => {
-//       const sim = getSimulation(simId);
-//       const canGenerate = student.canGenerateChallenge(simId, CHALLENGE_LIMITS.DAILY_LIMIT, CHALLENGE_LIMITS.PER_SIMULATION_LIMIT);
-      
-//       return {
-//         simulationType: simId,
-//         name: sim.name,
-//         type: sim.type,
-//         difficulty: sim.difficulty,
-//         reason: 'Based on your performance and weak competencies',
-//         canGenerate: canGenerate.allowed
-//       };
-//     });
-    
-//     res.json({
-//       success: true,
-//       data: {
-//         recommendations,
-//         weakCompetencies: student.weakCompetencies
-//       }
-//     });
-    
-//   } catch (error) {
-//     logger.error('Get recommended challenges error:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Error fetching recommendations',
-//       error: error.message
-//     });
-//   }
-// };
 
 exports.getRecommendedChallenges = async (req, res) => {
   try {
@@ -2285,61 +1712,6 @@ exports.getSchoolChallenges = async (req, res) => {
   }
 };
 
-/**
- * @desc    Bulk evaluate challenges
- * @route   POST /api/challenges/bulk-evaluate
- * @access  Private (Admin)
- */
-// exports.bulkEvaluateChallenges = async (req, res) => {
-//   try {
-//     const { challengeIds } = req.body;
-    
-//     if (!challengeIds || !Array.isArray(challengeIds) || challengeIds.length === 0) {
-//       return res.status(400).json({
-//         success: false,
-//         message: 'Challenge IDs array is required'
-//       });
-//     }
-    
-//     const results = {
-//       successful: [],
-//       failed: []
-//     };
-    
-//     for (const challengeId of challengeIds) {
-//       try {
-//         const challenge = await Challenge.findOne({ challengeId, status: 'submitted' });
-        
-//         if (challenge) {
-//           await evaluateChallengeWithAI(challenge);
-//           results.successful.push(challengeId);
-//         } else {
-//           results.failed.push({ challengeId, reason: 'Not found or not in submitted status' });
-//         }
-//       } catch (error) {
-//         results.failed.push({ challengeId, reason: error.message });
-//       }
-//     }
-    
-//     res.json({
-//       success: true,
-//       message: `Evaluated ${results.successful.length} challenges. ${results.failed.length} failed.`,
-//       data: results
-//     });
-    
-//   } catch (error) {
-//     logger.error('Bulk evaluate error:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Error bulk evaluating',
-//       error: error.message
-//     });
-//   }
-// };
-
-// ============================================================================
-// ANALYTICS
-// ============================================================================
 
 /**
  * @desc    Get challenge analytics overview

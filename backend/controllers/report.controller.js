@@ -7,7 +7,7 @@ const {
   School,
   Activity,
   Ledger,
-  CompetencyMaster
+
 } = require('../models');
 const logger = require('../utils/logger');
 
@@ -18,6 +18,33 @@ const { generateCPI, calculateCompetencyTrends, smoothCPI } = require('../servic
 const { createMerkleTree, generateReportHash, verifyMerkleProof } = require('../services/ledgerService');
 const QRCode = require('qrcode');
 const crypto = require('crypto');
+
+const { generateNEPNarrationFromReport } = require('../services/reportNarration.service');
+
+
+
+const REPORT_TYPE_MAP = {
+  comprehensive: 'monthly',
+  weekly: 'weekly',
+  monthly: 'monthly',
+  quarterly: 'quarterly',
+  annual: 'annual'
+};
+
+
+function extractJSON(text) {
+  if (!text) return null;
+
+  // Remove markdown code fences if present
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fenced && fenced[1]) {
+    return fenced[1].trim();
+  }
+
+  // Otherwise assume raw JSON
+  return text.trim();
+}
+
 
 // Helper function to extract data from AI report (was missing from imports)
 const extractReportForStorage = (aiReport) => {
@@ -411,7 +438,7 @@ const extractReportForStorage = (aiReport) => {
 
 exports.generateNEPReport = async (req, res) => {
   try {
-    const { studentId, reportType = 'comprehensive' } = req.body;
+    const { studentId, reportType = 'monthly' } = req.body;
 
     if (!studentId) {
       return res.status(400).json({
@@ -421,7 +448,7 @@ exports.generateNEPReport = async (req, res) => {
     }
 
     // ============================================================================
-    // STEP 0: RESOLVE STUDENT (BUSINESS ID OR MONGO _id)
+    // STEP 0: RESOLVE STUDENT
     // ============================================================================
     const student =
       await Student.findOne({ studentId }) ||
@@ -434,15 +461,15 @@ exports.generateNEPReport = async (req, res) => {
       });
     }
 
-    const resolvedStudentId = student.studentId; // authoritative business ID
+    const resolvedStudentId = student.studentId;
 
     // ============================================================================
     // AUTHORIZATION
     // ============================================================================
     const isStudent = req.user.role === 'student' && req.user.studentId === resolvedStudentId;
     const isTeacher = req.user.role === 'teacher' && student.teacherId === req.user.teacherId;
-    const isAdmin = req.user.role === 'admin';
-    const isParent = req.user.role === 'parent' && req.user.studentId === resolvedStudentId;
+    const isAdmin   = req.user.role === 'admin';
+    const isParent  = req.user.role === 'parent' && req.user.studentId === resolvedStudentId;
 
     if (!isStudent && !isTeacher && !isAdmin && !isParent) {
       return res.status(403).json({
@@ -457,182 +484,134 @@ exports.generateNEPReport = async (req, res) => {
     });
 
     // ============================================================================
-    // STEP 1: FETCH LEDGER EVENTS (AUTHORITATIVE)
+    // STEP 1: FETCH FULL LEDGER EVENTS (FOR ANALYTICS)
     // ============================================================================
-    let ledgerEvents = await Ledger.getEventsForMerkleTree(resolvedStudentId, 100);
+    const fullLedgerEvents = await Ledger.find({
+      studentId: resolvedStudentId,
+      eventType: Ledger.EVENT_TYPES.CHALLENGE_EVALUATED,
+      status: 'confirmed'
+    }).select('challenge timestamp');
 
-    // ============================================================================
-    // 🔥 FIX: BACKFILL LEDGER FROM EVALUATED CHALLENGES (ONCE ONLY)
-    // ============================================================================
-    if (!ledgerEvents || ledgerEvents.length === 0) {
-      logger.warn(`Ledger empty for ${resolvedStudentId}. Attempting backfill from evaluated challenges.`);
-
-      const evaluatedChallenges = await Challenge.find({
-        studentId: student._id,
-        status: 'evaluated'
-      }).sort({ evaluatedAt: 1 });
-
-      if (!evaluatedChallenges.length) {
-        return res.status(400).json({
-          success: false,
-          message: 'No assessment data found for this student'
-        });
-      }
-
-      for (const challenge of evaluatedChallenges) {
-        await Ledger.createAssessmentEvent({
-          studentId: resolvedStudentId,
-          teacherId: challenge.teacherId,
-          schoolId: challenge.schoolId,
-          challengeId: challenge.challengeId,
-          competencies: challenge.results?.competencyMap || {},
-          score: challenge.results?.percentage || 0,
-          evaluatedAt: challenge.evaluatedAt
-        });
-      }
-
-      ledgerEvents = await Ledger.getEventsForMerkleTree(resolvedStudentId, 100);
-    }
-
-    // ============================================================================
-    // STEP 2: LOAD COMPETENCY MASTER (NEP 2020)
-    // ============================================================================
-    const competencyMaster = await CompetencyMaster.findOne({
-      isActive: true,
-      version: 'NEP2020'
-    });
-
-    if (!competencyMaster) {
-      return res.status(500).json({
+    if (!fullLedgerEvents.length) {
+      return res.status(400).json({
         success: false,
-        message: 'Competency master data not configured'
+        message: 'No assessment data found for this student'
       });
     }
 
     // ============================================================================
-    // STEP 3: COMPUTE ANALYTICS (NO AI)
+    // STEP 2: DERIVE REPORT PERIOD FROM LEDGER
     // ============================================================================
-    const cpiResults = await generateCPI(resolvedStudentId, ledgerEvents);
-    const competencyTrends = await calculateCompetencyTrends(resolvedStudentId, ledgerEvents);
-    const smoothedCPI = smoothCPI(cpiResults.cpi, cpiResults.history || []);
+    const sortedEvents = [...fullLedgerEvents].sort(
+      (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+    );
+
+    const periodStart = sortedEvents[0].timestamp;
+    const periodEnd   = sortedEvents[sortedEvents.length - 1].timestamp;
 
     // ============================================================================
-    // STEP 4: MERKLE TREE + REPORT HASH
+    // STEP 3: CPI (GLOBAL METRIC)
+    // ============================================================================
+    const cpiResults = await generateCPI(resolvedStudentId, fullLedgerEvents);
+
+    // ============================================================================
+    // STEP 4: DERIVE COMPETENCIES DIRECTLY FROM LEDGER ✅
+    // ============================================================================
+    const competencyMap = {};
+
+    for (const event of fullLedgerEvents) {
+      const assessed = event.challenge?.competenciesAssessed || [];
+      for (const c of assessed) {
+        if (!competencyMap[c.competency]) {
+          competencyMap[c.competency] = { total: 0, count: 0 };
+        }
+        competencyMap[c.competency].total += c.score;
+        competencyMap[c.competency].count += 1;
+      }
+    }
+
+    const derivedCompetencies = Object.entries(competencyMap).map(
+      ([name, v]) => ({
+        name,
+        score: Number((v.total / v.count).toFixed(2)),
+        status: 'stable'
+      })
+    );
+
+    // ============================================================================
+    // STEP 5: MERKLE TREE (AUDIT ONLY)
     // ============================================================================
     const merkleTree = await Ledger.createMerkleTree(resolvedStudentId);
 
-    const reportDataForHash = {
-      studentId: resolvedStudentId,
-      generatedAt: new Date().toISOString(),
-      cpi: cpiResults.cpi,
-      smoothedCPI,
-      competencyScores: cpiResults.competencyScores,
-      ledgerEventCount: ledgerEvents.length,
-      reportVersion: '2.0'
-    };
-
-    const reportHash = generateReportHash(reportDataForHash, merkleTree.merkleRoot);
+    const reportHash = crypto
+      .createHash('sha256')
+      .update(
+        resolvedStudentId +
+        periodStart.toISOString() +
+        periodEnd.toISOString() +
+        (merkleTree.merkleRoot || '')
+      )
+      .digest('hex');
 
     // ============================================================================
-    // STEP 5: PREPARE AI INPUT (FORMATTING ONLY)
-    // ============================================================================
-    const authoritativeOptions = {
-      studentProfile: {
-        studentId: resolvedStudentId,
-        name: student.name,
-        class: student.class,
-        section: student.section,
-        schoolId: student.schoolId
-      },
-      ledgerMetadata: {
-        merkleRoot: merkleTree.merkleRoot,
-        reportHash,
-        eventCount: ledgerEvents.length
-      },
-      analytics: {
-        cpi: cpiResults.cpi,
-        smoothedCPI,
-        competencyScores: cpiResults.competencyScores,
-        trends: competencyTrends,
-        driftDetected: cpiResults.driftDetected || false
-      },
-      competencyFramework: competencyMaster,
-      metadata: {
-        reportType,
-        generatedBy: req.user.userId,
-        algorithmVersion: '1.2',
-        complianceLevel: 'NEP2020_FULL'
-      }
-    };
-
-    // ============================================================================
-    // STEP 6: AI NARRATION (STRICT FORMAT)
-    // ============================================================================
-    const startTime = Date.now();
-    const aiResult = await generateAINEPReport(authoritativeOptions);
-    const generationTime = Date.now() - startTime;
-
-    if (!aiResult.success) {
-      throw new Error('AI narration failed');
-    }
-
-    const extractedData = extractReportForStorage(aiResult.report);
-
-    // ============================================================================
-    // STEP 7: SAVE NEP REPORT
+    // STEP 6: SAVE NEP REPORT
     // ============================================================================
     const nepReport = await NEPReport.create({
       studentId: resolvedStudentId,
       schoolId: student.schoolId,
-      teacherId: student.teacherId,
-      reportType,
-      generatedBy: req.user.userId,
-      generatedByRole: req.user.role,
+      reportType: REPORT_TYPE_MAP[reportType] || 'monthly',
+      periodStart,
+      periodEnd,
 
-      ledgerMetadata: {
-        merkleRoot: merkleTree.merkleRoot,
-        reportHash,
-        eventCount: ledgerEvents.length
+      summary: {
+        totalChallenges: fullLedgerEvents.length,
+        averageScore: cpiResults.cpi
       },
 
-      competencies: Object.entries(cpiResults.competencyScores).map(([competency, score]) => ({
-        competency,
-        score,
-        trend: competencyTrends[competency]?.trend || 'stable'
-      })),
+      competencies: derivedCompetencies,
+      generatedBy: req.user.userId
+    });
 
-      narration: extractedData,
-      performanceMetrics: {
-        cpi: cpiResults.cpi,
-        smoothedCPI,
-        assessmentCount: ledgerEvents.length
+    // ============================================================================
+    // STEP 7: LEDGER EVENT — REPORT GENERATED (✅ SCHEMA SAFE)
+    // ============================================================================
+    await Ledger.create({
+      eventType: Ledger.EVENT_TYPES.REPORT_GENERATED,
+
+      studentId: resolvedStudentId,
+      schoolId: student.schoolId,
+
+      data: {
+        reportId: nepReport.reportId,
+        reportType: nepReport.reportType,
+        periodStart,
+        periodEnd,
+        cpi: cpiResults.cpi
       },
 
-      complianceStatement: {
-        standard: 'NEP2020',
-        ledgerAnchored: true,
-        auditReady: true
-      },
+      hash: crypto
+        .createHash('sha256')
+        .update(
+          nepReport.reportId +
+          resolvedStudentId +
+          periodStart.toISOString() +
+          periodEnd.toISOString()
+        )
+        .digest('hex'),
 
       metadata: {
-        generationTime,
-        aiModel: process.env.MISTRAL_MODEL,
-        aiTokensUsed: aiResult.tokensUsed || 0
+        timestamp: new Date()
       },
 
-      status: 'completed'
+      createdBy: req.user.userId,
+      createdByRole: req.user.role,
+      status: 'confirmed',
+      timestamp: new Date()
     });
 
     // ============================================================================
-    // STEP 8: LEDGER EVENT + ACTIVITY LOG
+    // STEP 8: ACTIVITY LOG
     // ============================================================================
-    await Ledger.createReportEvent({
-      studentId: resolvedStudentId,
-      reportId: nepReport.reportId,
-      hash: reportHash,
-      createdBy: req.user.userId
-    });
-
     await Activity.log({
       userId: req.user.userId,
       userType: req.user.role,
@@ -642,24 +621,95 @@ exports.generateNEPReport = async (req, res) => {
       success: true
     });
 
+    // ============================================================================
+    // RESPONSE
+    // ============================================================================
     return res.status(201).json({
       success: true,
       message: 'NEP report generated successfully',
       data: {
         reportId: nepReport.reportId,
         studentId: resolvedStudentId,
-        cpi: nepReport.performanceMetrics.cpi,
+        periodStart,
+        periodEnd,
+        cpi: cpiResults.cpi,
         reportHash,
-        merkleRoot: nepReport.ledgerMetadata.merkleRoot
+        merkleRoot: merkleTree.merkleRoot
       }
     });
 
   } catch (error) {
     logger.error('Generate NEP report error:', error);
-
     return res.status(500).json({
       success: false,
       message: 'Error generating NEP report',
+      error: error.message
+    });
+  }
+};
+
+
+exports.generateNEPReportNarration = async (req, res) => {
+  try {
+    const { reportId } = req.params;
+
+    // ---------------------------------------------------
+    // Fetch Report
+    // ---------------------------------------------------
+    const nepReport = await NEPReport.findOne({ reportId });
+    if (!nepReport) {
+      return res.status(404).json({
+        success: false,
+        message: 'NEP report not found'
+      });
+    }
+
+    // ---------------------------------------------------
+    // Fetch Student
+    // ---------------------------------------------------
+    const student = await Student.findOne({ studentId: nepReport.studentId });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
+      });
+    }
+
+    // ---------------------------------------------------
+    // Authorization
+    // ---------------------------------------------------
+    const isStudent = req.user.role === 'student' && req.user.studentId === student.studentId;
+    const isTeacher = req.user.role === 'teacher' && student.teacherId === req.user.teacherId;
+    const isAdmin   = req.user.role === 'admin';
+    const isParent  = req.user.role === 'parent' && req.user.studentId === student.studentId;
+
+    if (!isStudent && !isTeacher && !isAdmin && !isParent) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to view narration'
+      });
+    }
+
+    // ---------------------------------------------------
+    // Generate Narration (READ-ONLY)
+    // ---------------------------------------------------
+    const narrationResult = await generateNEPNarrationFromReport(
+      nepReport,
+      student
+    );
+
+    return res.status(200).json({
+      success: true,
+      reportId: nepReport.reportId,
+      narration: narrationResult.narration,
+      metadata: narrationResult.metadata
+    });
+
+  } catch (error) {
+    logger.error('NEP narration generation error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to generate narration',
       error: error.message
     });
   }
@@ -1278,7 +1328,7 @@ exports.getReportLedgerEvents = async (req, res) => {
  */
 exports.generateBatchReports = async (req, res) => {
   try {
-    const { studentIds, reportType = 'comprehensive' } = req.body;
+    const { studentIds, reportType = 'monthly' } = req.body;
     
     if (!studentIds || !Array.isArray(studentIds) || studentIds.length === 0) {
       return res.status(400).json({

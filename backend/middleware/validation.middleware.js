@@ -489,35 +489,60 @@ const validateScoreOverride = (req, res, next) => {
 /**
  * Validate report generation
  */
-const validateReportGeneration = (req, res, next) => {
-  const { reportType, periodStart, periodEnd } = req.body;
+// const validateReportGeneration = (req, res, next) => {
+//   const { reportType, periodStart, periodEnd } = req.body;
   
-  if (reportType) {
-    const validTypes = ['comprehensive', 'brief', 'competency-focused', 'progress', 'diagnostic'];
-    if (!validTypes.includes(reportType)) {
-      return res.status(400).json(validationError('reportType', `Invalid report type. Must be one of: ${validTypes.join(', ')}`));
-    }
-  }
+//   if (reportType) {
+//     const validTypes = ['comprehensive', 'brief', 'competency-focused', 'progress', 'diagnostic'];
+//     if (!validTypes.includes(reportType)) {
+//       return res.status(400).json(validationError('reportType', `Invalid report type. Must be one of: ${validTypes.join(', ')}`));
+//     }
+//   }
   
-  if (periodStart && !isValidDate(periodStart)) {
-    return res.status(400).json(validationError('periodStart', 'Invalid start date format'));
-  }
+//   if (periodStart && !isValidDate(periodStart)) {
+//     return res.status(400).json(validationError('periodStart', 'Invalid start date format'));
+//   }
   
-  if (periodEnd && !isValidDate(periodEnd)) {
-    return res.status(400).json(validationError('periodEnd', 'Invalid end date format'));
-  }
+//   if (periodEnd && !isValidDate(periodEnd)) {
+//     return res.status(400).json(validationError('periodEnd', 'Invalid end date format'));
+//   }
   
-  if (periodStart && periodEnd) {
-    const start = new Date(periodStart);
-    const end = new Date(periodEnd);
+//   if (periodStart && periodEnd) {
+//     const start = new Date(periodStart);
+//     const end = new Date(periodEnd);
     
-    if (start >= end) {
-      return res.status(400).json(validationError('periodEnd', 'End date must be after start date'));
-    }
-  }
+//     if (start >= end) {
+//       return res.status(400).json(validationError('periodEnd', 'End date must be after start date'));
+//     }
+//   }
   
+//   next();
+// };
+
+const validateReportGeneration = (req, res, next) => {
+  const { reportType } = req.body;
+
+  /**
+   * 🟢 REPORT TYPE
+   * - Controller normalize karega (comprehensive → monthly etc.)
+   * - Middleware sirf basic sanity check kare
+   */
+  if (reportType && typeof reportType !== 'string') {
+    return res
+      .status(400)
+      .json(validationError('reportType', 'reportType must be a string'));
+  }
+
+  /**
+   * 🛑 periodStart / periodEnd
+   * - USER INPUT NAHI HAI
+   * - Ledger se derive hota hai
+   * - Isliye validation YAHAN MAT KARO
+   */
+
   next();
 };
+
 
 /**
  * Validate report verification (NEW)
@@ -770,9 +795,11 @@ const validateId = (paramName = 'id') => {
 const validateCompetency = (req, res, next) => {
   const { competency } = req.params || req.body;
   
-  if (competency && NEP_COMPETENCIES.length > 0 && !NEP_COMPETENCIES.includes(competency)) {
-    return res.status(400).json(validationError('competency', `Invalid competency. Must be one of: ${NEP_COMPETENCIES.join(', ')}`));
-  }
+    // Allow any competency string; ledger is authoritative
+    if (competency && typeof competency !== 'string') {
+      return res.status(400).json(validationError('competency', 'Invalid competency format'));
+    }
+
   
   next();
 };

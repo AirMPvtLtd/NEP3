@@ -54,6 +54,13 @@ router.get(
   reportController.getNEPReport
 );
 
+router.post(
+  '/nep/:reportId/narration',
+  authenticate,
+  reportController.generateNEPReportNarration
+);
+
+
 /**
  * @route   GET /api/reports/nep/student/:studentId
  * @desc    Get student's NEP reports
