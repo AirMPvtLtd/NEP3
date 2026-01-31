@@ -6,6 +6,7 @@ const { authenticate, authorize } = require('../middleware/auth.middleware');
 
 // Controller
 const reportController = require('../controllers/report.controller');
+const { buildAuditPayload } = require('../services/reportAudit.service');
 
 // Validation - CORRECTED IMPORTS
 const {
@@ -322,6 +323,7 @@ router.get(
   '/health',
   reportController.healthCheck
 );
+
 
 // ============================================================================
 // EXPORTS

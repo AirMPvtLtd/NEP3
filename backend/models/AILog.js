@@ -45,6 +45,7 @@ const aiLogSchema = new mongoose.Schema({
       'nep_report_generation',
       'competency_analysis',
       'recommendation_generation',
+      'nep_report_narration',
       'other'
     ],
     required: true,
