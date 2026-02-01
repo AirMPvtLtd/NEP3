@@ -18,6 +18,9 @@
 const Ledger = require('../models/Ledger');
 const logger = require('../utils/logger');
 
+// 🔥 SPI SERVICE (POST-LEDGER STATE ENGINE)
+const { calculateSPI } = require('./spi.service');
+
 // ============================================================================
 // HELPERS
 // ============================================================================
@@ -47,7 +50,7 @@ function normalizeCompetency(comp) {
 }
 
 // ============================================================================
-// CHALLENGE EVALUATION → LEDGER
+// CHALLENGE EVALUATION → LEDGER (+ SPI HOOK)
 // ============================================================================
 
 /**
@@ -79,7 +82,10 @@ async function writeChallengeEvaluationEvent(params) {
     challengeId: challenge.challengeId
   });
 
-  return Ledger.createChallengeEvaluation({
+  // --------------------------------------------------------------------------
+  // 1️⃣ WRITE IMMUTABLE LEDGER EVENT (SOURCE OF TRUTH)
+  // --------------------------------------------------------------------------
+  const ledgerEvent = await Ledger.createChallengeEvaluation({
     studentId,
     teacherId,
     schoolId,
@@ -100,6 +106,25 @@ async function writeChallengeEvaluationEvent(params) {
     ipAddress,
     userAgent
   });
+
+  // --------------------------------------------------------------------------
+  // 2️⃣ 🔥 SPI TRIGGER (POST-LEDGER, NON-BLOCKING)
+  // --------------------------------------------------------------------------
+  try {
+    await calculateSPI(studentId, {
+      periodEnd: new Date()
+    });
+
+    logger.info('📈 SPI updated successfully', { studentId });
+  } catch (err) {
+    // ⚠️ SPI must NEVER break evaluation flow
+    logger.error('⚠️ SPI update failed (non-blocking)', {
+      studentId,
+      error: err.message
+    });
+  }
+
+  return ledgerEvent;
 }
 
 // ============================================================================

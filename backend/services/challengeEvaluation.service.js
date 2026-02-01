@@ -214,6 +214,8 @@ const logger = require('../utils/logger');
 const mistralService = require('./mistral.service');
 const { Student } = require('../models');
 const { NEP_COMPETENCIES } = require('../config/constants');
+const { calculateStudentSPI } = require('../controllers/spi.controller');
+
 
 /**
  * Auto-evaluate a submitted challenge

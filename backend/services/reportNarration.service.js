@@ -61,7 +61,7 @@ const generateNEPNarrationFromReport = async (nepReport, student) => {
       totalChallenges: nepReport.summary?.totalChallenges || 0,
       averageCPI: nepReport.summary?.averageScore || 0
     },
-    
+
     competencySummary: {
       total: 12,
       assessed: nepReport.competencies.filter(c => c.assessed).length,
@@ -103,6 +103,8 @@ STRICT RULES:
 - Maintain CBSE / Government inspection tone
 - Explicitly mention blockchain verification and compliance
 - This narration must be audit and court safe
+- If CPI is provided as a decimal (0–1), express it as a percentage in narration.
+
 `;
 
   // ============================================================================

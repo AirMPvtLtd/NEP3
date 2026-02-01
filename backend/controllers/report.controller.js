@@ -24,6 +24,9 @@ const { generateNEPNarrationFromReport } = require('../services/reportNarration.
 const { buildAuditPayload } = require('../services/reportAudit.service');
 const { normalizeTo12Competencies } =
   require('../services/competencyNormalizer.service');
+const { computeCPI } = require('../services/cpiEngine.service');
+// const { normalizeTo12Competencies } =
+//   require('../config/nepCompetencies');
 
 
 
@@ -468,7 +471,7 @@ exports.generateNEPReport = async (req, res) => {
     const resolvedStudentId = student.studentId;
 
     // ============================================================================
-    // AUTHORIZATION
+    // STEP 1: AUTHORIZATION
     // ============================================================================
     const isStudent = req.user.role === 'student' && req.user.studentId === resolvedStudentId;
     const isTeacher = req.user.role === 'teacher' && student.teacherId === req.user.teacherId;
@@ -482,19 +485,19 @@ exports.generateNEPReport = async (req, res) => {
       });
     }
 
-    logger.info(`Generating NEP report for student ${resolvedStudentId}`, {
+    logger.info(`Generating NEP report for ${resolvedStudentId}`, {
       reportType,
       requestedBy: req.user.userId
     });
 
     // ============================================================================
-    // STEP 1: FETCH LEDGER EVENTS (AUTHORITATIVE)
+    // STEP 2: FETCH LEDGER EVENTS (AUTHORITATIVE, READ-ONLY)
     // ============================================================================
     const ledgerEvents = await Ledger.find({
       studentId: resolvedStudentId,
       eventType: Ledger.EVENT_TYPES.CHALLENGE_EVALUATED,
       status: 'confirmed'
-    }).select('challenge timestamp');
+    }).lean();
 
     if (!ledgerEvents.length) {
       return res.status(400).json({
@@ -504,7 +507,7 @@ exports.generateNEPReport = async (req, res) => {
     }
 
     // ============================================================================
-    // STEP 2: DERIVE REPORT PERIOD
+    // STEP 3: DERIVE REPORT PERIOD (FROM LEDGER)
     // ============================================================================
     const sortedEvents = [...ledgerEvents].sort(
       (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
@@ -514,43 +517,39 @@ exports.generateNEPReport = async (req, res) => {
     const periodEnd   = sortedEvents[sortedEvents.length - 1].timestamp;
 
     // ============================================================================
-    // STEP 3: CPI (ANALYTICS ONLY, 0–1 SCALE)
+    // STEP 4: CPI PIPELINE (SEPARATE, READ-ONLY)
     // ============================================================================
-    const cpiResults = await generateCPI(resolvedStudentId, ledgerEvents);
+    const cpiResult = await computeCPI({ ledgerEvents });
+
+    const cpiValue  = typeof cpiResult?.cpi === 'number' ? cpiResult.cpi : null;
+    const cpiStatus = cpiValue === null ? 'not_computable' : 'computed';
 
     // ============================================================================
-    // STEP 4: DERIVE COMPETENCIES FROM LEDGER
+    // STEP 5: DERIVE ONLY ASSESSED COMPETENCIES (LEDGER-TRUE)
     // ============================================================================
-    const competencyMap = {};
+    const competencyAccumulator = {};
 
     for (const event of ledgerEvents) {
       const assessed = event.challenge?.competenciesAssessed || [];
       for (const c of assessed) {
-        if (!competencyMap[c.competency]) {
-          competencyMap[c.competency] = { total: 0, count: 0 };
+        if (!competencyAccumulator[c.competency]) {
+          competencyAccumulator[c.competency] = { total: 0, count: 0 };
         }
-        competencyMap[c.competency].total += c.score;
-        competencyMap[c.competency].count += 1;
+        competencyAccumulator[c.competency].total += c.score;
+        competencyAccumulator[c.competency].count += 1;
       }
     }
 
-    const derivedCompetencies = Object.entries(competencyMap).map(
+    const assessedCompetencies = Object.entries(competencyAccumulator).map(
       ([name, v]) => ({
-        name,
+        name,                                   // MUST match enum
         score: Number((v.total / v.count).toFixed(2)),
-        status: 'stable',
-        assessed: true
+        status: 'stable'                        // MUST match enum
       })
     );
 
     // ============================================================================
-    // STEP 5: 🔥 12-COMPETENCY NORMALIZATION (NEP MANDATED)
-    // ============================================================================
-    const normalizedCompetencies =
-      normalizeTo12Competencies(derivedCompetencies);
-
-    // ============================================================================
-    // STEP 6: REAL AVERAGE SCORE
+    // STEP 6: DISPLAY-ONLY AVERAGE SCORE
     // ============================================================================
     const averageScore =
       ledgerEvents.reduce(
@@ -574,7 +573,7 @@ exports.generateNEPReport = async (req, res) => {
       .digest('hex');
 
     // ============================================================================
-    // STEP 8: SAVE NEP REPORT
+    // STEP 8: SAVE NEP REPORT (FACT-ONLY, SCHEMA SAFE)
     // ============================================================================
     const nepReport = await NEPReport.create({
       studentId: resolvedStudentId,
@@ -588,15 +587,24 @@ exports.generateNEPReport = async (req, res) => {
         averageScore: Number(averageScore.toFixed(2))
       },
 
-      competencies: normalizedCompetencies,
+      // ✅ ONLY assessed competencies — no normalization here
+      competencies: assessedCompetencies,
+
+      performanceMetrics: {
+        cpi: cpiValue,
+        cpiStatus,
+        cpiModel: cpiResult?.model || 'FIELD-CPI-v1'
+      },
+
       generatedBy: req.user.userId
     });
 
     // ============================================================================
-    // STEP 9: LEDGER EVENT — REPORT GENERATED
+    // STEP 9: 🔐 LEDGER EVENT — REPORT_GENERATED (IMMUTABLE)
     // ============================================================================
     await Ledger.create({
       eventType: Ledger.EVENT_TYPES.REPORT_GENERATED,
+
       studentId: resolvedStudentId,
       schoolId: student.schoolId,
 
@@ -605,20 +613,18 @@ exports.generateNEPReport = async (req, res) => {
         reportType: nepReport.reportType,
         periodStart,
         periodEnd,
-        cpi: cpiResults.cpi
+        cpi: cpiValue
       },
 
       hash: crypto
         .createHash('sha256')
-        .update(
-          nepReport.reportId +
-          resolvedStudentId +
-          periodStart.toISOString() +
-          periodEnd.toISOString()
-        )
+        .update(nepReport.reportId + resolvedStudentId)
         .digest('hex'),
 
-      metadata: { timestamp: new Date() },
+      metadata: {
+        timestamp: new Date() // ✅ REQUIRED BY LEDGER SCHEMA
+      },
+
       createdBy: req.user.userId,
       createdByRole: req.user.role,
       status: 'confirmed',
@@ -626,7 +632,7 @@ exports.generateNEPReport = async (req, res) => {
     });
 
     // ============================================================================
-    // STEP 10: AUDIT PAYLOAD (BLOCKCHAIN + COMPLIANCE)
+    // STEP 10: AUDIT PAYLOAD
     // ============================================================================
     const auditPayload = await buildAuditPayload({
       studentId: resolvedStudentId,
@@ -643,7 +649,8 @@ exports.generateNEPReport = async (req, res) => {
       studentId: resolvedStudentId,
       periodStart,
       periodEnd,
-      cpi: cpiResults.cpi,
+      cpi: cpiValue,
+      cpiStatus,
       reportHash,
       merkleRoot: merkleTree.merkleRoot,
       audit: auditPayload
@@ -659,6 +666,8 @@ exports.generateNEPReport = async (req, res) => {
   }
 };
 
+
+
 exports.generateNEPReportNarration = async (req, res) => {
   try {
     const { reportId } = req.params;
@@ -666,7 +675,7 @@ exports.generateNEPReportNarration = async (req, res) => {
     // ---------------------------------------------------
     // 1. Fetch NEP Report
     // ---------------------------------------------------
-    const nepReport = await NEPReport.findOne({ reportId });
+    const nepReport = await NEPReport.findOne({ reportId }).lean();
     if (!nepReport) {
       return res.status(404).json({
         success: false,
@@ -677,7 +686,7 @@ exports.generateNEPReportNarration = async (req, res) => {
     // ---------------------------------------------------
     // 2. Fetch Student
     // ---------------------------------------------------
-    const student = await Student.findOne({ studentId: nepReport.studentId });
+    const student = await Student.findOne({ studentId: nepReport.studentId }).lean();
     if (!student) {
       return res.status(404).json({
         success: false,
@@ -707,7 +716,7 @@ exports.generateNEPReportNarration = async (req, res) => {
       studentId: nepReport.studentId,
       eventType: Ledger.EVENT_TYPES.CHALLENGE_EVALUATED,
       status: 'confirmed'
-    });
+    }).lean();
 
     // ---------------------------------------------------
     // 5. Build AUDIT PAYLOAD (BLOCKCHAIN + COMPLIANCE)
@@ -719,7 +728,7 @@ exports.generateNEPReportNarration = async (req, res) => {
     });
 
     // ---------------------------------------------------
-    // 6. 🔥 12-COMPETENCY NORMALIZATION (CRITICAL FIX)
+    // 6. 12-COMPETENCY NORMALIZATION (MANDATORY)
     // ---------------------------------------------------
     const assessedMap = {};
     (nepReport.competencies || []).forEach(c => {
@@ -744,25 +753,38 @@ exports.generateNEPReportNarration = async (req, res) => {
     });
 
     const competencyStats = {
-      total: NEP_COMPETENCIES.length,          // always 12
+      total: NEP_COMPETENCIES.length, // always 12
       assessed: normalizedCompetencies.filter(c => c.assessed).length,
       notAssessed: normalizedCompetencies.filter(c => !c.assessed).length
     };
 
     // ---------------------------------------------------
-    // 7. Generate Narration (AI = LANGUAGE ONLY)
+    // 7. CPI SAFETY (🔥 CRITICAL FIX)
+    // ---------------------------------------------------
+    const performanceMetrics = nepReport.performanceMetrics || {};
+    const cpiStatus =
+      typeof performanceMetrics.cpi === 'number'
+        ? 'computed'
+        : 'not_computable';
+
+    // ---------------------------------------------------
+    // 8. Generate Narration (AI = LANGUAGE ONLY)
     // ---------------------------------------------------
     const narrationResult = await generateNEPNarrationFromReport(
       {
-        ...nepReport.toObject(),
+        ...nepReport,
         competencies: normalizedCompetencies,
-        competencyStats
+        competencyStats,
+        performanceMetrics: {
+          cpi: performanceMetrics.cpi ?? null,
+          cpiStatus
+        }
       },
       student
     );
 
     // ---------------------------------------------------
-    // 8. RESPONSE (🔐 GOVERNMENT / CBSE SAFE)
+    // 9. RESPONSE (CBSE / GOVT SAFE)
     // ---------------------------------------------------
     return res.status(200).json({
       success: true,
@@ -780,7 +802,6 @@ exports.generateNEPReportNarration = async (req, res) => {
         model: 'SPYRAL AI'
       }
     });
-
 
   } catch (error) {
     logger.error('NEP narration generation error:', error);
