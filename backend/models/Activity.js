@@ -49,6 +49,8 @@ const activitySchema = new mongoose.Schema({
       'profile_updated',
       'settings_changed',
       'data_exported',
+      'report_downloaded',
+      'report_viewed',
       'other'
     ],
     index: true

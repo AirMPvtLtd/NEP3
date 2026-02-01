@@ -491,7 +491,7 @@ exports.generateNEPReport = async (req, res) => {
     });
 
     // ============================================================================
-    // STEP 2: FETCH LEDGER EVENTS (AUTHORITATIVE, READ-ONLY)
+    // STEP 2: FETCH LEDGER EVENTS (AUTHORITATIVE)
     // ============================================================================
     const ledgerEvents = await Ledger.find({
       studentId: resolvedStudentId,
@@ -507,7 +507,7 @@ exports.generateNEPReport = async (req, res) => {
     }
 
     // ============================================================================
-    // STEP 3: DERIVE REPORT PERIOD (FROM LEDGER)
+    // STEP 3: REPORT PERIOD
     // ============================================================================
     const sortedEvents = [...ledgerEvents].sort(
       (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
@@ -517,15 +517,14 @@ exports.generateNEPReport = async (req, res) => {
     const periodEnd   = sortedEvents[sortedEvents.length - 1].timestamp;
 
     // ============================================================================
-    // STEP 4: CPI PIPELINE (SEPARATE, READ-ONLY)
+    // STEP 4: CPI PIPELINE
     // ============================================================================
     const cpiResult = await computeCPI({ ledgerEvents });
-
     const cpiValue  = typeof cpiResult?.cpi === 'number' ? cpiResult.cpi : null;
     const cpiStatus = cpiValue === null ? 'not_computable' : 'computed';
 
     // ============================================================================
-    // STEP 5: DERIVE ONLY ASSESSED COMPETENCIES (LEDGER-TRUE)
+    // STEP 5: ASSESSED COMPETENCIES ONLY
     // ============================================================================
     const competencyAccumulator = {};
 
@@ -542,14 +541,14 @@ exports.generateNEPReport = async (req, res) => {
 
     const assessedCompetencies = Object.entries(competencyAccumulator).map(
       ([name, v]) => ({
-        name,                                   // MUST match enum
+        name,
         score: Number((v.total / v.count).toFixed(2)),
-        status: 'stable'                        // MUST match enum
+        status: 'stable'
       })
     );
 
     // ============================================================================
-    // STEP 6: DISPLAY-ONLY AVERAGE SCORE
+    // STEP 6: DISPLAY METRIC
     // ============================================================================
     const averageScore =
       ledgerEvents.reduce(
@@ -558,7 +557,7 @@ exports.generateNEPReport = async (req, res) => {
       ) / ledgerEvents.length;
 
     // ============================================================================
-    // STEP 7: MERKLE TREE + REPORT HASH
+    // STEP 7: MERKLE TREE + HASH
     // ============================================================================
     const merkleTree = await Ledger.createMerkleTree(resolvedStudentId);
 
@@ -573,7 +572,7 @@ exports.generateNEPReport = async (req, res) => {
       .digest('hex');
 
     // ============================================================================
-    // STEP 8: SAVE NEP REPORT (FACT-ONLY, SCHEMA SAFE)
+    // STEP 8: SAVE NEP REPORT (🔥 LEDGER METADATA ADDED)
     // ============================================================================
     const nepReport = await NEPReport.create({
       studentId: resolvedStudentId,
@@ -587,7 +586,6 @@ exports.generateNEPReport = async (req, res) => {
         averageScore: Number(averageScore.toFixed(2))
       },
 
-      // ✅ ONLY assessed competencies — no normalization here
       competencies: assessedCompetencies,
 
       performanceMetrics: {
@@ -596,15 +594,21 @@ exports.generateNEPReport = async (req, res) => {
         cpiModel: cpiResult?.model || 'FIELD-CPI-v1'
       },
 
+      // ✅ NEW — STORED FOR DOWNLOAD / PDF / VERIFICATION
+      ledgerMetadata: {
+        reportHash,
+        merkleRoot: merkleTree.merkleRoot,
+        anchoredAt: new Date()
+      },
+
       generatedBy: req.user.userId
     });
 
     // ============================================================================
-    // STEP 9: 🔐 LEDGER EVENT — REPORT_GENERATED (IMMUTABLE)
+    // STEP 9: LEDGER EVENT — REPORT_GENERATED
     // ============================================================================
-    await Ledger.create({
+    const ledgerBlock = await Ledger.create({
       eventType: Ledger.EVENT_TYPES.REPORT_GENERATED,
-
       studentId: resolvedStudentId,
       schoolId: student.schoolId,
 
@@ -622,7 +626,7 @@ exports.generateNEPReport = async (req, res) => {
         .digest('hex'),
 
       metadata: {
-        timestamp: new Date() // ✅ REQUIRED BY LEDGER SCHEMA
+        timestamp: new Date()
       },
 
       createdBy: req.user.userId,
@@ -630,6 +634,12 @@ exports.generateNEPReport = async (req, res) => {
       status: 'confirmed',
       timestamp: new Date()
     });
+
+    // Optional: back-patch blockIndex (safe)
+    await NEPReport.updateOne(
+      { _id: nepReport._id },
+      { 'ledgerMetadata.blockIndex': ledgerBlock?.metadata?.blockIndex || null }
+    );
 
     // ============================================================================
     // STEP 10: AUDIT PAYLOAD
@@ -673,9 +683,9 @@ exports.generateNEPReportNarration = async (req, res) => {
     const { reportId } = req.params;
 
     // ---------------------------------------------------
-    // 1. Fetch NEP Report
+    // 1. Fetch NEP Report (NO lean)
     // ---------------------------------------------------
-    const nepReport = await NEPReport.findOne({ reportId }).lean();
+    const nepReport = await NEPReport.findOne({ reportId });
     if (!nepReport) {
       return res.status(404).json({
         success: false,
@@ -684,9 +694,28 @@ exports.generateNEPReportNarration = async (req, res) => {
     }
 
     // ---------------------------------------------------
-    // 2. Fetch Student
+    // 🔥 2. CACHE CHECK (MOST IMPORTANT)
     // ---------------------------------------------------
-    const student = await Student.findOne({ studentId: nepReport.studentId }).lean();
+    if (nepReport.narration?.text) {
+      return res.status(200).json({
+        success: true,
+        reportId,
+        narration: nepReport.narration.text,
+        blockchainVerification: nepReport.narration.blockchainVerification,
+        complianceStatement: nepReport.narration.complianceStatement,
+        competencyStats: nepReport.narration.competencyStats,
+        competencies: nepReport.narration.competencies,
+        metadata: {
+          model: nepReport.narration.model,
+          cached: true
+        }
+      });
+    }
+
+    // ---------------------------------------------------
+    // 3. Fetch Student
+    // ---------------------------------------------------
+    const student = await Student.findOne({ studentId: nepReport.studentId });
     if (!student) {
       return res.status(404).json({
         success: false,
@@ -695,22 +724,23 @@ exports.generateNEPReportNarration = async (req, res) => {
     }
 
     // ---------------------------------------------------
-    // 3. Authorization
+    // 4. Authorization
     // ---------------------------------------------------
-    const isStudent = req.user.role === 'student' && req.user.studentId === student.studentId;
-    const isTeacher = req.user.role === 'teacher' && student.teacherId === req.user.teacherId;
-    const isAdmin   = req.user.role === 'admin';
-    const isParent  = req.user.role === 'parent' && req.user.studentId === student.studentId;
+    const allowed =
+      (req.user.role === 'student' && req.user.studentId === student.studentId) ||
+      (req.user.role === 'teacher' && student.teacherId === req.user.teacherId) ||
+      req.user.role === 'admin' ||
+      (req.user.role === 'parent' && req.user.studentId === student.studentId);
 
-    if (!isStudent && !isTeacher && !isAdmin && !isParent) {
+    if (!allowed) {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to view narration'
+        message: 'Not authorized'
       });
     }
 
     // ---------------------------------------------------
-    // 4. Fetch Ledger Events (AUTHORITATIVE)
+    // 5. Ledger events
     // ---------------------------------------------------
     const ledgerEvents = await Ledger.find({
       studentId: nepReport.studentId,
@@ -718,9 +748,6 @@ exports.generateNEPReportNarration = async (req, res) => {
       status: 'confirmed'
     }).lean();
 
-    // ---------------------------------------------------
-    // 5. Build AUDIT PAYLOAD (BLOCKCHAIN + COMPLIANCE)
-    // ---------------------------------------------------
     const auditPayload = await buildAuditPayload({
       studentId: nepReport.studentId,
       nepReport,
@@ -728,78 +755,64 @@ exports.generateNEPReportNarration = async (req, res) => {
     });
 
     // ---------------------------------------------------
-    // 6. 12-COMPETENCY NORMALIZATION (MANDATORY)
+    // 6. Normalize competencies
     // ---------------------------------------------------
     const assessedMap = {};
-    (nepReport.competencies || []).forEach(c => {
-      assessedMap[c.name] = c;
-    });
+    nepReport.competencies.forEach(c => assessedMap[c.name] = c);
 
-    const normalizedCompetencies = NEP_COMPETENCIES.map(name => {
-      if (assessedMap[name]) {
-        return {
-          name,
-          score: assessedMap[name].score,
-          status: assessedMap[name].status,
-          assessed: true
-        };
-      }
-      return {
-        name,
-        score: null,
-        status: 'not_assessed',
-        assessed: false
-      };
-    });
+    const normalizedCompetencies = NEP_COMPETENCIES.map(name => (
+      assessedMap[name]
+        ? { name, score: assessedMap[name].score, status: assessedMap[name].status, assessed: true }
+        : { name, score: null, status: 'not_assessed', assessed: false }
+    ));
 
     const competencyStats = {
-      total: NEP_COMPETENCIES.length, // always 12
+      total: NEP_COMPETENCIES.length,
       assessed: normalizedCompetencies.filter(c => c.assessed).length,
       notAssessed: normalizedCompetencies.filter(c => !c.assessed).length
     };
 
     // ---------------------------------------------------
-    // 7. CPI SAFETY (🔥 CRITICAL FIX)
-    // ---------------------------------------------------
-    const performanceMetrics = nepReport.performanceMetrics || {};
-    const cpiStatus =
-      typeof performanceMetrics.cpi === 'number'
-        ? 'computed'
-        : 'not_computable';
-
-    // ---------------------------------------------------
-    // 8. Generate Narration (AI = LANGUAGE ONLY)
+    // 7. AI Narration (ONE TIME)
     // ---------------------------------------------------
     const narrationResult = await generateNEPNarrationFromReport(
       {
-        ...nepReport,
+        ...nepReport.toObject(),
         competencies: normalizedCompetencies,
-        competencyStats,
-        performanceMetrics: {
-          cpi: performanceMetrics.cpi ?? null,
-          cpiStatus
-        }
+        competencyStats
       },
       student
     );
 
     // ---------------------------------------------------
-    // 9. RESPONSE (CBSE / GOVT SAFE)
+    // 🔐 8. SAVE TO DB (CACHE WRITE)
+    // ---------------------------------------------------
+    nepReport.narration = {
+      text: narrationResult.narration,
+      model: 'SPYRAL AI',
+      generatedAt: new Date(),
+      blockchainVerification: auditPayload.blockchainVerification,
+      complianceStatement: auditPayload.complianceStatement,
+      competencyStats,
+      competencies: normalizedCompetencies
+    };
+
+    await nepReport.save();
+
+    // ---------------------------------------------------
+    // 9. RESPONSE
     // ---------------------------------------------------
     return res.status(200).json({
       success: true,
-      reportId: nepReport.reportId,
-
+      reportId,
       narration: narrationResult.narration,
-
       blockchainVerification: auditPayload.blockchainVerification,
       complianceStatement: auditPayload.complianceStatement,
-
       competencyStats,
       competencies: normalizedCompetencies,
-
       metadata: {
-        model: 'SPYRAL AI'
+        model: 'SPYRAL AI',
+        cached: false
       }
     });
 
@@ -816,6 +829,7 @@ exports.generateNEPReportNarration = async (req, res) => {
 
 
 
+
 /**
  * @desc    Verify NEP report integrity
  * @route   GET /api/reports/nep/verify/:reportId
@@ -824,134 +838,153 @@ exports.generateNEPReportNarration = async (req, res) => {
 exports.verifyNEPReport = async (req, res) => {
   try {
     const { reportId } = req.params;
-    
+
+    // ---------------------------------------------------
+    // 1. Validate Report ID
+    // ---------------------------------------------------
     if (!reportId || !reportId.startsWith('REPORT-')) {
       return res.status(400).json({
         success: false,
         message: 'Invalid report ID format'
       });
     }
-    
-    const report = await NEPReport.findOne({ reportId });
-    
+
+    // ---------------------------------------------------
+    // 2. Fetch Report
+    // ---------------------------------------------------
+    const report = await NEPReport.findOne({ reportId }).lean();
     if (!report) {
       return res.status(404).json({
         success: false,
         message: 'Report not found'
       });
     }
-    
-    // Get ledger events to reconstruct merkle tree
-    const ledgerEvents = await Ledger.getEventsForMerkleTree(report.studentId, 100);
-    
-    // Recreate merkle tree
-    const merkleTree = await Ledger.createMerkleTree(report.studentId);
-    
-    // Recreate report data for hash verification
-    const reportDataForHash = {
+
+    // ---------------------------------------------------
+    // 3. Rebuild Merkle Tree (AUTHORITATIVE)
+    // ---------------------------------------------------
+    const ledgerEvents = await Ledger.find({
       studentId: report.studentId,
-      generatedAt: report.generatedAt.toISOString(),
-      cpi: report.performanceMetrics.cpi,
-      smoothedCPI: report.performanceMetrics.smoothedCPI,
-      competencyScores: report.competencies.reduce((acc, comp) => {
-        acc[comp.competency] = comp.score;
-        return acc;
-      }, {}),
-      ledgerEventCount: ledgerEvents.length,
-      reportVersion: report.metadata?.reportVersion || '2.0'
-    };
-    
-    // Recalculate hash
-    const recalculatedHash = generateReportHash(reportDataForHash, merkleTree.merkleRoot);
-    
-    // Compare with stored values
-    const isHashValid = recalculatedHash === report.ledgerMetadata?.reportHash;
-    const isMerkleValid = merkleTree.merkleRoot === report.ledgerMetadata?.merkleRoot;
+      status: 'confirmed'
+    }).lean();
+
+    const merkleTree = await Ledger.createMerkleTree(report.studentId);
+
+    // ---------------------------------------------------
+    // 4. Recalculate Report Hash (MATCH GENERATOR)
+    // ---------------------------------------------------
+    const recalculatedHash = crypto
+      .createHash('sha256')
+      .update(
+        report.studentId +
+        new Date(report.periodStart).toISOString() +
+        new Date(report.periodEnd).toISOString() +
+        (merkleTree.merkleRoot || '')
+      )
+      .digest('hex');
+
+    // ---------------------------------------------------
+    // 5. Integrity Checks
+    // ---------------------------------------------------
+    const storedHash = report.ledgerMetadata?.reportHash || null;
+    const storedMerkleRoot = report.ledgerMetadata?.merkleRoot || null;
+
+    const isHashValid = storedHash === recalculatedHash;
+    const isMerkleValid = storedMerkleRoot === merkleTree.merkleRoot;
     const isIntegrityValid = isHashValid && isMerkleValid;
-    
-    // Verify ledger chain integrity
+
+    // ---------------------------------------------------
+    // 6. Ledger Chain Verification
+    // ---------------------------------------------------
     const chainIntegrity = await Ledger.verifyChainIntegrity(report.studentId);
-    
+
+    // ---------------------------------------------------
+    // 7. Verification Result
+    // ---------------------------------------------------
     const verificationResult = {
       reportId: report.reportId,
       studentId: report.studentId,
       verificationDate: new Date().toISOString(),
-      
-      // Integrity checks
+
       integrityCheck: {
         isHashValid,
         isMerkleValid,
         isIntegrityValid,
-        storedHash: report.ledgerMetadata?.reportHash,
-        calculatedHash: recalculatedHash,
-        storedMerkleRoot: report.ledgerMetadata?.merkleRoot,
-        calculatedMerkleRoot: merkleTree.merkleRoot
+        storedHash,
+        recalculatedHash,
+        storedMerkleRoot,
+        recalculatedMerkleRoot: merkleTree.merkleRoot
       },
-      
-      // Ledger verification
+
       ledgerVerification: {
         chainValid: chainIntegrity.chainValid,
         totalEvents: chainIntegrity.totalEvents,
         chainBroken: chainIntegrity.chainBroken,
         invalidEvents: chainIntegrity.invalidEvents?.length || 0
       },
-      
-      // Report metadata
-      metadata: {
-        reportVersion: report.metadata?.reportVersion,
+
+      reportSnapshot: {
+        reportType: report.reportType,
         generatedAt: report.generatedAt,
-        cpi: report.performanceMetrics.cpi,
-        smoothedCPI: report.performanceMetrics.smoothedCPI,
-        competencyCount: report.competencies.length,
-        ledgerEventCount: ledgerEvents.length,
-        status: report.status
+        periodStart: report.periodStart,
+        periodEnd: report.periodEnd,
+        cpi: report.performanceMetrics?.cpi ?? null,
+        competencyCount: report.competencies?.length || 0,
+        status: report.status || 'generated'
       },
-      
-      verificationLevel: isIntegrityValid && chainIntegrity.chainValid ? 'FULL' : 
-                       isIntegrityValid ? 'PARTIAL' : 'FAILED',
-      
-      // QR code data
+
+      verificationLevel:
+        isIntegrityValid && chainIntegrity.chainValid
+          ? 'FULL'
+          : isIntegrityValid
+          ? 'PARTIAL'
+          : 'FAILED',
+
       qrData: {
         reportId: report.reportId,
-        verificationUrl: `${process.env.FRONTEND_URL}/verify/${report.reportId}`,
+        verificationUrl: `${process.env.FRONTEND_URL || process.env.API_URL}/verify/${report.reportId}`,
         apiVerificationUrl: `${process.env.API_URL}/api/reports/nep/verify/${report.reportId}`
       }
     };
-    
-    // Log verification attempt
+
+    // ---------------------------------------------------
+    // 8. Activity Log (ENUM SAFE)
+    // ---------------------------------------------------
     await Activity.log({
-      userId: req.user?.userId || 'anonymous',
+      userId: req.user?.userId || 'public',
       userType: req.user?.role || 'public',
       schoolId: report.schoolId,
-      activityType: 'report_verified',
-      action: `Report verification attempted: ${report.reportId}`,
+      activityType: 'report_verified', // ✅ VALID ENUM
+      action: `NEP report verification: ${report.reportId}`,
       metadata: {
         reportId: report.reportId,
-        isIntegrityValid,
-        verificationLevel: verificationResult.verificationLevel,
-        ipAddress: req.ip
+        verificationLevel: verificationResult.verificationLevel
       },
       ipAddress: req.ip,
       success: isIntegrityValid
     });
-    
-    res.json({
+
+    // ---------------------------------------------------
+    // 9. RESPONSE
+    // ---------------------------------------------------
+    return res.json({
       success: true,
-      message: isIntegrityValid 
-        ? 'Report integrity verified successfully' 
-        : 'Report integrity check failed',
+      message: isIntegrityValid
+        ? 'Report integrity verified successfully'
+        : 'Report integrity verification failed',
       data: verificationResult
     });
-    
+
   } catch (error) {
     logger.error('Verify NEP report error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error verifying report',
       error: error.message
     });
   }
 };
+
 
 /**
  * @desc    Get NEP report by ID
@@ -960,50 +993,74 @@ exports.verifyNEPReport = async (req, res) => {
  */
 exports.getNEPReport = async (req, res) => {
   try {
-    const report = await NEPReport.findOne({ reportId: req.params.reportId });
-    
+    const { reportId } = req.params;
+
+    // ---------------------------------------------------
+    // 1. Fetch Report
+    // ---------------------------------------------------
+    const report = await NEPReport.findOne({ reportId }).lean();
+
     if (!report) {
       return res.status(404).json({
         success: false,
         message: 'Report not found'
       });
     }
-    
-    // Authorization check
-    const student = await Student.findOne({ studentId: report.studentId });
+
+    // ---------------------------------------------------
+    // 2. Authorization
+    // ---------------------------------------------------
+    const student = await Student.findOne({ studentId: report.studentId }).lean();
+
     const isStudent = req.user.role === 'student' && req.user.studentId === report.studentId;
     const isTeacher = req.user.role === 'teacher' && student?.teacherId === req.user.teacherId;
-    const isAdmin = req.user.role === 'admin';
-    const isParent = req.user.role === 'parent' && req.user.studentId === report.studentId;
-    
+    const isAdmin   = req.user.role === 'admin';
+    const isParent  = req.user.role === 'parent' && req.user.studentId === report.studentId;
+
     if (!isStudent && !isTeacher && !isAdmin && !isParent) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to view this report'
       });
     }
-    
-    // Include verification data
-    const reportWithVerification = report.toObject();
-    reportWithVerification.verification = {
-      url: `/api/reports/nep/verify/${report.reportId}`,
-      qrCodeUrl: `/api/reports/nep/${report.reportId}/qrcode`
+
+    // ---------------------------------------------------
+    // 3. Attach Verification Links (NO LEDGER ASSUMPTIONS)
+    // ---------------------------------------------------
+    const baseUrl =
+      process.env.API_URL ||
+      `${req.protocol}://${req.get('host')}`;
+
+    const reportWithVerification = {
+      ...report,
+      verification: {
+        verifyUrl: `${baseUrl}/api/reports/nep/verify/${report.reportId}`,
+        qrCodeUrl: `${baseUrl}/api/reports/nep/${report.reportId}/qrcode`,
+        narrationUrl: `${baseUrl}/api/reports/nep/${report.reportId}/narration`,
+        downloadUrl: `${baseUrl}/api/reports/nep/${report.reportId}/download`
+      }
     };
-    
-    res.json({
+
+    // ---------------------------------------------------
+    // 4. Response
+    // ---------------------------------------------------
+    return res.json({
       success: true,
-      data: { report: reportWithVerification }
+      data: {
+        report: reportWithVerification
+      }
     });
-    
+
   } catch (error) {
     logger.error('Get NEP report error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error fetching report',
       error: error.message
     });
   }
 };
+
 
 /**
  * @desc    Get student's NEP reports
@@ -1079,41 +1136,82 @@ exports.getStudentNEPReports = async (req, res) => {
  * @route   GET /api/reports/nep/:reportId/download
  * @access  Private
  */
+// controllers/report.controller.js
+
 exports.downloadNEPReport = async (req, res) => {
   try {
-    const report = await NEPReport.findOne({ reportId: req.params.reportId });
-    
+    const { reportId } = req.params;
+
+    // ---------------------------------------------------
+    // 1. Fetch NEP Report (AUTHORITATIVE)
+    // ---------------------------------------------------
+    const report = await NEPReport.findOne({ reportId }).lean();
     if (!report) {
       return res.status(404).json({
         success: false,
         message: 'Report not found'
       });
     }
-    
-    // Authorization check
-    const student = await Student.findOne({ studentId: report.studentId });
+
+    // ---------------------------------------------------
+    // 2. Authorization
+    // ---------------------------------------------------
+    const student = await Student.findOne({ studentId: report.studentId }).lean();
+
     const isStudent = req.user.role === 'student' && req.user.studentId === report.studentId;
     const isTeacher = req.user.role === 'teacher' && student?.teacherId === req.user.teacherId;
-    const isAdmin = req.user.role === 'admin';
-    const isParent = req.user.role === 'parent' && req.user.studentId === report.studentId;
-    
+    const isAdmin   = req.user.role === 'admin';
+    const isParent  = req.user.role === 'parent' && req.user.studentId === report.studentId;
+
     if (!isStudent && !isTeacher && !isAdmin && !isParent) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to download this report'
       });
     }
-    
-    // Generate verification URL
-    const verificationUrl = `${process.env.FRONTEND_URL || process.env.API_URL}/verify/${report.reportId}`;
-    
+
+    // ---------------------------------------------------
+    // 3. Fetch Ledger Events (READ-ONLY)
+    // ---------------------------------------------------
+    const ledgerEvents = await Ledger.find({
+      studentId: report.studentId,
+      eventType: Ledger.EVENT_TYPES.CHALLENGE_EVALUATED,
+      status: 'confirmed'
+    }).lean();
+
+    // ---------------------------------------------------
+    // 4. Rebuild AUDIT + BLOCKCHAIN PAYLOAD (LIVE)
+    // ---------------------------------------------------
+    const auditPayload = await buildAuditPayload({
+      studentId: report.studentId,
+      nepReport: report,
+      ledgerEvents
+    });
+
+    // ---------------------------------------------------
+    // 5. Cached Narration (NO AI CALL)
+    // ---------------------------------------------------
+    const narration = report.narration?.text || null;
+
+    // ---------------------------------------------------
+    // 6. Verification URLs
+    // ---------------------------------------------------
+    const verificationUrl =
+      `${process.env.FRONTEND_URL || process.env.API_URL}/verify/${report.reportId}`;
+
+    // const qrCodeUrl =
+    //   `${process.env.API_URL}/api/reports/nep/${report.reportId}/qrcode`;
+
+    // ---------------------------------------------------
+    // 7. Activity Log (ENUM-SAFE)
+    // ---------------------------------------------------
     await Activity.log({
       userId: req.user.userId,
       userType: req.user.role,
       schoolId: report.schoolId,
-      activityType: 'report_downloaded',
+      activityType: 'report_viewed', // ✅ enum safe
       action: `NEP report downloaded: ${report.reportId}`,
-      metadata: { 
+      metadata: {
         reportId: report.reportId,
         format: 'PDF',
         verificationUrl
@@ -1121,38 +1219,65 @@ exports.downloadNEPReport = async (req, res) => {
       ipAddress: req.ip,
       success: true
     });
-    
-    res.json({
+
+    // ---------------------------------------------------
+    // 8. RESPONSE (PDF RENDER-READY PAYLOAD)
+    // ---------------------------------------------------
+    return res.json({
       success: true,
-      message: 'Report PDF download initialized',
+      message: 'Report ready for download',
       data: {
         reportId: report.reportId,
-        studentId: report.studentId,
-        studentName: student?.name,
-        generatedAt: report.generatedAt,
-        cpi: report.performanceMetrics.cpi,
-        verificationUrl,
-        qrCodeUrl: `${process.env.API_URL}/api/reports/nep/${report.reportId}/qrcode`,
-        reportData: {
-          summary: report.narration.summary,
-          keyStrengths: report.narration.keyStrengths,
-          recommendations: report.narration.recommendations,
-          competencies: report.competencies,
-          ledgerMetadata: report.ledgerMetadata
+
+        student: {
+          studentId: report.studentId,
+          name: student?.name || null,
+          class: student?.class || null,
+          section: student?.section || null,
+          schoolId: report.schoolId
         },
-        note: 'PDF generation would use ledger-anchored data with QR code for verification'
+
+        reportMeta: {
+          reportType: report.reportType,
+          generatedAt: report.generatedAt,
+          periodStart: report.periodStart,
+          periodEnd: report.periodEnd
+        },
+
+        narration, // ✅ cached AI language
+
+        summary: report.summary || null,
+        competencies: report.competencies || [],
+        performanceMetrics: report.performanceMetrics || {
+          cpi: null,
+          cpiStatus: 'not_computable'
+        },
+
+        blockchainVerification: auditPayload.blockchainVerification,
+        complianceStatement: auditPayload.complianceStatement,
+
+        verification: {
+          verificationUrl,
+          //qrCodeUrl
+        },
+
+        note:
+          'PDF rendering uses cached narration, ledger-anchored facts, and live verification'
       }
     });
-    
+
   } catch (error) {
     logger.error('Download NEP report error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: 'Error downloading report',
+      message: 'Error preparing report download',
       error: error.message
     });
   }
 };
+
+
+
 
 /**
  * @desc    Get QR code for report verification
