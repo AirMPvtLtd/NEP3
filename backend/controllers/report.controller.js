@@ -27,6 +27,13 @@ const { normalizeTo12Competencies } =
 const { computeCPI } = require('../services/cpiEngine.service');
 // const { normalizeTo12Competencies } =
 //   require('../config/nepCompetencies');
+const { generateProgressReportService } = require('../services/report.service');
+const {
+  generateInstitutionalReport
+} = require('../services/institutionalReport.service');
+const institutionalReportService = require(
+  '../services/institutionalReport.service'
+);
 
 
 
@@ -2208,28 +2215,46 @@ exports.healthCheck = async (req, res) => {
  * @route   POST /api/reports/institutional/generate
  * @access  Private (Admin, Teacher)
  */
+
+// controllers/report.controller.js
+
 exports.generateInstitutionalReport = async (req, res) => {
   try {
-    const { schoolId, reportPeriod, reportType = 'annual' } = req.body;
-    
-    // Implementation for institutional reports
-    // ... existing implementation ...
-    
+    const { schoolId, reportPeriod, reportType } = req.body;
+
+    const report = await generateInstitutionalReport({
+      schoolId,
+      periodStart: new Date(reportPeriod.start),
+      periodEnd: new Date(reportPeriod.end),
+      reportType,
+      generatedBy: req.user.userId
+    });
+
     res.json({
       success: true,
-      message: 'Institutional report generated',
-      data: { /* report data */ }
+      message: 'Institutional report ready',
+      data: {
+        reportId: report.reportId,
+        schoolId: report.schoolId,
+        reportType: report.reportType,
+        periodStart: report.periodStart,
+        periodEnd: report.periodEnd,
+        dataQuality: report.dataQuality,
+        generatedAt: report.generatedAt
+      }
     });
-    
+
   } catch (error) {
     logger.error('Generate institutional report error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error generating institutional report',
-      error: error.message
+      message: error.message
     });
   }
 };
+
+
+
 
 /**
  * @desc    Get institutional report by ID
@@ -2340,26 +2365,55 @@ exports.deleteInstitutionalReport = async (req, res) => {
 exports.generateProgressReport = async (req, res) => {
   try {
     const { studentId, period } = req.body;
-    
-    // Implementation for progress reports
-    // ... existing implementation ...
-    
-    res.json({
+
+    if (!studentId || !period?.start || !period?.end) {
+      return res.status(400).json({
+        success: false,
+        message: 'studentId and valid period are required'
+      });
+    }
+
+    // ---------------------------------------------------
+    // Authorization
+    // ---------------------------------------------------
+    const isStudent = req.user.role === 'student' && req.user.studentId === studentId;
+    const isTeacher = req.user.role === 'teacher';
+    const isAdmin   = req.user.role === 'admin';
+    const isParent  = req.user.role === 'parent' && req.user.studentId === studentId;
+
+    if (!isStudent && !isTeacher && !isAdmin && !isParent) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to generate progress report'
+      });
+    }
+
+    // ---------------------------------------------------
+    // Generate Progress Analytics
+    // ---------------------------------------------------
+    const progressReport = await generateProgressReportService({
+      studentId,
+      period
+    });
+
+    // ---------------------------------------------------
+    // Response (NO DB SAVE)
+    // ---------------------------------------------------
+    return res.json({
       success: true,
       message: 'Progress report generated',
-      data: { /* report data */ }
+      data: progressReport
     });
-    
+
   } catch (error) {
     logger.error('Generate progress report error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error generating progress report',
       error: error.message
     });
   }
 };
-
 /**
  * @desc    Generate class progress report
  * @route   POST /api/reports/progress/class

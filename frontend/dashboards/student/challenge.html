@@ -789,7 +789,7 @@
         <!-- ============================================================ -->
         <div id="generateSection" class="page-section active">
             <div class="page-title">
-                <h1><i class="fas fa-brain"></i> Generate AI Challenge</h1>
+                <h1><i class="fas fa-brain"></i> Generate SPYRAL AI Challenge</h1>
             </div>
             <p class="page-subtitle">Create personalized challenges based on simulations or custom topics</p>
 
@@ -853,7 +853,7 @@
                                 oninput="onCustomTopicChange()">
                             <span class="form-hint">
                                 <i class="fas fa-magic"></i>
-                                AI will generate questions on any topic you specify
+                                SPYRAL AI will generate questions on any topic you specify
                             </span>
                         </div>
                     </div>
@@ -1265,7 +1265,7 @@
                 return;
             }
             
-            showLoading('Generating Challenge...', 'AI is creating personalized questions');
+            showLoading('Generating Challenge...', 'SPYRAL AI is creating personalized questions');
             
             try {
                 const requestData = {
@@ -1675,7 +1675,7 @@
             stopTimer();
             stopAutoSave();
             
-            showLoading('Submitting Challenge...', 'AI is evaluating your answers');
+            showLoading('Submitting Challenge...', 'SPYRAL AI is evaluating your answers');
             
             try {
                 await apiCall(`/student/challenges/${currentChallenge.challengeId}/submit`, {
@@ -1797,7 +1797,7 @@
                         <div class="ai-feedback">
                             <div class="feedback-section">
                                 <div class="feedback-title">
-                                    <i class="fas fa-robot"></i> AI Evaluation
+                                    <i class="fas fa-robot"></i> SPYRAL Evaluation
                                 </div>
                                 <p>${aiEval.feedback}</p>
                             </div>

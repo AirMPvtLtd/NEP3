@@ -4,7 +4,7 @@
  * Complete student functionality
  */
 
-const { Student, Challenge, ChallengeLimit, Activity, NEPReport, HelpTicket } = require('../models');
+const { Student, Challenge, ChallengeLimit, Activity, Ledger, NEPReport, HelpTicket } = require('../models');
 const { getRecommendedSimulations, isValidSimulation, getSimulation, getAllSimulationIds } = require('../utils/Simulationhelpers');
 //const { generateChallenge: generateAIChallenge, evaluateResponse } = require('../config/mistral');
 const mistralService = require('../services/mistral.service');
@@ -792,6 +792,9 @@ exports.submitChallenge = async (req, res) => {
   try {
     const { answers } = req.body;
 
+    // ---------------------------------------------------
+    // 1. Fetch Challenge
+    // ---------------------------------------------------
     const challenge = await Challenge.findOne({
       challengeId: req.params.challengeId,
       studentId: req.user.studentId
@@ -818,33 +821,73 @@ exports.submitChallenge = async (req, res) => {
       });
     }
 
-    // 1️⃣ Save submission
+    // ---------------------------------------------------
+    // 2. Save Submission
+    // ---------------------------------------------------
     await challenge.submit(answers);
 
     logger.info('Challenge submitted, auto-evaluation scheduled', {
       challengeId: challenge.challengeId
     });
 
-    // 2️⃣ Async auto-evaluation + ledger anchoring
+    // ---------------------------------------------------
+    // 3. Async Evaluation + Ledger Anchoring
+    // ---------------------------------------------------
     setImmediate(async () => {
       try {
-        // 🔹 Auto evaluate (PURE ENGINE)
+        // 🔹 PURE evaluation engine (no DB writes inside)
         const evaluation = await evaluateChallenge(challenge);
         if (!evaluation) return;
 
-        // 🔹 Anchor immutable ledger event
-        await writeChallengeEvaluationEvent({
+        /**
+         * Expected evaluation structure:
+         * {
+         *   totalScore,
+         *   passed,
+         *   timeSpent,
+         *   competenciesAssessed: [{ competency, score }]
+         * }
+         */
+
+        // 🔒 IMMUTABLE LEDGER WRITE (CANONICAL)
+        await Ledger.create({
+          eventType: Ledger.EVENT_TYPES.CHALLENGE_EVALUATED,
+
           studentId: challenge.studentId,
-          teacherId: challenge.teacherId || 'SYSTEM',
           schoolId: challenge.schoolId,
-          challenge,
-          evaluation,
-          ipAddress: req.ip || 'system',
-          userAgent: req.get('user-agent') || 'auto-evaluator'
+
+          data: {
+            challengeId: challenge.challengeId,
+            simulationType: challenge.simulationType,
+            difficulty: challenge.difficulty,
+            totalScore: evaluation.totalScore,
+            passed: evaluation.passed,
+            timeTaken: evaluation.timeSpent || null,
+            competenciesAssessed: evaluation.competenciesAssessed || []
+          },
+
+          hash: require('crypto')
+            .createHash('sha256')
+            .update(
+              challenge.challengeId +
+              challenge.studentId +
+              String(evaluation.totalScore)
+            )
+            .digest('hex'),
+
+          metadata: {
+            timestamp: new Date()
+          },
+
+          createdBy: challenge.studentId,
+          createdByRole: 'student',
+          status: 'confirmed',
+          timestamp: new Date()
         });
 
         logger.info('Ledger anchored for challenge evaluation', {
-          challengeId: challenge.challengeId
+          challengeId: challenge.challengeId,
+          score: evaluation.totalScore
         });
 
       } catch (err) {
@@ -852,8 +895,10 @@ exports.submitChallenge = async (req, res) => {
       }
     });
 
-    // 3️⃣ Immediate response to client
-    res.json({
+    // ---------------------------------------------------
+    // 4. Immediate Client Response (NON-BLOCKING)
+    // ---------------------------------------------------
+    return res.json({
       success: true,
       message: 'Challenge submitted successfully. Evaluation in progress.',
       data: {
@@ -865,13 +910,14 @@ exports.submitChallenge = async (req, res) => {
 
   } catch (error) {
     logger.error('Submit challenge error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error submitting challenge',
       error: error.message
     });
   }
 };
+
 
 
 exports.getChallengeResults = async (req, res) => {

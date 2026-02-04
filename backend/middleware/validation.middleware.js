@@ -555,7 +555,7 @@ const validateReportVerification = (req, res, next) => {
   }
   
   // Check report ID format (REPORT-XXXXXX)
-  if (!/^REPORT-[A-Z0-9]+$/i.test(reportId)) {
+  if (!/^REPORT-[A-Z0-9-]+$/i.test(reportId)) {
     return res.status(400).json(validationError('reportId', 'Invalid report ID format'));
   }
   
