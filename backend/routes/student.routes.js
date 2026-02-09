@@ -281,4 +281,8 @@ router.get('/leaderboard/class', studentController.getClassLeaderboard);
  */
 router.get('/leaderboard/school', studentController.getSchoolLeaderboard);
 
+// routes/student.routes.js
+router.get('/overview', studentController.getOverview);
+
+
 module.exports = router;

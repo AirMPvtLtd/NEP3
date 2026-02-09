@@ -937,65 +937,71 @@ exports.submitChallenge = async (req, res) => {
 
 exports.getChallengeResults = async (req, res) => {
   try {
+    const { challengeId } = req.params;
+
+    // 1️⃣ Verify challenge ownership (structure only)
     const challenge = await Challenge.findOne({
-      challengeId: req.params.challengeId,
+      challengeId,
       studentId: req.user.studentId
-    });
-    
+    }).lean();
+
     if (!challenge) {
       return res.status(404).json({
         success: false,
         message: 'Challenge not found'
       });
     }
-    
-    if (challenge.status !== 'evaluated') {
-      return res.status(400).json({
+
+    // 2️⃣ Fetch canonical evaluation from LEDGER
+    const ledgerEvent = await Ledger.findOne({
+      'data.challengeId': challengeId,
+      studentId: req.user.studentId,
+      eventType: Ledger.EVENT_TYPES.CHALLENGE_EVALUATED,
+      status: 'confirmed'
+    }).lean();
+
+    if (!ledgerEvent) {
+      return res.status(202).json({
         success: false,
-        message: 'Challenge not yet evaluated',
+        message: 'Challenge evaluation in progress',
         status: challenge.status
       });
     }
-    
-    res.json({
+
+    const { totalScore, passed, timeTaken, competenciesAssessed } = ledgerEvent.data;
+
+    return res.json({
       success: true,
       data: {
         results: {
-          challengeId: challenge.challengeId,
+          challengeId,
           title: challenge.title,
-          totalScore: challenge.results.totalScore,
-          percentage: challenge.results.percentage,
-          passed: challenge.results.passed,
-          correctAnswers: challenge.results.correctAnswers,
-          totalQuestions: challenge.results.totalQuestions,
-          timeSpent: challenge.results.timeSpent,
-          competenciesAssessed: challenge.results.competenciesAssessed,
-          evaluatedAt: challenge.evaluatedAt
+          totalScore,
+          passed,
+          timeSpent: timeTaken || null,
+          competenciesAssessed,
+          evaluatedAt: ledgerEvent.timestamp
         },
         questions: challenge.questions.map((q, index) => ({
           questionId: q.questionId,
           question: q.question,
           correctAnswer: q.correctAnswer,
           explanation: q.explanation,
-          yourAnswer: challenge.answers[index]?.studentAnswer,
-          yourReasoning: challenge.answers[index]?.studentReasoning,
-          score: challenge.answers[index]?.finalScore,
-          feedback: challenge.answers[index]?.aiEvaluation?.feedback,
-          strengths: challenge.answers[index]?.aiEvaluation?.strengths,
-          improvements: challenge.answers[index]?.aiEvaluation?.improvements
+          yourAnswer: challenge.answers?.[index]?.studentAnswer || null
         }))
       }
     });
-    
+
   } catch (error) {
-    logger.error('Get challenge results error:', error);
-    res.status(500).json({
+    logger.error('Ledger-based challenge results error:', error);
+    return res.status(500).json({
       success: false,
-      message: 'Error fetching results',
+      message: 'Error fetching challenge results',
       error: error.message
     });
   }
 };
+
 
 exports.getAllChallenges = async (req, res) => {
   try {
@@ -1019,28 +1025,99 @@ exports.getRecentChallenges = async (req, res) => {
 
 exports.getPerformance = async (req, res) => {
   try {
-    const student = await Student.findById(req.user.userId);
-    res.json({ success: true, data: { performance: student.performanceIndex, stats: student.stats } });
+    const latestSPI = await SPIRecord
+      .findOne({ studentId: req.user.studentId })
+      .sort({ calculatedAt: -1 })
+      .lean();
+
+    const totalChallenges = await Ledger.countDocuments({
+      studentId: req.user.studentId,
+      eventType: Ledger.EVENT_TYPES.CHALLENGE_EVALUATED,
+      status: 'confirmed'
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        spi: latestSPI?.spi ?? null,
+        grade: latestSPI?.grade ?? null,
+        totalChallenges
+      }
+    });
+
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    logger.error('Get performance error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error fetching performance',
+      error: error.message
+    });
   }
 };
+
 
 exports.getPerformanceIndex = async (req, res) => {
   try {
-    const student = await Student.findById(req.user.userId);
-    res.json({ success: true, data: { spi: student.performanceIndex, grade: student.grade } });
+    const latestSPI = await SPIRecord
+      .findOne({ studentId: req.user.studentId })
+      .sort({ calculatedAt: -1 })
+      .lean();
+
+    return res.json({
+      success: true,
+      data: {
+        spi: latestSPI?.spi ?? null,
+        grade: latestSPI?.grade ?? null,
+        learningState: latestSPI?.learning_state ?? null
+      }
+    });
+
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    logger.error('Get performance index error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error fetching performance index',
+      error: error.message
+    });
   }
 };
 
+
 exports.getCompetencies = async (req, res) => {
   try {
-    const student = await Student.findById(req.user.userId);
-    res.json({ success: true, data: { competencies: student.competencyScores } });
+    const ledgerEvents = await Ledger.find({
+      studentId: req.user.studentId,
+      eventType: Ledger.EVENT_TYPES.CHALLENGE_EVALUATED,
+      status: 'confirmed'
+    }).lean();
+
+    const map = {};
+    ledgerEvents.forEach(e => {
+      (e.challenge?.competenciesAssessed || []).forEach(c => {
+        if (!map[c.competency]) map[c.competency] = [];
+        map[c.competency].push(c.score);
+      });
+    });
+
+    const competencies = {};
+    Object.entries(map).forEach(([k, arr]) => {
+      competencies[k] = Number(
+        (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2)
+      );
+    });
+
+    return res.json({
+      success: true,
+      data: { competencies }
+    });
+
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    logger.error('Get competencies error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error fetching competencies',
+      error: error.message
+    });
   }
 };
 
@@ -1135,13 +1212,36 @@ exports.closeHelpTicket = async (req, res) => {
 
 exports.getClassLeaderboard = async (req, res) => {
   try {
-    const student = await Student.findById(req.user.userId);
-    const students = await Student.find({ schoolId: student.schoolId, class: student.class, section: student.section }).sort({ performanceIndex: -1 }).limit(10);
-    res.json({ success: true, data: { leaderboard: students } });
+    const student = await Student.findById(req.user.userId).lean();
+
+    const leaderboard = await SPIRecord.aggregate([
+      {
+        $lookup: {
+          from: 'students',
+          localField: 'studentId',
+          foreignField: 'studentId',
+          as: 'student'
+        }
+      },
+      { $unwind: '$student' },
+      {
+        $match: {
+          'student.schoolId': student.schoolId,
+          'student.class': student.class,
+          'student.section': student.section
+        }
+      },
+      { $sort: { spi: -1 } },
+      { $limit: 10 }
+    ]);
+
+    res.json({ success: true, data: { leaderboard } });
+
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
 
 exports.getSchoolLeaderboard = async (req, res) => {
   try {
@@ -1221,6 +1321,113 @@ exports.getChallengeForAttempt = async (req, res) => {
     });
   }
 };
+
+
+// controllers/student.controller.js
+exports.getOverview = async (req, res) => {
+  try {
+    const student = await Student.findById(req.user.userId).lean();
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    // 1️⃣ Latest SPI
+    const latestSPI = await SPIRecord
+      .findOne({ studentId: student.studentId })
+      .sort({ calculatedAt: -1 })
+      .lean();
+
+    // 2️⃣ Ledger (source of truth)
+    const ledgerEvents = await Ledger.find({
+      studentId: student.studentId,
+      eventType: Ledger.EVENT_TYPES.CHALLENGE_EVALUATED,
+      status: 'confirmed'
+    }).lean();
+
+    const totalChallenges = ledgerEvents.length;
+    const averageScore = totalChallenges
+      ? ledgerEvents.reduce((s, e) => s + (e.data?.totalScore || 0), 0) / totalChallenges
+      : 0;
+
+    // 3️⃣ CPI aggregation
+    const competencyMap = {};
+    ledgerEvents.forEach(e => {
+      (e.challenge?.competenciesAssessed || []).forEach(c => {
+        if (!competencyMap[c.competency]) competencyMap[c.competency] = [];
+        competencyMap[c.competency].push(c.score);
+      });
+    });
+
+    const competencyScores = {};
+    const strong = [];
+    const weak = [];
+
+    Object.entries(competencyMap).forEach(([k, scores]) => {
+      const avg = scores.reduce((a,b)=>a+b,0) / scores.length;
+      competencyScores[k] = Number(avg.toFixed(2));
+      if (avg >= 80) strong.push(k);
+      if (avg < 50) weak.push(k);
+    });
+
+    // 4️⃣ SPI timeline (for charts)
+    const spiTimeline = await SPIRecord.find(
+      { studentId: student.studentId },
+      { spi: 1, calculatedAt: 1 }
+    ).sort({ calculatedAt: 1 }).lean();
+
+    return res.json({
+      success: true,
+      data: {
+        student: {
+          studentId: student.studentId,
+          name: student.name,
+          class: student.class,
+          section: student.section,
+          schoolId: student.schoolId,
+          teacherId: student.teacherId
+        },
+
+        spi: latestSPI ? {
+          value: latestSPI.spi,
+          grade: latestSPI.grade,
+          learningState: latestSPI.learning_state,
+          lastCalculatedAt: latestSPI.calculatedAt
+        } : null,
+
+        stats: {
+          totalChallenges,
+          completedChallenges: totalChallenges,
+          averageScore: Number(averageScore.toFixed(2)),
+          dailyStreak: student.stats?.dailyStreak || 0
+        },
+
+        cpi: {
+          value: Object.keys(competencyScores).length
+            ? Number(
+                Object.values(competencyScores)
+                  .reduce((a,b)=>a+b,0) / Object.values(competencyScores).length
+              ).toFixed(3)
+            : null,
+          competencyScores,
+          strong,
+          weak
+        },
+
+        charts: {
+          spiTimeline: spiTimeline.map(r => ({
+            date: r.calculatedAt,
+            value: r.spi
+          }))
+        }
+      }
+    });
+
+  } catch (err) {
+    console.error('Student overview error', err);
+    res.status(500).json({ success: false, message: 'Failed to load overview' });
+  }
+};
+
 
 /**
  * @desc    Save draft answers
