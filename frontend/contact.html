@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | NEP Workbench</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d30 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        .header {
+            background: #333337;
+            border-bottom: 1px solid #464647;
+            padding: 15px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .nav-links a:hover {
+            color: #00d4ff;
+        }
+
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 122, 204, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #007acc;
+            color: #00d4ff;
+        }
+
+        .btn-outline:hover {
+            background: rgba(0, 122, 204, 0.1);
+        }
+
+        /* FOOTER */
+        .footer {
+            background: #333337;
+            border-top: 1px solid #464647;
+            padding: 30px 40px;
+            text-align: center;
+            color: #888;
+            margin-top: auto;
+            width: 100%;
+        }
+
+        /* MAIN CONTENT */
+        .contact-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 40px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* HERO SECTION */
+        .contact-hero {
+            text-align: center;
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid rgba(0, 122, 204, 0.3);
+            width: 100%;
+        }
+
+        .contact-hero h1 {
+            font-size: clamp(2.8rem, 5vw, 4rem);
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .contact-subtitle {
+            font-size: 1.4rem;
+            color: #aaa;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .contact-intro {
+            font-size: 1.2rem;
+            color: #ddd;
+            line-height: 1.7;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 25px;
+            background: rgba(0, 122, 204, 0.05);
+            border-radius: 12px;
+            border-left: 4px solid #007acc;
+        }
+
+        /* CONTACT INFO SECTION - UPDATED */
+        .contact-info-section {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto 80px;
+        }
+
+        .info-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .info-card {
+            background: rgba(51, 51, 55, 0.9);
+            border: 1px solid #464647;
+            border-radius: 16px;
+            padding: 40px 35px;
+            transition: all 0.4s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-card:hover {
+            transform: translateY(-8px);
+            border-color: #007acc;
+            box-shadow: 0 20px 40px rgba(0, 122, 204, 0.2);
+        }
+
+        .info-card.featured {
+            border: 2px solid #00d4ff;
+            background: linear-gradient(135deg, rgba(0, 122, 204, 0.1), rgba(0, 212, 255, 0.05));
+        }
+
+        .info-icon {
+            font-size: 2.5rem;
+            color: #00d4ff;
+            margin-bottom: 25px;
+            background: rgba(0, 212, 255, 0.1);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .info-card h3 {
+            font-size: 1.8rem;
+            color: #fff;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .contact-details {
+            list-style: none;
+            margin-top: 25px;
+            flex-grow: 1;
+        }
+
+        .contact-details li {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .contact-details li:hover {
+            background: rgba(0, 122, 204, 0.1);
+            transform: translateX(10px);
+        }
+
+        .contact-details i {
+            font-size: 1.4rem;
+            color: #00d4ff;
+            width: 45px;
+            height: 45px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .contact-details .detail-content h4 {
+            font-size: 1.1rem;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        .contact-details .detail-content p,
+        .contact-details .detail-content a {
+            font-size: 1.3rem;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .contact-details .detail-content a:hover {
+            color: #00d4ff;
+        }
+
+        .business-hours {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #464647;
+        }
+
+        .business-hours h4 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hours-list {
+            list-style: none;
+        }
+
+        .hours-list li {
+            display: flex;
+            justify-content: space-between;
+            color: #ddd;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .hours-list li:last-child {
+            border-bottom: none;
+        }
+
+        .hours-list .day {
+            font-weight: 500;
+        }
+
+        .hours-list .time {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        /* ACTION BUTTONS SECTION */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 40px 0 80px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: rgba(51, 51, 55, 0.9);
+            border: 1px solid #464647;
+            border-radius: 16px;
+            padding: 40px 50px;
+            transition: all 0.4s;
+            min-width: 280px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-8px);
+            border-color: #007acc;
+            box-shadow: 0 20px 40px rgba(0, 122, 204, 0.2);
+        }
+
+        .action-btn.call {
+            border: 2px solid #00d4ff;
+            background: linear-gradient(135deg, rgba(0, 122, 204, 0.1), rgba(0, 212, 255, 0.05));
+        }
+
+        .action-btn.email {
+            border: 2px solid #ffc107;
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 235, 59, 0.05));
+        }
+
+        .action-btn .btn-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+        }
+
+        .action-btn.call .btn-icon {
+            color: #00d4ff;
+        }
+
+        .action-btn.email .btn-icon {
+            color: #ffc107;
+        }
+
+        .action-btn h3 {
+            font-size: 1.8rem;
+            color: #fff;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .action-btn .contact-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .action-btn.call .contact-value {
+            color: #00d4ff;
+        }
+
+        .action-btn.email .contact-value {
+            color: #ffc107;
+        }
+
+        .action-btn p {
+            color: #aaa;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* FAQ SECTION */
+        .faq-section {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .faq-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .faq-header h2 {
+            font-size: 2.5rem;
+            color: #fff;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #00d4ff, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .faq-header p {
+            color: #aaa;
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+
+        .faq-item {
+            background: rgba(51, 51, 55, 0.9);
+            border: 1px solid #464647;
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .faq-item:hover {
+            transform: translateY(-5px);
+            border-color: #007acc;
+            box-shadow: 0 15px 30px rgba(0, 122, 204, 0.2);
+        }
+
+        .faq-item.active {
+            border-color: #00d4ff;
+            background: rgba(0, 122, 204, 0.1);
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .faq-question h3 {
+            font-size: 1.3rem;
+            color: #fff;
+            line-height: 1.4;
+        }
+
+        .faq-question i {
+            color: #00d4ff;
+            font-size: 1.2rem;
+            transition: transform 0.3s;
+        }
+
+        .faq-item.active .faq-question i {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            color: #ccc;
+            line-height: 1.7;
+            font-size: 1rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding-top 0.3s ease;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 200px;
+            padding-top: 15px;
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 1200px) {
+            .info-cards-grid {
+                gap: 30px;
+            }
+            
+            .faq-grid {
+                gap: 20px;
+            }
+            
+            .action-buttons {
+                gap: 25px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .info-cards-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                max-width: 600px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            
+            .faq-grid {
+                grid-template-columns: 1fr;
+                max-width: 600px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+                gap: 25px;
+            }
+            
+            .action-btn {
+                width: 100%;
+                max-width: 500px;
+                min-width: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .contact-container {
+                padding: 40px 20px;
+            }
+            
+            .contact-hero h1 {
+                font-size: 2.2rem;
+            }
+            
+            .contact-intro {
+                font-size: 1.1rem;
+                padding: 20px;
+            }
+            
+            .info-card {
+                padding: 30px 25px;
+            }
+            
+            .faq-header h2 {
+                font-size: 2rem;
+            }
+            
+            .action-btn {
+                padding: 30px 25px;
+            }
+            
+            .action-btn h3 {
+                font-size: 1.6rem;
+            }
+            
+            .action-btn .contact-value {
+                font-size: 1.6rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-links {
+                gap: 15px;
+            }
+            
+            .btn {
+                padding: 8px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .contact-details li {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .contact-details i {
+                align-self: center;
+            }
+            
+            .contact-hero h1 {
+                font-size: 1.8rem;
+            }
+            
+            .contact-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .info-card h3 {
+                font-size: 1.5rem;
+            }
+            
+            .contact-details .detail-content p,
+            .contact-details .detail-content a {
+                font-size: 1.1rem;
+            }
+            
+            .faq-item {
+                padding: 25px 20px;
+            }
+            
+            .faq-question h3 {
+                font-size: 1.2rem;
+            }
+            
+            .action-btn {
+                padding: 25px 20px;
+            }
+            
+            .action-btn h3 {
+                font-size: 1.4rem;
+            }
+            
+            .action-btn .contact-value {
+                font-size: 1.4rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-card,
+        .action-btn,
+        .faq-item {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        .info-card:nth-child(1) { animation-delay: 0.1s; }
+        .info-card:nth-child(2) { animation-delay: 0.2s; }
+        .action-btn:nth-child(1) { animation-delay: 0.3s; }
+        .action-btn:nth-child(2) { animation-delay: 0.4s; }
+        .faq-item:nth-child(1) { animation-delay: 0.5s; }
+        .faq-item:nth-child(2) { animation-delay: 0.6s; }
+        .faq-item:nth-child(3) { animation-delay: 0.7s; }
+        .faq-item:nth-child(4) { animation-delay: 0.8s; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="index.html" class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            NEP WORKBENCH
+        </a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="nep.html">About NEP 2020</a>
+            <a href="spyralai.html">SPYRALAI</a>
+            <a href="login.html" class="btn btn-outline">Login</a>
+            <a href="login.html?signup=true" class="btn btn-primary">Sign Up</a>
+        </div>
+    </div>
+
+    <div class="contact-container">
+        <!-- HERO SECTION -->
+        <div class="contact-hero">
+            <h1>Contact Us</h1>
+            <div class="contact-subtitle">Get in Touch with NEP Workbench Team</div>
+            <div class="contact-intro">
+                We're here to help you implement NEP 2020 in your institution. Whether you need a demo, have questions about our platform, or need support with NEP compliance, our team is ready to assist you.
+            </div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="action-buttons">
+            <a href="tel:+916387890310" class="action-btn call">
+                <div class="btn-icon">
+                    <i class="fas fa-phone-alt"></i>
+                </div>
+                <h3>Call Us Now</h3>
+                <div class="contact-value">+91 6387890310</div>
+                <p>Click to call our support team directly</p>
+            </a>
+            
+            <a href="mailto:info@airm.co.in" class="action-btn email">
+                <div class="btn-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h3>Send Email</h3>
+                <div class="contact-value">info@airm.co.in</div>
+                <p>Click to email us directly</p>
+            </a>
+        </div>
+
+        <!-- CONTACT INFO SECTION -->
+        <div class="contact-info-section">
+            <div class="info-cards-grid">
+                <div class="info-card">
+                    <div class="info-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>Contact Information</h3>
+                    <ul class="contact-details">
+                        <li>
+                            <i class="fas fa-phone-alt"></i>
+                            <div class="detail-content">
+                                <h4>Phone Number</h4>
+                                <a href="tel:+916387890310">+91 6387890310</a>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <div class="detail-content">
+                                <h4>Email Address</h4>
+                                <a href="mailto:info@airm.co.in">info@airm.co.in</a>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-clock"></i>
+                            <div class="detail-content">
+                                <h4>Response Time</h4>
+                                <p>Within 24 Hours</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="info-card featured">
+                    <div class="info-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h3>Schedule a Demo</h3>
+                    <p style="color: #ddd; line-height: 1.7; margin-bottom: 25px;">
+                        Book a personalized demo to see how NEP Workbench can transform your school's NEP 2020 implementation. Our experts will walk you through all platform features.
+                    </p>
+                    <div class="business-hours">
+                        <h4><i class="fas fa-calendar-check"></i> Demo Availability</h4>
+                        <ul class="hours-list">
+                            <li>
+                                <span class="day">Monday - Friday</span>
+                                <span class="time">9:00 AM - 6:00 PM</span>
+                            </li>
+                            <li>
+                                <span class="day">Saturday</span>
+                                <span class="time">10:00 AM - 4:00 PM</span>
+                            </li>
+                            <li>
+                                <span class="day">Sunday</span>
+                                <span class="time">By Appointment</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ SECTION -->
+        <div class="faq-section">
+            <div class="faq-header">
+                <h2>Frequently Asked Questions</h2>
+                <p>Find quick answers to common questions about NEP Workbench and our services.</p>
+            </div>
+            
+            <div class="faq-grid">
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        <h3>How does NEP Workbench help with NEP 2020 implementation?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>NEP Workbench provides a comprehensive platform with interactive labs, competency tracking, vocational skill development, and teacher support tools specifically designed to help schools implement NEP 2020 requirements efficiently.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        <h3>What is the cost of implementing NEP Workbench?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>We offer flexible pricing plans based on your institution's size and requirements. Contact us for a personalized quote and demo to understand the exact costs for your school.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        <h3>Do you provide training for teachers?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes, we provide comprehensive teacher training programs, including on-site workshops, online training modules, and ongoing support to help educators effectively use our platform for NEP-aligned teaching.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item" onclick="toggleFAQ(this)">
+                    <div class="faq-question">
+                        <h3>How long does it take to implement NEP Workbench?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Implementation typically takes 2-4 weeks depending on your school's size and infrastructure. We provide step-by-step support throughout the process to ensure smooth adoption.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2026 AIRM. Aligned with National Education Policy 2020.</p>
+        <p style="margin-top: 10px; font-size: 0.9rem; color: #666;">
+            Contact: +91 6387890310 | Email: info@airm.co.in
+        </p>
+    </div>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // FAQ Toggle Function
+        function toggleFAQ(item) {
+            // Close all other FAQs
+            document.querySelectorAll('.faq-item').forEach(faq => {
+                if (faq !== item && faq.classList.contains('active')) {
+                    faq.classList.remove('active');
+                }
+            });
+            
+            // Toggle current FAQ
+            item.classList.toggle('active');
+        }
+
+        // Phone number click to call
+        const phoneLinks = document.querySelectorAll('a[href^="tel:"]');
+        phoneLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const phoneNumber = this.getAttribute('href').replace('tel:', '');
+                if (confirm(`Would you like to call ${phoneNumber}?`)) {
+                    window.location.href = this.href;
+                }
+            });
+        });
+
+        // Email click to send
+        const emailLinks = document.querySelectorAll('a[href^="mailto:"]');
+        emailLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const email = this.getAttribute('href').replace('mailto:', '');
+                if (confirm(`Would you like to email ${email}?`)) {
+                    window.location.href = this.href;
+                }
+            });
+        });
+
+        // Animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all animated elements
+        document.querySelectorAll('.info-card, .action-btn, .faq-item').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+
+        // Add hover effect enhancement
+        document.querySelectorAll('.info-card, .action-btn, .faq-item').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.zIndex = '10';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.zIndex = '1';
+            });
+        });
+
+        // Add click effect to action buttons
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.style.transform = 'translateY(-4px) scale(1.02)';
+                setTimeout(() => {
+                    this.style.transform = 'translateY(-8px)';
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>

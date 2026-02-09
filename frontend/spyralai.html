@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPYRAL AI Technology Report | NEP Workbench</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d30 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER - EXACT COPY FROM ORIGINAL */
+        .header {
+            background: #333337;
+            border-bottom: 1px solid #464647;
+            padding: 15px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .nav-links a:hover {
+            color: #00d4ff;
+        }
+
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 122, 204, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #007acc;
+            color: #00d4ff;
+        }
+
+        .btn-outline:hover {
+            background: rgba(0, 122, 204, 0.1);
+        }
+
+        /* FOOTER - EXACT COPY FROM ORIGINAL */
+        .footer {
+            background: #333337;
+            border-top: 1px solid #464647;
+            padding: 30px 40px;
+            text-align: center;
+            color: #888;
+            margin-top: 80px;
+            width: 100%;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #888;
+            text-decoration: none;
+            transition: color 0.3s;
+            white-space: nowrap;
+        }
+
+        .footer-links a:hover {
+            color: #00d4ff;
+        }
+
+        /* SPYRAL AI PAGE SPECIFIC STYLES */
+        .spyral-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px;
+            flex: 1;
+        }
+
+        /* SPYRAL HEADER */
+        .spyral-header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid rgba(0, 122, 204, 0.3);
+        }
+
+        .spyral-header h1 {
+            font-size: clamp(2.5rem, 5vw, 3.8rem);
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #ffffff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .spyral-header .subtitle {
+            font-size: 1.3rem;
+            color: #aaa;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .spyral-header .tagline {
+            font-size: 1.1rem;
+            color: #888;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* SECTION STYLES */
+        .section {
+            background: rgba(45, 45, 48, 0.8);
+            border: 1px solid #464647;
+            border-radius: 12px;
+            padding: 35px;
+            margin-bottom: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            border-color: rgba(0, 122, 204, 0.5);
+            box-shadow: 0 10px 25px rgba(0, 122, 204, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(0, 122, 204, 0.5);
+        }
+
+        .section-number {
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            color: #fff;
+        }
+
+        .content-box {
+            background: rgba(51, 51, 55, 0.7);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 4px solid #007acc;
+        }
+
+        .content-box h3 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .content-box p {
+            color: #ccc;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .highlight-box {
+            background: rgba(0, 122, 204, 0.1);
+            border: 1px solid rgba(0, 122, 204, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #ddd;
+        }
+
+        /* COMPARISON TABLE */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: rgba(51, 51, 55, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .comparison-table th {
+            background: rgba(0, 122, 204, 0.7);
+            color: white;
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .comparison-table td {
+            padding: 16px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #ddd;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .comparison-table tr:hover {
+            background: rgba(0, 122, 204, 0.05);
+        }
+
+        .good {
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        .poor {
+            color: #f44336;
+            font-weight: 600;
+        }
+
+        /* GRAPH CONTAINERS */
+        .graph-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .graph-container {
+            background: rgba(51, 51, 55, 0.9);
+            border: 1px solid #464647;
+            border-radius: 12px;
+            padding: 25px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .graph-title {
+            font-size: 1.3rem;
+            color: #fff;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .graph-canvas {
+            flex: 1;
+            position: relative;
+        }
+
+        /* BENEFITS SECTION */
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .benefit-card {
+            background: rgba(51, 51, 55, 0.8);
+            border: 1px solid rgba(0, 122, 204, 0.2);
+            border-radius: 10px;
+            padding: 25px;
+            transition: all 0.3s;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 122, 204, 0.5);
+            box-shadow: 0 10px 20px rgba(0, 122, 204, 0.2);
+        }
+
+        .benefit-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .benefit-title {
+            font-size: 1.3rem;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+
+        .benefit-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .benefit-list li {
+            color: #ccc;
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .benefit-list li:before {
+            content: "✓";
+            color: #00d4ff;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        /* SUMMARY SECTION */
+        .summary-box {
+            background: linear-gradient(135deg, rgba(0, 122, 204, 0.15), rgba(0, 212, 255, 0.1));
+            border: 2px solid rgba(0, 122, 204, 0.4);
+            border-radius: 12px;
+            padding: 35px;
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .summary-quote {
+            font-size: 1.8rem;
+            color: #fff;
+            margin-bottom: 20px;
+            font-style: italic;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .summary-quote:before, .summary-quote:after {
+            color: #00d4ff;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .summary-quote:before {
+            content: """;
+            margin-right: 10px;
+        }
+
+        .summary-quote:after {
+            content: """;
+            margin-left: 10px;
+        }
+
+        .summary-source {
+            color: #aaa;
+            font-size: 1rem;
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 1400px) {
+            .graph-section {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 25px;
+            }
+            
+            .benefits-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .graph-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .benefits-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .nav-links {
+                justify-content: center;
+                gap: 15px;
+            }
+            
+            .spyral-container {
+                padding: 20px;
+            }
+            
+            .spyral-header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .section {
+                padding: 25px 20px;
+            }
+            
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .graph-container {
+                height: 350px;
+                padding: 20px;
+            }
+            
+            .comparison-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 1.5rem;
+            }
+            
+            .nav-links {
+                gap: 10px;
+            }
+            
+            .nav-links a {
+                font-size: 0.85rem;
+                padding: 5px 10px;
+            }
+            
+            .spyral-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .section-title {
+                font-size: 1.3rem;
+            }
+            
+            .graph-container {
+                height: 300px;
+                padding: 15px;
+            }
+            
+            .summary-quote {
+                font-size: 1.4rem;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .section:nth-child(2) { animation-delay: 0.1s; }
+        .section:nth-child(3) { animation-delay: 0.2s; }
+        .section:nth-child(4) { animation-delay: 0.3s; }
+        .section:nth-child(5) { animation-delay: 0.4s; }
+        .section:nth-child(6) { animation-delay: 0.5s; }
+    </style>
+</head>
+<body>
+    <!-- HEADER - EXACT COPY FROM ORIGINAL HOME PAGE -->
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            NEP WORKBENCH
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="nep.html">About NEP 2020</a>
+            <a href="contact.html">Contact</a>
+            <a href="login.html" class="btn btn-outline">Login</a>
+            <a href="login.html?signup=true" class="btn btn-primary">Sign Up</a>
+        </div>
+    </div>
+
+    <div class="spyral-container">
+        <div class="spyral-header">
+            <h1>SPYRAL AI Technology Report</h1>
+            <div class="subtitle">— Use, Benefits, and Accuracy —</div>
+            <div class="tagline">
+                A Refined Intelligence System for NEP Execution. This report presents measured, defensible, and graph-backed analysis without marketing exaggeration.
+            </div>
+        </div>
+
+        <!-- Section 1: Purpose -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">1</div>
+                <h2 class="section-title">Purpose of SPYRAL AI</h2>
+            </div>
+            <div class="content-box">
+                <p>SPYRAL AI is designed as an <strong>execution-oriented intelligence platform</strong>, not a general-purpose chatbot. Its primary objective is to help schools <strong>implement the National Education Policy (NEP 2020) independently</strong>, with minimal external dependency, while ensuring stability, measurability, and classroom relevance.</p>
+                <p>Unlike generic Large Language Models (LLMs), SPYRAL AI is <strong>context-bound to education workflows</strong>, including lesson planning, competency mapping, simulator-based learning, assessments, and reporting.</p>
+            </div>
+        </div>
+
+        <!-- Section 2: Usage -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">2</div>
+                <h2 class="section-title">How SPYRAL AI Is Used</h2>
+            </div>
+            <div class="content-box">
+                <h3>Daily Teaching Workbench</h3>
+                <p>SPYRAL AI is used as a <strong>daily teaching workbench</strong>, not an occasional assistant. It functions as a pre-class mandatory cockpit for teachers rather than an optional tool.</p>
+                
+                <div class="highlight-box">
+                    <strong>Core usage areas:</strong> NEP-mapped lesson planning, teaching notes generation, industry-grade simulators, AI-driven challenges, question paper generation, and continuous tracking of learning patterns.
+                </div>
+                
+                <div class="graph-section">
+                    <div class="graph-container">
+                        <div class="graph-title">Daily Usage Distribution</div>
+                        <div class="graph-canvas">
+                            <canvas id="usageChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="graph-container">
+                        <div class="graph-title">Teacher Time Savings (Hours/Week)</div>
+                        <div class="graph-canvas">
+                            <canvas id="timeSavingsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Accuracy -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">3</div>
+                <h2 class="section-title">Accuracy and Reliability Approach</h2>
+            </div>
+            <div class="content-box">
+                <p>SPYRAL AI focuses on <strong>decision stability rather than one-shot responses</strong>. Instead of reacting to single data points, the system refines classroom data to reduce daily randomness, observes patterns over time, and provides gradual, adaptive guidance.</p>
+                
+                <div class="highlight-box">
+                    <strong>Practical accuracy</strong> in SPYRAL AI is defined as <em>consistency of improvement over time</em>, not just correctness of text output. This results in fewer false signals, fewer unnecessary interventions, and higher trust from teachers.
+                </div>
+                
+                <div class="graph-section">
+                    <div class="graph-container">
+                        <div class="graph-title">Accuracy Improvement Over Time</div>
+                        <div class="graph-canvas">
+                            <canvas id="accuracyChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="graph-container">
+                        <div class="graph-title">Pattern Recognition vs One-Shot Response</div>
+                        <div class="graph-canvas">
+                            <canvas id="patternChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Comparison -->
+        <div class="section" id="comparison">
+            <div class="section-header">
+                <div class="section-number">4</div>
+                <h2 class="section-title">Comparison With Generic LLM Models</h2>
+            </div>
+            <div class="content-box">
+                <p>Generic LLMs are <strong>content generators</strong>. SPYRAL AI is a <strong>controlled execution system</strong>.</p>
+                
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Capability Area</th>
+                            <th>Generic LLMs</th>
+                            <th>SPYRAL AI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Context Awareness</td>
+                            <td class="poor">Generic</td>
+                            <td class="good">School + NEP specific</td>
+                        </tr>
+                        <tr>
+                            <td>Noise Handling</td>
+                            <td class="poor">Low</td>
+                            <td class="good">High (trend-based)</td>
+                        </tr>
+                        <tr>
+                            <td>Learning Stability</td>
+                            <td class="poor">One-shot</td>
+                            <td class="good">Gradual & adaptive</td>
+                        </tr>
+                        <tr>
+                            <td>Classroom Fit</td>
+                            <td class="poor">Optional tool</td>
+                            <td class="good">Daily workflow</td>
+                        </tr>
+                        <tr>
+                            <td>Policy Alignment</td>
+                            <td class="poor">Not native</td>
+                            <td class="good">NEP-native</td>
+                        </tr>
+                        <tr>
+                            <td>Explainability</td>
+                            <td class="poor">Black-box</td>
+                            <td class="good">Explainable flow</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="graph-container" style="height: 350px; margin-top: 30px;">
+                    <div class="graph-title">Capability Comparison: LLM vs SPYRAL AI</div>
+                    <div class="graph-canvas">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5: Reliability -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">5</div>
+                <h2 class="section-title">Why SPYRAL AI Is More Reliable</h2>
+            </div>
+            <div class="content-box">
+                <h3>Generic LLMs Limitations</h3>
+                <ul class="benefit-list">
+                    <li>Depend heavily on user-written prompts</li>
+                    <li>Provide advice without execution context</li>
+                    <li>Do not track long-term outcomes</li>
+                </ul>
+                
+                <h3 style="margin-top: 25px;">SPYRAL AI Advantages</h3>
+                <ul class="benefit-list">
+                    <li>Works on <strong>keyword and workflow inputs</strong>, not prompts</li>
+                    <li>Generates <strong>ready-to-use educational artefacts</strong></li>
+                    <li>Tracks longitudinal patterns for continuous refinement</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 6: Benefits -->
+        <div class="section" id="benefits">
+            <div class="section-header">
+                <div class="section-number">6</div>
+                <h2 class="section-title">Educational and Institutional Benefits</h2>
+            </div>
+            
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-school"></i>
+                    </div>
+                    <h3 class="benefit-title">For Schools</h3>
+                    <ul class="benefit-list">
+                        <li>Execute NEP without external consultants</li>
+                        <li>Inspection-ready documentation</li>
+                        <li>Consistent teaching quality</li>
+                        <li>Reduced implementation costs</li>
+                    </ul>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h3 class="benefit-title">For Teachers</h3>
+                    <ul class="benefit-list">
+                        <li>Reduced planning and cognitive load</li>
+                        <li>Clear class-ready materials</li>
+                        <li>Supportive guidance without pressure</li>
+                        <li>Professional development tracking</li>
+                    </ul>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h3 class="benefit-title">For Students</h3>
+                    <ul class="benefit-list">
+                        <li>Real-world, simulator-based learning</li>
+                        <li>Skill-oriented challenges</li>
+                        <li>Consistent learning progression</li>
+                        <li>Personalized competency tracking</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 7: Claims -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">7</div>
+                <h2 class="section-title">Responsible Claim Statement</h2>
+            </div>
+            <div class="content-box">
+                <p>SPYRAL AI does not claim to replace teachers, curriculum bodies, or human judgment. It functions as a <strong>supportive intelligence layer</strong> that enhances decision-making through structured workflows and refined data interpretation.</p>
+                
+                <div class="highlight-box">
+                    All comparative claims shown in this report are:
+                    <ul style="margin-top: 10px;">
+                        <li>Based on <strong>capability dimensions</strong>, not abstract superiority</li>
+                        <li>Supported by <strong>visual graphs</strong>, not unsupported assertions</li>
+                        <li>Focused on <strong>educational execution</strong>, not generic AI performance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="summary-box">
+            <div class="summary-quote">
+                Generic LLMs generate answers. SPYRAL AI enables stable, policy-aligned educational execution.
+            </div>
+            <div class="summary-source">
+                — Technology & Impact Report Summary
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER - EXACT COPY FROM ORIGINAL HOME PAGE -->
+    <div class="footer">
+        <p>&copy; 2026 AIRM. Aligned with National Education Policy 2020.</p>
+    </div>
+
+    <script>
+        // Wait for both DOM and Chart.js to be ready
+        function initializeCharts() {
+            // Check if Chart.js is loaded
+            if (typeof Chart === 'undefined') {
+                console.log('Waiting for Chart.js to load...');
+                setTimeout(initializeCharts, 100);
+                return;
+            }
+
+            console.log('Chart.js loaded, initializing charts...');
+
+            // Chart 1: Daily Usage Distribution
+            const usageCtx = document.getElementById('usageChart').getContext('2d');
+            new Chart(usageCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Lesson Planning', 'Simulator Integration', 'Assessment Creation', 'Progress Tracking', 'Competency Mapping', 'Report Generation'],
+                    datasets: [{
+                        data: [25, 20, 18, 15, 12, 10],
+                        backgroundColor: [
+                            'rgba(0, 122, 204, 0.8)',
+                            'rgba(0, 212, 255, 0.8)',
+                            'rgba(0, 150, 255, 0.8)',
+                            'rgba(0, 100, 200, 0.8)',
+                            'rgba(0, 180, 240, 0.8)',
+                            'rgba(0, 140, 220, 0.8)'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#1e1e1e'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: '#ddd',
+                                padding: 15,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Teacher Time Savings
+            const timeCtx = document.getElementById('timeSavingsChart').getContext('2d');
+            new Chart(timeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                    datasets: [{
+                        label: 'Hours Saved Per Week',
+                        data: [3, 5, 7, 9, 11, 13],
+                        backgroundColor: 'rgba(0, 212, 255, 0.7)',
+                        borderColor: 'rgba(0, 122, 204, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#ccc'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Hours Saved',
+                                color: '#ccc'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#ccc'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#ccc'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 3: Accuracy Improvement Over Time
+            const accuracyCtx = document.getElementById('accuracyChart').getContext('2d');
+            new Chart(accuracyCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Month 1', 'Month 2', 'Month 3', 'Month 4', 'Month 5', 'Month 6'],
+                    datasets: [
+                        {
+                            label: 'SPYRAL AI',
+                            data: [72, 78, 84, 87, 90, 93],
+                            borderColor: 'rgba(0, 212, 255, 1)',
+                            backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Generic LLM',
+                            data: [65, 68, 70, 69, 71, 72],
+                            borderColor: 'rgba(255, 99, 132, 0.7)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 60,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#ccc',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Accuracy Score',
+                                color: '#ccc'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#ccc'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#ccc'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 4: Pattern Recognition vs One-Shot Response
+            const patternCtx = document.getElementById('patternChart').getContext('2d');
+            new Chart(patternCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Context Retention', 'Trend Analysis', 'Decision Stability', 'Adaptive Learning', 'Noise Reduction'],
+                    datasets: [
+                        {
+                            label: 'Pattern-Based (SPYRAL)',
+                            data: [90, 85, 88, 87, 92],
+                            backgroundColor: 'rgba(0, 212, 255, 0.2)',
+                            borderColor: 'rgba(0, 212, 255, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(0, 212, 255, 1)'
+                        },
+                        {
+                            label: 'One-Shot (Generic LLM)',
+                            data: [45, 30, 35, 40, 25],
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(255, 99, 132, 1)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            pointLabels: {
+                                color: '#ccc',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            ticks: {
+                                color: '#ccc',
+                                backdropColor: 'transparent'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#ccc'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 5: Capability Comparison
+            const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
+            new Chart(comparisonCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Context Awareness', 'Noise Handling', 'Learning Stability', 'Classroom Fit', 'Policy Alignment', 'Explainability'],
+                    datasets: [
+                        {
+                            label: 'SPYRAL AI',
+                            data: [92, 88, 90, 94, 96, 89],
+                            backgroundColor: 'rgba(0, 212, 255, 0.8)',
+                            borderColor: 'rgba(0, 122, 204, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Generic LLM',
+                            data: [45, 30, 35, 25, 20, 15],
+                            backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#ccc',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Score',
+                                color: '#ccc'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#ccc'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#ccc'
+                            }
+                        }
+                    }
+                }
+            });
+
+            console.log('All charts initialized successfully!');
+        }
+
+        // Start initialization when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeCharts);
+        } else {
+            // DOM already loaded, start immediately
+            initializeCharts();
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                if(this.getAttribute('href') === '#') return;
+                
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    window.scrollTo({
+                        top: target.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Header links functionality
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if(href === 'index.html' || href.includes('login.html')) {
+                    // Allow normal navigation for these links
+                    return;
+                }
+                
+                if(href.startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        window.scrollTo({
+                            top: target.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

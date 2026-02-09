@@ -1,14 +1,15 @@
-// routes/spi.routes.js
 const express = require('express');
 const router = express.Router();
+
 const { calculateStudentSPI } = require('../controllers/spi.controller');
-const authenticate = require('../middleware/auth.middleware');
-const authorize = require('../middleware/role.middleware');
+
+// ✅ SAME AS admin.routes.js
+const { authenticate, authorize } = require('../middleware/auth.middleware');
 
 router.post(
   '/calculate/:studentId',
   authenticate,
-  authorize(['admin', 'system']),
+  authorize('admin', 'system'),
   calculateStudentSPI
 );
 

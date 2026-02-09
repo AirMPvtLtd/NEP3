@@ -7,6 +7,7 @@ const {
   School,
   Activity,
   Ledger,
+  SPIRecord,
 
 } = require('../models');
 const logger = require('../utils/logger');
@@ -457,17 +458,14 @@ exports.generateNEPReport = async (req, res) => {
     if (!studentId) {
       return res.status(400).json({
         success: false,
-        message: 'Student ID is required'
+        message: 'studentId required'
       });
     }
 
-    // ============================================================================
-    // STEP 0: RESOLVE STUDENT
-    // ============================================================================
-    const student =
-      await Student.findOne({ studentId }) ||
-      await Student.findById(studentId);
-
+    // ---------------------------------------------------
+    // 1. Resolve student
+    // ---------------------------------------------------
+    const student = await Student.findOne({ studentId });
     if (!student) {
       return res.status(404).json({
         success: false,
@@ -475,69 +473,70 @@ exports.generateNEPReport = async (req, res) => {
       });
     }
 
-    const resolvedStudentId = student.studentId;
+    // ---------------------------------------------------
+    // 2. Resolve report period
+    // ---------------------------------------------------
+    const now = new Date();
+    const periodStart = (() => {
+      switch (reportType) {
+        case 'weekly':
+          return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        case 'monthly':
+          return new Date(new Date().setMonth(now.getMonth() - 1));
+        case 'quarterly':
+          return new Date(new Date().setMonth(now.getMonth() - 3));
+        case 'annual':
+          return new Date(new Date().setFullYear(now.getFullYear() - 1));
+        default:
+          return new Date(new Date().setMonth(now.getMonth() - 1));
+      }
+    })();
 
-    // ============================================================================
-    // STEP 1: AUTHORIZATION
-    // ============================================================================
-    const isStudent = req.user.role === 'student' && req.user.studentId === resolvedStudentId;
-    const isTeacher = req.user.role === 'teacher' && student.teacherId === req.user.teacherId;
-    const isAdmin   = req.user.role === 'admin';
-    const isParent  = req.user.role === 'parent' && req.user.studentId === resolvedStudentId;
+    const periodEnd = new Date();
 
-    if (!isStudent && !isTeacher && !isAdmin && !isParent) {
-      return res.status(403).json({
-        success: false,
-        message: 'You do not have permission to generate this report'
-      });
-    }
-
-    logger.info(`Generating NEP report for ${resolvedStudentId}`, {
-      reportType,
-      requestedBy: req.user.userId
-    });
-
-    // ============================================================================
-    // STEP 2: FETCH LEDGER EVENTS (AUTHORITATIVE)
-    // ============================================================================
+    // ---------------------------------------------------
+    // 3. Fetch ledger events (AUTHORITATIVE)
+    // ---------------------------------------------------
     const ledgerEvents = await Ledger.find({
-      studentId: resolvedStudentId,
+      studentId,
       eventType: Ledger.EVENT_TYPES.CHALLENGE_EVALUATED,
-      status: 'confirmed'
+      status: 'confirmed',
+      timestamp: { $gte: periodStart, $lte: periodEnd }
     }).lean();
 
     if (!ledgerEvents.length) {
       return res.status(400).json({
         success: false,
-        message: 'No assessment data found for this student'
+        message: 'No assessment data in selected period'
       });
     }
 
-    // ============================================================================
-    // STEP 3: REPORT PERIOD
-    // ============================================================================
-    const sortedEvents = [...ledgerEvents].sort(
-      (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
-    );
-
-    const periodStart = sortedEvents[0].timestamp;
-    const periodEnd   = sortedEvents[sortedEvents.length - 1].timestamp;
-
-    // ============================================================================
-    // STEP 4: CPI PIPELINE
-    // ============================================================================
+    // ---------------------------------------------------
+    // 4. CPI computation (AS-IS)
+    // ---------------------------------------------------
     const cpiResult = await computeCPI({ ledgerEvents });
-    const cpiValue  = typeof cpiResult?.cpi === 'number' ? cpiResult.cpi : null;
-    const cpiStatus = cpiValue === null ? 'not_computable' : 'computed';
+    const cpi = typeof cpiResult?.cpi === 'number' ? cpiResult.cpi : null;
 
-    // ============================================================================
-    // STEP 5: ASSESSED COMPETENCIES ONLY
-    // ============================================================================
+    // ---------------------------------------------------
+    // 5. 🔥 FETCH LATEST SPI SNAPSHOT (READ-ONLY)
+    // ---------------------------------------------------
+    const latestSPI = await SPIRecord
+      .findOne({ studentId })
+      .sort({ calculatedAt: -1 })
+      .select('spi grade learning_state kalman_uncertainty calculatedAt')
+      .lean();
+
+    // NOTE:
+    // - SPI is optional
+    // - Report must NEVER fail if SPI not present
+
+    // ---------------------------------------------------
+    // 6. Competency aggregation (LEDGER ONLY)
+    // ---------------------------------------------------
     const competencyAccumulator = {};
-
-    for (const event of ledgerEvents) {
-      const assessed = event.challenge?.competenciesAssessed || [];
-      for (const c of assessed) {
+    for (const e of ledgerEvents) {
+      const comps = e.challenge?.competenciesAssessed || [];
+      for (const c of comps) {
         if (!competencyAccumulator[c.competency]) {
           competencyAccumulator[c.competency] = { total: 0, count: 0 };
         }
@@ -546,7 +545,7 @@ exports.generateNEPReport = async (req, res) => {
       }
     }
 
-    const assessedCompetencies = Object.entries(competencyAccumulator).map(
+    const competencies = Object.entries(competencyAccumulator).map(
       ([name, v]) => ({
         name,
         score: Number((v.total / v.count).toFixed(2)),
@@ -554,134 +553,115 @@ exports.generateNEPReport = async (req, res) => {
       })
     );
 
-    // ============================================================================
-    // STEP 6: DISPLAY METRIC
-    // ============================================================================
-    const averageScore =
-      ledgerEvents.reduce(
-        (sum, e) => sum + (e.challenge?.totalScore || 0),
-        0
-      ) / ledgerEvents.length;
-
-    // ============================================================================
-    // STEP 7: MERKLE TREE + HASH
-    // ============================================================================
-    const merkleTree = await Ledger.createMerkleTree(resolvedStudentId);
+    // ---------------------------------------------------
+    // 7. Merkle tree + report hash
+    // ---------------------------------------------------
+    const merkleTree = await Ledger.createMerkleTree(studentId);
 
     const reportHash = crypto
       .createHash('sha256')
       .update(
-        resolvedStudentId +
+        studentId +
         periodStart.toISOString() +
         periodEnd.toISOString() +
         (merkleTree.merkleRoot || '')
       )
       .digest('hex');
 
-    // ============================================================================
-    // STEP 8: SAVE NEP REPORT (🔥 LEDGER METADATA ADDED)
-    // ============================================================================
-    const nepReport = await NEPReport.create({
-      studentId: resolvedStudentId,
+    // ---------------------------------------------------
+    // 8. Save NEP Report (SPI = snapshot only)
+    // ---------------------------------------------------
+    const report = await NEPReport.create({
+      studentId,
       schoolId: student.schoolId,
-      reportType: REPORT_TYPE_MAP[reportType] || 'monthly',
+      reportType,
       periodStart,
       periodEnd,
 
       summary: {
+        overallSPI: latestSPI?.spi ?? null,
+        grade: latestSPI?.grade ?? null,
         totalChallenges: ledgerEvents.length,
-        averageScore: Number(averageScore.toFixed(2))
+        averageScore: Number(
+          ledgerEvents.reduce(
+            (s, e) => s + (e.challenge?.totalScore || 0),
+            0
+          ) / ledgerEvents.length
+        ).toFixed(2)
       },
 
-      competencies: assessedCompetencies,
-
-      performanceMetrics: {
-        cpi: cpiValue,
-        cpiStatus,
-        cpiModel: cpiResult?.model || 'FIELD-CPI-v1'
-      },
-
-      // ✅ NEW — STORED FOR DOWNLOAD / PDF / VERIFICATION
-      ledgerMetadata: {
-        reportHash,
-        merkleRoot: merkleTree.merkleRoot,
-        anchoredAt: new Date()
-      },
-
+      competencies,
       generatedBy: req.user.userId
     });
 
-    // ============================================================================
-    // STEP 9: LEDGER EVENT — REPORT_GENERATED
-    // ============================================================================
-    const ledgerBlock = await Ledger.create({
+    // ---------------------------------------------------
+    // 9. Ledger anchor (REPORT_GENERATED)
+    // ---------------------------------------------------
+    await Ledger.create({
       eventType: Ledger.EVENT_TYPES.REPORT_GENERATED,
-      studentId: resolvedStudentId,
+
+      studentId,
       schoolId: student.schoolId,
 
+      createdBy: req.user.userId,
+      createdByRole: req.user.role,
+
       data: {
-        reportId: nepReport.reportId,
-        reportType: nepReport.reportType,
+        reportId: report.reportId,
+        reportType,
         periodStart,
         periodEnd,
-        cpi: cpiValue
+        cpi,
+        spi: latestSPI?.spi ?? null
       },
 
       hash: crypto
         .createHash('sha256')
-        .update(nepReport.reportId + resolvedStudentId)
+        .update(
+          report.reportId +
+          studentId +
+          (merkleTree.merkleRoot || '')
+        )
         .digest('hex'),
 
       metadata: {
+        source: 'nep_report_generation',
+        api: '/api/reports/nep/generate',
+        userAgent: req.get('user-agent'),
+        ipAddress: req.ip,
         timestamp: new Date()
       },
 
-      createdBy: req.user.userId,
-      createdByRole: req.user.role,
       status: 'confirmed',
       timestamp: new Date()
     });
 
-    // Optional: back-patch blockIndex (safe)
-    await NEPReport.updateOne(
-      { _id: nepReport._id },
-      { 'ledgerMetadata.blockIndex': ledgerBlock?.metadata?.blockIndex || null }
-    );
-
-    // ============================================================================
-    // STEP 10: AUDIT PAYLOAD
-    // ============================================================================
-    const auditPayload = await buildAuditPayload({
-      studentId: resolvedStudentId,
-      nepReport,
-      ledgerEvents
-    });
-
-    // ============================================================================
-    // RESPONSE
-    // ============================================================================
+    // ---------------------------------------------------
+    // 10. Response
+    // ---------------------------------------------------
     return res.status(201).json({
       success: true,
-      reportId: nepReport.reportId,
-      studentId: resolvedStudentId,
+      reportId: report.reportId,
+      studentId,
       periodStart,
       periodEnd,
-      cpi: cpiValue,
-      cpiStatus,
+      cpi,
+      spi: latestSPI?.spi ?? null,
       reportHash,
-      merkleRoot: merkleTree.merkleRoot,
-      audit: auditPayload
+      merkleRoot: merkleTree.merkleRoot
     });
 
   } catch (error) {
-    logger.error('Generate NEP report error:', error);
+    logger.error('Generate NEP report failed', error);
     return res.status(500).json({
       success: false,
-      message: 'Error generating NEP report',
+      message: 'NEP report generation failed',
       error: error.message
     });
   }
 };
+
+
 
 
 
@@ -2220,17 +2200,63 @@ exports.healthCheck = async (req, res) => {
 
 exports.generateInstitutionalReport = async (req, res) => {
   try {
-    const { schoolId, reportPeriod, reportType } = req.body;
+    const { schoolId, reportPeriod, reportType = 'monthly' } = req.body;
 
+    // ---------------------------------------------------
+    // 1. INPUT VALIDATION (HARD FAIL FAST)
+    // ---------------------------------------------------
+    if (!schoolId) {
+      return res.status(400).json({
+        success: false,
+        message: 'schoolId is required'
+      });
+    }
+
+    if (!reportPeriod || !reportPeriod.start || !reportPeriod.end) {
+      return res.status(400).json({
+        success: false,
+        message: 'reportPeriod.start and reportPeriod.end are required'
+      });
+    }
+
+    const periodStart = new Date(reportPeriod.start);
+    const periodEnd   = new Date(reportPeriod.end);
+
+    if (isNaN(periodStart.getTime()) || isNaN(periodEnd.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid reportPeriod dates'
+      });
+    }
+
+    if (periodStart > periodEnd) {
+      return res.status(400).json({
+        success: false,
+        message: 'reportPeriod.start must be before reportPeriod.end'
+      });
+    }
+
+    // ---------------------------------------------------
+    // 2. AUTHORITATIVE SERVICE CALL
+    // (Service is the single source of truth)
+    // ---------------------------------------------------
     const report = await generateInstitutionalReport({
       schoolId,
-      periodStart: new Date(reportPeriod.start),
-      periodEnd: new Date(reportPeriod.end),
+      periodStart,
+      periodEnd,
       reportType,
-      generatedBy: req.user.userId
+      generatedBy: req.user.userId,
+      generatedByRole: req.user.role
     });
 
-    res.json({
+    if (!report || !report.reportId) {
+      throw new Error('Institutional report generation failed internally');
+    }
+
+    // ---------------------------------------------------
+    // 3. RESPONSE (PUBLIC / ADMIN SAFE)
+    // ---------------------------------------------------
+    return res.status(201).json({
       success: true,
       message: 'Institutional report ready',
       data: {
@@ -2239,19 +2265,26 @@ exports.generateInstitutionalReport = async (req, res) => {
         reportType: report.reportType,
         periodStart: report.periodStart,
         periodEnd: report.periodEnd,
-        dataQuality: report.dataQuality,
-        generatedAt: report.generatedAt
+        generatedAt: report.generatedAt,
+        dataQuality: report.dataQuality || 'verified'
       }
     });
 
   } catch (error) {
-    logger.error('Generate institutional report error:', error);
-    res.status(500).json({
+    logger.error('Generate institutional report error', {
+      error: error.message,
+      stack: error.stack
+    });
+
+    return res.status(500).json({
       success: false,
-      message: error.message
+      message: 'Failed to generate institutional report',
+      error: error.message
     });
   }
 };
+
+
 
 
 
@@ -2263,12 +2296,26 @@ exports.generateInstitutionalReport = async (req, res) => {
  */
 exports.getInstitutionalReport = async (req, res) => {
   try {
-    const report = await InstitutionalReport.findById(req.params.reportId);
+    const { reportId } = req.params;
+    
+    // Check if the ID is a valid MongoDB ObjectId (24 hex chars)
+    const isObjectId = /^[0-9a-fA-F]{24}$/.test(reportId);
+    
+    let report;
+    
+    if (isObjectId) {
+      // Try to find by MongoDB _id
+      report = await InstitutionalReport.findById(reportId);
+    } else {
+      // Try to find by custom reportId
+      report = await InstitutionalReport.findOne({ reportId });
+    }
     
     if (!report) {
       return res.status(404).json({
         success: false,
-        message: 'Institutional report not found'
+        message: 'Institutional report not found',
+        reportId: req.params.reportId
       });
     }
     
@@ -2294,35 +2341,88 @@ exports.getInstitutionalReport = async (req, res) => {
  */
 exports.getSchoolInstitutionalReports = async (req, res) => {
   try {
-    const { limit = 10, offset = 0 } = req.query;
-    
+    const { schoolId } = req.params;
+    let { limit = 10, offset = 0 } = req.query;
+
+    // ---------------------------------------------------
+    // 1. Hard validation
+    // ---------------------------------------------------
+    if (!schoolId) {
+      return res.status(400).json({
+        success: false,
+        message: 'schoolId is required'
+      });
+    }
+
+    limit = Math.min(parseInt(limit, 10) || 10, 50); // hard cap
+    offset = parseInt(offset, 10) || 0;
+
+    // ---------------------------------------------------
+    // 2. Authorization
+    // ---------------------------------------------------
+    const isAdmin = req.user.role === 'admin';
+    const isTeacher = req.user.role === 'teacher';
+
+    if (!isAdmin && !isTeacher) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to view institutional reports'
+      });
+    }
+
+    // Teacher can only view own school
+    if (isTeacher && req.user.schoolId !== schoolId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Teacher not authorized for this school'
+      });
+    }
+
+    // ---------------------------------------------------
+    // 3. Fetch reports (BUSINESS QUERY)
+    // ---------------------------------------------------
+    const query = { schoolId };
+
     const [reports, total] = await Promise.all([
-      InstitutionalReport.find({ schoolId: req.params.schoolId })
-        .sort({ createdAt: -1 })
-        .skip(parseInt(offset))
-        .limit(parseInt(limit)),
-      InstitutionalReport.countDocuments({ schoolId: req.params.schoolId })
+      InstitutionalReport.find(query)
+        .sort({ generatedAt: -1 })
+        .skip(offset)
+        .limit(limit)
+        .lean(),
+
+      InstitutionalReport.countDocuments(query)
     ]);
-    
-    res.json({
+
+    // ---------------------------------------------------
+    // 4. Response
+    // ---------------------------------------------------
+    return res.json({
       success: true,
       data: {
+        schoolId,
         reports,
         total,
-        limit: parseInt(limit),
-        offset: parseInt(offset)
+        limit,
+        offset,
+        hasMore: offset + reports.length < total
       }
     });
-    
+
   } catch (error) {
-    logger.error('Get school institutional reports error:', error);
-    res.status(500).json({
+    logger.error('Get school institutional reports error', {
+      error: error.message,
+      stack: error.stack,
+      schoolId: req.params.schoolId
+    });
+
+    return res.status(500).json({
       success: false,
       message: 'Error fetching institutional reports',
       error: error.message
     });
   }
 };
+
 
 /**
  * @desc    Delete institutional report

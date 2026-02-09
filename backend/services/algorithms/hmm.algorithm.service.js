@@ -1,173 +1,147 @@
 /**
- * HMM ALGORITHM SERVICE
- * Learning trajectory analysis and prediction
+ * HMM Algorithm Service
+ * ------------------------------------------------------------
+ * PURPOSE:
+ * - Track student learning phase over time
+ * - Model discrete cognitive states (STRUGGLING → LEARNING → MASTERING → EXPERT)
+ * - Persist authoritative learning state
+ *
+ * DESIGN:
+ * - Service-based (NO class, NO constructor)
+ * - Uses string studentId
+ * - Deterministic, auditable transitions
+ *
+ * CONTRACT:
+ * - getCurrentState(studentId) -> state
+ * - transition(studentId, signals) -> newState
  */
 
-const { HMMState, Challenge } = require('../../models');
-const logger = require('../../utils/logger');
 
-class HMMAlgorithmService {
-  /**
-   * Update HMM with challenge result
-   */
-  async updateWithChallenge(studentId, competency, score) {
-    try {
-      // Get or create HMM
-      let hmm = await HMMState.findOne({ studentId, competency });
-      
-      if (!hmm) {
-        hmm = await HMMState.createForCompetency(studentId, competency);
-      }
-      
-      // Add observation
-      await hmm.addObservation(score);
-      
-      // Train if enough data
-      if (hmm.observations.length >= 10 && hmm.observations.length % 10 === 0) {
-        const trainingResult = await hmm.train();
-        
-        if (trainingResult.trained) {
-          logger.info(`HMM trained for ${studentId}/${competency}: ${trainingResult.iterations} iterations`);
-        }
-      }
-      
-      return {
-        success: true,
-        currentState: hmm.stateSequence[hmm.stateSequence.length - 1]?.state,
-        observationCount: hmm.observations.length
-      };
-      
-    } catch (error) {
-      logger.error('Update HMM error:', error);
-      return {
-        success: false,
-        error: error.message
-      };
-    }
+const HMM_STATES = require('../../config/constants');
+const HMMState = require('../../models/HMMState');
+// -----------------------------------------------------------------------------
+// Transition thresholds (can later move to MetaParameters)
+// -----------------------------------------------------------------------------
+const THRESHOLDS = {
+  STRUGGLING_TO_LEARNING: 65,
+  LEARNING_TO_MASTERING: 80,
+  MASTERING_TO_EXPERT: 90,
+
+  EXPERT_FALLBACK: 75,
+  MASTERING_FALLBACK: 60,
+  LEARNING_FALLBACK: 45
+};
+
+// -----------------------------------------------------------------------------
+// Get current learning state (authoritative)
+// -----------------------------------------------------------------------------
+async function getCurrentState(studentId) {
+  if (!studentId) {
+    throw new Error('HMM getCurrentState requires studentId');
   }
-  
-  /**
-   * Get learning trajectory
-   */
-  async getLearningTrajectory(studentId, competency) {
-    try {
-      const hmm = await HMMState.findOne({ studentId, competency });
-      
-      if (!hmm) {
-        return {
-          available: false,
-          message: 'No HMM data available'
-        };
-      }
-      
-      const trajectory = hmm.getLearningTrajectory();
-      
-      return {
-        available: true,
-        ...trajectory
-      };
-      
-    } catch (error) {
-      logger.error('Get trajectory error:', error);
-      return {
-        available: false,
-        error: error.message
-      };
-    }
+
+  const state = await HMMState.findOne({ studentId });
+
+  if (!state) {
+    // Default initial state
+    const initial = await HMMState.create({
+      studentId,
+      currentState: HMM_STATES.STRUGGLING,
+      updatedAt: new Date()
+    });
+    return initial.currentState;
   }
-  
-  /**
-   * Predict next state
-   */
-  async predictNextState(studentId, competency, timeHorizon = 1) {
-    try {
-      const hmm = await HMMState.findOne({ studentId, competency });
-      
-      if (!hmm) {
-        return {
-          available: false,
-          message: 'No HMM data available'
-        };
+
+  return state.currentState;
+}
+
+// -----------------------------------------------------------------------------
+// Determine next state based on performance signals
+// -----------------------------------------------------------------------------
+function decideNextState(currentState, signals) {
+  const { performance = 0, consistency = 0, improvement = false } = signals;
+
+  switch (currentState) {
+    case HMM_STATES.STRUGGLING:
+      if (performance >= THRESHOLDS.STRUGGLING_TO_LEARNING) {
+        return HMM_STATES.LEARNING;
       }
-      
-      const prediction = await hmm.predict(timeHorizon);
-      
-      return {
-        available: true,
-        ...prediction
-      };
-      
-    } catch (error) {
-      logger.error('Predict state error:', error);
-      return {
-        available: false,
-        error: error.message
-      };
-    }
-  }
-  
-  /**
-   * Get state probabilities over time
-   */
-  async getStateProbabilities(studentId, competency) {
-    try {
-      const hmm = await HMMState.findOne({ studentId, competency });
-      
-      if (!hmm) {
-        return {
-          available: false,
-          message: 'No HMM data available'
-        };
+      return HMM_STATES.STRUGGLING;
+
+    case HMM_STATES.LEARNING:
+      if (performance >= THRESHOLDS.LEARNING_TO_MASTERING && improvement) {
+        return HMM_STATES.MASTERING;
       }
-      
-      const probabilities = await hmm.getStateProbabilities();
-      
-      return {
-        available: true,
-        probabilities
-      };
-      
-    } catch (error) {
-      logger.error('Get probabilities error:', error);
-      return {
-        available: false,
-        error: error.message
-      };
-    }
-  }
-  
-  /**
-   * Get HMM statistics
-   */
-  async getStatistics(studentId, competency) {
-    try {
-      const hmm = await HMMState.findOne({ studentId, competency });
-      
-      if (!hmm) {
-        return {
-          available: false
-        };
+      if (performance < THRESHOLDS.LEARNING_FALLBACK) {
+        return HMM_STATES.STRUGGLING;
       }
-      
-      return {
-        available: true,
-        observations: hmm.observations.length,
-        currentState: hmm.stateSequence[hmm.stateSequence.length - 1]?.state,
-        trainingMetadata: hmm.trainingMetadata,
-        viterbiPathLength: hmm.viterbiPath.length,
-        predictions: hmm.predictions.length
-      };
-      
-    } catch (error) {
-      logger.error('Get HMM stats error:', error);
-      return {
-        available: false,
-        error: error.message
-      };
-    }
+      return HMM_STATES.LEARNING;
+
+    case HMM_STATES.MASTERING:
+      if (performance >= THRESHOLDS.MASTERING_TO_EXPERT && consistency >= 70) {
+        return HMM_STATES.EXPERT;
+      }
+      if (performance < THRESHOLDS.MASTERING_FALLBACK) {
+        return HMM_STATES.LEARNING;
+      }
+      return HMM_STATES.MASTERING;
+
+    case HMM_STATES.EXPERT:
+      if (performance < THRESHOLDS.EXPERT_FALLBACK) {
+        return HMM_STATES.MASTERING;
+      }
+      return HMM_STATES.EXPERT;
+
+    default:
+      return HMM_STATES.STRUGGLING;
   }
 }
 
-const hmmService = new HMMAlgorithmService();
+// -----------------------------------------------------------------------------
+// Transition state if needed
+// -----------------------------------------------------------------------------
+async function transition(studentId, signals = {}) {
+  if (!studentId) {
+    throw new Error('HMM transition requires studentId');
+  }
 
-module.exports = hmmService;
+  const current = await getCurrentState(studentId);
+  const next = decideNextState(current, signals);
+
+  // No transition → just return current
+  if (current === next) {
+    return current;
+  }
+
+  // Persist transition
+  const updated = await HMMState.findOneAndUpdate(
+    { studentId },
+    {
+      studentId,
+      currentState: next,
+      lastState: current,
+      transitionSignals: signals,
+      updatedAt: new Date()
+    },
+    { upsert: true, new: true }
+  );
+
+  return updated.currentState;
+}
+
+// -----------------------------------------------------------------------------
+// Optional: Reset HMM state (admin / testing only)
+// -----------------------------------------------------------------------------
+async function reset(studentId) {
+  if (!studentId) return;
+  await HMMState.deleteOne({ studentId });
+}
+
+// -----------------------------------------------------------------------------
+// EXPORTS
+// -----------------------------------------------------------------------------
+module.exports = {
+  getCurrentState,
+  transition,
+  reset
+};

@@ -1,10 +1,10 @@
 /**
- * NEP REPORT MODEL
- * Student NEP 2020 competency reports
- *
- * Ledger-anchored, AI-assisted (language only)
- *
- * @module models/NEPReport
+ * NEP REPORT MODEL (FINAL – UPSERT SAFE)
+ * --------------------------------------------------
+ * Canonical academic report under NEP 2020
+ * - One report per student per period per reportType
+ * - Ledger anchored
+ * - SPI is READ-ONLY consumer
  */
 
 const mongoose = require('mongoose');
@@ -13,9 +13,9 @@ const { NEP_COMPETENCIES } = require('../config/constants');
 
 const nepReportSchema = new mongoose.Schema(
   {
-    // ------------------------------------------------------------------
+    // --------------------------------------------------
     // CORE IDENTIFIERS
-    // ------------------------------------------------------------------
+    // --------------------------------------------------
     reportId: {
       type: String,
       required: true,
@@ -33,41 +33,45 @@ const nepReportSchema = new mongoose.Schema(
     schoolId: {
       type: String,
       required: true,
-      ref: 'School'
+      ref: 'School',
+      index: true
     },
 
     reportType: {
       type: String,
       enum: ['weekly', 'monthly', 'quarterly', 'annual'],
-      required: true
+      required: true,
+      index: true
     },
 
     periodStart: {
       type: Date,
-      required: true
+      required: true,
+      index: true
     },
 
     periodEnd: {
       type: Date,
-      required: true
+      required: true,
+      index: true
     },
 
-    // ------------------------------------------------------------------
-    // PERFORMANCE SUMMARY (DETERMINISTIC / ANALYTICS)
-    // ------------------------------------------------------------------
+    // --------------------------------------------------
+    // PERFORMANCE SUMMARY (SPI → READ ONLY)
+    // --------------------------------------------------
     summary: {
       overallSPI: Number,
       grade: String,
       totalChallenges: Number,
       completedChallenges: Number,
       averageScore: Number,
-      improvement: Number, // percentage change
+      improvement: Number,
       streak: Number
     },
 
-    // ------------------------------------------------------------------
-    // COMPETENCY BREAKDOWN (LEDGER-DERIVED ONLY)
-    // ------------------------------------------------------------------
+    // --------------------------------------------------
+    // COMPETENCY BREAKDOWN (CPI / LEDGER DERIVED)
+    // --------------------------------------------------
     competencies: [
       {
         name: {
@@ -86,9 +90,9 @@ const nepReportSchema = new mongoose.Schema(
       }
     ],
 
-    // ------------------------------------------------------------------
-    // CHALLENGE STATISTICS (ANALYTICS ONLY)
-    // ------------------------------------------------------------------
+    // --------------------------------------------------
+    // CHALLENGE ANALYTICS (NON-AUTHORITATIVE)
+    // --------------------------------------------------
     challengeStats: {
       bySimulation: {
         type: Map,
@@ -113,14 +117,12 @@ const nepReportSchema = new mongoose.Schema(
       }
     },
 
-    // ------------------------------------------------------------------
+    // --------------------------------------------------
     // RECOMMENDATIONS (SYSTEM / TEACHER)
-    // ------------------------------------------------------------------
+    // --------------------------------------------------
     recommendations: [
       {
-        type: {
-          type: String
-        },
+        type: { type: String },
         description: String,
         priority: {
           type: String,
@@ -130,33 +132,20 @@ const nepReportSchema = new mongoose.Schema(
       }
     ],
 
-    // ------------------------------------------------------------------
-    // 🔥 AI NARRATION CACHE (LANGUAGE ONLY)
-    // ------------------------------------------------------------------
+    // --------------------------------------------------
+    // AI NARRATION (CACHE ONLY)
+    // --------------------------------------------------
     narration: {
-      text: {
-        type: String
-      },
-      model: {
-        type: String,
-        default: 'SPYRAL-AI'
-      },
-      language: {
-        type: String,
-        default: 'en'
-      },
-      version: {
-        type: String,
-        default: 'v1'
-      },
-      generatedAt: {
-        type: Date
-      }
+      text: String,
+      model: { type: String, default: 'SPYRAL-AI' },
+      language: { type: String, default: 'en' },
+      version: { type: String, default: 'v1' },
+      generatedAt: Date
     },
 
-    // ------------------------------------------------------------------
+    // --------------------------------------------------
     // METADATA
-    // ------------------------------------------------------------------
+    // --------------------------------------------------
     generatedAt: {
       type: Date,
       default: Date.now
@@ -172,15 +161,21 @@ const nepReportSchema = new mongoose.Schema(
   }
 );
 
-// ----------------------------------------------------------------------
-// INDEXES
-// ----------------------------------------------------------------------
-nepReportSchema.index({ reportId: 1 });
-nepReportSchema.index({ studentId: 1, generatedAt: -1 });
-nepReportSchema.index({ schoolId: 1, reportType: 1 });
+// --------------------------------------------------
+// 🔐 CRITICAL COMPOSITE UNIQUE INDEX (SYSTEM LAW)
+// --------------------------------------------------
+nepReportSchema.index(
+  {
+    studentId: 1,
+    reportType: 1,
+    periodStart: 1,
+    periodEnd: 1
+  },
+  {
+    unique: true,
+    name: 'unique_student_period_report'
+  }
+);
 
-// ----------------------------------------------------------------------
-// MODEL EXPORT
-// ----------------------------------------------------------------------
-const NEPReport = mongoose.model('NEPReport', nepReportSchema);
-module.exports = NEPReport;
+// --------------------------------------------------
+module.exports = mongoose.model('NEPReport', nepReportSchema);

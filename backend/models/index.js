@@ -36,6 +36,7 @@ exports.HMMState = require('./HMMState');
 exports.KnowledgeGraph = require('./KnowledgeGraph');
 exports.LongitudinalData = require('./LongitudinalData');
 exports.HumanCognitionDataset = require('./HumanCognitionDataset');
+exports.SPIRecord = require('./SPIRecord');   // ✅ THIS WAS MISSING
 
 // Session & Tracking
 exports.SimulationSession = require('./SimulationSession'); // ✅ ADD THIS LINE

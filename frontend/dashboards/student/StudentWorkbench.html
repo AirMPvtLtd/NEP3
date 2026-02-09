@@ -1172,7 +1172,9 @@
                     <button class="filter-btn" data-subject="math">Mathematics (17)</button>
                     <button class="filter-btn" data-subject="chemistry">Chemistry (Coming Soon)</button>
                     <button class="filter-btn" data-subject="biology">Biology (Coming Soon)</button>
-                    <button class="filter-btn" data-subject="computer">Computer Science (Coming Soon)</button>
+                    <button class="filter-btn" data-subject="computer">Artificial Intelligence (Coming Soon)</button>
+                    <button class="filter-btn" data-subject="computer">Coding (Coming Soon)</button>
+                    <button class="filter-btn" data-subject="computer">Drone (Coming Soon)</button>
                 </div>
                 
                 <div id="simulationsGrid" class="simulations-grid">
@@ -3439,10 +3441,25 @@
             try {
                 const data = await throttledApiCall('/student/dashboard');
                 dashboardData = data.data;
+                
+                // Ensure required fields exist
+                if (!dashboardData.student) dashboardData.student = {};
+                if (!dashboardData.stats) dashboardData.stats = {};
+                if (!dashboardData.recentChallenges) dashboardData.recentChallenges = [];
+                
                 updateOverviewPage();
                 return dashboardData;
             } catch (error) {
                 console.error('Error loading dashboard:', error);
+                
+                // Provide fallback data
+                dashboardData = {
+                    student: { name: 'Student' },
+                    stats: { totalChallenges: 0, currentStreak: 0 },
+                    recentChallenges: []
+                };
+                
+                updateOverviewPage();
                 throw error;
             }
         }
@@ -3451,16 +3468,21 @@
             if (!dashboardData) return;
             
             // Update user info
-            document.getElementById('userName').textContent = dashboardData.student.name;
-            document.getElementById('welcomeName').textContent = dashboardData.student.name;
-            document.getElementById('userClass').textContent = `Class ${dashboardData.student.class}${dashboardData.student.section}`;
-            document.getElementById('userAvatar').textContent = dashboardData.student.name.charAt(0).toUpperCase();
+            document.getElementById('userName').textContent = dashboardData.student?.name || 'Student';
+            document.getElementById('welcomeName').textContent = dashboardData.student?.name || 'Student';
+            document.getElementById('userClass').textContent = `Class ${dashboardData.student?.class || '--'}${dashboardData.student?.section || ''}`;
+            document.getElementById('userAvatar').textContent = (dashboardData.student?.name?.charAt(0) || 'S').toUpperCase();
             
-            // Update stats
-            document.getElementById('completedCount').textContent = dashboardData.stats.totalChallenges;
-            document.getElementById('streakCount').textContent = dashboardData.stats.currentStreak;
-            document.getElementById('piValue').textContent = dashboardData.student.performanceIndex.toFixed(1);
-            document.getElementById('avgScore').textContent = dashboardData.stats.averageScore.toFixed(1);
+            // Update stats with null checks
+            document.getElementById('completedCount').textContent = dashboardData.stats?.totalChallenges || 0;
+            document.getElementById('streakCount').textContent = dashboardData.stats?.currentStreak || 0;
+            
+            // Fix: Add null checks for toFixed() calls
+            const piValue = dashboardData.student?.performanceIndex;
+            document.getElementById('piValue').textContent = piValue !== undefined && piValue !== null ? piValue.toFixed(1) : '--';
+            
+            const avgScore = dashboardData.stats?.averageScore;
+            document.getElementById('avgScore').textContent = avgScore !== undefined && avgScore !== null ? avgScore.toFixed(1) : '--';
             
             // Update recent challenges
             const tbody = document.getElementById('recentChallengesBody');
@@ -3469,9 +3491,9 @@
                     <tr>
                         <td>${ch.title || ch.challengeId}</td>
                         <td>${ch.simulationType}</td>
-                        <td>${ch.score ? ch.score.toFixed(1) : 'N/A'}</td>
+                        <td>${ch.score !== undefined && ch.score !== null ? ch.score.toFixed(1) : 'N/A'}</td>
                         <td><span class="badge badge-${ch.status === 'evaluated' ? 'success' : 'warning'}">${ch.status}</span></td>
-                        <td>${new Date(ch.generatedAt).toLocaleDateString()}</td>
+                        <td>${ch.generatedAt ? new Date(ch.generatedAt).toLocaleDateString() : 'N/A'}</td>
                     </tr>
                 `).join('');
             } else {
@@ -3549,10 +3571,13 @@
         function updatePerformancePage(data) {
             const perf = data.data;
             
-            // Update performance metrics
-            document.getElementById('perfPI').textContent = perf.performance?.performanceIndex?.toFixed(1) ?? '--';
+            // Update performance metrics with null checks
+            const piValue = perf.performance?.performanceIndex;
+            document.getElementById('perfPI').textContent = piValue !== undefined && piValue !== null ? piValue.toFixed(1) : '--';
+            
             document.getElementById('perfGrade').textContent = perf.performance?.grade ?? '--';
             document.getElementById('perfTotal').textContent = perf.performance?.totalChallenges ?? '0';
+            
             const avgScore = perf.performance?.averageScore ?? 0;
             document.getElementById('perfAvg').textContent = (typeof avgScore === 'number' ? avgScore.toFixed(1) : '0.0') + '%';
             

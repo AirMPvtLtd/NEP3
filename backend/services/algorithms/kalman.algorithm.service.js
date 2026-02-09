@@ -1,233 +1,117 @@
 /**
- * KALMAN FILTER ALGORITHM SERVICE
- * Complete integration of kalman.filter.js
+ * Kalman Algorithm Service
+ * ------------------------------------------------------------
+ * PURPOSE:
+ * - Smooth student performance signal over time
+ * - Reduce noise from single evaluations
+ * - Persist longitudinal ability estimate
+ *
+ * DESIGN:
+ * - Stateless service API
+ * - State persisted in KalmanState model
+ * - studentId is STRING (domain ID, not ObjectId)
+ *
+ * CONTRACT:
+ * - update(studentId, observation, meta?) -> KalmanState
  */
 
-const KalmanFilter = require('../../algorithms/kalman.filter');
-const { KalmanState, Challenge, MetaParameters } = require('../../models');
-const logger = require('../../utils/logger');
+const KalmanState = require('../../models/KalmanState');
+const HMMState = require('../../models/HMMState');
+const BayesianState = require('../../models/BayesianNetwork');
 
-class KalmanAlgorithmService {
-  /**
-   * Get or create Kalman filter for student
-   */
-  async getFilter(studentId, metric = 'performance_score') {
-    let kalmanState = await KalmanState.findOne({ studentId, metric });
-    
-    if (!kalmanState) {
-      kalmanState = await KalmanState.create({
-        studentId,
-        metric,
-        state: { x: 50, P: 10 },
-        Q: 0.1,
-        R: 5
-      });
-    }
-    
-    // Initialize filter with saved state
-    const filter = new KalmanFilter({
-      x: kalmanState.state.x,
-      P: kalmanState.state.P,
-      Q: kalmanState.Q,
-      R: kalmanState.R
+// -----------------------------------------------------------------------------
+// Configuration (can later move to MetaParameters)
+// -----------------------------------------------------------------------------
+const DEFAULT_UNCERTAINTY = 100;
+const MIN_UNCERTAINTY = 10;
+const PROCESS_NOISE = 5;   // Q
+const MEASUREMENT_NOISE = 15; // R
+
+// -----------------------------------------------------------------------------
+// Update Kalman state with new observation
+// -----------------------------------------------------------------------------
+async function update(studentId, observation, meta = {}) {
+  if (!studentId) {
+    throw new Error('Kalman update requires studentId');
+  }
+
+  const z = Number(observation) || 0; // measurement
+
+  // ---------------------------------------------------------------------------
+  // 1. Load previous state (if any)
+  // ---------------------------------------------------------------------------
+  let prev = await KalmanState.findOne({ studentId });
+
+  // If no previous state, initialize
+  if (!prev) {
+    const initial = await KalmanState.create({
+      studentId,
+      estimatedAbility: z,
+      uncertainty: DEFAULT_UNCERTAINTY,
+      lastObservation: z,
+      meta,
+      updatedAt: new Date()
     });
-    
-    return { filter, kalmanState };
+
+    return initial;
   }
-  
-  /**
-   * Update filter with new observation
-   */
-  async update(studentId, observation, metric = 'performance_score') {
-    try {
-      const { filter, kalmanState } = await this.getFilter(studentId, metric);
-      
-      // ✅ Predict step
-      filter.predict();
-      
-      // ✅ Update step
-      filter.update(observation);
-      
-      // Get updated state
-      const state = filter.getState();
-      
-      // Save to database
-      kalmanState.state = { x: state.x, P: state.P };
-      kalmanState.prediction = {
-        value: state.x,
-        confidence: 1 - (state.P / 100),
-        timestamp: new Date()
-      };
-      kalmanState.lastUpdated = new Date();
-      
-      await kalmanState.save();
-      
-      return {
-        success: true,
-        estimate: state.x,
-        uncertainty: state.P,
-        confidence: 1 - (state.P / 100)
-      };
-      
-    } catch (error) {
-      logger.error('Kalman update error:', error);
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  }
-  
-  /**
-   * Predict future performance
-   */
-  async predict(studentId, steps = 1, metric = 'performance_score') {
-    try {
-      const { filter } = await this.getFilter(studentId, metric);
-      
-      const predictions = [];
-      
-      for (let i = 0; i < steps; i++) {
-        filter.predict();
-        const state = filter.getState();
-        
-        predictions.push({
-          step: i + 1,
-          estimate: state.x,
-          uncertainty: state.P,
-          confidence: 1 - (state.P / 100)
-        });
-      }
-      
-      return {
-        success: true,
-        predictions
-      };
-      
-    } catch (error) {
-      logger.error('Kalman predict error:', error);
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  }
-  
-  /**
-   * Smooth performance history (Kalman smoother)
-   */
-  async smooth(studentId, observations) {
-    try {
-      // Get filter
-      const { filter } = await this.getFilter(studentId);
-      
-      // ✅ Use Kalman smoother from algorithm
-      const smoothed = filter.smooth(observations);
-      
-      return {
-        success: true,
-        smoothed: smoothed.map((value, i) => ({
-          original: observations[i],
-          smoothed: value,
-          index: i
-        }))
-      };
-      
-    } catch (error) {
-      logger.error('Kalman smooth error:', error);
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  }
-  
-  /**
-   * Adaptive noise estimation
-   */
-  async adaptNoise(studentId) {
-    try {
-      // Get recent challenges
-      const challenges = await Challenge.find({
-        studentId,
-        status: { $in: ['completed', 'evaluated'] }
-      })
-        .sort({ completedAt: -1 })
-        .limit(20)
-        .lean();
-      
-      if (challenges.length < 5) {
-        return {
-          adapted: false,
-          reason: 'Insufficient data'
-        };
-      }
-      
-      const observations = challenges.map(c => c.results?.totalScore || 0);
-      
-      const { filter, kalmanState } = await this.getFilter(studentId);
-      
-      // ✅ Adaptive noise estimation
-      const noise = filter.estimateNoise(observations);
-      
-      // Update noise parameters
-      kalmanState.Q = noise.Q;
-      kalmanState.R = noise.R;
-      
-      await kalmanState.save();
-      
-      return {
-        adapted: true,
-        Q: noise.Q,
-        R: noise.R
-      };
-      
-    } catch (error) {
-      logger.error('Adapt noise error:', error);
-      return {
-        adapted: false,
-        error: error.message
-      };
-    }
-  }
-  
-  /**
-   * Get Kalman statistics
-   */
-  async getStatistics(studentId, metric = 'performance_score') {
-    try {
-      const kalmanState = await KalmanState.findOne({ studentId, metric });
-      
-      if (!kalmanState) {
-        return {
-          available: false
-        };
-      }
-      
-      return {
-        available: true,
-        state: {
-          estimate: kalmanState.state.x,
-          uncertainty: kalmanState.state.P
-        },
-        parameters: {
-          Q: kalmanState.Q,
-          R: kalmanState.R
-        },
-        prediction: kalmanState.prediction,
-        lastUpdated: kalmanState.lastUpdated
-      };
-      
-    } catch (error) {
-      logger.error('Get Kalman stats error:', error);
-      return {
-        available: false,
-        error: error.message
-      };
-    }
-  }
+
+  // ---------------------------------------------------------------------------
+  // 2. Prediction step
+  // ---------------------------------------------------------------------------
+  const x_prior = prev.estimatedAbility;
+  const p_prior = prev.uncertainty + PROCESS_NOISE;
+
+  // ---------------------------------------------------------------------------
+  // 3. Update step
+  // ---------------------------------------------------------------------------
+  const kalmanGain = p_prior / (p_prior + MEASUREMENT_NOISE);
+  const x_post = x_prior + kalmanGain * (z - x_prior);
+  const p_post = Math.max(
+    MIN_UNCERTAINTY,
+    (1 - kalmanGain) * p_prior
+  );
+
+  // ---------------------------------------------------------------------------
+  // 4. Persist updated state
+  // ---------------------------------------------------------------------------
+  const updated = await KalmanState.findOneAndUpdate(
+    { studentId },
+    {
+      studentId,
+      estimatedAbility: Number(x_post.toFixed(2)),
+      uncertainty: Number(p_post.toFixed(2)),
+      lastObservation: z,
+      meta,
+      updatedAt: new Date()
+    },
+    { new: true }
+  );
+
+  return updated;
 }
 
-const kalmanService = new KalmanAlgorithmService();
+// -----------------------------------------------------------------------------
+// Optional: Read-only helper (used by analytics/reporting)
+// -----------------------------------------------------------------------------
+async function getState(studentId) {
+  if (!studentId) return null;
+  return KalmanState.findOne({ studentId });
+}
 
-module.exports = kalmanService;
+// -----------------------------------------------------------------------------
+// Optional: Reset Kalman state (admin / testing only)
+// -----------------------------------------------------------------------------
+async function reset(studentId) {
+  if (!studentId) return;
+  await KalmanState.deleteOne({ studentId });
+}
+
+// -----------------------------------------------------------------------------
+// EXPORTS
+// -----------------------------------------------------------------------------
+module.exports = {
+  update,
+  getState,
+  reset
+};

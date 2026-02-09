@@ -15,7 +15,7 @@ const Teacher = require('../models/Teacher');
 const School  = require('../models/School');
 const { evaluateChallenge } = require('../services/challengeEvaluation.service');
 
-
+const SPIRecord = require('../models/SPIRecord');
 
 // ============================================================================
 // PROFILE & DASHBOARD
@@ -139,217 +139,232 @@ const { evaluateChallenge } = require('../services/challengeEvaluation.service')
     //   }
     // };
 
+ 
+
     exports.getProfile = async (req, res) => {
       try {
         const student = await Student.findById(req.user.userId).lean();
-        
         if (!student) {
-          return res.status(404).json({
-            success: false,
-            message: 'Student not found'
-          });
+          return res.status(404).json({ success: false, message: 'Student not found' });
         }
-        
-        // Extract clean IDs
-        const actualTeacherId = extractId(student.teacherId, 'teacherId');
-        const actualSchoolId = extractId(student.schoolId, 'schoolId');
-        
-        // Fetch teacher
-        let teacher = null;
-        if (actualTeacherId && actualTeacherId !== 'SYSTEM-DEFAULT') {
-          try {
-            teacher = await Teacher.findOne({teacherId: actualTeacherId})
-              .select('teacherId name email subjects')
-              .lean();
-            logger.info('✅ Teacher fetched', {teacherId: actualTeacherId, teacherName: teacher?.name});
-          } catch (err) {
-            logger.error('🔥 Teacher query failed', {teacherId: actualTeacherId, error: err.message});
-          }
-        }
-        
-        // Fetch school
-        let school = null;
-        if (actualSchoolId && actualSchoolId !== 'SYSTEM-DEFAULT') {
-          try {
-            school = await School.findOne({schoolId: actualSchoolId})
-              .select('schoolId schoolName address city state')
-              .lean();
-            logger.info('✅ School fetched', {schoolId: actualSchoolId, schoolName: school?.schoolName});
-          } catch (err) {
-            logger.error('🔥 School query failed', {schoolId: actualSchoolId, error: err.message});
-          }
-        }
-        
-        logger.info('📤 Student profile response ready', {
+
+        // ----------------------------------
+        // 1. Fetch latest SPI snapshot
+        // ----------------------------------
+        const latestSPI = await SPIRecord
+          .findOne({ studentId: student.studentId })
+          .sort({ calculatedAt: -1 })
+          .lean();
+
+        // ----------------------------------
+        // 2. Aggregate competencies from Ledger
+        // ----------------------------------
+        const ledgerEvents = await Ledger.find({
           studentId: student.studentId,
-          teacherAttached: !!teacher,
-          schoolAttached: !!school
+          eventType: Ledger.EVENT_TYPES.CHALLENGE_EVALUATED,
+          status: 'confirmed'
+        }).lean();
+
+        const competencyMap = {};
+        ledgerEvents.forEach(e => {
+          (e.challenge?.competenciesAssessed || []).forEach(c => {
+            if (!competencyMap[c.competency]) {
+              competencyMap[c.competency] = { total: 0, count: 0 };
+            }
+            competencyMap[c.competency].total += c.score;
+            competencyMap[c.competency].count += 1;
+          });
         });
-        
+
+        const competencyScores = {};
+        Object.entries(competencyMap).forEach(([k, v]) => {
+          competencyScores[k] = Number((v.total / v.count).toFixed(2));
+        });
+
+        // ----------------------------------
+        // 3. Teacher & School
+        // ----------------------------------
+        const teacher = student.teacherId
+          ? await Teacher.findOne({ teacherId: student.teacherId })
+              .select('teacherId name email subjects')
+              .lean()
+          : null;
+
+        const school = student.schoolId
+          ? await School.findOne({ schoolId: student.schoolId })
+              .select('schoolId schoolName')
+              .lean()
+          : null;
+
         return res.json({
           success: true,
           data: {
             student: {
-              ...student,
+              studentId: student.studentId,
+              name: student.name,
+              class: student.class,
+              section: student.section,
+              rollNumber: student.rollNumber,
+
+              spi: latestSPI?.spi ?? null,
+              grade: latestSPI?.grade ?? null,
+              learningState: latestSPI?.learning_state ?? null,
+
+              competencyScores,
               teacher,
               school
             }
           }
         });
+
       } catch (error) {
-        logger.error('Get student profile error:', error);
-        return res.status(500).json({
-          success: false,
-          message: 'Error fetching profile'
-        });
+        logger.error('Get student profile error', error);
+        return res.status(500).json({ success: false, message: 'Error fetching profile' });
       }
     };
-// ============================================================================
-// UPDATE STUDENT PROFILE
-// ============================================================================
-exports.updateProfile = async (req, res) => {
-  try {
-    const { userId } = req.user; // business ID: STD-XXXXX
 
-    const allowedUpdates = [
-      'name',
-      'phone',
-      'dateOfBirth',
-      'profilePicture'
-    ];
+    // ============================================================================
+    // UPDATE STUDENT PROFILE
+    // ============================================================================
+    exports.updateProfile = async (req, res) => {
+      try {
+        const allowedUpdates = ['name', 'phone', 'dateOfBirth', 'profilePicture'];
+        const updates = {};
 
-    const updates = {};
-    allowedUpdates.forEach(field => {
-      if (req.body[field] !== undefined) {
-        updates[field] = req.body[field];
+        allowedUpdates.forEach(f => {
+          if (req.body[f] !== undefined) updates[f] = req.body[f];
+        });
+
+        if (!Object.keys(updates).length) {
+          return res.status(400).json({ success: false, message: 'No valid fields provided' });
+        }
+
+        const student = await Student.findByIdAndUpdate(
+          req.user.userId,
+          updates,
+          { new: true, runValidators: true }
+        );
+
+        if (!student) {
+          return res.status(404).json({ success: false, message: 'Student not found' });
+        }
+
+        await Activity.log({
+          userId: student.studentId,
+          userType: 'student',
+          schoolId: student.schoolId,
+          activityType: 'profile_updated',
+          action: 'Student updated profile',
+          success: true
+        });
+
+        return res.json({
+          success: true,
+          message: 'Profile updated successfully',
+          data: { student }
+        });
+
+      } catch (error) {
+        logger.error('Update profile error', error);
+        return res.status(500).json({ success: false, message: 'Error updating profile' });
       }
-    });
-
-    if (Object.keys(updates).length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'No valid fields provided for update'
-      });
-    }
-
-    const student = await Student.findOneAndUpdate(
-      { studentId: userId },
-      updates,
-      { new: true, runValidators: true }
-    );
-
-    if (!student) {
-      return res.status(404).json({
-        success: false,
-        message: 'Student not found'
-      });
-    }
-
-    // Activity log (NEP-compliant)
-    await Activity.log({
-      userId: student.studentId,          // business ID
-      userType: 'student',
-      schoolId: student.schoolId,
-      activityType: 'profile_updated',
-      action: 'Student updated profile',
-      metadata: {
-        updatedFields: Object.keys(updates)
-      },
-      success: true
-    });
-
-    return res.json({
-      success: true,
-      message: 'Profile updated successfully',
-      data: { student }
-    });
-
-  } catch (error) {
-    logger.error('Update profile error:', error);
-
-    return res.status(500).json({
-      success: false,
-      message: 'Error updating profile',
-      error: error.message
-    });
-  }
-};
+    };
 
 
 exports.getDashboard = async (req, res) => {
   try {
-    const student = await Student.findById(req.user.userId);
-    
-    // Get recent challenges (last 7 days)
-    const recentChallenges = await Challenge.find({
+    const student = await Student.findById(req.user.userId).lean();
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    // ----------------------------------
+    // 1. Latest SPI
+    // ----------------------------------
+    const latestSPI = await SPIRecord
+      .findOne({ studentId: student.studentId })
+      .sort({ calculatedAt: -1 })
+      .lean();
+
+    // ----------------------------------
+    // 2. Ledger events
+    // ----------------------------------
+    const ledgerEvents = await Ledger.find({
       studentId: student.studentId,
-      generatedAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
-    }).sort({ generatedAt: -1 }).limit(10);
-    
-    // Calculate statistics
-    const totalChallenges = student.stats.totalChallengesCompleted;
-    const averageScore = student.stats.averageChallengeScore;
-    const currentStreak = student.stats.dailyStreak;
-    
-    // Get weak competencies
-    const weakCompetencies = student.weakCompetencies.map(comp => ({
-      name: comp,
-      score: student.competencyScores[comp]
-    }));
-    
-    // Get strong competencies
-    const strongCompetencies = student.strongCompetencies.map(comp => ({
-      name: comp,
-      score: student.competencyScores[comp]
-    }));
-    
-    // Check challenge limits
-    const limits = student.canGenerateChallenge('physics', CHALLENGE_LIMITS.DAILY_LIMIT, CHALLENGE_LIMITS.PER_SIMULATION_LIMIT);
-    
-    res.json({
+      eventType: Ledger.EVENT_TYPES.CHALLENGE_EVALUATED,
+      status: 'confirmed'
+    }).lean();
+
+    const totalChallenges = ledgerEvents.length;
+    const averageScore = totalChallenges
+      ? Number(
+          (ledgerEvents.reduce((s, e) => s + (e.data?.totalScore || 0), 0) /
+          totalChallenges).toFixed(2)
+        )
+      : 0;
+
+    // ----------------------------------
+    // 3. Competency strength
+    // ----------------------------------
+    const compAgg = {};
+    ledgerEvents.forEach(e => {
+      (e.challenge?.competenciesAssessed || []).forEach(c => {
+        if (!compAgg[c.competency]) compAgg[c.competency] = [];
+        compAgg[c.competency].push(c.score);
+      });
+    });
+
+    const strong = [];
+    const weak = [];
+
+    Object.entries(compAgg).forEach(([k, arr]) => {
+      const avg = arr.reduce((a,b)=>a+b,0) / arr.length;
+      if (avg >= 80) strong.push({ name: k, score: Number(avg.toFixed(2)) });
+      else if (avg < 50) weak.push({ name: k, score: Number(avg.toFixed(2)) });
+    });
+
+    // ----------------------------------
+    // 4. Recent challenges
+    // ----------------------------------
+    const recentChallenges = await Challenge.find({
+      studentId: student.studentId
+    }).sort({ generatedAt: -1 }).limit(5).lean();
+
+    return res.json({
       success: true,
       data: {
         student: {
           name: student.name,
           class: student.class,
           section: student.section,
-          performanceIndex: student.performanceIndex,
-          grade: student.grade
+          spi: latestSPI?.spi ?? null,
+          grade: latestSPI?.grade ?? null
         },
         stats: {
           totalChallenges,
-          averageScore,
-          currentStreak
+          averageScore
         },
         competencies: {
-          weak: weakCompetencies,
-          strong: strongCompetencies
+          strong,
+          weak
         },
         recentChallenges: recentChallenges.map(ch => ({
           challengeId: ch.challengeId,
           title: ch.title,
           simulationType: ch.simulationType,
           difficulty: ch.difficulty,
-          score: ch.results?.totalScore,
           status: ch.status,
           generatedAt: ch.generatedAt
-        })),
-        challengeLimits: {
-          dailyRemaining: limits.remaining?.daily || 0,
-          canGenerate: limits.allowed
-        }
+        }))
       }
     });
-    
+
   } catch (error) {
-    logger.error('Get dashboard error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching dashboard',
-      error: error.message
-    });
+    logger.error('Get dashboard error', error);
+    return res.status(500).json({ success: false, message: 'Error fetching dashboard' });
   }
 };
+
 
 // ============================================================================
 // SIMULATIONS

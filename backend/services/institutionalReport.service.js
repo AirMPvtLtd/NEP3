@@ -9,12 +9,10 @@ const InstitutionalReport = require('../models/InstitutionalReport');
 const Student = require('../models/Student');
 const Teacher = require('../models/Teacher');
 const NEPReport = require('../models/NEPReport');
+const SPIRecord = require('../models/SPIRecord');
 const { NEP_COMPETENCIES } = require('../config/constants');
 const logger = require('../utils/logger');
 
-// -----------------------------------------------------
-// MAIN ENTRY
-// -----------------------------------------------------
 async function generateInstitutionalReport({
   schoolId,
   periodStart,
@@ -32,49 +30,34 @@ async function generateInstitutionalReport({
   // ---------------------------------------------------
   // 1. BASIC COUNTS
   // ---------------------------------------------------
-  const [totalStudents, totalTeachers] = await Promise.all([
-    Student.countDocuments({ schoolId }),
+  const [students, totalTeachers] = await Promise.all([
+    Student.find({ schoolId }).lean(),
     Teacher.countDocuments({ schoolId })
   ]);
 
-  // ---------------------------------------------------
-  // 2. FETCH STUDENTS
-  // ---------------------------------------------------
-  const students = await Student.find({ schoolId }).lean();
-  const studentIds = students.map(s => s.studentId);
-
-  if (studentIds.length === 0) {
+  if (!students.length) {
     throw new Error('No students found for this school');
   }
 
+  const studentIds = students.map(s => s.studentId);
+
   // ---------------------------------------------------
-  // 3. FETCH NEP REPORTS (OVERLAP-AWARE)
+  // 2. FETCH SPI RECORDS (AUTHORITATIVE)
   // ---------------------------------------------------
-  const nepReports = await NEPReport.find({
+  const spiRecords = await SPIRecord.find({
     studentId: { $in: studentIds },
-    periodStart: { $lte: periodEnd },
-    periodEnd: { $gte: periodStart }
+    calculatedAt: { $gte: periodStart, $lte: periodEnd }
   }).lean();
 
   // ---------------------------------------------------
-  // 4. ACTIVE STUDENTS
+  // 3. ACTIVE STUDENTS
   // ---------------------------------------------------
-  const activeStudents = new Set(nepReports.map(r => r.studentId)).size;
+  const activeStudents = new Set(spiRecords.map(r => r.studentId)).size;
 
   // ---------------------------------------------------
-  // 5. SPI VALUES (CPI → fallback avgScore)
+  // 4. AVERAGE SPI
   // ---------------------------------------------------
-  const spiValues = nepReports
-    .map(r => {
-      if (typeof r.performanceMetrics?.cpi === 'number') {
-        return r.performanceMetrics.cpi * 100;
-      }
-      if (typeof r.summary?.averageScore === 'number') {
-        return r.summary.averageScore;
-      }
-      return null;
-    })
-    .filter(v => typeof v === 'number');
+  const spiValues = spiRecords.map(r => r.spi).filter(v => typeof v === 'number');
 
   const averageSPI =
     spiValues.length > 0
@@ -84,7 +67,7 @@ async function generateInstitutionalReport({
       : null;
 
   // ---------------------------------------------------
-  // 6. PERFORMANCE DISTRIBUTION
+  // 5. PERFORMANCE DISTRIBUTION
   // ---------------------------------------------------
   const performanceDistribution = {
     aPlus: 0,
@@ -95,22 +78,22 @@ async function generateInstitutionalReport({
     f: 0
   };
 
-  spiValues.forEach(score => {
-    if (score >= 90) performanceDistribution.aPlus++;
-    else if (score >= 80) performanceDistribution.a++;
-    else if (score >= 70) performanceDistribution.b++;
-    else if (score >= 60) performanceDistribution.c++;
-    else if (score >= 50) performanceDistribution.d++;
+  spiValues.forEach(spi => {
+    if (spi >= 90) performanceDistribution.aPlus++;
+    else if (spi >= 80) performanceDistribution.a++;
+    else if (spi >= 70) performanceDistribution.b++;
+    else if (spi >= 60) performanceDistribution.c++;
+    else if (spi >= 50) performanceDistribution.d++;
     else performanceDistribution.f++;
   });
 
   // ---------------------------------------------------
-  // 7. CLASS-WISE PERFORMANCE
+  // 6. CLASS-WISE PERFORMANCE
   // ---------------------------------------------------
   const classMap = {};
 
-  nepReports.forEach(report => {
-    const student = students.find(s => s.studentId === report.studentId);
+  spiRecords.forEach(r => {
+    const student = students.find(s => s.studentId === r.studentId);
     if (!student) return;
 
     const key = `${student.class}-${student.section || ''}`;
@@ -121,26 +104,13 @@ async function generateInstitutionalReport({
         section: student.section || '',
         totalStudents: 0,
         spiSum: 0,
-        scoreSum: 0,
         count: 0
       };
     }
 
     classMap[key].totalStudents++;
-
-    const spi =
-      typeof report.performanceMetrics?.cpi === 'number'
-        ? report.performanceMetrics.cpi * 100
-        : report.summary?.averageScore;
-
-    if (typeof spi === 'number') {
-      classMap[key].spiSum += spi;
-      classMap[key].count++;
-    }
-
-    if (typeof report.summary?.averageScore === 'number') {
-      classMap[key].scoreSum += report.summary.averageScore;
-    }
+    classMap[key].spiSum += r.spi;
+    classMap[key].count++;
   });
 
   const classwisePerformance = Object.values(classMap).map(c => ({
@@ -148,14 +118,18 @@ async function generateInstitutionalReport({
     section: c.section,
     totalStudents: c.totalStudents,
     averageSPI: c.count ? Number((c.spiSum / c.count).toFixed(2)) : null,
-    averageChallengeScore: c.count
-      ? Number((c.scoreSum / c.count).toFixed(2))
-      : null
+    averageChallengeScore: null // intentional (SPI-only report)
   }));
 
   // ---------------------------------------------------
-  // 8. COMPETENCY OVERVIEW
+  // 7. NEP COMPETENCY OVERVIEW (FROM NEP REPORTS)
   // ---------------------------------------------------
+  const nepReports = await NEPReport.find({
+    studentId: { $in: studentIds },
+    periodStart: { $lte: periodEnd },
+    periodEnd: { $gte: periodStart }
+  }).lean();
+
   const competencyStats = {};
   NEP_COMPETENCIES.forEach(c => {
     competencyStats[c] = {
@@ -189,51 +163,27 @@ async function generateInstitutionalReport({
   });
 
   // ---------------------------------------------------
-  // 9. TOP PERFORMERS
+  // 8. TOP PERFORMERS
   // ---------------------------------------------------
-  const topPerformers = nepReports
+  const topPerformers = spiRecords
     .map(r => {
       const student = students.find(s => s.studentId === r.studentId);
-      const spi =
-        typeof r.performanceMetrics?.cpi === 'number'
-          ? r.performanceMetrics.cpi * 100
-          : r.summary?.averageScore;
-
-      if (typeof spi !== 'number') return null;
-
-      return {
-        studentId: r.studentId,
-        name: student?.name || 'Unknown',
-        class: student?.class,
-        spi
-      };
+      return student
+        ? {
+            studentId: r.studentId,
+            name: student.name || 'Unknown',
+            class: student.class,
+            spi: r.spi
+          }
+        : null;
     })
     .filter(Boolean)
     .sort((a, b) => b.spi - a.spi)
     .slice(0, 10)
-    .map((r, index) => ({
-      ...r,
-      rank: index + 1
-    }));
+    .map((r, i) => ({ ...r, rank: i + 1 }));
 
   // ---------------------------------------------------
-  // 10. ACTIVITY + AI USAGE (SAFE DEFAULTS)
-  // ---------------------------------------------------
-  const activityTrends = {
-    dailyChallenges: {},
-    weeklyActive: {},
-    loginTrends: {}
-  };
-
-  const aiUsage = {
-    totalEvaluations: nepReports.length,
-    averageResponseTime: null,
-    totalTokensUsed: 0,
-    estimatedCost: 0
-  };
-
-  // ---------------------------------------------------
-  // 11. SAVE REPORT
+  // 9. SAVE REPORT
   // ---------------------------------------------------
   const report = await InstitutionalReport.create({
     schoolId,
@@ -241,11 +191,11 @@ async function generateInstitutionalReport({
     periodStart,
     periodEnd,
     overview: {
-      totalStudents,
+      totalStudents: students.length,
       activeStudents,
       totalTeachers,
       totalClasses: new Set(students.map(s => s.class)).size,
-      totalChallenges: nepReports.length,
+      totalChallenges: spiRecords.length,
       averageSPI
     },
     performanceDistribution,
@@ -253,8 +203,17 @@ async function generateInstitutionalReport({
     subjectwisePerformance: [],
     topPerformers,
     competencyOverview,
-    activityTrends,
-    aiUsage,
+    activityTrends: {
+      dailyChallenges: {},
+      weeklyActive: {},
+      loginTrends: {}
+    },
+    aiUsage: {
+      totalEvaluations: spiRecords.length,
+      averageResponseTime: null,
+      totalTokensUsed: 0,
+      estimatedCost: 0
+    },
     generatedBy
   });
 
@@ -265,7 +224,6 @@ async function generateInstitutionalReport({
   return report;
 }
 
-// -----------------------------------------------------
 module.exports = {
   generateInstitutionalReport
 };

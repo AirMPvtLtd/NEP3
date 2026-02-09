@@ -147,6 +147,7 @@ router.get(
   reportController.getInstitutionalReport
 );
 
+
 /**
  * @route   GET /api/reports/institutional/school/:schoolId
  * @desc    Get school's institutional reports

@@ -422,7 +422,12 @@ const securityHeaders = (req, res, next) => {
   // Content Security Policy
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;"
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.jquery.com; " +
+    "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net; " +
+    "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:; " +
+    "img-src 'self' data: https: blob:; " +
+    "connect-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;"
   );
   
   // Strict Transport Security (HTTPS only)

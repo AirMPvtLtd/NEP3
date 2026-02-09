@@ -1,6 +1,7 @@
 /**
  * INSTITUTIONAL REPORT MODEL
  * School-wide NEP analytics & audit-ready reports
+ * FINAL – CTO VERIFIED
  */
 
 const mongoose = require('mongoose');
@@ -10,7 +11,7 @@ const { NEP_COMPETENCIES } = require('../config/constants');
 const institutionalReportSchema = new mongoose.Schema({
 
   // ------------------------------------------------------------------
-  // Identity
+  // Identity (Business ID – NOT Mongo _id)
   // ------------------------------------------------------------------
   reportId: {
     type: String,
@@ -52,7 +53,7 @@ const institutionalReportSchema = new mongoose.Schema({
     totalClasses: { type: Number, default: 0 },
     totalChallenges: { type: Number, default: 0 },
 
-    // School-level SPI / CPI equivalent
+    // School-level intelligence (derived from SPI records)
     averageSPI: { type: Number, default: null }
   },
 
@@ -60,12 +61,12 @@ const institutionalReportSchema = new mongoose.Schema({
   // Performance Distribution (Grade Bands)
   // ------------------------------------------------------------------
   performanceDistribution: {
-    aPlus: { type: Number, default: 0 }, // 90–100
-    a:     { type: Number, default: 0 }, // 80–89
-    b:     { type: Number, default: 0 }, // 70–79
-    c:     { type: Number, default: 0 }, // 60–69
-    d:     { type: Number, default: 0 }, // 50–59
-    f:     { type: Number, default: 0 }  // <50
+    aPlus: { type: Number, default: 0 },
+    a:     { type: Number, default: 0 },
+    b:     { type: Number, default: 0 },
+    c:     { type: Number, default: 0 },
+    d:     { type: Number, default: 0 },
+    f:     { type: Number, default: 0 }
   },
 
   // ------------------------------------------------------------------
@@ -88,7 +89,7 @@ const institutionalReportSchema = new mongoose.Schema({
 
     totalChallenges: { type: Number, default: 0 },
     averageScore: { type: Number, default: null },
-    passRate: { type: Number, default: null } // percentage
+    passRate: { type: Number, default: null }
   }],
 
   // ------------------------------------------------------------------
@@ -127,13 +128,11 @@ const institutionalReportSchema = new mongoose.Schema({
       of: Number,
       default: {}
     },
-
     weeklyActive: {
       type: Map,
       of: Number,
       default: {}
     },
-
     loginTrends: {
       type: Map,
       of: Number,
@@ -142,17 +141,17 @@ const institutionalReportSchema = new mongoose.Schema({
   },
 
   // ------------------------------------------------------------------
-  // AI Usage & Cost Analytics (for Admin / Govt)
+  // AI Usage & Cost Analytics
   // ------------------------------------------------------------------
   aiUsage: {
     totalEvaluations: { type: Number, default: 0 },
-    averageResponseTime: { type: Number, default: null }, // ms
+    averageResponseTime: { type: Number, default: null },
     totalTokensUsed: { type: Number, default: 0 },
     estimatedCost: { type: Number, default: 0 }
   },
 
   // ------------------------------------------------------------------
-  // Metadata
+  // Metadata (AUDIT CRITICAL)
   // ------------------------------------------------------------------
   generatedAt: {
     type: Date,
@@ -162,6 +161,12 @@ const institutionalReportSchema = new mongoose.Schema({
   generatedBy: {
     type: String,
     default: 'system'
+  },
+
+  generatedByRole: {
+    type: String,
+    enum: ['admin', 'teacher', 'system'],
+    default: 'system'
   }
 
 }, {
@@ -169,11 +174,17 @@ const institutionalReportSchema = new mongoose.Schema({
 });
 
 // ------------------------------------------------------------------
-// Indexes (Performance + Audit)
+// Indexes (Performance + Audit + Deduplication)
 // ------------------------------------------------------------------
 institutionalReportSchema.index({ reportId: 1 });
 institutionalReportSchema.index({ schoolId: 1, generatedAt: -1 });
 institutionalReportSchema.index({ reportType: 1, periodStart: -1 });
+
+// 🚨 Prevent duplicate reports for same school + period
+institutionalReportSchema.index(
+  { schoolId: 1, reportType: 1, periodStart: 1, periodEnd: 1 },
+  { unique: true }
+);
 
 module.exports = mongoose.model(
   'InstitutionalReport',
