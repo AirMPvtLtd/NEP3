@@ -5101,3 +5101,168 @@
 {"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-09 22:19:25"}
 {"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-09 22:19:25"}
 {"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":77368,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-09 22:19:25"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-09 22:26:53"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-09 22:26:54"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-09 22:26:54"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-09 22:26:54"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-09 22:26:54"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-09 22:26:54"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-09 22:26:54"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-09 22:26:54"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":77842,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-09 22:26:54"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-09 22:39:52"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-09 22:39:53"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-09 22:39:53"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-09 22:39:53"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-09 22:39:53"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-09 22:39:53"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-09 22:39:53"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-09 22:39:53"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":78553,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-09 22:39:53"}
+{"level":"error","message":"Get class performance report error: SPIRecord is not defined","service":"nep-workbench","stack":"ReferenceError: SPIRecord is not defined\n    at exports.getClassPerformanceReport (/home/popeye/Downloads/NEP3/backend/controllers/teacher.controller.js:1096:24)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-02-09 22:40:08"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-09 22:41:20"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-09 22:41:20"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-09 22:41:20"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-09 22:41:20"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-09 22:41:20"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-09 22:41:20"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-09 22:41:20"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-09 22:41:20"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":78691,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-09 22:41:20"}
+{"level":"error","message":"Get class performance report error: Ledger is not defined","service":"nep-workbench","stack":"ReferenceError: Ledger is not defined\n    at exports.getClassPerformanceReport (/home/popeye/Downloads/NEP3/backend/controllers/teacher.controller.js:1114:23)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-02-09 22:41:24"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-09 22:41:58"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-09 22:41:58"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-09 22:41:58"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-09 22:41:58"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-09 22:41:58"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-09 22:41:58"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-09 22:41:58"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-09 22:41:58"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":78795,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-09 22:41:58"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-10 22:07:09"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-10 22:07:09"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-10 22:07:09"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-10 22:07:09"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-10 22:07:09"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-10 22:07:09"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-10 22:07:09"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-10 22:07:09"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":113574,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-10 22:07:09"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-10 22:24:43"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-10 22:24:43"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-10 22:24:43"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-10 22:24:43"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-10 22:24:43"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-10 22:24:43"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-10 22:24:43"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-10 22:24:43"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":115205,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-10 22:24:43"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-10 22:34:06"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-10 22:34:06"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-10 22:34:06"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-10 22:34:06"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-10 22:34:06"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-10 22:34:06"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-10 22:34:06"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-10 22:34:06"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":116076,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-10 22:34:06"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-10 22:50:52"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-10 22:50:52"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-10 22:50:52"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-10 22:50:52"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-10 22:50:52"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-10 22:50:52"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-10 22:50:52"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-10 22:50:52"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":117795,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-10 22:50:52"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-10 22:57:40"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-10 22:57:40"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-10 22:57:40"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-10 22:57:40"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-10 22:57:40"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-10 22:57:40"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-10 22:57:40"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-10 22:57:40"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":118547,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-10 22:57:40"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-10 23:11:12"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-10 23:11:13"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-10 23:11:13"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-10 23:11:13"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-10 23:11:13"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-10 23:11:13"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-10 23:11:13"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-10 23:11:13"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":120022,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-10 23:11:13"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-10 23:17:49"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-10 23:17:49"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-10 23:17:49"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-10 23:17:49"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-10 23:17:49"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-10 23:17:49"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-10 23:17:49"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-10 23:17:49"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":120774,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-10 23:17:49"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-10 23:18:53"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-10 23:18:53"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-10 23:18:53"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-10 23:18:53"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-10 23:18:53"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-10 23:18:53"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-10 23:18:53"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-10 23:18:53"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":120946,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-10 23:18:53"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-10 23:22:52"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-10 23:22:52"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-10 23:22:52"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-10 23:22:52"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-10 23:22:52"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-10 23:22:52"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-10 23:22:52"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-10 23:22:52"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":121454,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-10 23:22:52"}
+{"level":"error","message":"Get student performance error: cpiSnapshot is not defined","service":"nep-workbench","stack":"ReferenceError: cpiSnapshot is not defined\n    at exports.getStudentPerformance (/home/popeye/Downloads/NEP3/backend/controllers/teacher.controller.js:907:29)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2026-02-10 23:22:57"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-10 23:25:30"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-10 23:25:30"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-10 23:25:30"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-10 23:25:30"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-10 23:25:30"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-10 23:25:30"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-10 23:25:30"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-10 23:25:30"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":121863,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-10 23:25:30"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-10 23:39:29"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-10 23:39:29"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-10 23:39:29"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-10 23:39:29"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-10 23:39:29"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-10 23:39:29"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-10 23:39:29"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-10 23:39:29"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":123500,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-10 23:39:29"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-10 23:48:05"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-10 23:48:06"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-10 23:48:06"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-10 23:48:06"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-10 23:48:06"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-10 23:48:06"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-10 23:48:06"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-10 23:48:06"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":124535,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-10 23:48:06"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-10 23:53:23"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-10 23:53:24"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-10 23:53:24"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-10 23:53:24"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-10 23:53:24"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-10 23:53:24"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-10 23:53:24"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-10 23:53:24"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":125131,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-10 23:53:24"}
+{"level":"info","message":"✅ SendGrid initialized","service":"nep-workbench","timestamp":"2026-02-10 23:59:25"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-10 23:59:25"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-10 23:59:25"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-10 23:59:25"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-10 23:59:25"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-10 23:59:25"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-10 23:59:25"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-10 23:59:25"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":125820,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-10 23:59:25"}

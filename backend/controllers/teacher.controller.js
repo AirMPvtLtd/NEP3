@@ -14,10 +14,12 @@ const {
   Activity,
   NEPReport,
   School,
+  Ledger,
   HelpTicket
 } = require('../models');
 const logger = require('../utils/logger');
 
+const SPIRecord = require('../models/SPIRecord');
 // ============================================================================
 // PROFILE & DASHBOARD
 // ============================================================================
@@ -141,73 +143,105 @@ exports.updateProfile = async (req, res) => {
  * @route   GET /api/teacher/dashboard
  * @access  Private (Teacher)
  */
+// controllers/teacher.controller.js
+
 exports.getDashboard = async (req, res) => {
   try {
-    const teacher = await Teacher.findById(req.user.userId);
-    
+    // ------------------------------------------------------------
+    // 1️⃣ AUTH TEACHER
+    // ------------------------------------------------------------
+    const teacher = await Teacher.findById(req.user.userId).lean();
+
     if (!teacher) {
       return res.status(404).json({
         success: false,
         message: 'Teacher not found'
       });
     }
-    
-    // Get statistics
-    const totalStudents = await Student.countDocuments({
-      teacherId: teacher.teacherId,
-      active: true
-    });
-    
-    const totalClasses = await ClassSection.countDocuments({
-      teacherId: teacher.teacherId,
-      active: true
-    });
-    
-    const totalChallenges = await Challenge.countDocuments({
-      teacherId: teacher.teacherId
-    });
-    
-    // Get pending reviews
-    const pendingReviews = await Challenge.countDocuments({
-      teacherId: teacher.teacherId,
-      status: 'submitted'
-    });
-    
-    // Get recent challenges (last 7 days)
+
+    const teacherId = teacher.teacherId;
+
+    // ------------------------------------------------------------
+    // 2️⃣ BASIC STATS
+    // ------------------------------------------------------------
+    const [
+      totalStudents,
+      totalClasses,
+      totalChallenges,
+      pendingReviews,
+      openTickets
+    ] = await Promise.all([
+      Student.countDocuments({ teacherId, active: true }),
+      ClassSection.countDocuments({ teacherId, active: true }),
+      Challenge.countDocuments({ teacherId }),
+      Challenge.countDocuments({ teacherId, status: 'submitted' }),
+      HelpTicket.countDocuments({ teacherId, status: 'open' })
+    ]);
+
+    // ------------------------------------------------------------
+    // 3️⃣ RECENT CHALLENGES (LAST 7 DAYS)
+    // ------------------------------------------------------------
     const recentChallenges = await Challenge.find({
-      teacherId: teacher.teacherId,
+      teacherId,
       generatedAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
     })
       .sort({ generatedAt: -1 })
       .limit(10)
-      .select('challengeId studentId simulationType difficulty status generatedAt results');
-    
-    // Get students needing attention (low performance)
-    const studentsNeedingAttention = await Student.find({
-      teacherId: teacher.teacherId,
-      active: true,
-      performanceIndex: { $lt: 50 }
-    })
-      .sort({ performanceIndex: 1 })
-      .limit(5)
-      .select('studentId name class section performanceIndex');
-    
-    // Get top performers
-    const topPerformers = await Student.find({
-      teacherId: teacher.teacherId,
-      active: true
-    })
-      .sort({ performanceIndex: -1 })
-      .limit(5)
-      .select('studentId name class section performanceIndex');
-    
-    // Get help tickets
-    const openTickets = await HelpTicket.countDocuments({
-      teacherId: teacher.teacherId,
-      status: 'open'
+      .select('challengeId studentId simulationType difficulty status generatedAt')
+      .lean();
+
+    // ------------------------------------------------------------
+    // 4️⃣ LOAD SPI RECORDS (CANONICAL PERFORMANCE SOURCE)
+    // ------------------------------------------------------------
+    const spiRecords = await SPIRecord.find().lean();
+
+    const spiMap = new Map();
+    spiRecords.forEach(r => {
+      spiMap.set(r.studentId, r);
     });
-    
-    res.json({
+
+    const allStudentIds = Array.from(spiMap.keys());
+
+    // ------------------------------------------------------------
+    // 5️⃣ LOAD STUDENTS FOR THIS TEACHER
+    // ------------------------------------------------------------
+    const students = await Student.find({
+      teacherId,
+      active: true,
+      studentId: { $in: allStudentIds }
+    })
+      .select('studentId name class section')
+      .lean();
+
+    // ------------------------------------------------------------
+    // 6️⃣ MERGE STUDENT + SPI
+    // ------------------------------------------------------------
+    const enrichedStudents = students.map(s => {
+      const spi = spiMap.get(s.studentId);
+      return {
+        ...s,
+        performanceIndex: spi?.spi ?? 0,
+        grade: spi?.grade ?? 'F'
+      };
+    });
+
+    // ------------------------------------------------------------
+    // 7️⃣ DERIVE TOP & WEAK STUDENTS
+    // ------------------------------------------------------------
+    const studentsNeedingAttention = enrichedStudents
+      .filter(s => s.performanceIndex < 50)
+      .sort((a, b) => a.performanceIndex - b.performanceIndex)
+      .slice(0, 5);
+
+    const topPerformers = enrichedStudents
+      .filter(s => s.performanceIndex >= 70)
+      .sort((a, b) => b.performanceIndex - a.performanceIndex)
+      .slice(0, 5);
+
+    // ------------------------------------------------------------
+    // 8️⃣ RESPONSE
+    // ------------------------------------------------------------
+    return res.json({
       success: true,
       data: {
         teacher: {
@@ -228,16 +262,19 @@ exports.getDashboard = async (req, res) => {
         topPerformers
       }
     });
-    
+
   } catch (error) {
     logger.error('Get teacher dashboard error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error fetching dashboard',
       error: error.message
     });
   }
 };
+
+
+
 
 // ============================================================================
 // CLASS MANAGEMENT
@@ -248,16 +285,42 @@ exports.getDashboard = async (req, res) => {
  * @route   GET /api/teacher/classes
  * @access  Private (Teacher)
  */
+/**
+ * GET TEACHER CLASSES
+ * ------------------------------------------------------------------
+ * Source of truth:
+ * - Student collection for student counts
+ * - ClassSection only for structure/meta
+ *
+ * Never trust ClassSection.stats (stale cache)
+ */
+
 exports.getClasses = async (req, res) => {
   try {
-    const teacher = await Teacher.findById(req.user.userId);
-    
+    const teacher = await Teacher.findById(req.user.userId).lean();
+
+    if (!teacher) {
+      return res.status(404).json({
+        success: false,
+        message: 'Teacher not found'
+      });
+    }
+
+    const teacherId = teacher.teacherId;
+
+    // ---------------------------------------------------------------
+    // FETCH CLASSES
+    // ---------------------------------------------------------------
     const classes = await ClassSection.find({
-      teacherId: teacher.teacherId,
+      teacherId,
       active: true
-    }).sort({ class: 1, section: 1 });
-    
-    // Get student count for each class
+    })
+      .sort({ class: 1, section: 1 })
+      .lean();
+
+    // ---------------------------------------------------------------
+    // ENRICH WITH LIVE STUDENT COUNTS (SOURCE OF TRUTH)
+    // ---------------------------------------------------------------
     const classesWithCounts = await Promise.all(
       classes.map(async (cls) => {
         const studentCount = await Student.countDocuments({
@@ -266,30 +329,49 @@ exports.getClasses = async (req, res) => {
           schoolId: cls.schoolId,
           active: true
         });
-        
-        const classObj = cls.toObject();
-        classObj.studentCount = studentCount;
-        return classObj;
+
+        return {
+          ...cls,
+
+          // 🔒 OVERRIDE STALE STATS (CRITICAL FIX)
+          stats: {
+            totalStudents: studentCount,
+            activeStudents: studentCount,
+            averagePerformance: cls.stats?.averagePerformance ?? 0,
+            totalChallenges: cls.stats?.totalChallenges ?? 0
+          },
+
+          // Explicit field for frontend
+          studentCount,
+
+          // Derived helpers (UI-safe)
+          fullName: `Class ${cls.class}${cls.section} - ${cls.subject}`,
+          isFull: cls.capacity ? studentCount >= cls.capacity : false
+        };
       })
     );
-    
-    res.json({
+
+    // ---------------------------------------------------------------
+    // RESPONSE
+    // ---------------------------------------------------------------
+    return res.json({
       success: true,
       data: {
         classes: classesWithCounts,
         count: classesWithCounts.length
       }
     });
-    
+
   } catch (error) {
     logger.error('Get teacher classes error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error fetching classes',
       error: error.message
     });
   }
 };
+
 
 /**
  * @desc    Get class details
@@ -298,60 +380,100 @@ exports.getClasses = async (req, res) => {
  */
 exports.getClassDetails = async (req, res) => {
   try {
-    const teacher = await Teacher.findById(req.user.userId);
-    
+    const teacher = await Teacher.findById(req.user.userId).lean();
+    if (!teacher) {
+      return res.status(404).json({ success: false, message: 'Teacher not found' });
+    }
+
     const classSection = await ClassSection.findOne({
       classSectionId: req.params.classSectionId
-    });
-    
+    }).lean();
+
     if (!classSection) {
-      return res.status(404).json({
-        success: false,
-        message: 'Class not found'
-      });
+      return res.status(404).json({ success: false, message: 'Class not found' });
     }
-    
+
     if (classSection.teacherId !== teacher.teacherId) {
-      return res.status(403).json({
-        success: false,
-        message: 'You do not have access to this class'
-      });
+      return res.status(403).json({ success: false, message: 'Access denied' });
     }
-    
-    // Get students in this class
+
+    // --------------------------------------------------
+    // Students
+    // --------------------------------------------------
     const students = await Student.find({
       class: classSection.class,
       section: classSection.section,
       schoolId: classSection.schoolId,
       active: true
-    }).select('studentId name rollNumber performanceIndex stats');
-    
-    // Get class statistics
-    const avgPerformance = students.length > 0
-      ? students.reduce((sum, s) => sum + s.performanceIndex, 0) / students.length
-      : 0;
-    
-    res.json({
+    })
+      .select('studentId name rollNumber stats')
+      .lean();
+
+    const studentIds = students.map(s => s.studentId);
+
+    // --------------------------------------------------
+    // SPI RECORDS (SOURCE OF TRUTH)
+    // --------------------------------------------------
+    const spiRecords = await SPIRecord.find({
+      studentId: { $in: studentIds }
+    })
+      .select('studentId spi grade')
+      .lean();
+
+    const spiMap = {};
+    spiRecords.forEach(r => {
+      spiMap[r.studentId] = r;
+    });
+
+    // --------------------------------------------------
+    // Merge SPI into students
+    // --------------------------------------------------
+    const enrichedStudents = students.map(s => {
+      const spi = spiMap[s.studentId];
+      return {
+        ...s,
+        performanceIndex: spi?.spi ?? null,
+        grade: spi?.grade ?? 'N/A'
+      };
+    });
+
+    // --------------------------------------------------
+    // Class statistics
+    // --------------------------------------------------
+    const validSPI = enrichedStudents
+      .map(s => s.performanceIndex)
+      .filter(v => typeof v === 'number');
+
+    const averagePerformance =
+      validSPI.length > 0
+        ? Number((validSPI.reduce((a, b) => a + b, 0) / validSPI.length).toFixed(2))
+        : null;
+
+    // --------------------------------------------------
+    // RESPONSE
+    // --------------------------------------------------
+    return res.json({
       success: true,
       data: {
         class: classSection,
-        students,
+        students: enrichedStudents,
         statistics: {
-          totalStudents: students.length,
-          averagePerformance: avgPerformance
+          totalStudents: enrichedStudents.length,
+          averagePerformance
         }
       }
     });
-    
+
   } catch (error) {
     logger.error('Get class details error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error fetching class details',
       error: error.message
     });
   }
 };
+
 
 /**
  * @desc    Get students in a class
@@ -480,53 +602,69 @@ exports.getAllStudents = async (req, res) => {
  * @route   GET /api/teacher/students/:studentId
  * @access  Private (Teacher)
  */
+
+
 exports.getStudentDetails = async (req, res) => {
   try {
-    const teacher = await Teacher.findById(req.user.userId);
-    
+    const teacher = await Teacher.findById(req.user.userId).lean();
+
     const student = await Student.findOne({
       studentId: req.params.studentId
-    });
-    
+    }).lean();
+
     if (!student) {
       return res.status(404).json({
         success: false,
         message: 'Student not found'
       });
     }
-    
+
     if (student.teacherId !== teacher.teacherId) {
       return res.status(403).json({
         success: false,
         message: 'You do not have access to this student'
       });
     }
-    
-    // Get recent challenges
+
+    // 🔹 Fetch SPI (authoritative)
+    const spiRecord = await SPIRecord.findOne({
+      studentId: student.studentId
+    })
+      .sort({ calculatedAt: -1 })
+      .lean();
+
+    // 🔹 Recent challenges
     const recentChallenges = await Challenge.find({
       studentId: student.studentId
     })
       .sort({ generatedAt: -1 })
       .limit(10)
-      .select('challengeId simulationType difficulty status results generatedAt evaluatedAt');
-    
-    res.json({
+      .select('challengeId simulationType difficulty status results generatedAt evaluatedAt')
+      .lean();
+
+    return res.json({
       success: true,
       data: {
-        student,
+        student: {
+          ...student,
+          performanceIndex: spiRecord?.spi ?? null,
+          grade: spiRecord?.grade ?? 'NA',
+          learningState: spiRecord?.learning_state ?? 'uninitialized'
+        },
         recentChallenges
       }
     });
-    
+
   } catch (error) {
     logger.error('Get student details error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error fetching student details',
       error: error.message
     });
   }
 };
+
 
 /**
  * @desc    Add new student
@@ -677,79 +815,110 @@ exports.updateStudent = async (req, res) => {
  * @route   GET /api/teacher/students/:studentId/performance
  * @access  Private (Teacher)
  */
+
 exports.getStudentPerformance = async (req, res) => {
   try {
-    const teacher = await Teacher.findById(req.user.userId);
-    
+    const teacher = await Teacher.findById(req.user.userId).lean();
+
     const student = await Student.findOne({
       studentId: req.params.studentId
-    });
-    
+    }).lean();
+
     if (!student) {
       return res.status(404).json({
         success: false,
         message: 'Student not found'
       });
     }
-    
+
     if (student.teacherId !== teacher.teacherId) {
       return res.status(403).json({
         success: false,
         message: 'You do not have access to this student'
       });
     }
-    
-    // Get challenge history
+
+    // --------------------------------------------------
+    // ✅ SPI = SINGLE SOURCE OF TRUTH
+    // --------------------------------------------------
+    const latestSPI = await SPIRecord.findOne({
+      studentId: student.studentId
+    })
+      .sort({ calculatedAt: -1 })
+      .lean();
+
+    // --------------------------------------------------
+    // CHALLENGE HISTORY
+    // --------------------------------------------------
     const challenges = await Challenge.find({
       studentId: student.studentId,
       status: 'evaluated'
-    }).sort({ evaluatedAt: -1 });
-    
-    // Calculate performance metrics
+    })
+      .sort({ evaluatedAt: -1 })
+      .lean();
+
     const totalChallenges = challenges.length;
     const passedChallenges = challenges.filter(c => c.results?.passed).length;
-    const averageScore = totalChallenges > 0
-      ? challenges.reduce((sum, c) => sum + (c.results?.totalScore || 0), 0) / totalChallenges
-      : 0;
-    
-    // Performance trend (last 10 challenges)
-    const performanceTrend = challenges.slice(0, 10).reverse().map(c => ({
-      challengeId: c.challengeId,
-      date: c.evaluatedAt,
-      score: c.results?.totalScore || 0,
-      simulationType: c.simulationType
-    }));
-    
-    res.json({
+
+    const averageScore =
+      totalChallenges > 0
+        ? challenges.reduce(
+            (sum, c) => sum + (c.results?.totalScore || 0),
+            0
+          ) / totalChallenges
+        : 0;
+
+    // --------------------------------------------------
+    // PERFORMANCE TREND (last 10)
+    // --------------------------------------------------
+    const performanceTrend = challenges
+      .slice(0, 10)
+      .reverse()
+      .map(c => ({
+        challengeId: c.challengeId,
+        date: c.evaluatedAt,
+        score: c.results?.totalScore || 0,
+        simulationType: c.simulationType
+      }));
+
+    // --------------------------------------------------
+    // RESPONSE
+    // --------------------------------------------------
+    return res.json({
       success: true,
       data: {
         student: {
           studentId: student.studentId,
           name: student.name,
-          performanceIndex: student.performanceIndex,
-          grade: student.grade
+          spi: latestSPI?.spi ?? null,
+          grade: latestSPI?.grade ?? 'NA'
         },
         performance: {
           totalChallenges,
           passedChallenges,
-          passRate: totalChallenges > 0 ? (passedChallenges / totalChallenges * 100) : 0,
+          passRate:
+            totalChallenges > 0
+              ? (passedChallenges / totalChallenges) * 100
+              : 0,
           averageScore,
-          currentStreak: student.stats.dailyStreak,
-          competencyScores: student.competencyScores
+          currentStreak: student.stats?.dailyStreak || 0,
+          competencyScores: student.competencyScores // 🔒 stable for now
         },
         trend: performanceTrend
       }
     });
-    
+
   } catch (error) {
     logger.error('Get student performance error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error fetching student performance',
       error: error.message
     });
   }
 };
+
+
 
 /**
  * @desc    Get student challenges
@@ -1063,62 +1232,144 @@ exports.overrideChallengeScore = async (req, res) => {
  * @route   GET /api/teacher/reports/class-performance
  * @access  Private (Teacher)
  */
+// controllers/teacher.controller.js
+
 exports.getClassPerformanceReport = async (req, res) => {
   try {
-    const teacher = await Teacher.findById(req.user.userId);
-    const { class: classNum, section } = req.query;
-    
+    const teacher = await Teacher.findById(req.user.userId).lean();
+    if (!teacher) {
+      return res.status(404).json({ success: false, message: 'Teacher not found' });
+    }
+
+    const { class: classNum, section, period } = req.query;
+
     if (!classNum || !section) {
       return res.status(400).json({
         success: false,
         message: 'Class and section are required'
       });
     }
-    
-    // Get students in class
+
+    // ----------------------------------------------------
+    // PERIOD FILTER
+    // ----------------------------------------------------
+    let fromDate = null;
+    if (period === 'weekly') {
+      fromDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    } else if (period === 'monthly') {
+      fromDate = new Date();
+      fromDate.setDate(1);
+      fromDate.setHours(0, 0, 0, 0);
+    }
+
+    // ----------------------------------------------------
+    // 1️⃣ STUDENT ROSTER (IDENTITY ONLY)
+    // ----------------------------------------------------
     const students = await Student.find({
       teacherId: teacher.teacherId,
       class: parseInt(classNum),
       section: section.toUpperCase(),
       active: true
-    });
-    
-    if (students.length === 0) {
+    })
+      .select('studentId name')
+      .lean();
+
+    if (!students.length) {
       return res.status(404).json({
         success: false,
         message: 'No students found in this class'
       });
     }
-    
-    // Calculate class statistics
-    const avgPerformance = students.reduce((sum, s) => sum + s.performanceIndex, 0) / students.length;
-    const avgChallenges = students.reduce((sum, s) => sum + (s.stats.totalChallengesCompleted || 0), 0) / students.length;
-    
-    // Competency analysis
-    const competencyScores = {};
-    students.forEach(student => {
-      Object.entries(student.competencyScores).forEach(([comp, score]) => {
-        if (!competencyScores[comp]) {
-          competencyScores[comp] = [];
+
+    const studentIds = students.map(s => s.studentId);
+
+    // ----------------------------------------------------
+    // 2️⃣ LATEST SPI SNAPSHOT (AUTHORITATIVE)
+    // ----------------------------------------------------
+    const spiRecords = await SPIRecord.aggregate([
+      { $match: { studentId: { $in: studentIds } } },
+      { $sort: { calculatedAt: -1 } },
+      {
+        $group: {
+          _id: '$studentId',
+          spi: { $first: '$spi' },
+          grade: { $first: '$grade' }
         }
-        competencyScores[comp].push(score);
-      });
+      }
+    ]);
+
+    const spiMap = {};
+    spiRecords.forEach(r => {
+      spiMap[r._id] = r;
     });
-    
-    const avgCompetencies = {};
-    Object.entries(competencyScores).forEach(([comp, scores]) => {
-      avgCompetencies[comp] = scores.reduce((a, b) => a + b, 0) / scores.length;
-    });
-    
-    // Performance distribution
-    const distribution = {
-      excellent: students.filter(s => s.performanceIndex >= 90).length,
-      good: students.filter(s => s.performanceIndex >= 70 && s.performanceIndex < 90).length,
-      average: students.filter(s => s.performanceIndex >= 50 && s.performanceIndex < 70).length,
-      needsImprovement: students.filter(s => s.performanceIndex < 50).length
+
+    // ----------------------------------------------------
+    // 3️⃣ LEDGER → COMPETENCY AGGREGATION
+    // ----------------------------------------------------
+    const ledgerMatch = {
+      studentId: { $in: studentIds },
+      eventType: 'challenge_evaluated',
+      status: 'confirmed'
     };
-    
-    res.json({
+
+    if (fromDate) {
+      ledgerMatch.createdAt = { $gte: fromDate };
+    }
+
+    const ledgerAgg = await Ledger.aggregate([
+      { $match: ledgerMatch },
+      { $unwind: '$data.competenciesAssessed' },
+      {
+        $group: {
+          _id: '$data.competenciesAssessed.competency',
+          avgScore: { $avg: '$data.competenciesAssessed.score' }
+        }
+      }
+    ]);
+
+    const avgCompetencies = {};
+    ledgerAgg.forEach(c => {
+      avgCompetencies[c._id] = Math.round(c.avgScore);
+    });
+
+    // ----------------------------------------------------
+    // 4️⃣ DISTRIBUTION + AVERAGE SPI
+    // ----------------------------------------------------
+    let spiSum = 0;
+    const distribution = {
+      excellent: 0,
+      good: 0,
+      average: 0,
+      needsImprovement: 0
+    };
+
+    students.forEach(s => {
+      const spi = spiMap[s.studentId]?.spi ?? 0;
+      spiSum += spi;
+
+      if (spi >= 90) distribution.excellent++;
+      else if (spi >= 70) distribution.good++;
+      else if (spi >= 50) distribution.average++;
+      else distribution.needsImprovement++;
+    });
+
+    const avgPerformance = students.length
+      ? Math.round(spiSum / students.length)
+      : 0;
+
+    // ----------------------------------------------------
+    // 5️⃣ FINAL RESPONSE (SORTED)
+    // ----------------------------------------------------
+    const studentsPayload = students
+      .map(s => ({
+        studentId: s.studentId,
+        name: s.name,
+        performanceIndex: spiMap[s.studentId]?.spi ?? 0,
+        grade: spiMap[s.studentId]?.grade ?? 'F'
+      }))
+      .sort((a, b) => b.performanceIndex - a.performanceIndex);
+
+    return res.json({
       success: true,
       data: {
         class: {
@@ -1128,29 +1379,24 @@ exports.getClassPerformanceReport = async (req, res) => {
         },
         statistics: {
           averagePerformance: avgPerformance,
-          averageChallengesCompleted: avgChallenges,
           distribution
         },
         competencies: avgCompetencies,
-        students: students.map(s => ({
-          studentId: s.studentId,
-          name: s.name,
-          performanceIndex: s.performanceIndex,
-          grade: s.grade,
-          totalChallenges: s.stats.totalChallengesCompleted
-        }))
+        students: studentsPayload
       }
     });
-    
+
   } catch (error) {
     logger.error('Get class performance report error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error generating report',
       error: error.message
     });
   }
 };
+
+
 
 /**
  * @desc    Get student report
@@ -1235,33 +1481,66 @@ exports.getStudentReport = async (req, res) => {
  * @route   GET /api/teacher/analytics/overview
  * @access  Private (Teacher)
  */
+// controllers/teacher.controller.js
+
+
 exports.getAnalyticsOverview = async (req, res) => {
   try {
-    const teacher = await Teacher.findById(req.user.userId);
-    
-    // Get overall statistics
-    const totalStudents = await Student.countDocuments({
-      teacherId: teacher.teacherId,
-      active: true
-    });
-    
-    const totalChallenges = await Challenge.countDocuments({
-      teacherId: teacher.teacherId
-    });
-    
-    // Get average performance
+    const teacher = await Teacher.findById(req.user.userId).lean();
+
+    if (!teacher) {
+      return res.status(404).json({
+        success: false,
+        message: 'Teacher not found'
+      });
+    }
+
+    const teacherId = teacher.teacherId;
+
+    // --------------------------------------------------
+    // 1️⃣ TOTAL STUDENTS
+    // --------------------------------------------------
     const students = await Student.find({
-      teacherId: teacher.teacherId,
+      teacherId,
       active: true
-    });
-    
-    const avgPerformance = students.length > 0
-      ? students.reduce((sum, s) => sum + s.performanceIndex, 0) / students.length
-      : 0;
-    
-    // Get challenge statistics by status
+    }).select('studentId').lean();
+
+    const totalStudents = students.length;
+    const studentIds = students.map(s => s.studentId);
+
+    // --------------------------------------------------
+    // 2️⃣ TOTAL CHALLENGES
+    // --------------------------------------------------
+    const totalChallenges = await Challenge.countDocuments({ teacherId });
+
+    // --------------------------------------------------
+    // 3️⃣ AVERAGE PERFORMANCE (FROM SPI RECORDS ✅)
+    // --------------------------------------------------
+    let averagePerformance = 0;
+
+    if (studentIds.length > 0) {
+      const spiAgg = await SPIRecord.aggregate([
+        { $match: { studentId: { $in: studentIds } } },
+        { $sort: { calculatedAt: -1 } },
+        {
+          $group: {
+            _id: '$studentId',
+            spi: { $first: '$spi' }
+          }
+        }
+      ]);
+
+      if (spiAgg.length > 0) {
+        const spiSum = spiAgg.reduce((sum, r) => sum + (r.spi || 0), 0);
+        averagePerformance = Math.round(spiSum / spiAgg.length);
+      }
+    }
+
+    // --------------------------------------------------
+    // 4️⃣ CHALLENGES BY STATUS
+    // --------------------------------------------------
     const challengeStats = await Challenge.aggregate([
-      { $match: { teacherId: teacher.teacherId } },
+      { $match: { teacherId } },
       {
         $group: {
           _id: '$status',
@@ -1269,47 +1548,57 @@ exports.getAnalyticsOverview = async (req, res) => {
         }
       }
     ]);
-    
-    const statusCounts = {};
+
+    const challengesByStatus = {};
     challengeStats.forEach(stat => {
-      statusCounts[stat._id] = stat.count;
+      challengesByStatus[stat._id] = stat.count;
     });
-    
-    // Get recent activity (last 30 days)
+
+    // --------------------------------------------------
+    // 5️⃣ RECENT ACTIVITY (LAST 30 DAYS)
+    // --------------------------------------------------
     const recentActivity = await Challenge.aggregate([
       {
         $match: {
-          teacherId: teacher.teacherId,
-          generatedAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+          teacherId,
+          generatedAt: {
+            $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+          }
         }
       },
       {
         $group: {
           _id: {
-            $dateToString: { format: '%Y-%m-%d', date: '$generatedAt' }
+            $dateToString: {
+              format: '%Y-%m-%d',
+              date: '$generatedAt'
+            }
           },
           count: { $sum: 1 }
         }
       },
       { $sort: { _id: 1 } }
     ]);
-    
-    res.json({
+
+    // --------------------------------------------------
+    // 6️⃣ RESPONSE
+    // --------------------------------------------------
+    return res.json({
       success: true,
       data: {
         overview: {
           totalStudents,
           totalChallenges,
-          averagePerformance: avgPerformance
+          averagePerformance
         },
-        challengesByStatus: statusCounts,
+        challengesByStatus,
         recentActivity
       }
     });
-    
+
   } catch (error) {
     logger.error('Get analytics overview error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error fetching analytics',
       error: error.message
@@ -1317,82 +1606,138 @@ exports.getAnalyticsOverview = async (req, res) => {
   }
 };
 
+
 /**
  * @desc    Get competency analytics
  * @route   GET /api/teacher/analytics/competencies
  * @access  Private (Teacher)
  */
+// controllers/teacher.controller.js
+
 exports.getCompetencyAnalytics = async (req, res) => {
   try {
-    const teacher = await Teacher.findById(req.user.userId);
-    
+    // ------------------------------------------------------------------
+    // 1️⃣ AUTH TEACHER
+    // ------------------------------------------------------------------
+    const teacher = await Teacher.findById(req.user.userId).lean();
+
+    if (!teacher) {
+      return res.status(404).json({
+        success: false,
+        message: 'Teacher not found'
+      });
+    }
+
+    // ------------------------------------------------------------------
+    // 2️⃣ STUDENTS UNDER TEACHER
+    // ------------------------------------------------------------------
     const students = await Student.find({
       teacherId: teacher.teacherId,
       active: true
-    });
-    
-    if (students.length === 0) {
+    })
+      .select('studentId name')
+      .lean();
+
+    if (!students.length) {
       return res.json({
         success: true,
         data: {
           competencies: {},
-          message: 'No students found'
+          totalStudents: 0
         }
       });
     }
-    
-    // Calculate average competency scores
-    const competencyScores = {};
-    students.forEach(student => {
-      Object.entries(student.competencyScores).forEach(([comp, score]) => {
-        if (!competencyScores[comp]) {
-          competencyScores[comp] = {
-            total: 0,
-            count: 0,
-            students: []
-          };
+
+    const studentIds = students.map(s => s.studentId);
+    const studentMap = Object.fromEntries(
+      students.map(s => [s.studentId, s.name])
+    );
+
+    // ------------------------------------------------------------------
+    // 3️⃣ LEDGER → COMPETENCY AGGREGATION (REAL FIX)
+    // ------------------------------------------------------------------
+    const ledgerAgg = await Ledger.aggregate([
+      {
+        $match: {
+          studentId: { $in: studentIds },
+          eventType: Ledger.EVENT_TYPES.CHALLENGE_EVALUATED,
+          status: 'confirmed'
         }
-        competencyScores[comp].total += score;
-        competencyScores[comp].count++;
-        competencyScores[comp].students.push({
-          studentId: student.studentId,
-          name: student.name,
-          score: score
-        });
+      },
+      { $unwind: '$data.competenciesAssessed' },
+      {
+        $group: {
+          _id: {
+            competency: '$data.competenciesAssessed.competency',
+            studentId: '$studentId'
+          },
+          avgScore: {
+            $avg: '$data.competenciesAssessed.score'
+          }
+        }
+      }
+    ]);
+
+    // ------------------------------------------------------------------
+    // 4️⃣ NORMALIZE INTO COMPETENCY OBJECT
+    // ------------------------------------------------------------------
+    const competencyBuckets = {};
+
+    ledgerAgg.forEach(row => {
+      const { competency, studentId } = row._id;
+
+      if (!competencyBuckets[competency]) {
+        competencyBuckets[competency] = [];
+      }
+
+      competencyBuckets[competency].push({
+        studentId,
+        name: studentMap[studentId] || 'Unknown',
+        score: Math.round(row.avgScore)
       });
     });
-    
-    const avgCompetencies = {};
-    Object.entries(competencyScores).forEach(([comp, data]) => {
-      avgCompetencies[comp] = {
-        average: data.total / data.count,
-        studentCount: data.count,
-        topStudents: data.students
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 5),
-        weakStudents: data.students
-          .sort((a, b) => a.score - b.score)
-          .slice(0, 5)
+
+    // ------------------------------------------------------------------
+    // 5️⃣ BUILD FINAL RESPONSE STRUCTURE
+    // ------------------------------------------------------------------
+    const competencies = {};
+
+    Object.entries(competencyBuckets).forEach(([competency, records]) => {
+      const avg =
+        records.reduce((sum, r) => sum + r.score, 0) / records.length;
+
+      const sorted = [...records].sort((a, b) => b.score - a.score);
+
+      competencies[competency] = {
+        average: Math.round(avg),
+        studentCount: records.length,
+        topStudents: sorted.slice(0, 3),
+        weakStudents: sorted.slice(-3).reverse()
       };
     });
-    
-    res.json({
+
+    // ------------------------------------------------------------------
+    // 6️⃣ RESPONSE
+    // ------------------------------------------------------------------
+    return res.json({
       success: true,
       data: {
-        competencies: avgCompetencies,
+        competencies,
         totalStudents: students.length
       }
     });
-    
+
   } catch (error) {
     logger.error('Get competency analytics error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error fetching competency analytics',
       error: error.message
     });
   }
 };
+
+
 
 // ============================================================================
 // HELP TICKETS
