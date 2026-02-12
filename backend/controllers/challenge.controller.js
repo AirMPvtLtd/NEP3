@@ -35,6 +35,14 @@ const logger = require('../utils/logger');
 
 const irtService = require('../services/algorithms/irt.algorithm.service');
 const pidService = require('../services/algorithms/pid.algorithm.service');
+const crypto = require('crypto');
+const { nanoid } = require('nanoid');
+
+const analyticsService = require('../services/analytics.service');
+const SPIRecord = require('../models/SPIRecord');
+const Ledger = require('../models/Ledger');
+
+
 
 
 
@@ -46,124 +54,611 @@ function determineLevel(score) {
   return 'emerging';
 }
 
-function extractId(field, idKey) {
-  if (!field) return null;
-  
-  // If it's an actual object, extract the ID directly
-  if (typeof field === 'object' && field !== null) {
-    return field[idKey] || null;
+// ============================================================================
+// Helper: Safe ID Extractor (CRITICAL FIX)
+// ============================================================================
+
+function extractId(value, key) {
+  if (!value) return null;
+
+  // Already clean string
+  if (typeof value === 'string' && value.startsWith('SCH-') || value.startsWith('TCH-')) {
+    return value;
   }
-  
-  // If it's already a clean ID string
-  if (typeof field === 'string' && !field.includes('{') && field.length < 50) {
-    return field;
+
+  // If it's an object with correct key
+  if (typeof value === 'object' && value[key]) {
+    return value[key];
   }
-  
-  // If it's a stringified JSON object
-  if (typeof field === 'string' && field.includes('{')) {
+
+  // If it's stringified object
+  if (typeof value === 'string' && value.includes(key)) {
     try {
-      const obj = JSON.parse(field);
-      return obj[idKey] || null;
-    } catch (e) {
-      const regex = new RegExp(`${idKey}:\\s*['"]([^'"]+)['"]`);
-      const match = field.match(regex);
-      return match ? match[1] : null;
+      const parsed = JSON.parse(value);
+      return parsed[key] || null;
+    } catch {
+      return null;
     }
   }
-  
+
   return null;
 }
+
+// exports.generateChallenge = async (req, res) => {
+//   try {
+//     // ========================================================================
+//     // 1. EXTRACT FRONTEND PARAMETERS
+//     // ========================================================================
+    
+//     let { 
+//       subject,              // physics | mathematics | custom
+//       simulationType,       // OPTIONAL: simulation ID
+//       customTopic,          // OPTIONAL: custom topic name
+//       difficulty,           // easy | medium | hard | auto
+//       numberOfQuestions = 5 // 3 | 5 | 7 | 10
+//     } = req.body;
+    
+//     const studentId = req.user.userId;
+    
+//     logger.info('🎯 Challenge Generation Request:', {
+//       subject,
+//       simulationType: simulationType || 'N/A',
+//       customTopic: customTopic || 'N/A',
+//       difficulty,
+//       numberOfQuestions
+//     });
+    
+//     // ========================================================================
+//     // 2. VALIDATION
+//     // ========================================================================
+    
+//     // Validate subject
+//     if (!subject || !isValidSubject(subject)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Invalid subject. Must be: physics, mathematics, or custom',
+//         validSubjects: Object.values(CHALLENGE_SUBJECTS)
+//       });
+//     }
+    
+//     // Validate topic (EITHER simulationType OR customTopic)
+//     if (!simulationType && !customTopic) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Either simulationType or customTopic must be provided'
+//       });
+//     }
+    
+//     if (simulationType && customTopic) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Provide either simulationType or customTopic, not both'
+//       });
+//     }
+    
+//     // Validate simulationType if provided
+//     if (simulationType && !isValidSimulation(simulationType)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Invalid simulation type'
+//       });
+//     }
+    
+//     // Validate customTopic if provided
+//     if (customTopic && !isValidCustomTopic(customTopic)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: `Custom topic must be between ${CUSTOM_TOPIC.MIN_LENGTH} and ${CUSTOM_TOPIC.MAX_LENGTH} characters`
+//       });
+//     }
+    
+//     // Validate difficulty
+//     if (!difficulty || !isValidDifficulty(difficulty)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Invalid difficulty. Must be: easy, medium, hard, or auto',
+//         validDifficulties: Object.values(CHALLENGE_DIFFICULTY)
+//       });
+//     }
+    
+//     // Validate numberOfQuestions
+//     if (!isValidQuestionCount(numberOfQuestions)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Invalid number of questions. Must be: 3, 5, 7, or 10',
+//         validCounts: QUESTION_COUNT_OPTIONS
+//       });
+//     }
+    
+//     // ========================================================================
+//     // 3. GET STUDENT DATA (DATABASE)
+//     // ========================================================================
+
+//     const student = await Student.findById(studentId);
+
+//     if (!student) {
+//       return res.status(404).json({
+//         success: false,
+//         message: 'Student not found'
+//       });
+//     }
+
+//     // ✅ FIX: Extract actual IDs from potentially stringified objects
+//     let actualSchoolId = extractId(student.schoolId, 'schoolId');
+//     let actualTeacherId = extractId(student.teacherId, 'teacherId');
+
+//     // Set defaults if still null
+//     if (!actualSchoolId) {
+//       actualSchoolId = req.user.schoolId || 'SYSTEM-DEFAULT';
+//       logger.warn(`Student ${student.studentId} missing schoolId, using default`);
+//     }
+
+//     if (!actualTeacherId) {
+//       actualTeacherId = req.user.teacherId || 'SYSTEM-DEFAULT';
+//       logger.warn(`Student ${student.studentId} missing teacherId, using default`);
+//     }
+
+//     // Update student document if IDs changed
+//     if (student.schoolId !== actualSchoolId || student.teacherId !== actualTeacherId) {
+//       student.schoolId = actualSchoolId;
+//       student.teacherId = actualTeacherId;
+//       await student.save({ validateBeforeSave: false });
+//       logger.info(`✅ Fixed student IDs: schoolId=${actualSchoolId}, teacherId=${actualTeacherId}`);
+//     }
+    
+//     // ========================================================================
+//     // 4. GET SIMULATION METADATA (FROM constants.js)
+//     // ========================================================================
+    
+//     let simulationMetadata = null;
+    
+//     if (simulationType) {
+//       simulationMetadata = SIMULATION_METADATA[simulationType];
+      
+//       if (!simulationMetadata) {
+//         logger.warn(`⚠️ No metadata found for simulation: ${simulationType}`);
+//       } else {
+//         logger.info('📚 Simulation metadata loaded:', {
+//           topics: simulationMetadata.topics?.length || 0,
+//           tools: simulationMetadata.tools?.length || 0,
+//           difficultyFactors: simulationMetadata.difficulty_factors?.length || 0
+//         });
+//       }
+//     }
+    
+//     // ========================================================================
+//     // 5. GET RECENT PERFORMANCE (DATABASE)
+//     // ========================================================================
+    
+//     const recentChallenges = await Challenge.find({ 
+//       studentId: student.studentId, 
+//       status: 'evaluated' 
+//     })
+//       .sort({ evaluatedAt: -1 })
+//       .limit(10)
+//       .lean();
+    
+//     const recentAvgScore = recentChallenges.length > 0
+//       ? recentChallenges.reduce((sum, c) => sum + (c.results?.totalScore || 0), 0) / recentChallenges.length
+//       : 50;
+    
+//     logger.info(`📊 Recent average score: ${recentAvgScore.toFixed(2)}%`);
+    
+//     // ========================================================================
+//     // 6. FERRARI ENGINE: AUTO DIFFICULTY (IRT + PID)
+//     // ========================================================================
+    
+//     let irtResult = null;
+//     let pidResult = null;
+//     let ferrariEngineUsed = false;
+//     const originalDifficulty = difficulty;
+    
+//     if (difficulty === CHALLENGE_DIFFICULTY.AUTO) {
+//       logger.info('🏎️ FERRARI ENGINE: Auto difficulty mode activated');
+//       ferrariEngineUsed = true;
+      
+//       try {
+//         // ✅ ALGORITHM #1: IRT - Student ability
+//         logger.info('🎓 IRT: Calculating optimal difficulty...');
+        
+//         try {
+//           irtResult = await irtService.getOptimalDifficulty(studentId);
+          
+//           if (irtResult && irtResult.difficulty) {
+//             difficulty = irtResult.difficulty;
+//             logger.info(`✅ IRT selected: ${difficulty} (ability: ${irtResult.studentAbility?.toFixed(2)})`);
+//           }
+//         } catch (irtError) {
+//           logger.warn('⚠️ IRT failed:', irtError.message);
+//         }
+        
+//         // ✅ ALGORITHM #2: PID - Performance adjustment
+//         logger.info('🎛️ PID: Calculating adjustment...');
+        
+//         try {
+//           pidResult = await pidService.getRecommendedDifficulty(studentId);
+          
+//           if (pidResult && pidResult.difficulty) {
+//             // PID can override if strong signal
+//             if (!irtResult || pidResult.confidence > 0.7) {
+//               difficulty = pidResult.difficulty;
+//               logger.info(`✅ PID selected: ${difficulty} (adjustment: ${pidResult.adjustment?.toFixed(2)})`);
+//             } else {
+//               logger.info(`📊 PID suggests: ${pidResult.difficulty} (using IRT)`);
+//             }
+//           }
+//         } catch (pidError) {
+//           logger.warn('⚠️ PID failed:', pidError.message);
+//         }
+        
+//         // Fallback
+//         if (!irtResult && !pidResult) {
+//           difficulty = 'medium';
+//           logger.warn('⚠️ Both algorithms failed, using: medium');
+//         }
+        
+//         logger.info(`🏎️ FERRARI ENGINE: Final difficulty: ${difficulty}`);
+        
+//       } catch (ferrariError) {
+//         logger.error('❌ Ferrari Engine error:', ferrariError);
+//         difficulty = 'medium';
+//       }
+//     } else {
+//       logger.info(`📝 MANUAL DIFFICULTY: ${difficulty} (user-selected)`);
+//     }
+    
+//     // ========================================================================
+//     // 7. CHECK LIMITS
+//     // ========================================================================
+    
+//     const topicForLimit = simulationType || customTopic;
+    
+//     const canGenerate = student.canGenerateChallenge(
+//       topicForLimit,
+//       CHALLENGE_LIMITS.DAILY_LIMIT,
+//       CHALLENGE_LIMITS.PER_SIMULATION_LIMIT
+//     );
+    
+//     if (!canGenerate.allowed) {
+//       return res.status(429).json({
+//         success: false,
+//         message: canGenerate.reason === 'daily_limit'
+//           ? 'Daily challenge limit reached. Please try again tomorrow.'
+//           : `You have reached the limit for this topic today.`,
+//         remaining: canGenerate.remaining
+//       });
+//     }
+    
+//     // ========================================================================
+//     // 8. GENERATE CHALLENGE WITH MISTRAL AI
+//     // Pass ALL data: frontend, database, constants.js, Ferrari Engine
+//     // ========================================================================
+    
+//     logger.info(`🤖 MISTRAL AI: Generating challenge with all data`);
+    
+//     const startTime = Date.now();
+    
+//     const challengeData = await mistralService.generateChallenge({
+//       // From Frontend (1-4)
+//       subject,
+//       simulationType,
+//       customTopic,
+//       difficulty,
+//       numberOfQuestions,
+      
+//       // From Database (5)
+//       studentLevel: student.class,
+//       weakCompetencies: student.weakCompetencies || [],
+      
+//       // From constants.js (6) - topics, tools, difficulty_factors
+//       simulationMetadata: simulationMetadata ? {
+//         topics: simulationMetadata.topics || [],
+//         tools: simulationMetadata.tools || [],
+//         difficultyFactors: simulationMetadata.difficulty_factors || []
+//       } : null,
+      
+//       // Ferrari Engine context
+//       context: {
+//         irtAbility: irtResult?.studentAbility,
+//         pidAdjustment: pidResult?.adjustment,
+//         recentAvgScore: recentAvgScore,
+//         ferrariEngineUsed
+//       }
+//     });
+    
+//     const generationTime = Date.now() - startTime;
+    
+//     // Validate
+//     if (!challengeData || !challengeData.questions || challengeData.questions.length === 0) {
+//       throw new Error('Failed to generate valid challenge');
+//     }
+    
+//     logger.info(`✅ Challenge generated in ${generationTime}ms with ${challengeData.questions.length} questions`);
+    
+//     // ========================================================================
+//     // 9. CREATE CHALLENGE IN DATABASE
+//     // ========================================================================
+    
+//     const challenge = await Challenge.create({
+//       studentId: student.studentId,
+//       schoolId: actualSchoolId,    // ← UPDATED
+//       teacherId: actualTeacherId,  // ← UPDATED
+      
+//       // Subject and topic
+//       subject,
+//       simulationType: simulationType || null,
+//       customTopic: customTopic || null,
+//       topicType: simulationType ? TOPIC_TYPES.SIMULATION : TOPIC_TYPES.CUSTOM,
+      
+//       // Challenge details
+//       difficulty: difficulty,
+//       difficultyMode: originalDifficulty,
+//       title: challengeData.title || `${subject} Challenge`,
+      
+//       questions: challengeData.questions.map((q, index) => ({
+//         questionId: `Q${index + 1}`,
+//         type: q.type || 'SHORT_ANSWER',
+//         question: q.question,
+//         options: q.options || [],
+//         correctAnswer: q.correctAnswer,
+//         explanation: q.explanation,
+//         competencies: q.competencies || [],
+//         points: Math.min(q.points || 100, 100),  // ← Already fixed
+//         hint: q.hint || ''
+//       })),
+      
+//       totalPoints: challengeData.totalPoints || (numberOfQuestions * 100),
+//       passingScore: challengeData.passingScore || 70,
+//       estimatedTime: challengeData.estimatedTime || Math.max(10, numberOfQuestions * 2),
+//       status: 'generated',
+      
+//       // AI metadata
+//       aiMetadata: {
+//         mistralModel: process.env.MISTRAL_MODEL || 'mistral-large-2411',
+//         tokensUsed: challengeData.tokensUsed || 0,
+//         cost: challengeData.cost || 0,
+//         generationTime,
+        
+//         // Ferrari Engine
+//         ferrariEngine: {
+//           enabled: ferrariEngineUsed,
+//           mode: ferrariEngineUsed ? DIFFICULTY_MODE.AUTO : DIFFICULTY_MODE.MANUAL,
+          
+//           irt: irtResult ? {
+//             studentAbility: irtResult.studentAbility,
+//             recommendedDifficulty: irtResult.difficulty,
+//             expectedSuccess: irtResult.expectedSuccessRate,
+//             reasoning: irtResult.reasoning
+//           } : null,
+          
+//           pid: pidResult ? {
+//             adjustment: pidResult.adjustment,
+//             recommendedDifficulty: pidResult.difficulty,
+//             currentPerformance: pidResult.currentPerformance,
+//             targetPerformance: pidResult.targetPerformance
+//           } : null
+//         },
+        
+//         // Simulation metadata used
+//         simulationMetadata: simulationMetadata ? {
+//           topicCount: simulationMetadata.topics?.length || 0,
+//           toolCount: simulationMetadata.tools?.length || 0,
+//           difficultyFactorCount: simulationMetadata.difficulty_factors?.length || 0
+//         } : null
+//       }
+//     });
+    
+//     // ========================================================================
+//     // 10. UPDATE STUDENT & LOG
+//     // ========================================================================
+    
+// // ========================================================================
+// // 10. UPDATE STUDENT & LOG
+// // ========================================================================
+
+//     try {
+//       await student.recordChallengeGeneration(topicForLimit);
+//       await student.updateStreak();
+//     } catch (studentError) {
+//       // Silently ignore - student stats are optional
+//       logger.debug('Student stats update skipped:', studentError.message);
+//     }
+    
+//     await AILog.create({
+//       userId: student._id,
+//       userType: 'student',
+//       schoolId: actualSchoolId,  // ← NEW (extracted ID)
+//       operation: 'challenge_generation',
+//       model: process.env.MISTRAL_MODEL || 'mistral-large-2411',
+//       tokensUsed: challengeData.tokensUsed || 0,
+//       cost: challengeData.cost || 0,
+//       responseTime: generationTime,
+//       success: true,
+//       metadata: {
+//         subject,
+//         topicType: simulationType ? 'simulation' : 'custom',
+//         difficultyMode: originalDifficulty,
+//         numberOfQuestions,
+//         ferrariEngineUsed,
+//         hasSimulationMetadata: !!simulationMetadata
+//       }
+//     });
+    
+//     await Activity.log({
+//       userId: student._id.toString(),
+//       userType: 'student',
+//       schoolId: actualSchoolId,  // ← NEW (extracted ID)
+//       activityType: 'challenge_generated',
+//       action: ferrariEngineUsed 
+//         ? `🏎️ Ferrari Engine: ${subject} - ${simulationType || customTopic}`
+//         : `Challenge: ${subject} - ${simulationType || customTopic}`,
+//       metadata: {
+//         challengeId: challenge.challengeId,
+//         subject,
+//         simulationType,
+//         customTopic,
+//         difficulty: challenge.difficulty,
+//         numberOfQuestions,
+//         ferrariEngineUsed
+//       },
+//       ipAddress: req.ip,
+//       success: true
+//     });
+    
+//     // ========================================================================
+//     // 11. RESPONSE
+//     // ========================================================================
+    
+//     res.status(201).json({
+//       success: true,
+//       message: ferrariEngineUsed
+//         ? '🏎️ Challenge generated with Ferrari Engine (IRT + PID)'
+//         : 'Challenge generated successfully',
+//       data: {
+//         challenge: {
+//           challengeId: challenge.challengeId,
+//           title: challenge.title,
+//           subject: challenge.subject,
+//           topic: simulationType || customTopic,
+//           topicType: challenge.topicType,
+//           difficulty: challenge.difficulty,
+//           difficultyMode: challenge.difficultyMode,
+//           questions: challenge.questions.map(q => ({
+//             questionId: q.questionId,
+//             type: q.type,
+//             question: q.question,
+//             options: q.options,
+//             points: q.points,
+//             hint: q.hint
+//           })),
+//           totalPoints: challenge.totalPoints,
+//           passingScore: challenge.passingScore,
+//           estimatedTime: challenge.estimatedTime,
+//           generatedAt: challenge.generatedAt
+//         },
+        
+//         ferrariEngine: ferrariEngineUsed ? {
+//           enabled: true,
+//           mode: DIFFICULTY_MODE.AUTO,
+          
+//           irt: irtResult ? {
+//             studentAbility: Math.round(irtResult.studentAbility * 100) / 100,
+//             recommendedDifficulty: irtResult.difficulty,
+//             expectedSuccess: Math.round(irtResult.expectedSuccessRate * 100)
+//           } : null,
+          
+//           pid: pidResult ? {
+//             adjustment: Math.round(pidResult.adjustment * 100) / 100,
+//             recommendedDifficulty: pidResult.difficulty
+//           } : null,
+          
+//           finalDifficulty: difficulty
+//         } : null,
+        
+//         limits: {
+//           dailyRemaining: CHALLENGE_LIMITS.DAILY_LIMIT - (student.challengeLimits?.totalToday || 0) - 1,
+//           topicRemaining: CHALLENGE_LIMITS.PER_SIMULATION_LIMIT - ((student.challengeLimits?.bySimulation?.get(topicForLimit) || 0) + 1)
+//         }
+//       }
+//     });
+    
+//   } catch (error) {
+//     logger.error('❌ Generate challenge error:', error);
+    
+//     try {
+//       await AILog.create({
+//         userId: req.user.userId,
+//         userType: 'student',
+//         operation: 'challenge_generation',
+//         model: process.env.MISTRAL_MODEL || 'mistral-large-2411',  // ← ADD THIS
+//         success: false,
+//         errorMessage: error.message
+//       });
+//     } catch (logError) {
+//       logger.error('Failed to log error:', logError);
+//     }
+    
+//     res.status(500).json({
+//       success: false,
+//       message: 'Error generating challenge',
+//       error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+//     });
+//   }
+// };
+
+// ============================================================================
+// GENERATE CHALLENGE CONTROLLER
+// ============================================================================
+
 exports.generateChallenge = async (req, res) => {
   try {
+
     // ========================================================================
-    // 1. EXTRACT FRONTEND PARAMETERS
+    // 1. EXTRACT PARAMETERS
     // ========================================================================
-    
-    let { 
-      subject,              // physics | mathematics | custom
-      simulationType,       // OPTIONAL: simulation ID
-      customTopic,          // OPTIONAL: custom topic name
-      difficulty,           // easy | medium | hard | auto
-      numberOfQuestions = 5 // 3 | 5 | 7 | 10
+
+    let {
+      subject,
+      simulationType,
+      customTopic,
+      difficulty,
+      numberOfQuestions = 5
     } = req.body;
-    
-    const studentId = req.user.userId;
-    
-    logger.info('🎯 Challenge Generation Request:', {
+
+    const mongoUserId = req.user.userId; // Mongo _id
+
+    logger.info('🎯 Challenge Generation Request', {
       subject,
       simulationType: simulationType || 'N/A',
       customTopic: customTopic || 'N/A',
       difficulty,
       numberOfQuestions
     });
-    
+
     // ========================================================================
     // 2. VALIDATION
     // ========================================================================
-    
-    // Validate subject
+
     if (!subject || !isValidSubject(subject)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid subject. Must be: physics, mathematics, or custom',
-        validSubjects: Object.values(CHALLENGE_SUBJECTS)
+        message: 'Invalid subject'
       });
     }
-    
-    // Validate topic (EITHER simulationType OR customTopic)
+
     if (!simulationType && !customTopic) {
       return res.status(400).json({
         success: false,
-        message: 'Either simulationType or customTopic must be provided'
+        message: 'Either simulationType or customTopic required'
       });
     }
-    
+
     if (simulationType && customTopic) {
       return res.status(400).json({
         success: false,
-        message: 'Provide either simulationType or customTopic, not both'
+        message: 'Provide only one: simulationType OR customTopic'
       });
     }
-    
-    // Validate simulationType if provided
-    if (simulationType && !isValidSimulation(simulationType)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid simulation type'
-      });
-    }
-    
-    // Validate customTopic if provided
-    if (customTopic && !isValidCustomTopic(customTopic)) {
-      return res.status(400).json({
-        success: false,
-        message: `Custom topic must be between ${CUSTOM_TOPIC.MIN_LENGTH} and ${CUSTOM_TOPIC.MAX_LENGTH} characters`
-      });
-    }
-    
-    // Validate difficulty
+
     if (!difficulty || !isValidDifficulty(difficulty)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid difficulty. Must be: easy, medium, hard, or auto',
-        validDifficulties: Object.values(CHALLENGE_DIFFICULTY)
+        message: 'Invalid difficulty'
       });
     }
-    
-    // Validate numberOfQuestions
+
     if (!isValidQuestionCount(numberOfQuestions)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid number of questions. Must be: 3, 5, 7, or 10',
-        validCounts: QUESTION_COUNT_OPTIONS
+        message: 'Invalid number of questions'
       });
     }
-    
+
     // ========================================================================
-    // 3. GET STUDENT DATA (DATABASE)
+    // 3. FETCH STUDENT
     // ========================================================================
 
-    const student = await Student.findById(studentId);
+    const student = await Student.findById(mongoUserId);
 
     if (!student) {
       return res.status(404).json({
@@ -172,218 +667,116 @@ exports.generateChallenge = async (req, res) => {
       });
     }
 
-    // ✅ FIX: Extract actual IDs from potentially stringified objects
-    let actualSchoolId = extractId(student.schoolId, 'schoolId');
-    let actualTeacherId = extractId(student.teacherId, 'teacherId');
+    // ========================================================================
+    // 4. FIX CORRUPTED IDS (INSTITUTIONAL CRITICAL FIX)
+    // ========================================================================
 
-    // Set defaults if still null
-    if (!actualSchoolId) {
-      actualSchoolId = req.user.schoolId || 'SYSTEM-DEFAULT';
-      logger.warn(`Student ${student.studentId} missing schoolId, using default`);
+    let actualSchoolId = extractId(student.schoolId, 'schoolId') || req.user.schoolId;
+    let actualTeacherId = extractId(student.teacherId, 'teacherId') || req.user.teacherId;
+
+    if (!actualSchoolId || !actualTeacherId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Student schoolId or teacherId missing'
+      });
     }
 
-    if (!actualTeacherId) {
-      actualTeacherId = req.user.teacherId || 'SYSTEM-DEFAULT';
-      logger.warn(`Student ${student.studentId} missing teacherId, using default`);
-    }
-
-    // Update student document if IDs changed
+    // Auto repair corrupted data
     if (student.schoolId !== actualSchoolId || student.teacherId !== actualTeacherId) {
       student.schoolId = actualSchoolId;
       student.teacherId = actualTeacherId;
       await student.save({ validateBeforeSave: false });
-      logger.info(`✅ Fixed student IDs: schoolId=${actualSchoolId}, teacherId=${actualTeacherId}`);
+      logger.warn(`🛠 Auto-repaired student IDs for ${student.studentId}`);
     }
-    
+
     // ========================================================================
-    // 4. GET SIMULATION METADATA (FROM constants.js)
+    // 5. RECENT PERFORMANCE
     // ========================================================================
-    
-    let simulationMetadata = null;
-    
-    if (simulationType) {
-      simulationMetadata = SIMULATION_METADATA[simulationType];
-      
-      if (!simulationMetadata) {
-        logger.warn(`⚠️ No metadata found for simulation: ${simulationType}`);
-      } else {
-        logger.info('📚 Simulation metadata loaded:', {
-          topics: simulationMetadata.topics?.length || 0,
-          tools: simulationMetadata.tools?.length || 0,
-          difficultyFactors: simulationMetadata.difficulty_factors?.length || 0
-        });
-      }
-    }
-    
-    // ========================================================================
-    // 5. GET RECENT PERFORMANCE (DATABASE)
-    // ========================================================================
-    
-    const recentChallenges = await Challenge.find({ 
-      studentId: student.studentId, 
-      status: 'evaluated' 
+
+    const recentChallenges = await Challenge.find({
+      studentId: student.studentId,
+      status: 'evaluated'
     })
       .sort({ evaluatedAt: -1 })
       .limit(10)
       .lean();
-    
+
     const recentAvgScore = recentChallenges.length > 0
       ? recentChallenges.reduce((sum, c) => sum + (c.results?.totalScore || 0), 0) / recentChallenges.length
       : 50;
-    
-    logger.info(`📊 Recent average score: ${recentAvgScore.toFixed(2)}%`);
-    
+
     // ========================================================================
-    // 6. FERRARI ENGINE: AUTO DIFFICULTY (IRT + PID)
+    // 6. FERRARI ENGINE (AUTO MODE)
     // ========================================================================
-    
+
     let irtResult = null;
     let pidResult = null;
     let ferrariEngineUsed = false;
     const originalDifficulty = difficulty;
-    
-    if (difficulty === CHALLENGE_DIFFICULTY.AUTO) {
-      logger.info('🏎️ FERRARI ENGINE: Auto difficulty mode activated');
+
+    if (difficulty === 'auto') {
       ferrariEngineUsed = true;
-      
+
       try {
-        // ✅ ALGORITHM #1: IRT - Student ability
-        logger.info('🎓 IRT: Calculating optimal difficulty...');
-        
-        try {
-          irtResult = await irtService.getOptimalDifficulty(studentId);
-          
-          if (irtResult && irtResult.difficulty) {
-            difficulty = irtResult.difficulty;
-            logger.info(`✅ IRT selected: ${difficulty} (ability: ${irtResult.studentAbility?.toFixed(2)})`);
-          }
-        } catch (irtError) {
-          logger.warn('⚠️ IRT failed:', irtError.message);
+        irtResult = await irtService.getOptimalDifficulty(mongoUserId);
+        pidResult = await pidService.getRecommendedDifficulty(mongoUserId);
+
+        if (irtResult?.difficulty) {
+          difficulty = irtResult.difficulty;
         }
-        
-        // ✅ ALGORITHM #2: PID - Performance adjustment
-        logger.info('🎛️ PID: Calculating adjustment...');
-        
-        try {
-          pidResult = await pidService.getRecommendedDifficulty(studentId);
-          
-          if (pidResult && pidResult.difficulty) {
-            // PID can override if strong signal
-            if (!irtResult || pidResult.confidence > 0.7) {
-              difficulty = pidResult.difficulty;
-              logger.info(`✅ PID selected: ${difficulty} (adjustment: ${pidResult.adjustment?.toFixed(2)})`);
-            } else {
-              logger.info(`📊 PID suggests: ${pidResult.difficulty} (using IRT)`);
-            }
-          }
-        } catch (pidError) {
-          logger.warn('⚠️ PID failed:', pidError.message);
+
+        if (pidResult?.confidence > 0.7) {
+          difficulty = pidResult.difficulty;
         }
-        
-        // Fallback
-        if (!irtResult && !pidResult) {
-          difficulty = 'medium';
-          logger.warn('⚠️ Both algorithms failed, using: medium');
-        }
-        
-        logger.info(`🏎️ FERRARI ENGINE: Final difficulty: ${difficulty}`);
-        
-      } catch (ferrariError) {
-        logger.error('❌ Ferrari Engine error:', ferrariError);
+
+      } catch (err) {
+        logger.warn('Ferrari engine fallback → medium');
         difficulty = 'medium';
       }
-    } else {
-      logger.info(`📝 MANUAL DIFFICULTY: ${difficulty} (user-selected)`);
     }
-    
+
     // ========================================================================
-    // 7. CHECK LIMITS
+    // 7. AI GENERATION
     // ========================================================================
-    
-    const topicForLimit = simulationType || customTopic;
-    
-    const canGenerate = student.canGenerateChallenge(
-      topicForLimit,
-      CHALLENGE_LIMITS.DAILY_LIMIT,
-      CHALLENGE_LIMITS.PER_SIMULATION_LIMIT
-    );
-    
-    if (!canGenerate.allowed) {
-      return res.status(429).json({
-        success: false,
-        message: canGenerate.reason === 'daily_limit'
-          ? 'Daily challenge limit reached. Please try again tomorrow.'
-          : `You have reached the limit for this topic today.`,
-        remaining: canGenerate.remaining
-      });
-    }
-    
-    // ========================================================================
-    // 8. GENERATE CHALLENGE WITH MISTRAL AI
-    // Pass ALL data: frontend, database, constants.js, Ferrari Engine
-    // ========================================================================
-    
-    logger.info(`🤖 MISTRAL AI: Generating challenge with all data`);
-    
+
     const startTime = Date.now();
-    
+
     const challengeData = await mistralService.generateChallenge({
-      // From Frontend (1-4)
       subject,
       simulationType,
       customTopic,
       difficulty,
       numberOfQuestions,
-      
-      // From Database (5)
       studentLevel: student.class,
       weakCompetencies: student.weakCompetencies || [],
-      
-      // From constants.js (6) - topics, tools, difficulty_factors
-      simulationMetadata: simulationMetadata ? {
-        topics: simulationMetadata.topics || [],
-        tools: simulationMetadata.tools || [],
-        difficultyFactors: simulationMetadata.difficulty_factors || []
-      } : null,
-      
-      // Ferrari Engine context
       context: {
-        irtAbility: irtResult?.studentAbility,
-        pidAdjustment: pidResult?.adjustment,
-        recentAvgScore: recentAvgScore,
-        ferrariEngineUsed
+        recentAvgScore
       }
     });
-    
+
     const generationTime = Date.now() - startTime;
-    
-    // Validate
-    if (!challengeData || !challengeData.questions || challengeData.questions.length === 0) {
-      throw new Error('Failed to generate valid challenge');
+
+    if (!challengeData?.questions?.length) {
+      throw new Error('AI returned invalid challenge');
     }
-    
-    logger.info(`✅ Challenge generated in ${generationTime}ms with ${challengeData.questions.length} questions`);
-    
+
     // ========================================================================
-    // 9. CREATE CHALLENGE IN DATABASE
+    // 8. CREATE CHALLENGE (INSTITUTION SAFE)
     // ========================================================================
-    
+
     const challenge = await Challenge.create({
       studentId: student.studentId,
-      schoolId: actualSchoolId,    // ← UPDATED
-      teacherId: actualTeacherId,  // ← UPDATED
-      
-      // Subject and topic
+      schoolId: actualSchoolId,
+      teacherId: actualTeacherId,
+
       subject,
       simulationType: simulationType || null,
       customTopic: customTopic || null,
-      topicType: simulationType ? TOPIC_TYPES.SIMULATION : TOPIC_TYPES.CUSTOM,
-      
-      // Challenge details
-      difficulty: difficulty,
+
+      difficulty,
       difficultyMode: originalDifficulty,
       title: challengeData.title || `${subject} Challenge`,
-      
+
       questions: challengeData.questions.map((q, index) => ({
         questionId: `Q${index + 1}`,
         type: q.type || 'SHORT_ANSWER',
@@ -392,188 +785,98 @@ exports.generateChallenge = async (req, res) => {
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
         competencies: q.competencies || [],
-        points: Math.min(q.points || 100, 100),  // ← Already fixed
-        hint: q.hint || ''
+        points: Math.min(q.points || 100, 100)
       })),
-      
-      totalPoints: challengeData.totalPoints || (numberOfQuestions * 100),
+
+      totalPoints: challengeData.totalPoints || numberOfQuestions * 100,
       passingScore: challengeData.passingScore || 70,
-      estimatedTime: challengeData.estimatedTime || Math.max(10, numberOfQuestions * 2),
+      estimatedTime: challengeData.estimatedTime || numberOfQuestions * 2,
       status: 'generated',
-      
-      // AI metadata
+
       aiMetadata: {
         mistralModel: process.env.MISTRAL_MODEL || 'mistral-large-2411',
         tokensUsed: challengeData.tokensUsed || 0,
         cost: challengeData.cost || 0,
         generationTime,
-        
-        // Ferrari Engine
-        ferrariEngine: {
-          enabled: ferrariEngineUsed,
-          mode: ferrariEngineUsed ? DIFFICULTY_MODE.AUTO : DIFFICULTY_MODE.MANUAL,
-          
-          irt: irtResult ? {
-            studentAbility: irtResult.studentAbility,
-            recommendedDifficulty: irtResult.difficulty,
-            expectedSuccess: irtResult.expectedSuccessRate,
-            reasoning: irtResult.reasoning
-          } : null,
-          
-          pid: pidResult ? {
-            adjustment: pidResult.adjustment,
-            recommendedDifficulty: pidResult.difficulty,
-            currentPerformance: pidResult.currentPerformance,
-            targetPerformance: pidResult.targetPerformance
-          } : null
-        },
-        
-        // Simulation metadata used
-        simulationMetadata: simulationMetadata ? {
-          topicCount: simulationMetadata.topics?.length || 0,
-          toolCount: simulationMetadata.tools?.length || 0,
-          difficultyFactorCount: simulationMetadata.difficulty_factors?.length || 0
-        } : null
+        ferrariEngineUsed
       }
     });
-    
-    // ========================================================================
-    // 10. UPDATE STUDENT & LOG
-    // ========================================================================
-    
-// ========================================================================
-// 10. UPDATE STUDENT & LOG
-// ========================================================================
 
-    try {
-      await student.recordChallengeGeneration(topicForLimit);
-      await student.updateStreak();
-    } catch (studentError) {
-      // Silently ignore - student stats are optional
-      logger.debug('Student stats update skipped:', studentError.message);
-    }
-    
+    // ========================================================================
+    // 9. LOGGING (CONSISTENT USER ID)
+    // ========================================================================
+
     await AILog.create({
-      userId: student._id,
+      userId: mongoUserId,
       userType: 'student',
-      schoolId: actualSchoolId,  // ← NEW (extracted ID)
+      schoolId: actualSchoolId,
       operation: 'challenge_generation',
       model: process.env.MISTRAL_MODEL || 'mistral-large-2411',
       tokensUsed: challengeData.tokensUsed || 0,
       cost: challengeData.cost || 0,
       responseTime: generationTime,
-      success: true,
-      metadata: {
-        subject,
-        topicType: simulationType ? 'simulation' : 'custom',
-        difficultyMode: originalDifficulty,
-        numberOfQuestions,
-        ferrariEngineUsed,
-        hasSimulationMetadata: !!simulationMetadata
-      }
+      success: true
     });
-    
+
     await Activity.log({
-      userId: student._id.toString(),
+      userId: mongoUserId,
       userType: 'student',
-      schoolId: actualSchoolId,  // ← NEW (extracted ID)
+      schoolId: actualSchoolId,
       activityType: 'challenge_generated',
-      action: ferrariEngineUsed 
-        ? `🏎️ Ferrari Engine: ${subject} - ${simulationType || customTopic}`
-        : `Challenge: ${subject} - ${simulationType || customTopic}`,
+      action: `Challenge generated: ${subject}`,
       metadata: {
         challengeId: challenge.challengeId,
-        subject,
-        simulationType,
-        customTopic,
-        difficulty: challenge.difficulty,
-        numberOfQuestions,
-        ferrariEngineUsed
+        difficulty
       },
       ipAddress: req.ip,
       success: true
     });
-    
+
     // ========================================================================
-    // 11. RESPONSE
+    // 10. RESPONSE
     // ========================================================================
-    
-    res.status(201).json({
+
+    return res.status(201).json({
       success: true,
       message: ferrariEngineUsed
-        ? '🏎️ Challenge generated with Ferrari Engine (IRT + PID)'
-        : 'Challenge generated successfully',
+        ? 'Challenge generated (Auto Mode)'
+        : 'Challenge generated',
       data: {
-        challenge: {
-          challengeId: challenge.challengeId,
-          title: challenge.title,
-          subject: challenge.subject,
-          topic: simulationType || customTopic,
-          topicType: challenge.topicType,
-          difficulty: challenge.difficulty,
-          difficultyMode: challenge.difficultyMode,
-          questions: challenge.questions.map(q => ({
-            questionId: q.questionId,
-            type: q.type,
-            question: q.question,
-            options: q.options,
-            points: q.points,
-            hint: q.hint
-          })),
-          totalPoints: challenge.totalPoints,
-          passingScore: challenge.passingScore,
-          estimatedTime: challenge.estimatedTime,
-          generatedAt: challenge.generatedAt
-        },
-        
-        ferrariEngine: ferrariEngineUsed ? {
-          enabled: true,
-          mode: DIFFICULTY_MODE.AUTO,
-          
-          irt: irtResult ? {
-            studentAbility: Math.round(irtResult.studentAbility * 100) / 100,
-            recommendedDifficulty: irtResult.difficulty,
-            expectedSuccess: Math.round(irtResult.expectedSuccessRate * 100)
-          } : null,
-          
-          pid: pidResult ? {
-            adjustment: Math.round(pidResult.adjustment * 100) / 100,
-            recommendedDifficulty: pidResult.difficulty
-          } : null,
-          
-          finalDifficulty: difficulty
-        } : null,
-        
-        limits: {
-          dailyRemaining: CHALLENGE_LIMITS.DAILY_LIMIT - (student.challengeLimits?.totalToday || 0) - 1,
-          topicRemaining: CHALLENGE_LIMITS.PER_SIMULATION_LIMIT - ((student.challengeLimits?.bySimulation?.get(topicForLimit) || 0) + 1)
-        }
+        challengeId: challenge.challengeId,
+        subject,
+        difficulty,
+        totalPoints: challenge.totalPoints,
+        questions: challenge.questions.map(q => ({
+          questionId: q.questionId,
+          type: q.type,
+          question: q.question,
+          options: q.options,
+          points: q.points
+        }))
       }
     });
-    
+
   } catch (error) {
-    logger.error('❌ Generate challenge error:', error);
-    
-    try {
-      await AILog.create({
-        userId: req.user.userId,
-        userType: 'student',
-        operation: 'challenge_generation',
-        model: process.env.MISTRAL_MODEL || 'mistral-large-2411',  // ← ADD THIS
-        success: false,
-        errorMessage: error.message
-      });
-    } catch (logError) {
-      logger.error('Failed to log error:', logError);
-    }
-    
-    res.status(500).json({
+
+    logger.error('Generate challenge error', error);
+
+    await AILog.create({
+      userId: req.user.userId,
+      userType: 'student',
+      schoolId: req.user.schoolId,
+      operation: 'challenge_generation',
+      model: process.env.MISTRAL_MODEL || 'mistral-large-2411',
       success: false,
-      message: 'Error generating challenge',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+      errorMessage: error.message
+    });
+
+    return res.status(500).json({
+      success: false,
+      message: 'Error generating challenge'
     });
   }
 };
+
 /**
  * @desc    Preview challenge (before generation)
  * @route   GET /api/challenges/preview
@@ -949,9 +1252,238 @@ exports.getChallengeResults = async (req, res) => {
 
 
 
+// async function evaluateChallengeWithAI(challenge, req = {}) {
+
+//   // 🛡️ Idempotency guard
+//   if (challenge.status === 'evaluated') {
+//     logger.warn(`Duplicate evaluation blocked for ${challenge.challengeId}`);
+//     return;
+//   }
+
+//   const startTime = Date.now();
+//   const evaluatedAnswers = [];
+//   let totalScore = 0;
+//   let correctAnswers = 0;
+
+//   // =====================================================
+//   // 1️⃣ AI EVALUATION
+//   // =====================================================
+//   for (let i = 0; i < challenge.answers.length; i++) {
+//     const answer = challenge.answers[i];
+//     const question = challenge.questions.find(
+//       q => q.questionId === answer.questionId
+//     );
+//     if (!question) continue;
+
+//     const aiEvaluation = await mistralService.evaluateResponse({
+//       question: question.question,
+//       questionType: question.type,
+//       correctAnswer: question.correctAnswer,
+//       studentAnswer: answer.studentAnswer,
+//       studentReasoning: answer.studentReasoning,
+//       expectedExplanation: question.explanation
+//     });
+
+//     const finalScore =
+//       (aiEvaluation.answerScore || 0) +
+//       (aiEvaluation.reasoningScore || 0);
+
+//     if (aiEvaluation.answerCorrect) correctAnswers++;
+//     totalScore += finalScore;
+
+//     evaluatedAnswers.push({
+//       questionId: answer.questionId,
+//       studentAnswer: answer.studentAnswer,
+//       studentReasoning: answer.studentReasoning,
+//       aiEvaluation,
+//       finalScore,
+//       evaluatedAt: new Date()
+//     });
+//   }
+
+//   const avgScore = totalScore / challenge.questions.length;
+//   const passed = avgScore >= challenge.passingScore;
+
+//   // =====================================================
+//   // 2️⃣ COMPETENCY AGGREGATION
+//   // =====================================================
+//   const competencyMap = {};
+//   challenge.questions.forEach((q, idx) => {
+//     if (!Array.isArray(q.competencies)) return;
+//     q.competencies.forEach(c => {
+//       competencyMap[c] ??= [];
+//       competencyMap[c].push(evaluatedAnswers[idx]?.finalScore || 0);
+//     });
+//   });
+
+//   const competenciesAssessed = Object.entries(competencyMap).map(
+//     ([competency, scores]) => {
+//       const score = scores.reduce((a, b) => a + b, 0) / scores.length;
+//       return {
+//         competency,
+//         score,
+//         level: determineLevel(score),
+//         assessedBy: 'system',
+//         evidence: `Challenge ${challenge.challengeId} AI evaluation`,
+//         timestamp: new Date()
+//       };
+//     }
+//   );
+
+
+//   // =====================================================
+//   // 3️⃣ UPDATE CHALLENGE (ONCE)
+//   // =====================================================
+//   await challenge.evaluate({
+//     totalScore: avgScore,
+//     percentage: avgScore,
+//     passed,
+//     correctAnswers,
+//     totalQuestions: challenge.questions.length,
+//     competenciesAssessed
+//   });
+
+//   challenge.answers = evaluatedAnswers;
+//   challenge.aiMetadata.evaluationTime = Date.now() - startTime;
+//   challenge.evaluatedAt = new Date();
+//   await challenge.save();
+
+//   // =====================================================
+//   // 4️⃣ CPI SNAPSHOT (🔥 FIXED)
+//   // =====================================================
+//   let cpiSnapshot = null;
+
+//   try {
+//     const ledgerEvents = await Ledger.find({
+//       studentId: challenge.studentId,
+//       eventType: Ledger.EVENT_TYPES.CHALLENGE_EVALUATED
+//     })
+//       .sort({ timestamp: 1 })
+//       .lean();
+
+//     const cpiResult = await analyticsService.generateCPI(
+//       challenge.studentId,
+//       ledgerEvents
+//     );
+
+//     if (typeof cpiResult?.cpi === 'number') {
+//       cpiSnapshot = cpiResult.cpi;
+//     }
+//   } catch (err) {
+//     logger.warn('CPI snapshot skipped:', err.message);
+//   }
+
+//   // =====================================================
+//   // 5️⃣ LEDGER WRITE (STRICT & SAFE)
+//   // =====================================================
+//   const actualSchoolId =
+//     extractId(challenge.schoolId, 'schoolId') || 'SYSTEM';
+//   const actualTeacherId =
+//     extractId(challenge.teacherId, 'teacherId') || 'SYSTEM';
+
+//   // ✅ LEDGER WRITE (COMPLETE WITH ALL REQUIRED FIELDS)
+//   try {
+//     await Ledger.create({
+//       // ✅ eventType (REQUIRED)
+//       eventType: 'challenge_evaluated',
+      
+//       // ✅ Entity references
+//       studentId: challenge.studentId,
+//       teacherId: actualTeacherId,
+//       schoolId: actualSchoolId,
+      
+//       // ✅ data field (REQUIRED)
+//       data: {
+//         challengeId: challenge.challengeId,
+//         simulationType: challenge.simulationType,
+//         difficulty: challenge.difficulty,
+//         totalScore: avgScore,
+//         passed: passed,
+//         timeTaken: challenge.startedAt 
+//           ? Math.floor((new Date() - new Date(challenge.startedAt)) / 1000) 
+//           : 0,
+//         evaluatedAt: new Date(),
+//         evaluationType: 'ai_automatic',
+
+//         // 🆕 CPI SNAPSHOT (OPTIONAL, SAFE)
+//         cpiSnapshot: cpiSnapshot
+//       },
+      
+//       // ✅ challenge field (REQUIRED)
+//       challenge: {
+//         challengeId: challenge.challengeId,
+//         simulationType: challenge.simulationType,
+//         difficulty: challenge.difficulty,
+//         totalScore: avgScore,
+//         passed: passed,
+//         timeTaken: challenge.startedAt 
+//           ? Math.floor((new Date() - new Date(challenge.startedAt)) / 1000) 
+//           : 0,
+//         competenciesAssessed: competenciesAssessed.map(comp => ({
+//           competency: comp.competency,
+//           score: comp.score,
+//           level: determineLevel(comp.score),
+//           assessedBy: 'system',
+//           evidence: `Challenge ${challenge.challengeId} - AI Evaluation`,
+//           timestamp: new Date()
+//         }))
+//       },
+      
+//       // ✅ hash (REQUIRED)
+//       hash: require('crypto')
+//         .createHash('sha256')
+//         .update(challenge.challengeId + challenge.studentId + Date.now())
+//         .digest('hex'),
+      
+//       // ✅ metadata (REQUIRED)
+//       metadata: {
+//         timestamp: new Date(),
+//         chainId: `CHAIN-${require('nanoid').nanoid(6).toUpperCase()}`
+//       },
+      
+//       // ✅ Audit trail
+//       createdBy: 'system',
+//       createdByRole: 'system',
+//       ipAddress: req.ip || '127.0.0.1',
+//       userAgent: req.get ? req.get('user-agent') : 'NEP-Workbench-Backend',
+      
+//       status: 'confirmed',
+//       timestamp: new Date()
+//     });
+    
+//     logger.info('✅ Ledger entry created for challenge:', challenge.challengeId);
+//   } catch (ledgerError) {
+//     logger.error('❌ Ledger entry failed:', ledgerError.message);
+//   }
+
+
+//   // =====================================================
+//   // 6️⃣ ACTIVITY LOG
+//   // =====================================================
+//   await Activity.log({
+//     userId: challenge.studentId,
+//     userType: 'student',
+//     schoolId: actualSchoolId,
+//     activityType: 'challenge_evaluated',
+//     action: `Auto-evaluated (${avgScore.toFixed(2)}%)`,
+//     metadata: { challengeId: challenge.challengeId },
+//     success: true
+//   });
+
+//   logger.info(
+//     `Challenge ${challenge.challengeId} evaluated in ${
+//       Date.now() - startTime
+//     }ms`
+//   );
+// }
+
+
+
 async function evaluateChallengeWithAI(challenge, req = {}) {
 
-  // 🛡️ Idempotency guard
+  // =====================================================
+  // 🛡️ Idempotency Guard
+  // =====================================================
   if (challenge.status === 'evaluated') {
     logger.warn(`Duplicate evaluation blocked for ${challenge.challengeId}`);
     return;
@@ -1005,8 +1537,10 @@ async function evaluateChallengeWithAI(challenge, req = {}) {
   // 2️⃣ COMPETENCY AGGREGATION
   // =====================================================
   const competencyMap = {};
+
   challenge.questions.forEach((q, idx) => {
     if (!Array.isArray(q.competencies)) return;
+
     q.competencies.forEach(c => {
       competencyMap[c] ??= [];
       competencyMap[c].push(evaluatedAnswers[idx]?.finalScore || 0);
@@ -1015,7 +1549,9 @@ async function evaluateChallengeWithAI(challenge, req = {}) {
 
   const competenciesAssessed = Object.entries(competencyMap).map(
     ([competency, scores]) => {
-      const score = scores.reduce((a, b) => a + b, 0) / scores.length;
+      const score =
+        scores.reduce((a, b) => a + b, 0) / scores.length;
+
       return {
         competency,
         score,
@@ -1027,9 +1563,8 @@ async function evaluateChallengeWithAI(challenge, req = {}) {
     }
   );
 
-
   // =====================================================
-  // 3️⃣ UPDATE CHALLENGE (ONCE)
+  // 3️⃣ UPDATE CHALLENGE
   // =====================================================
   await challenge.evaluate({
     totalScore: avgScore,
@@ -1046,17 +1581,16 @@ async function evaluateChallengeWithAI(challenge, req = {}) {
   await challenge.save();
 
   // =====================================================
-  // 4️⃣ CPI SNAPSHOT (🔥 FIXED)
+  // 4️⃣ CPI SNAPSHOT
   // =====================================================
   let cpiSnapshot = null;
 
   try {
     const ledgerEvents = await Ledger.find({
       studentId: challenge.studentId,
-      eventType: Ledger.EVENT_TYPES.CHALLENGE_EVALUATED
-    })
-      .sort({ timestamp: 1 })
-      .lean();
+      eventType: 'challenge_evaluated',
+      status: 'confirmed'
+    }).lean();
 
     const cpiResult = await analyticsService.generateCPI(
       challenge.studentId,
@@ -1071,91 +1605,147 @@ async function evaluateChallengeWithAI(challenge, req = {}) {
   }
 
   // =====================================================
-  // 5️⃣ LEDGER WRITE (STRICT & SAFE)
+  // 5️⃣ LEDGER WRITE
   // =====================================================
-  const actualSchoolId =
-    extractId(challenge.schoolId, 'schoolId') || 'SYSTEM';
-  const actualTeacherId =
-    extractId(challenge.teacherId, 'teacherId') || 'SYSTEM';
+  const actualSchoolId = challenge.schoolId || 'SYSTEM';
+  const actualTeacherId = challenge.teacherId || 'SYSTEM';
 
-  // ✅ LEDGER WRITE (COMPLETE WITH ALL REQUIRED FIELDS)
   try {
     await Ledger.create({
-      // ✅ eventType (REQUIRED)
       eventType: 'challenge_evaluated',
-      
-      // ✅ Entity references
       studentId: challenge.studentId,
       teacherId: actualTeacherId,
       schoolId: actualSchoolId,
-      
-      // ✅ data field (REQUIRED)
+
       data: {
         challengeId: challenge.challengeId,
         simulationType: challenge.simulationType,
         difficulty: challenge.difficulty,
         totalScore: avgScore,
-        passed: passed,
-        timeTaken: challenge.startedAt 
-          ? Math.floor((new Date() - new Date(challenge.startedAt)) / 1000) 
-          : 0,
+        passed,
+        timeTaken: 0,
         evaluatedAt: new Date(),
         evaluationType: 'ai_automatic',
-
-        // 🆕 CPI SNAPSHOT (OPTIONAL, SAFE)
-        cpiSnapshot: cpiSnapshot
+        cpiSnapshot
       },
-      
-      // ✅ challenge field (REQUIRED)
+
       challenge: {
         challengeId: challenge.challengeId,
         simulationType: challenge.simulationType,
         difficulty: challenge.difficulty,
         totalScore: avgScore,
-        passed: passed,
-        timeTaken: challenge.startedAt 
-          ? Math.floor((new Date() - new Date(challenge.startedAt)) / 1000) 
-          : 0,
-        competenciesAssessed: competenciesAssessed.map(comp => ({
-          competency: comp.competency,
-          score: comp.score,
-          level: determineLevel(comp.score),
-          assessedBy: 'system',
-          evidence: `Challenge ${challenge.challengeId} - AI Evaluation`,
-          timestamp: new Date()
-        }))
+        passed,
+        timeTaken: 0,
+        competenciesAssessed
       },
-      
-      // ✅ hash (REQUIRED)
-      hash: require('crypto')
+
+      hash: crypto
         .createHash('sha256')
         .update(challenge.challengeId + challenge.studentId + Date.now())
         .digest('hex'),
-      
-      // ✅ metadata (REQUIRED)
+
       metadata: {
         timestamp: new Date(),
-        chainId: `CHAIN-${require('nanoid').nanoid(6).toUpperCase()}`
+        chainId: `CHAIN-${nanoid(6).toUpperCase()}`
       },
-      
-      // ✅ Audit trail
+
       createdBy: 'system',
       createdByRole: 'system',
       ipAddress: req.ip || '127.0.0.1',
       userAgent: req.get ? req.get('user-agent') : 'NEP-Workbench-Backend',
-      
       status: 'confirmed',
       timestamp: new Date()
     });
-    
-    logger.info('✅ Ledger entry created for challenge:', challenge.challengeId);
+
   } catch (ledgerError) {
-    logger.error('❌ Ledger entry failed:', ledgerError.message);
+    logger.error('Ledger write failed:', ledgerError.message);
   }
 
+  // =====================================================
+  // 6️⃣ STUDENT CPI + SPI UPDATE (🔥 FIXED)
+  // =====================================================
+  try {
+    const confirmedEvents = await Ledger.find({
+      studentId: challenge.studentId,
+      eventType: 'challenge_evaluated',
+      status: 'confirmed'
+    }).lean();
+
+    let totalCPI = 0;
+    let cpiCount = 0;
+    const competencyAggregate = {};
+
+    confirmedEvents.forEach(event => {
+      if (typeof event.data?.cpiSnapshot === 'number') {
+        totalCPI += event.data.cpiSnapshot;
+        cpiCount++;
+      }
+
+      event.challenge?.competenciesAssessed?.forEach(comp => {
+        competencyAggregate[comp.competency] ??= [];
+        competencyAggregate[comp.competency].push(comp.score);
+      });
+    });
+
+    const averageCPI =
+      cpiCount > 0 ? totalCPI / cpiCount : null;
+
+    const competencies = Object.entries(competencyAggregate).map(
+      ([competency, scores]) => {
+        const avg =
+          scores.reduce((a, b) => a + b, 0) / scores.length;
+
+        return {
+          competency,
+          averageScore: avg,
+          level: determineLevel(avg)
+        };
+      }
+    );
+
+    await Student.updateOne(
+      { studentId: challenge.studentId },
+      {
+        $set: {
+          averageCPI,
+          competencies,
+          lastEvaluatedAt: new Date()
+        }
+      }
+    );
+
+    const avgTotalScore =
+      confirmedEvents.reduce(
+        (sum, e) => sum + (e.data?.totalScore || 0),
+        0
+      ) / (confirmedEvents.length || 1);
+
+    const spi = Math.round(avgTotalScore);
+
+    await SPIRecord.create({
+      studentId: challenge.studentId,
+      spi,
+      spi_raw: avgTotalScore,
+      grade: getGradeFromScore(spi),
+      learning_state:
+        spi >= 80
+          ? 'advanced'
+          : spi >= 60
+          ? 'stable'
+          : spi >= 40
+          ? 'learning'
+          : 'at_risk',
+      totalChallenges: confirmedEvents.length,
+      source: 'challenge_evaluated',
+      calculatedAt: new Date()
+    });
+
+  } catch (err) {
+    logger.error('Student CPI/SPI update failed:', err.message);
+  }
 
   // =====================================================
-  // 6️⃣ ACTIVITY LOG
+  // 7️⃣ ACTIVITY LOG
   // =====================================================
   await Activity.log({
     userId: challenge.studentId,
@@ -1175,9 +1765,21 @@ async function evaluateChallengeWithAI(challenge, req = {}) {
 }
 
 
+// =====================================================
+// 🔹 HELPER: Grade Mapping
+// =====================================================
+function getGradeFromScore(score) {
+  if (score >= 90) return 'A+';
+  if (score >= 80) return 'A';
+  if (score >= 70) return 'B';
+  if (score >= 60) return 'C';
+  if (score >= 40) return 'D';
+  return 'F';
+}
 
 
-const Ledger = require('../models/Ledger');
+
+//const Ledger = require('../models/Ledger');
 
 
  

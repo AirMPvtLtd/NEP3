@@ -946,7 +946,7 @@
                     <i class="fas fa-question-circle"></i>
                     <span>Help</span>
                 </li>
-                <li class="nav-item" onclick="logoutStudent(event)">
+                <li class="nav-item" data-page="logout">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
                 </li>
@@ -2554,7 +2554,87 @@
             }
         }
 
+// ================================================================
+// LOGOUT FUNCTION - CLEAN VERSION
+// ================================================================
+function logoutStudent(event) {
+    // Prevent any default behavior and stop propagation
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
+    // Confirm logout
+    if (!confirm('Are you sure you want to logout?')) {
+        return; // User cancelled
+    }
+    
+    try {
+        // Show loading indicator
+        showLoading();
+        
+        // Clear authentication data
+        localStorage.removeItem('authToken');
+        sessionStorage.removeItem('studentOverview');
+        
+        // Clear global state
+        STUDENT_OVERVIEW = null;
+        authToken = null;
+        
+        // Clear any cached data
+        pageCache = {};
+        
+        // Redirect to login
+        window.location.href = 'nep-workbench/login.html';
+    } catch (error) {
+        console.error('Logout error:', error);
+        hideLoading();
+        alert('Logout failed. Please try again.');
+    }
+}
 
+        // ================================================================
+        // NAVIGATION HANDLER - COMPLETE VERSION
+        // ================================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Remove any existing event listeners and add new ones
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(item => {
+                // Remove any existing click listeners (to avoid duplicates)
+                item.removeEventListener('click', handleNavClick);
+                // Add new listener
+                item.addEventListener('click', handleNavClick);
+            });
+        });
+
+        // Separate handler function for better organization
+        function handleNavClick(event) {
+            const pageId = this.getAttribute('data-page');
+            
+            // Log for debugging
+            console.log('Navigation clicked:', pageId);
+            
+            switch(pageId) {
+                case 'logout':
+                    logoutStudent(event);
+                    break;
+                    
+                case 'reasoning-pad':
+                    openReasoningPad(event);
+                    break;
+                    
+                case null:
+                case undefined:
+                    // Do nothing for items without data-page
+                    break;
+                    
+                default:
+                    // Regular page navigation
+                    showPage(pageId);
+                    break;
+            }
+        }
         // ================================================================
         // HELPER FUNCTIONS
         // ================================================================
@@ -3403,7 +3483,7 @@
                 STUDENT_OVERVIEW = null;
                 
                 // Redirect to login page
-                window.location.href = '/login.html';
+                window.location.href = '/nep-workbench/login.html';
             }
         }
 

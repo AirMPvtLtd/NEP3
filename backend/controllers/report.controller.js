@@ -1125,12 +1125,14 @@ exports.getStudentNEPReports = async (req, res) => {
  */
 // controllers/report.controller.js
 
+const PDFDocument = require('pdfkit');
+
 exports.downloadNEPReport = async (req, res) => {
   try {
     const { reportId } = req.params;
 
     // ---------------------------------------------------
-    // 1. Fetch NEP Report (AUTHORITATIVE)
+    // 1️⃣ Fetch Report
     // ---------------------------------------------------
     const report = await NEPReport.findOne({ reportId }).lean();
     if (!report) {
@@ -1140,25 +1142,50 @@ exports.downloadNEPReport = async (req, res) => {
       });
     }
 
-    // ---------------------------------------------------
-    // 2. Authorization
-    // ---------------------------------------------------
-    const student = await Student.findOne({ studentId: report.studentId }).lean();
+    const student = await Student.findOne({
+      studentId: report.studentId
+    }).lean();
 
-    const isStudent = req.user.role === 'student' && req.user.studentId === report.studentId;
-    const isTeacher = req.user.role === 'teacher' && student?.teacherId === req.user.teacherId;
-    const isAdmin   = req.user.role === 'admin';
-    const isParent  = req.user.role === 'parent' && req.user.studentId === report.studentId;
+    // ---------------------------------------------------
+    // 2️⃣ Authorization
+    // ---------------------------------------------------
+    const isStudent =
+      req.user.role === 'student' &&
+      req.user.studentId === report.studentId;
+
+    const isTeacher =
+      req.user.role === 'teacher' &&
+      student?.teacherId === req.user.teacherId;
+
+    const isAdmin = req.user.role === 'admin';
+
+    const isParent =
+      req.user.role === 'parent' &&
+      req.user.studentId === report.studentId;
 
     if (!isStudent && !isTeacher && !isAdmin && !isParent) {
       return res.status(403).json({
         success: false,
-        message: 'You do not have permission to download this report'
+        message: 'Unauthorized'
       });
     }
 
     // ---------------------------------------------------
-    // 3. Fetch Ledger Events (READ-ONLY)
+    // 3️⃣ Log Activity (ENUM SAFE)
+    // ---------------------------------------------------
+    await Activity.log({
+      userId: req.user.userId,
+      userType: req.user.role,
+      schoolId: report.schoolId,
+      activityType: 'report_viewed',
+      action: `NEP report downloaded: ${report.reportId}`,
+      metadata: { reportId: report.reportId },
+      ipAddress: req.ip,
+      success: true
+    });
+
+    // ---------------------------------------------------
+    // 4️⃣ Rebuild Blockchain Verification (LIVE)
     // ---------------------------------------------------
     const ledgerEvents = await Ledger.find({
       studentId: report.studentId,
@@ -1166,102 +1193,130 @@ exports.downloadNEPReport = async (req, res) => {
       status: 'confirmed'
     }).lean();
 
-    // ---------------------------------------------------
-    // 4. Rebuild AUDIT + BLOCKCHAIN PAYLOAD (LIVE)
-    // ---------------------------------------------------
     const auditPayload = await buildAuditPayload({
       studentId: report.studentId,
       nepReport: report,
       ledgerEvents
     });
 
-    // ---------------------------------------------------
-    // 5. Cached Narration (NO AI CALL)
-    // ---------------------------------------------------
-    const narration = report.narration?.text || null;
+    const blockchain = auditPayload.blockchainVerification || {};
 
     // ---------------------------------------------------
-    // 6. Verification URLs
+    // 5️⃣ Prepare Clean Narration (REMOVE AI Blockchain)
     // ---------------------------------------------------
-    const verificationUrl =
-      `${process.env.FRONTEND_URL || process.env.API_URL}/verify/${report.reportId}`;
+    let cleanedNarration = report.narration?.text || '';
 
-    // const qrCodeUrl =
-    //   `${process.env.API_URL}/api/reports/nep/${report.reportId}/qrcode`;
-
-    // ---------------------------------------------------
-    // 7. Activity Log (ENUM-SAFE)
-    // ---------------------------------------------------
-    await Activity.log({
-      userId: req.user.userId,
-      userType: req.user.role,
-      schoolId: report.schoolId,
-      activityType: 'report_viewed', // ✅ enum safe
-      action: `NEP report downloaded: ${report.reportId}`,
-      metadata: {
-        reportId: report.reportId,
-        format: 'PDF',
-        verificationUrl
-      },
-      ipAddress: req.ip,
-      success: true
-    });
+    // Remove blockchain paragraph if AI injected it
+    cleanedNarration = cleanedNarration.replace(
+      /Blockchain Verification and Audit Integrity[\s\S]*?regulations\./gi,
+      ''
+    ).trim();
 
     // ---------------------------------------------------
-    // 8. RESPONSE (PDF RENDER-READY PAYLOAD)
+    // 6️⃣ Create PDF
     // ---------------------------------------------------
-    return res.json({
-      success: true,
-      message: 'Report ready for download',
-      data: {
-        reportId: report.reportId,
+    const doc = new PDFDocument({ margin: 50 });
 
-        student: {
-          studentId: report.studentId,
-          name: student?.name || null,
-          class: student?.class || null,
-          section: student?.section || null,
-          schoolId: report.schoolId
-        },
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${report.reportId}.pdf"`
+    );
 
-        reportMeta: {
-          reportType: report.reportType,
-          generatedAt: report.generatedAt,
-          periodStart: report.periodStart,
-          periodEnd: report.periodEnd
-        },
+    doc.pipe(res);
 
-        narration, // ✅ cached AI language
+    // ---------------------------------------------------
+    // 7️⃣ PDF CONTENT
+    // ---------------------------------------------------
 
-        summary: report.summary || null,
-        competencies: report.competencies || [],
-        performanceMetrics: report.performanceMetrics || {
-          cpi: null,
-          cpiStatus: 'not_computable'
-        },
+    // Header
+    doc.fontSize(20).text('NEP Progress Report', { align: 'center' });
+    doc.moveDown();
 
-        blockchainVerification: auditPayload.blockchainVerification,
-        complianceStatement: auditPayload.complianceStatement,
+    doc.fontSize(12);
+    doc.text(`Report ID: ${report.reportId}`);
+    doc.text(`Student: ${student?.name || 'N/A'}`);
+    doc.text(`Class: ${student?.class || '-'} ${student?.section || ''}`);
+    doc.text(`School ID: ${report.schoolId}`);
+    doc.moveDown();
 
-        verification: {
-          verificationUrl,
-          //qrCodeUrl
-        },
+    doc.text(`Report Type: ${report.reportType}`);
+    doc.text(`Generated At: ${new Date(report.generatedAt).toLocaleString()}`);
+    doc.moveDown();
 
-        note:
-          'PDF rendering uses cached narration, ledger-anchored facts, and live verification'
-      }
-    });
+    // ---------------------------------------------------
+    // Narration
+    // ---------------------------------------------------
+    if (cleanedNarration) {
+      doc.fontSize(14).text('Narration', { underline: true });
+      doc.moveDown();
+      doc.fontSize(11).text(cleanedNarration, {
+        align: 'left'
+      });
+      doc.moveDown();
+    }
+
+    // ---------------------------------------------------
+    // Competencies
+    // ---------------------------------------------------
+    if (report.competencies?.length) {
+      doc.fontSize(14).text('Competency Summary', { underline: true });
+      doc.moveDown();
+
+      report.competencies.forEach(c => {
+        doc.fontSize(11).text(
+          `${c.name} : ${c.score ?? 'Not Assessed'}`
+        );
+      });
+
+      doc.moveDown();
+    }
+
+    // ---------------------------------------------------
+    // Performance Metrics
+    // ---------------------------------------------------
+    if (report.performanceMetrics) {
+      doc.fontSize(14).text('Performance Metrics', { underline: true });
+      doc.moveDown();
+
+      doc.fontSize(11).text(
+        `CPI: ${
+          report.performanceMetrics.cpi !== null &&
+          report.performanceMetrics.cpi !== undefined
+            ? report.performanceMetrics.cpi
+            : 'N/A'
+        }`
+      );
+
+      doc.moveDown();
+    }
+
+    // ---------------------------------------------------
+    // 🔐 Blockchain Verification (SYSTEM GENERATED ONLY)
+    // ---------------------------------------------------
+    doc.fontSize(14).text('Blockchain Verification', { underline: true });
+    doc.moveDown();
+
+    doc.fontSize(10);
+    doc.text(`Merkle Root: ${blockchain.merkleRoot || 'N/A'}`);
+    doc.text(`Report Hash: ${blockchain.reportHash || 'N/A'}`);
+    doc.text(`Block ID: ${blockchain.ledgerBlockId || 'N/A'}`);
+    doc.text(`Status: ${blockchain.verificationStatus || 'N/A'}`);
+    doc.moveDown();
+
+    doc.text('This report is NEP 2020 aligned and ledger verified.');
+
+    doc.end();
 
   } catch (error) {
     logger.error('Download NEP report error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Error preparing report download',
-      error: error.message
+      message: 'Error generating PDF'
     });
   }
 };
+
 
 
 

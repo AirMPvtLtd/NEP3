@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <title>Teacher Dashboard - NEP Workbench</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -1667,6 +1668,103 @@
                 margin-bottom: 20px;
             }
         }
+
+/* ============================================ */
+/* CLASS PERFORMANCE - CARD LAYOUT FIXES        */
+/* ============================================ */
+
+/* Ensure stat cards never overlap */
+.stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 20px !important;
+    margin-bottom: 25px !important;
+}
+
+/* Fix stat card internal spacing */
+.stat-card {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+    padding: 20px !important;
+    margin: 0 !important;
+    width: 100% !important;
+    min-width: 200px !important;
+}
+
+/* Fix icon size and position */
+.stat-icon {
+    width: 50px !important;
+    height: 50px !important;
+    min-width: 50px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Fix chart container sizing */
+.chart-container {
+    height: 380px !important;
+    overflow: hidden !important;
+    padding: 20px !important;
+}
+
+/* Fix donut chart container */
+#performanceDistributionChart {
+    max-width: 250px !important;
+    max-height: 250px !important;
+    margin: 0 auto !important;
+}
+
+/* Fix table layout */
+table {
+    table-layout: fixed !important;
+    width: 100% !important;
+}
+
+th, td {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+/* Fix progress bar width */
+.progress-bar {
+    width: 80px !important;
+    height: 8px !important;
+    flex-shrink: 0 !important;
+}
+
+/* Fix badge alignment */
+.badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 4px 10px !important;
+}
+
+/* Fix intervention cards */
+#interventionStudents > div {
+    width: 100% !important;
+    min-width: 280px !important;
+}
+
+/* Responsive fixes */
+@media (max-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    [style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
     </style>
 </head>
 <body>
@@ -1725,30 +1823,6 @@
                 <i class="fas fa-chalkboard-teacher"></i>
                 <span>NEP Teaching Studio</span>
             </div>
- <!--            <div class="nav-item" onclick="showPage('profile')">
-                <i class="fas fa-user"></i>
-                <span>Smart Notes</span>
-            </div>
-            <div class="nav-item" onclick="showPage('profile')">
-                <i class="fas fa-user"></i>
-                <span>Industry Practice Lab</span>
-            </div>
-            <div class="nav-item" onclick="showPage('profile')">
-                <i class="fas fa-user"></i>
-                <span>Question Builder</span>
-            </div>
-            <div class="nav-item" onclick="showPage('profile')">
-                <i class="fas fa-user"></i>
-                <span>Concept Simulators</span>
-            </div>
-            <div class="nav-item" onclick="showPage('profile')">
-                <i class="fas fa-user"></i>
-                <span>Industry Specialization</span>
-            </div> -->
-<!--             <div class="nav-item" onclick="showPage('help')">
-                <i class="fas fa-question-circle"></i>
-                <span>Help Tickets</span>
-            </div> -->
 
             <div class="nav-item" onclick="showPage('validations')">
                 <i class="fas fa-check-circle"></i>
@@ -1868,9 +1942,7 @@
                                 <button class="filter-btn" onclick="changeChartPeriod(90)">3 Months</button>
                             </div>
                         </div>
-                        <div class="simple-bar-chart" id="performanceTrendChart">
-                            <!-- Performance bars will be inserted here -->
-                        </div>
+                        <canvas id="trendChartCanvas" style="width:100%; height:250px;"></canvas>
                     </div>
                     
                     <!-- COMPETENCY RADAR CHART -->
@@ -1878,9 +1950,7 @@
                         <div class="chart-header">
                             <h3><i class="fas fa-brain"></i> NEP Competencies</h3>
                         </div>
-                        <div class="radar-chart" id="competencyRadarChart">
-                            <!-- Radar chart will be generated here -->
-                        </div>
+                        <canvas id="competencyBarChart" style="width:100%; height:250px;"></canvas>
                     </div>
                     
                     <!-- CHALLENGE STATUS DONUT CHART -->
@@ -1888,9 +1958,7 @@
                         <div class="chart-header">
                             <h3><i class="fas fa-tasks"></i> Challenge Status</h3>
                         </div>
-                        <div class="donut-chart-container" id="challengeStatusChart">
-                            <!-- Donut chart will be generated here -->
-                        </div>
+                        <canvas id="donutChartCanvas" style="width:100%; height:250px;"></canvas>
                     </div>
                     
                     <!-- PERFORMANCE DISTRIBUTION -->
@@ -1898,9 +1966,7 @@
                         <div class="chart-header">
                             <h3><i class="fas fa-chart-bar"></i> Performance Distribution</h3>
                         </div>
-                        <div class="simple-bar-chart" id="performanceDistributionChart">
-                            <!-- Distribution bars will be inserted here -->
-                        </div>
+                        <canvas id="distributionChartCanvas" style="width:100%; height:250px;"></canvas>
                     </div>
                     
                     <!-- SIMULATION USAGE -->
@@ -1908,9 +1974,7 @@
                         <div class="chart-header">
                             <h3><i class="fas fa-flask"></i> Top Simulations</h3>
                         </div>
-                        <div class="horizontal-bar-chart" id="simulationUsageChart">
-                            <!-- Horizontal bars will be inserted here -->
-                        </div>
+                        <canvas id="usageChartCanvas" style="width:100%; height:250px;"></canvas>
                     </div>
                 </div>
                 
@@ -2039,37 +2103,271 @@
                 </div>
             </div>
             
-            <!-- VALIDATIONS PAGE -->
+            <!-- CLASS PERFORMANCE PAGE -->
             <div class="page" id="validations">
                 <div class="page-header">
-                    <h1>Validation Queue</h1>
-                    <p>Review and validate AI-generated challenges</p>
+                    <h1><i class="fas fa-chart-bar"></i> Class Performance Dashboard</h1>
+                    <p>Real-time performance analytics with class and section selector</p>
                 </div>
                 
-                <div class="panel">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Challenge ID</th>
-                                <th>Student</th>
-                                <th>Simulation Type</th>
-                                <th>Difficulty</th>
-                                <th>Status</th>
-                                <th>Submitted</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="validationsList">
-                            <tr>
-                                <td colspan="7">
-                                    <div class="loading">
-                                        <div class="spinner"></div>
-                                        <p>Loading pending challenges...</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- CLASS & SECTION SELECTOR CARD -->
+                <div class="panel" style="margin-bottom: 25px; padding: 20px;">
+                    <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <i class="fas fa-filter" style="color: var(--accent-cyan); font-size: 1.2rem;"></i>
+                            <span style="color: var(--text-primary); font-weight: 600;">Select Class:</span>
+                        </div>
+                        
+                        <!-- Class Selector -->
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; flex: 1;">
+                            <select id="classSelector" class="form-control" style="width: 120px; background: var(--bg-dark);">
+                                <option value="6">Class 6</option>
+                                <option value="7">Class 7</option>
+                                <option value="8">Class 8</option>
+                                <option value="9">Class 9</option>
+                                <option value="10" selected>Class 10</option>
+                                <option value="11">Class 11</option>
+                                <option value="12">Class 12</option>
+                            </select>
+                            
+                            <!-- Section Selector -->
+                            <select id="sectionSelector" class="form-control" style="width: 120px; background: var(--bg-dark);">
+                                <option value="A" selected>Section A</option>
+                                <option value="B">Section B</option>
+                                <option value="C">Section C</option>
+                                <option value="D">Section D</option>
+                            </select>
+                            
+                            <!-- Load Button -->
+                            <button class="btn btn-primary" onclick="loadClassPerformance()" style="display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-search"></i>
+                                <span>Load Performance</span>
+                            </button>
+                            
+                            <!-- Export Button -->
+                            <button class="btn btn-secondary" onclick="exportClassReport()" style="display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-download"></i>
+                                <span>Export Report</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Last Updated -->
+                        <div id="lastUpdated" style="color: var(--text-secondary); font-size: 0.85rem;">
+                            <i class="fas fa-clock"></i> Last updated: Just now
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- KEY METRICS CARDS - 4 COLUMN GRID -->
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px;">
+                    <!-- Card 1: Total Students -->
+                    <div class="stat-card" style="padding: 20px;">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-value" id="totalStudents">0</div>
+                            <div class="stat-label">Total Students</div>
+                            <div class="stat-change" id="classInfo" style="color: var(--accent-cyan);">
+                                <i class="fas fa-school"></i> Class 10-A
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 2: Average Performance -->
+                    <div class="stat-card" style="padding: 20px;">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-value" id="avgPerformance">0%</div>
+                            <div class="stat-label">Class Average</div>
+                            <div class="stat-change" id="avgPerformanceLabel">
+                                <i class="fas fa-minus-circle"></i> Loading...
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 3: Top Performer -->
+                    <div class="stat-card" style="padding: 20px;">
+                        <div class="stat-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-value" id="topPerformer">0%</div>
+                            <div class="stat-label">Top Performer</div>
+                            <div class="stat-change positive" id="topPerformerName">
+                                <i class="fas fa-arrow-up"></i> -
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 4: Need Intervention -->
+                    <div class="stat-card" style="padding: 20px;">
+                        <div class="stat-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-value" id="needsHelp">0</div>
+                            <div class="stat-label">Need Intervention</div>
+                            <div class="stat-change negative">
+                                <i class="fas fa-arrow-down"></i> Below 50%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CHARTS ROW - 2 COLUMN GRID -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                    <!-- Chart 1: Performance Distribution Donut -->
+                    <div class="chart-container" style="height: 380px; padding: 20px;">
+                        <div class="chart-header" style="margin-bottom: 15px;">
+                            <h3><i class="fas fa-chart-pie"></i> Performance Distribution</h3>
+                            <span class="badge badge-info" id="studentCountBadge">Total: 0 Students</span>
+                        </div>
+                        <div style="height: 250px; position: relative; display: flex; justify-content: center;">
+                            <canvas id="performanceDistributionChart" style="max-width: 250px; max-height: 250px;"></canvas>
+                        </div>
+                        <div class="donut-legend" id="distributionLegend" style="display: flex; justify-content: center; gap: 20px; margin-top: 15px; flex-wrap: wrap;">
+                            <!-- Legend will be inserted here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Chart 2: Grade Distribution Meters -->
+                    <div class="chart-container" style="height: 380px; padding: 20px;">
+                        <div class="chart-header" style="margin-bottom: 15px;">
+                            <h3><i class="fas fa-graduation-cap"></i> Grade Distribution</h3>
+                            <span class="badge badge-info" id="gradeDistributionBadge">By Performance</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 10px;">
+                            <!-- A Grade -->
+                            <div style="background: rgba(39, 174, 96, 0.1); padding: 20px; border-radius: 12px; text-align: center;">
+                                <div style="font-size: 2.2rem; font-weight: 700; color: #27ae60;" id="excellentCount">0</div>
+                                <div style="font-size: 0.9rem; color: var(--text-primary); margin-top: 5px;">A Grade</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">(90-100%)</div>
+                            </div>
+                            <!-- B Grade -->
+                            <div style="background: rgba(46, 204, 113, 0.1); padding: 20px; border-radius: 12px; text-align: center;">
+                                <div style="font-size: 2.2rem; font-weight: 700; color: #2ecc71;" id="goodCount">0</div>
+                                <div style="font-size: 0.9rem; color: var(--text-primary); margin-top: 5px;">B Grade</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">(70-89%)</div>
+                            </div>
+                            <!-- C Grade -->
+                            <div style="background: rgba(243, 156, 18, 0.1); padding: 20px; border-radius: 12px; text-align: center;">
+                                <div style="font-size: 2.2rem; font-weight: 700; color: #f39c12;" id="averageCount">0</div>
+                                <div style="font-size: 0.9rem; color: var(--text-primary); margin-top: 5px;">C Grade</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">(50-69%)</div>
+                            </div>
+                            <!-- F Grade -->
+                            <div style="background: rgba(231, 76, 60, 0.1); padding: 20px; border-radius: 12px; text-align: center;">
+                                <div style="font-size: 2.2rem; font-weight: 700; color: #e74c3c;" id="needsCount">0</div>
+                                <div style="font-size: 0.9rem; color: var(--text-primary); margin-top: 5px;">F Grade</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">(Below 50%)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CLASS STATISTICS & QUICK ACTIONS ROW -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                    <!-- Statistics Card -->
+                    <div class="panel" style="margin: 0; padding: 20px;">
+                        <div class="panel-header" style="margin-bottom: 15px;">
+                            <h3><i class="fas fa-calculator"></i> Class Statistics</h3>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);">
+                                <span style="color: var(--text-secondary);">Class & Section:</span>
+                                <span style="font-weight: 700; color: var(--accent-cyan);" id="className">10-A</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">Mean Score:</span>
+                                <span style="font-weight: 600; color: var(--text-primary);" id="meanScore">0%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">Median Score:</span>
+                                <span style="font-weight: 600; color: var(--text-primary);" id="medianScore">0%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">Score Range:</span>
+                                <span style="font-weight: 600; color: var(--text-primary);" id="scoreRange">0% - 0%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-secondary);">Standard Deviation:</span>
+                                <span style="font-weight: 600; color: var(--text-primary);" id="stdDev">±0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions Card -->
+                    <div class="panel" style="margin: 0; padding: 20px;">
+                        <div class="panel-header" style="margin-bottom: 15px;">
+                            <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <button class="btn btn-primary" onclick="exportClassReport()" style="width: 100%; justify-content: center; padding: 12px;">
+                                <i class="fas fa-file-pdf"></i> Export as PDF
+                            </button>
+                            <button class="btn btn-secondary" onclick="exportClassReport('excel')" style="width: 100%; justify-content: center; padding: 12px;">
+                                <i class="fas fa-file-excel"></i> Export as Excel
+                            </button>
+                            <button class="btn btn-secondary" onclick="refreshClassPerformance()" style="width: 100%; justify-content: center; padding: 12px;">
+                                <i class="fas fa-sync-alt"></i> Refresh Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- STUDENT PERFORMANCE TABLE -->
+                <div class="panel" style="margin-bottom: 25px; padding: 20px;">
+                    <div class="panel-header" style="margin-bottom: 20px;">
+                        <h2><i class="fas fa-users"></i> Student Performance Details</h2>
+                        <div class="panel-actions" style="display: flex; gap: 10px;">
+                            <button class="btn btn-secondary btn-sm" onclick="sortStudents('name')">
+                                <i class="fas fa-sort-alpha-down"></i> Sort by Name
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="sortStudents('performance')">
+                                <i class="fas fa-sort-numeric-down"></i> Sort by Score
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
+                        <table style="width: 100%;">
+                            <thead style="position: sticky; top: 0; background: var(--panel-dark);">
+                                <tr>
+                                    <th style="width: 60px;">Rank</th>
+                                    <th>Student ID</th>
+                                    <th>Student Name</th>
+                                    <th style="width: 150px;">Performance</th>
+                                    <th style="width: 100px;">Grade</th>
+                                    <th style="width: 120px;">Status</th>
+                                    <th style="width: 120px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentPerformanceTable">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; padding: 40px;">
+                                        <div class="loading">
+                                            <div class="spinner"></div>
+                                            <p>Select class and section to load performance data...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- INTERVENTION SECTION - DYNAMICALLY SHOWN -->
+                <div class="panel" id="interventionSection" style="margin-top: 0; border-left: 4px solid #e74c3c; padding: 20px; display: none;">
+                    <div class="panel-header" style="margin-bottom: 15px;">
+                        <h2 style="color: #e74c3c;"><i class="fas fa-exclamation-triangle"></i> Students Needing Immediate Intervention</h2>
+                        <span class="badge badge-danger" id="interventionCount">0</span>
+                    </div>
+                    <div id="interventionStudents" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
+                        <!-- Intervention cards will be inserted here -->
+                    </div>
                 </div>
             </div>
             
@@ -2100,27 +2398,21 @@
                         <div class="chart-header">
                             <h3><i class="fas fa-chart-area"></i> Weekly Engagement Trend</h3>
                         </div>
-                        <div class="simple-bar-chart" id="engagementTrendChart">
-                            <!-- Engagement bars will be inserted here -->
-                        </div>
+                        <canvas id="engagementChartCanvas" style="width:100%; height:250px;"></canvas>
                     </div>
                     
                     <div class="chart-container">
                         <div class="chart-header">
                             <h3><i class="fas fa-graduation-cap"></i> Subject-wise Performance</h3>
                         </div>
-                        <div class="simple-bar-chart" id="subjectPerformanceChart">
-                            <!-- Subject bars will be inserted here -->
-                        </div>
+                        <canvas id="subjectChartCanvas" style="width:100%; height:250px;"></canvas>
                     </div>
                     
                     <div class="chart-container">
                         <div class="chart-header">
                             <h3><i class="fas fa-tasks"></i> Challenge Difficulty vs Success</h3>
                         </div>
-                        <div class="simple-bar-chart" id="difficultySuccessChart">
-                            <!-- Difficulty bars will be inserted here -->
-                        </div>
+                        <canvas id="difficultyChartCanvas" style="width:100%; height:250px;"></canvas>
                     </div>
                 </div>
             </div>
@@ -2157,8 +2449,6 @@
                     </div>
                 </div>
             </div>
-
-
 
             <!-- NEP TEACHING STUDIO PAGE -->
             <div class="page" id="teaching-studio">
@@ -2505,9 +2795,6 @@
                 </div>
             </div>
 
-
-
-            
             <!-- HELP TICKETS PAGE -->
             <div class="page" id="help">
                 <div class="page-header">
@@ -2646,18 +2933,28 @@
         }
 
         async function initializeDashboard() {
+            console.log('🚀 Initializing Teacher Dashboard...');
+            
             try {
                 await loadTeacherProfile();
+                console.log('✅ Profile loaded');
+                
                 await loadDashboardData();
-                initializeCharts();
+                console.log('✅ Dashboard data loaded');
+                
+                initializeOverviewCharts();
                 initializeFilterListeners();
                 
                 setInterval(() => {
+                    console.log('🔄 Auto-refreshing dashboard...');
                     loadDashboardData();
                 }, 300000);
+                
+                console.log('✅ Dashboard initialization complete');
+                
             } catch (error) {
-                console.error('Dashboard initialization error:', error);
-                showError('Failed to load dashboard');
+                console.error('❌ Dashboard initialization error:', error);
+                showError('Failed to load dashboard: ' + error.message);
             }
         }
 
@@ -2671,68 +2968,75 @@
                 }
             };
             
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-                ...defaultOptions,
-                ...options,
-                headers: { ...defaultOptions.headers, ...options.headers }
-            });
-            
-            if (response.status === 401) {
-                localStorage.clear();
-                window.location.href = '../login.html';
-                return;
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    ...defaultOptions,
+                    ...options,
+                    headers: { ...defaultOptions.headers, ...options.headers }
+                });
+                
+                if (response.status === 401) {
+                    localStorage.clear();
+                    window.location.href = '../login.html';
+                    return;
+                }
+                
+                if (response.status === 404) {
+                    return { success: false, data: null, message: 'Endpoint not found' };
+                }
+                
+                const data = await response.json();
+                return data;
+                
+            } catch (error) {
+                console.error(`❌ API Call failed: ${endpoint}`, error);
+                return { success: false, data: null, message: error.message };
             }
-            
-            const data = await response.json();
-            
-            if (!data.success) {
-                throw new Error(data.message || 'API request failed');
-            }
-            
-            return data.data;
         }
 
         async function loadTeacherProfile() {
             try {
                 const data = await apiCall('/teacher/profile');
-                const teacher = data.teacher;
-                
-                document.getElementById('userName').textContent = teacher.name;
-                document.getElementById('teacherNameDisplay').textContent = teacher.name;
-                document.getElementById('userAvatar').textContent = teacher.name.charAt(0).toUpperCase();
-                
-                document.getElementById('profileName').textContent = teacher.name;
-                document.getElementById('profileAvatar').textContent = teacher.name.charAt(0).toUpperCase();
-                document.getElementById('profileTeacherId').textContent = teacher.teacherId;
-                document.getElementById('profileEmail').textContent = teacher.email;
-                document.getElementById('profilePhone').textContent = teacher.phone;
-                document.getElementById('profileSchool').textContent = data.school?.schoolName || 'Unknown School';
-                
-                document.getElementById('editName').value = teacher.name;
-                document.getElementById('editPhone').value = teacher.phone;
-                
-                const subjectSelect = document.getElementById('editSubjects');
-                Array.from(subjectSelect.options).forEach(option => {
-                    if (teacher.subjects && teacher.subjects.includes(option.value)) {
-                        option.selected = true;
+                if (data && data.success && data.data) {
+                    const teacher = data.data.teacher;
+                    
+                    document.getElementById('userName').textContent = teacher.name;
+                    document.getElementById('teacherNameDisplay').textContent = teacher.name;
+                    document.getElementById('userAvatar').textContent = teacher.name.charAt(0).toUpperCase();
+                    
+                    document.getElementById('profileName').textContent = teacher.name;
+                    document.getElementById('profileAvatar').textContent = teacher.name.charAt(0).toUpperCase();
+                    document.getElementById('profileTeacherId').textContent = teacher.teacherId;
+                    document.getElementById('profileEmail').textContent = teacher.email;
+                    document.getElementById('profilePhone').textContent = teacher.phone;
+                    document.getElementById('profileSchool').textContent = data.data.school?.schoolName || 'Unknown School';
+                    
+                    document.getElementById('editName').value = teacher.name;
+                    document.getElementById('editPhone').value = teacher.phone;
+                    
+                    const subjectSelect = document.getElementById('editSubjects');
+                    Array.from(subjectSelect.options).forEach(option => {
+                        if (teacher.subjects && teacher.subjects.includes(option.value)) {
+                            option.selected = true;
+                        }
+                    });
+                    
+                    document.getElementById('emailNotifications').checked = teacher.preferences?.emailNotifications || true;
+                    document.getElementById('challengeNotifications').checked = teacher.preferences?.challengeNotifications || true;
+                    document.getElementById('weeklyReport').checked = teacher.preferences?.weeklyReport || true;
+                    
+                    if (teacher.stats) {
+                        document.getElementById('statTotalStudents').textContent = teacher.stats.totalStudents || 0;
+                        document.getElementById('statTotalClasses').textContent = teacher.stats.totalClasses || 0;
+                        document.getElementById('statChallengesCreated').textContent = teacher.stats.totalChallengesCreated || 0;
+                        document.getElementById('statChallengesEvaluated').textContent = teacher.stats.totalChallengesEvaluated || 0;
                     }
-                });
-                
-                document.getElementById('emailNotifications').checked = teacher.preferences?.emailNotifications || true;
-                document.getElementById('challengeNotifications').checked = teacher.preferences?.challengeNotifications || true;
-                document.getElementById('weeklyReport').checked = teacher.preferences?.weeklyReport || true;
-                
-                if (teacher.stats) {
-                    document.getElementById('statTotalStudents').textContent = teacher.stats.totalStudents || 0;
-                    document.getElementById('statTotalClasses').textContent = teacher.stats.totalClasses || 0;
-                    document.getElementById('statChallengesCreated').textContent = teacher.stats.totalChallengesCreated || 0;
-                    document.getElementById('statChallengesEvaluated').textContent = teacher.stats.totalChallengesEvaluated || 0;
+                    
+                    document.getElementById('statStatus').textContent = teacher.status || 'Active';
+                    document.getElementById('statCreatedAt').textContent = formatDate(teacher.createdAt, true);
+                    
+                    window.teacherData = teacher;
                 }
-                
-                document.getElementById('statStatus').textContent = teacher.status || 'Active';
-                document.getElementById('statCreatedAt').textContent = formatDate(teacher.createdAt, true);
-                
-                window.teacherData = teacher;
             } catch (error) {
                 console.error('Load profile error:', error);
             }
@@ -2740,13 +3044,15 @@
 
         async function updateProfile(profileData) {
             try {
-                await apiCall('/teacher/profile', {
+                const response = await apiCall('/teacher/profile', {
                     method: 'PUT',
                     body: JSON.stringify(profileData)
                 });
                 
-                await loadTeacherProfile();
-                return true;
+                if (response && response.success) {
+                    await loadTeacherProfile();
+                    return true;
+                }
             } catch (error) {
                 console.error('Update profile error:', error);
                 throw error;
@@ -2755,44 +3061,59 @@
 
         async function loadDashboardData() {
             try {
+                console.log('📡 Loading dashboard data...');
                 const data = await apiCall('/teacher/dashboard');
                 
-                document.getElementById('totalStudents').textContent = data.statistics.totalStudents || 0;
-                document.getElementById('totalChallenges').textContent = data.statistics.totalChallenges || 0;
-                document.getElementById('pendingReviews').textContent = data.statistics.pendingReviews || 0;
-                document.getElementById('totalClasses').textContent = data.statistics.totalClasses || 0;
-                document.getElementById('openTickets').textContent = data.statistics.openTickets || 0;
-                
-                if (data.statistics.pendingReviews > 0) {
-                    document.getElementById('pendingCount').textContent = data.statistics.pendingReviews;
-                    document.getElementById('pendingCount').style.display = 'inline-block';
-                    document.getElementById('notificationCount').textContent = data.statistics.pendingReviews;
-                    document.getElementById('notificationCount').style.display = 'inline-block';
-                }
+                if (data && data.success && data.data) {
+                    document.getElementById('totalStudents').textContent = data.data.statistics?.totalStudents || 0;
+                    document.getElementById('totalChallenges').textContent = data.data.statistics?.totalChallenges || 0;
+                    document.getElementById('pendingReviews').textContent = data.data.statistics?.pendingReviews || 0;
+                    document.getElementById('totalClasses').textContent = data.data.statistics?.totalClasses || 0;
+                    document.getElementById('openTickets').textContent = data.data.statistics?.openTickets || 0;
+                    
+                    if (data.data.statistics?.pendingReviews > 0) {
+                        document.getElementById('pendingCount').textContent = data.data.statistics.pendingReviews;
+                        document.getElementById('pendingCount').style.display = 'inline-block';
+                        document.getElementById('notificationCount').textContent = data.data.statistics.pendingReviews;
+                        document.getElementById('notificationCount').style.display = 'inline-block';
+                    } else {
+                        document.getElementById('pendingCount').style.display = 'none';
+                        document.getElementById('notificationCount').style.display = 'none';
+                    }
 
-                await displayRecentChallenges();
-                
-                if (data.statistics.totalStudents > 0) {
-                    const avgPerf = await calculateAveragePerformance();
-                    document.getElementById('avgPerformance').textContent = avgPerf.toFixed(1) + '%';
+                    if (data.data.recentChallenges && data.data.recentChallenges.length > 0) {
+                        displayRecentChallengesWithData(data.data.recentChallenges);
+                    } else {
+                        await displayRecentChallenges();
+                    }
+                    
+                    if (data.data.statistics?.totalStudents > 0) {
+                        const avgPerf = await calculateAveragePerformance();
+                        document.getElementById('avgPerformance').textContent = avgPerf.toFixed(1) + '%';
+                    }
+                    
+                    displayStudentsNeedingAttention(data.data.studentsNeedingAttention || []);
+                    displayTopPerformers(data.data.topPerformers || []);
+                    
+                    console.log('✅ Dashboard loaded successfully');
                 }
-                
-                displayRecentChallenges(data.recentChallenges);
-                displayStudentsNeedingAttention(data.studentsNeedingAttention);
-                displayTopPerformers(data.topPerformers);
-                
-                updateCharts(data);
                 
             } catch (error) {
-                console.error('Load dashboard error:', error);
-                showError('Failed to load dashboard data');
+                console.error('❌ Load dashboard error:', error);
+                showError('Failed to load dashboard data: ' + error.message);
+                
+                try {
+                    await displayRecentChallenges();
+                } catch (challengeError) {
+                    console.error('❌ Also failed to load challenges:', challengeError);
+                }
             }
         }
 
         async function calculateAveragePerformance() {
             try {
                 const data = await apiCall('/teacher/analytics/overview');
-                return data.overview.averagePerformance || 0;
+                return data.data.overview.averagePerformance || 0;
             } catch (error) {
                 return 0;
             }
@@ -2802,7 +3123,6 @@
             const tbody = document.getElementById('recentChallenges');
             
             try {
-                // Show loading state
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="8" style="text-align: center; color: var(--text-secondary);">
@@ -2814,23 +3134,96 @@
                     </tr>
                 `;
                 
-                // Fetch recent challenges from API
-                const data = await apiCall('/challenges/recent');
-                const challenges = data.challenges || [];
+                const data = await apiCall('/teacher/challenges?limit=10&sort=-generatedAt');
+                const challenges = data.data?.challenges || [];
                 
                 if (challenges.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #888;">No recent challenges found</td></tr>';
                     return;
                 }
                 
-                // Render challenges table
-                tbody.innerHTML = challenges.map(challenge => `
+                tbody.innerHTML = challenges.map(challenge => {
+                    let studentDisplay = challenge.studentId || 'Unknown';
+                    if (challenge.student?.name) {
+                        studentDisplay = challenge.student.name;
+                    }
+                    
+                    let scoreDisplay = '-';
+                    if (challenge.results?.totalScore) {
+                        scoreDisplay = challenge.results.totalScore.toFixed(1) + '%';
+                    } else if (challenge.score) {
+                        scoreDisplay = challenge.score.toFixed(1) + '%';
+                    }
+                    
+                    const dateValue = challenge.submittedAt || challenge.generatedAt || challenge.createdAt;
+                    
+                    return `
+                        <tr>
+                            <td><strong>${challenge.challengeId || 'N/A'}</strong></td>
+                            <td>${studentDisplay}</td>
+                            <td>
+                                <span class="badge badge-info">
+                                    ${formatSimulationType(challenge.simulationType || 'General')}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge ${getDifficultyBadgeClass(challenge.difficulty)}">
+                                    ${challenge.difficulty || 'medium'}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge ${getStatusBadgeClass(challenge.status)}">
+                                    ${formatStatus(challenge.status || 'generated')}
+                                </span>
+                            </td>
+                            <td style="font-weight: 600; color: ${getScoreColor(scoreDisplay)}">
+                                ${scoreDisplay}
+                            </td>
+                            <td>${formatDate(dateValue)}</td>
+                            <td>
+                                <button class="btn btn-secondary btn-sm" onclick="viewChallengeDetails('${challenge.challengeId}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('❌ Error loading recent challenges:', error);
+                tbody.innerHTML = `
                     <tr>
-                        <td>${challenge.challengeId || 'N/A'}</td>
-                        <td>${challenge.student?.name || challenge.studentId || 'Unknown Student'}</td>
+                        <td colspan="8" style="text-align: center; color: #e74c3c; padding: 30px;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem; margin-bottom: 10px;"></i>
+                            <p>Failed to load recent challenges</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function displayRecentChallengesWithData(challenges) {
+            const tbody = document.getElementById('recentChallenges');
+            
+            if (!challenges || challenges.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #888; padding: 30px;">📭 No challenges found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = challenges.map(challenge => {
+                const studentDisplay = challenge.student?.name || challenge.studentId || 'Unknown';
+                const scoreDisplay = challenge.results?.totalScore ? 
+                    challenge.results.totalScore.toFixed(1) + '%' : 
+                    (challenge.score ? challenge.score.toFixed(1) + '%' : '-');
+                const dateValue = challenge.submittedAt || challenge.generatedAt || challenge.createdAt;
+                
+                return `
+                    <tr>
+                        <td><strong>${challenge.challengeId || 'N/A'}</strong></td>
+                        <td>${studentDisplay}</td>
                         <td>
                             <span class="badge badge-info">
-                                ${challenge.simulationType || 'General'}
+                                ${formatSimulationType(challenge.simulationType || 'General')}
                             </span>
                         </td>
                         <td>
@@ -2840,673 +3233,53 @@
                         </td>
                         <td>
                             <span class="badge ${getStatusBadgeClass(challenge.status)}">
-                                ${challenge.status || 'generated'}
+                                ${formatStatus(challenge.status || 'generated')}
                             </span>
                         </td>
-                        <td>
-                            ${challenge.results?.totalScore ? 
-                                challenge.results.totalScore.toFixed(1) + '%' : 
-                                (challenge.score ? challenge.score.toFixed(1) + '%' : '-')}
+                        <td style="font-weight: 600; color: ${getScoreColor(scoreDisplay)}">
+                            ${scoreDisplay}
                         </td>
-                        <td>${formatDate(challenge.submittedAt || challenge.createdAt)}</td>
+                        <td>${formatDate(dateValue)}</td>
                         <td>
                             <button class="btn btn-secondary btn-sm" onclick="viewChallengeDetails('${challenge.challengeId}')">
-                                <i class="fas fa-eye"></i> View
+                                <i class="fas fa-eye"></i>
                             </button>
-                            ${challenge.status === 'submitted' ? `
-                                <button class="btn btn-primary btn-sm" onclick="validateChallenge('${challenge.challengeId}')">
-                                    <i class="fas fa-check"></i> Review
-                                </button>
-                            ` : ''}
-                        </td>
-                    </tr>
-                `).join('');
-                
-            } catch (error) {
-                console.error('Error loading recent challenges:', error);
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="8" style="text-align: center; color: #e74c3c;">
-                            <i class="fas fa-exclamation-triangle"></i> Failed to load recent challenges
                         </td>
                     </tr>
                 `;
+            }).join('');
+        }
+
+        function formatSimulationType(type) {
+            if (!type) return 'General';
+            if (type.includes('-')) {
+                return type.split('-')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
             }
+            return type.charAt(0).toUpperCase() + type.slice(1);
         }
 
-        async function viewChallengeDetails(challengeId) {
-            try {
-                const data = await apiCall(`/challenges/${challengeId}`);
-                showChallengeModal(data.challenge);
-            } catch (error) {
-                console.error('View challenge error:', error);
-                showError('Failed to load challenge details');
-            }
-        }
-
-        function showChallengeModal(challenge) {
-            // Create modal if it doesn't exist
-            if (!document.getElementById('challengeDetailsModal')) {
-                const modalHtml = `
-                    <div id="challengeDetailsModal" class="modal" style="display: none;">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h2><i class="fas fa-tasks"></i> Challenge Details</h2>
-                                <button class="modal-close" onclick="closeModal('challengeDetailsModal')">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <div class="modal-body" id="challengeDetailsBody">
-                                <!-- Content loaded dynamically -->
-                            </div>
-                        </div>
-                    </div>
-                `;
-                document.body.insertAdjacentHTML('beforeend', modalHtml);
-            }
-            
-            const modal = document.getElementById('challengeDetailsModal');
-            const body = document.getElementById('challengeDetailsBody');
-            
-            body.innerHTML = `
-                <h3>Challenge: ${challenge.challengeId}</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                    <div>
-                        <p><strong>Student:</strong> ${challenge.student?.name || challenge.studentId}</p>
-                        <p><strong>Simulation:</strong> ${challenge.simulationType}</p>
-                        <p><strong>Difficulty:</strong> 
-                            <span class="badge ${getDifficultyBadgeClass(challenge.difficulty)}">
-                                ${challenge.difficulty}
-                            </span>
-                        </p>
-                    </div>
-                    <div>
-                        <p><strong>Status:</strong> 
-                            <span class="badge ${getStatusBadgeClass(challenge.status)}">
-                                ${challenge.status}
-                            </span>
-                        </p>
-                        <p><strong>Score:</strong> ${challenge.results?.totalScore ? challenge.results.totalScore.toFixed(1) + '%' : 'N/A'}</p>
-                        <p><strong>Submitted:</strong> ${formatDate(challenge.submittedAt)}</p>
-                    </div>
-                </div>
-                
-                ${challenge.results ? `
-                    <h4>Results</h4>
-                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-                            <div style="text-align: center;">
-                                <div style="font-size: 1.5rem; font-weight: bold; color: var(--accent-cyan);">
-                                    ${challenge.results.totalScore ? challenge.results.totalScore.toFixed(1) : 0}%
-                                </div>
-                                <div style="font-size: 0.8rem; color: var(--text-secondary);">Total Score</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 1.5rem; font-weight: bold; color: var(--success-green);">
-                                    ${challenge.results.correctAnswers || 0}/${challenge.results.totalQuestions || 0}
-                                </div>
-                                <div style="font-size: 0.8rem; color: var(--text-secondary);">Correct Answers</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 1.5rem; font-weight: bold; color: var(--warning-yellow);">
-                                    ${challenge.results.timeTaken ? Math.round(challenge.results.timeTaken / 60) : 0}m
-                                </div>
-                                <div style="font-size: 0.8rem; color: var(--text-secondary);">Time Taken</div>
-                            </div>
-                        </div>
-                    </div>
-                ` : ''}
-                
-                ${challenge.feedback ? `
-                    <h4>Teacher Feedback</h4>
-                    <div style="background: rgba(0,122,204,0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                        <p style="font-style: italic;">"${challenge.feedback.comments}"</p>
-                        <p><strong>Rating:</strong> ${challenge.feedback.rating}/5</p>
-                    </div>
-                ` : ''}
-                
-                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('challengeDetailsModal')">
-                        Close
-                    </button>
-                    ${challenge.status === 'submitted' ? `
-                        <button type="button" class="btn btn-primary" onclick="validateChallenge('${challenge.challengeId}')">
-                            <i class="fas fa-check-circle"></i> Review Challenge
-                        </button>
-                    ` : ''}
-                </div>
-            `;
-            
-            modal.style.display = 'flex';
-        }
-
-        async function validateChallenge(challengeId) {
-            if (confirm('Review and validate this challenge?')) {
-                try {
-                    // In a real implementation, this would open a validation interface
-                    // For now, just mark as evaluated
-                    await apiCall(`/challenges/${challengeId}/validate`, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            status: 'evaluated',
-                            feedback: {
-                                rating: 4,
-                                comments: 'Well done! Good understanding of concepts.'
-                            }
-                        })
-                    });
-                    
-                    showSuccess('Challenge validated successfully!');
-                    closeModal('challengeDetailsModal');
-                    await displayRecentChallenges(); // Refresh the list
-                    await loadDashboardData(); // Refresh dashboard stats
-                } catch (error) {
-                    console.error('Validate challenge error:', error);
-                    showError('Failed to validate challenge');
-                }
-            }
-        }
-
-        // CSS CHART FUNCTIONS
-        function initializeCharts() {
-            createPerformanceTrendChart();
-            createCompetencyRadarChart();
-            createChallengeStatusDonutChart();
-            createPerformanceDistributionChart();
-            createSimulationUsageChart();
-        }
-
-        function updateCharts(data) {
-            updatePerformanceTrendChart(data.recentActivity);
-            updateCompetencyRadarChart(data.competencies);
-            updateChallengeStatusDonutChart(data.challengesByStatus);
-            updatePerformanceDistributionChart(data.students || []);
-            updateSimulationUsageChart();
-        }
-
-        function createPerformanceTrendChart() {
-            const container = document.getElementById('performanceTrendChart');
-            
-            // Sample data for initial display
-            const sampleData = [
-                { day: 'Mon', value: 65 },
-                { day: 'Tue', value: 72 },
-                { day: 'Wed', value: 68 },
-                { day: 'Thu', value: 75 },
-                { day: 'Fri', value: 80 },
-                { day: 'Sat', value: 78 },
-                { day: 'Sun', value: 82 }
-            ];
-            
-            renderPerformanceTrendChart(sampleData);
-        }
-
-        function renderPerformanceTrendChart(data) {
-            const container = document.getElementById('performanceTrendChart');
-            
-            // Find max value for scaling
-            const maxValue = Math.max(...data.map(d => d.value));
-            
-            // Clear existing content
-            container.innerHTML = '';
-            
-            // Create grid lines
-            const gridLines = document.createElement('div');
-            gridLines.className = 'chart-grid-lines';
-            
-            // Add grid lines (0%, 25%, 50%, 75%, 100%)
-            for (let i = 0; i <= 4; i++) {
-                const gridLine = document.createElement('div');
-                gridLine.className = 'grid-line';
-                gridLine.style.top = `${i * 25}%`;
-                gridLines.appendChild(gridLine);
-                
-                const gridLabel = document.createElement('div');
-                gridLabel.className = 'grid-label';
-                gridLabel.textContent = `${(4 - i) * 25}%`;
-                gridLabel.style.top = `${i * 25}%`;
-                gridLines.appendChild(gridLabel);
-            }
-            
-            container.appendChild(gridLines);
-            
-            // Create bars
-            data.forEach((item, index) => {
-                const bar = document.createElement('div');
-                bar.className = 'chart-bar';
-                bar.style.height = `${(item.value / maxValue) * 100}%`;
-                bar.style.background = `linear-gradient(to top, var(--accent-blue), var(--accent-cyan))`;
-                
-                const barValue = document.createElement('div');
-                barValue.className = 'bar-value';
-                barValue.textContent = `${item.value}%`;
-                bar.appendChild(barValue);
-                
-                const barLabel = document.createElement('div');
-                barLabel.className = 'bar-label';
-                barLabel.textContent = item.day;
-                bar.appendChild(barLabel);
-                
-                container.appendChild(bar);
-            });
-        }
-
-        function updatePerformanceTrendChart(activityData) {
-            if (!activityData || activityData.length === 0) return;
-            
-            // Format activity data for chart
-            const formattedData = activityData.map(item => ({
-                day: item._id,
-                value: item.count || 0
-            }));
-            
-            renderPerformanceTrendChart(formattedData);
-        }
-
-        function createCompetencyRadarChart() {
-            const container = document.getElementById('competencyRadarChart');
-            
-            // Sample competencies data
-            const sampleCompetencies = {
-                'Critical Thinking': 75,
-                'Problem Solving': 68,
-                'Creativity': 82,
-                'Collaboration': 70,
-                'Communication': 65,
-                'Digital Literacy': 85
+        function formatStatus(status) {
+            if (!status) return 'Unknown';
+            const statusMap = {
+                'in-progress': '🔄 In Progress',
+                'generated': '📝 Generated',
+                'submitted': '📤 Submitted',
+                'evaluated': '✅ Evaluated',
+                'pending': '⏳ Pending Review',
+                'reviewed': '👨‍🏫 Reviewed'
             };
-            
-            renderCompetencyRadarChart(sampleCompetencies);
+            return statusMap[status.toLowerCase()] || status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ');
         }
 
-        function renderCompetencyRadarChart(competencies) {
-            const container = document.getElementById('competencyRadarChart');
-            container.innerHTML = '';
-            
-            const labels = Object.keys(competencies);
-            const values = Object.values(competencies);
-            const numAxes = labels.length;
-            const maxRadius = 100;
-            
-            // Create radar grid circles
-            for (let i = 0; i < 5; i++) {
-                const grid = document.createElement('div');
-                grid.className = 'radar-grid';
-                container.appendChild(grid);
-            }
-            
-            // Create axes
-            for (let i = 0; i < numAxes; i++) {
-                const angle = (i * 360) / numAxes;
-                const axis = document.createElement('div');
-                axis.className = 'radar-axis';
-                axis.style.transform = `rotate(${angle}deg)`;
-                container.appendChild(axis);
-            }
-            
-            // Calculate points and create polygon
-            const points = [];
-            const centerX = 125;
-            const centerY = 125;
-            
-            for (let i = 0; i < numAxes; i++) {
-                const angle = (i * 360) / numAxes - 90;
-                const radians = (angle * Math.PI) / 180;
-                const score = values[i];
-                const radius = (score / 100) * maxRadius;
-                
-                const x = centerX + radius * Math.cos(radians);
-                const y = centerY + radius * Math.sin(radians);
-                points.push(`${x},${y}`);
-                
-                // Create point
-                const point = document.createElement('div');
-                point.className = 'radar-point';
-                point.style.left = `${x}px`;
-                point.style.top = `${y}px`;
-                container.appendChild(point);
-                
-                // Create label
-                const labelRadius = maxRadius + 30;
-                const labelX = centerX + labelRadius * Math.cos(radians);
-                const labelY = centerY + labelRadius * Math.sin(radians);
-                
-                const label = document.createElement('div');
-                label.className = 'radar-label';
-                label.textContent = labels[i];
-                label.style.left = `${labelX}px`;
-                label.style.top = `${labelY}px`;
-                container.appendChild(label);
-            }
-            
-            // Create SVG polygon
-            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            svg.setAttribute('width', '250');
-            svg.setAttribute('height', '250');
-            svg.setAttribute('class', 'radar-polygon');
-            
-            const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            polygon.setAttribute('points', points.join(' '));
-            svg.appendChild(polygon);
-            
-            container.appendChild(svg);
-        }
-
-        function updateCompetencyRadarChart(competencies) {
-            if (!competencies || Object.keys(competencies).length === 0) return;
-            
-            // Format competency data
-            const formattedCompetencies = {};
-            Object.entries(competencies).forEach(([key, value]) => {
-                formattedCompetencies[key.replace(/-/g, ' ')] = value.average || 0;
-            });
-            
-            renderCompetencyRadarChart(formattedCompetencies);
-        }
-
-        function createChallengeStatusDonutChart() {
-            const container = document.getElementById('challengeStatusChart');
-            
-            // Sample data
-            const sampleData = {
-                evaluated: 45,
-                submitted: 30,
-                generated: 15,
-                inProgress: 10
-            };
-            
-            renderDonutChart(sampleData);
-        }
-
-        function renderDonutChart(statusData) {
-            const container = document.getElementById('challengeStatusChart');
-            
-            const total = Object.values(statusData).reduce((sum, val) => sum + val, 0);
-            const percentages = {
-                evaluated: (statusData.evaluated / total) * 100,
-                submitted: (statusData.submitted / total) * 100,
-                generated: (statusData.generated / total) * 100,
-                inProgress: (statusData.inProgress / total) * 100
-            };
-            
-            // Calculate cumulative percentages
-            const cumulative = {
-                segment1: percentages.evaluated,
-                segment2: percentages.evaluated + percentages.submitted,
-                segment3: percentages.evaluated + percentages.submitted + percentages.generated
-            };
-            
-            container.innerHTML = `
-                <div class="donut-chart" style="
-                    --donut-segment-1: ${cumulative.segment1}%;
-                    --donut-segment-2: ${cumulative.segment2}%;
-                    --donut-segment-3: ${cumulative.segment3}%;
-                "></div>
-                <div class="donut-center">
-                    <div class="donut-total">${total}</div>
-                    <div class="donut-label">Challenges</div>
-                </div>
-                <div class="donut-legend">
-                    <div class="donut-legend-item">
-                        <div class="donut-legend-color" style="background: #27ae60;"></div>
-                        <span>Evaluated (${statusData.evaluated})</span>
-                    </div>
-                    <div class="donut-legend-item">
-                        <div class="donut-legend-color" style="background: #f39c12;"></div>
-                        <span>Submitted (${statusData.submitted})</span>
-                    </div>
-                    <div class="donut-legend-item">
-                        <div class="donut-legend-color" style="background: var(--accent-cyan);"></div>
-                        <span>Generated (${statusData.generated})</span>
-                    </div>
-                    <div class="donut-legend-item">
-                        <div class="donut-legend-color" style="background: #888888;"></div>
-                        <span>In Progress (${statusData.inProgress})</span>
-                    </div>
-                </div>
-            `;
-        }
-
-        function updateChallengeStatusDonutChart(statusData) {
-            if (!statusData || Object.keys(statusData).length === 0) return;
-            
-            renderDonutChart(statusData);
-        }
-
-        function createPerformanceDistributionChart() {
-            const container = document.getElementById('performanceDistributionChart');
-            
-            // Sample data
-            const sampleData = [
-                { range: '90-100', label: 'Excellent', value: 5, color: '#27ae60' },
-                { range: '70-89', label: 'Good', value: 12, color: '#2ecc71' },
-                { range: '50-69', label: 'Average', value: 18, color: '#f39c12' },
-                { range: '0-49', label: 'Needs Help', value: 8, color: '#e74c3c' }
-            ];
-            
-            renderDistributionChart(sampleData);
-        }
-
-        function renderDistributionChart(distributionData) {
-            const container = document.getElementById('performanceDistributionChart');
-            
-            // Find max value for scaling
-            const maxValue = Math.max(...distributionData.map(d => d.value));
-            
-            // Clear existing content
-            container.innerHTML = '';
-            
-            // Create grid lines
-            const gridLines = document.createElement('div');
-            gridLines.className = 'chart-grid-lines';
-            
-            for (let i = 0; i <= 4; i++) {
-                const gridLine = document.createElement('div');
-                gridLine.className = 'grid-line';
-                gridLine.style.top = `${i * 25}%`;
-                gridLines.appendChild(gridLine);
-                
-                const gridLabel = document.createElement('div');
-                gridLabel.className = 'grid-label';
-                gridLabel.textContent = `${(4 - i) * 25}`;
-                gridLabel.style.top = `${i * 25}%`;
-                gridLines.appendChild(gridLabel);
-            }
-            
-            container.appendChild(gridLines);
-            
-            // Create bars
-            distributionData.forEach((item, index) => {
-                const bar = document.createElement('div');
-                bar.className = 'chart-bar';
-                bar.style.height = `${(item.value / maxValue) * 100}%`;
-                bar.style.background = `linear-gradient(to top, ${item.color}, ${adjustColor(item.color, 30)})`;
-                
-                const barValue = document.createElement('div');
-                barValue.className = 'bar-value';
-                barValue.textContent = item.value;
-                bar.appendChild(barValue);
-                
-                const barLabel = document.createElement('div');
-                barLabel.className = 'bar-label';
-                barLabel.innerHTML = `${item.range}<br>${item.label}`;
-                bar.appendChild(barLabel);
-                
-                container.appendChild(bar);
-            });
-        }
-
-        function updatePerformanceDistributionChart(students) {
-            if (!students || students.length === 0) return;
-            
-            // Calculate distribution from student performance
-            const distribution = {
-                excellent: students.filter(s => s.performanceIndex >= 90).length,
-                good: students.filter(s => s.performanceIndex >= 70 && s.performanceIndex < 90).length,
-                average: students.filter(s => s.performanceIndex >= 50 && s.performanceIndex < 70).length,
-                needsHelp: students.filter(s => s.performanceIndex < 50).length
-            };
-            
-            const distributionData = [
-                { range: '90-100', label: 'Excellent', value: distribution.excellent, color: '#27ae60' },
-                { range: '70-89', label: 'Good', value: distribution.good, color: '#2ecc71' },
-                { range: '50-69', label: 'Average', value: distribution.average, color: '#f39c12' },
-                { range: '0-49', label: 'Needs Help', value: distribution.needsHelp, color: '#e74c3c' }
-            ];
-            
-            renderDistributionChart(distributionData);
-        }
-
-        function createSimulationUsageChart() {
-            const container = document.getElementById('simulationUsageChart');
-            
-            // Sample data
-            const sampleData = [
-                { name: 'Force Visualizer', count: 45 },
-                { name: 'Circuit Builder', count: 38 },
-                { name: 'Chemical Reactions', count: 32 },
-                { name: 'Math Grapher', count: 28 },
-                { name: 'Cell Explorer', count: 25 },
-                { name: 'Wave Simulator', count: 22 }
-            ];
-            
-            renderSimulationUsageChart(sampleData);
-        }
-
-        function renderSimulationUsageChart(simulationData) {
-            const container = document.getElementById('simulationUsageChart');
-            
-            // Find max value for scaling
-            const maxCount = Math.max(...simulationData.map(d => d.count));
-            
-            // Clear existing content
-            container.innerHTML = '';
-            
-            simulationData.forEach((item, index) => {
-                const barContainer = document.createElement('div');
-                barContainer.className = 'horizontal-bar';
-                
-                const barInfo = document.createElement('div');
-                barInfo.className = 'bar-info';
-                barInfo.innerHTML = `
-                    <div class="bar-name">${item.name}</div>
-                    <div class="bar-count">${item.count}</div>
-                `;
-                
-                const barTrack = document.createElement('div');
-                barTrack.className = 'bar-track';
-                
-                const barFill = document.createElement('div');
-                barFill.className = 'bar-fill';
-                barFill.style.width = `${(item.count / maxCount) * 100}%`;
-                
-                barTrack.appendChild(barFill);
-                barContainer.appendChild(barInfo);
-                barContainer.appendChild(barTrack);
-                container.appendChild(barContainer);
-            });
-        }
-
-        function updateSimulationUsageChart() {
-            // This would be updated with real data from API
-            // For now, using sample data
-            const sampleData = [
-                { name: 'Force Visualizer', count: Math.floor(Math.random() * 50) + 20 },
-                { name: 'Circuit Builder', count: Math.floor(Math.random() * 45) + 15 },
-                { name: 'Chemical Reactions', count: Math.floor(Math.random() * 40) + 10 },
-                { name: 'Math Grapher', count: Math.floor(Math.random() * 35) + 8 },
-                { name: 'Cell Explorer', count: Math.floor(Math.random() * 30) + 5 },
-                { name: 'Wave Simulator', count: Math.floor(Math.random() * 25) + 3 }
-            ];
-            
-            renderSimulationUsageChart(sampleData);
-        }
-
-        function changeChartPeriod(days) {
-            // Update filter buttons
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (parseInt(btn.textContent) === days) {
-                    btn.classList.add('active');
-                }
-            });
-            
-            // In a real implementation, this would fetch new data
-            // For now, we'll update with sample data
-            const sampleData = {
-                7: [
-                    { day: 'Mon', value: 65 },
-                    { day: 'Tue', value: 72 },
-                    { day: 'Wed', value: 68 },
-                    { day: 'Thu', value: 75 },
-                    { day: 'Fri', value: 80 },
-                    { day: 'Sat', value: 78 },
-                    { day: 'Sun', value: 82 }
-                ],
-                30: [
-                    { day: 'Week 1', value: 65 },
-                    { day: 'Week 2', value: 72 },
-                    { day: 'Week 3', value: 68 },
-                    { day: 'Week 4', value: 75 }
-                ],
-                90: [
-                    { day: 'Month 1', value: 65 },
-                    { day: 'Month 2', value: 72 },
-                    { day: 'Month 3', value: 68 }
-                ]
-            };
-            
-            renderPerformanceTrendChart(sampleData[days] || sampleData[7]);
-        }
-
-        // Helper function to adjust color brightness
-        function adjustColor(color, amount) {
-            const hex = color.replace('#', '');
-            let r = parseInt(hex.substring(0, 2), 16);
-            let g = parseInt(hex.substring(2, 4), 16);
-            let b = parseInt(hex.substring(4, 6), 16);
-            
-            r = Math.min(255, Math.max(0, r + amount));
-            g = Math.min(255, Math.max(0, g + amount));
-            b = Math.min(255, Math.max(0, b + amount));
-            
-            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-        }
-
-        function displayRecentChallenges(challenges) {
-            const tbody = document.getElementById('recentChallenges');
-            
-            if (!challenges || challenges.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #888;">No recent challenges</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = challenges.map(challenge => `
-                <tr>
-                    <td>${challenge.challengeId}</td>
-                    <td>${challenge.studentId}</td>
-                    <td>
-                        <span class="badge badge-info">${challenge.simulationType}</span>
-                    </td>
-                    <td>
-                        <span class="badge ${getDifficultyBadgeClass(challenge.difficulty)}">
-                            ${challenge.difficulty}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge ${getStatusBadgeClass(challenge.status)}">
-                            ${challenge.status}
-                        </span>
-                    </td>
-                    <td>${challenge.results?.totalScore ? challenge.results.totalScore.toFixed(1) : '-'}</td>
-                    <td>${formatDate(challenge.generatedAt)}</td>
-                    <td>
-                        <button class="btn btn-secondary btn-sm" onclick="viewChallengeDetails('${challenge.challengeId}')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
+        function getScoreColor(score) {
+            if (score === '-' || !score) return 'var(--text-secondary)';
+            const numScore = parseFloat(score);
+            if (numScore >= 80) return '#27ae60';
+            if (numScore >= 60) return '#f39c12';
+            if (numScore >= 40) return '#e67e22';
+            return '#e74c3c';
         }
 
         function displayStudentsNeedingAttention(students) {
@@ -3627,7 +3400,7 @@
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.clear();
-                window.location.href = '/login.html';
+                window.location.href = '/nep-workbench/login.html';
             }
         }
 
@@ -3722,7 +3495,7 @@
                 const endpoint = `/teacher/students?${queryParams.toString()}`;
                 const data = await apiCall(endpoint);
                 
-                displayStudentsList(data.students);
+                displayStudentsList(data.data.students);
             } catch (error) {
                 console.error('Load students error:', error);
                 showError('Failed to load students');
@@ -3778,37 +3551,42 @@
         }
 
         function showPage(pageId) {
-            // Hide all pages
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
             });
             
-            // Remove active from all nav items
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
             
-            // Show selected page
             document.getElementById(pageId).classList.add('active');
             
-            // Add active to clicked nav item
-            event.target.closest('.nav-item').classList.add('active');
+            if (event && event.target) {
+                event.target.closest('.nav-item').classList.add('active');
+            }
             
-            // Load page-specific data
             switch(pageId) {
                 case 'students':
                     loadStudents();
                     break;
                 case 'validations':
-                    loadPendingValidations();
+                    console.log('📊 Class Performance page opened');
+                    setTimeout(() => {
+                        if (typeof initClassPerformance === 'function') {
+                            initClassPerformance();
+                            loadClassPerformance();
+                        }
+                    }, 150);
                     break;
                 case 'classes':
                     loadClasses();
                     break;
-                case 'profile':
+                case 'analytics':
+                    setTimeout(() => {
+                        createAdvancedAnalyticsCharts();
+                    }, 100);
                     break;
                 case 'teaching-studio':
-                    // Initialize teaching studio if needed
                     if (typeof selectTool === 'function') {
                         selectTool('notes-builder');
                     }
@@ -3822,7 +3600,7 @@
         async function viewStudentDetails(studentId) {
             try {
                 const data = await apiCall(`/teacher/students/${studentId}`);
-                showStudentModal(data.student, data.recentChallenges);
+                showStudentModal(data.data.student, data.data.recentChallenges);
             } catch (error) {
                 console.error('View student error:', error);
                 showError('Failed to load student details');
@@ -3860,7 +3638,7 @@
 
         function toggleUserMenu() {
             // User menu toggle function
-            alert('User menu would open here');
+            console.log('User menu toggled');
         }
 
         function openAddStudentModal() {
@@ -3905,50 +3683,10 @@
             }
         });
 
-        async function loadPendingValidations() {
-            try {
-                const data = await apiCall('/teacher/challenges/pending-review');
-                displayValidationsList(data.challenges);
-            } catch (error) {
-                console.error('Load validations error:', error);
-            }
-        }
-
-        function displayValidationsList(challenges) {
-            const tbody = document.getElementById('validationsList');
-            
-            if (!challenges || challenges.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #888;">No pending validations</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = challenges.map(challenge => `
-                <tr>
-                    <td>${challenge.challengeId}</td>
-                    <td>${challenge.student?.name || challenge.studentId}</td>
-                    <td>${challenge.simulationType}</td>
-                    <td>
-                        <span class="badge ${getDifficultyBadgeClass(challenge.difficulty)}">
-                            ${challenge.difficulty}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge badge-warning">${challenge.status}</span>
-                    </td>
-                    <td>${formatDate(challenge.submittedAt)}</td>
-                    <td>
-                        <button class="btn btn-primary btn-sm" onclick="validateChallenge('${challenge.challengeId}')">
-                            <i class="fas fa-check"></i> Review
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
         async function loadClasses() {
             try {
                 const data = await apiCall('/teacher/classes');
-                displayClassesList(data.classes);
+                displayClassesList(data.data.classes);
             } catch (error) {
                 console.error('Load classes error:', error);
             }
@@ -3994,7 +3732,7 @@
         async function loadHelpTickets() {
             try {
                 const data = await apiCall('/teacher/help-tickets');
-                displayTicketsList(data.tickets);
+                displayTicketsList(data.data.tickets);
             } catch (error) {
                 console.error('Load tickets error:', error);
             }
@@ -4033,201 +3771,514 @@
             `).join('');
         }
 
-        // Initialize analytics charts on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeFilterListeners();
-            
-            // Initialize analytics page charts
-            document.querySelector('.nav-item[onclick="showPage(\'analytics\')"]').addEventListener('click', function() {
-                setTimeout(() => {
-                    createEngagementTrendChart();
-                    createSubjectPerformanceChart();
-                    createDifficultySuccessChart();
-                }, 100);
-            });
-        });
+        // ============================================ //
+        // OVERVIEW CHARTS - CHART.JS INITIALIZATION    //
+        // ============================================ //
 
-        function createEngagementTrendChart() {
-            const container = document.getElementById('engagementTrendChart');
-            
-            // Sample data for engagement
-            const engagementData = [
-                { week: 'Week 1', value: 65 },
-                { week: 'Week 2', value: 72 },
-                { week: 'Week 3', value: 80 },
-                { week: 'Week 4', value: 75 },
-                { week: 'Week 5', value: 85 },
-                { week: 'Week 6', value: 78 },
-                { week: 'Week 7', value: 90 }
-            ];
-            
-            renderEngagementChart(engagementData);
+        function initializeOverviewCharts() {
+            if (!document.getElementById('overview').classList.contains('active')) {
+                console.log('⏸️ Overview page not active, skipping chart initialization');
+                return;
+            }
+
+            setTimeout(() => {
+                createPerformanceTrendChart();
+                createCompetencyRadarChart();
+                createChallengeStatusDonutChart();
+                createPerformanceDistributionBarChart();
+                createSimulationUsageChart();
+            }, 200);
         }
 
-        function renderEngagementChart(data) {
-            const container = document.getElementById('engagementTrendChart');
+        function createPerformanceTrendChart() {
+            const canvas = document.getElementById('trendChartCanvas');
+            if (!canvas) return;
             
-            const maxValue = Math.max(...data.map(d => d.value));
+            const ctx = canvas.getContext('2d');
             
-            container.innerHTML = '';
+            window.trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Performance %',
+                        data: [65, 72, 68, 75, 80, 78, 82],
+                        borderColor: '#00d4ff',
+                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#007acc',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { backgroundColor: '#252526' }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            max: 100,
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#888' }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: '#888' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createCompetencyRadarChart() {
+            const canvas = document.getElementById('competencyBarChart');
+            if (!canvas) return;
             
-            const gridLines = document.createElement('div');
-            gridLines.className = 'chart-grid-lines';
+            const ctx = canvas.getContext('2d');
             
-            for (let i = 0; i <= 4; i++) {
-                const gridLine = document.createElement('div');
-                gridLine.className = 'grid-line';
-                gridLine.style.top = `${i * 25}%`;
-                gridLines.appendChild(gridLine);
+            window.competencyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Critical Thinking', 'Problem Solving', 'Creativity', 'Collaboration', 'Communication', 'Digital Literacy'],
+                    datasets: [{
+                        label: 'NEP Competency Score (%)',
+                        data: [75, 68, 82, 70, 65, 85],
+                        backgroundColor: ['rgba(0, 122, 204, 0.8)', 'rgba(0, 122, 204, 0.8)', 'rgba(0, 212, 255, 0.8)', 'rgba(0, 122, 204, 0.8)', 'rgba(0, 122, 204, 0.8)', 'rgba(0, 212, 255, 0.8)'],
+                        borderColor: '#00d4ff',
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        barPercentage: 0.7,
+                        categoryPercentage: 0.8
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#252526',
+                            titleColor: '#fff',
+                            bodyColor: '#ddd',
+                            borderColor: '#00d4ff',
+                            borderWidth: 2,
+                            callbacks: {
+                                label: function(context) {
+                                    return `Score: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: {
+                                color: '#888',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Competency Score (%)',
+                                color: '#888',
+                                font: { size: 12 }
+                            }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: {
+                                color: '#fff',
+                                font: { size: 12, weight: '600' }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createChallengeStatusDonutChart() {
+            const canvas = document.getElementById('donutChartCanvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            window.donutChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Evaluated', 'Submitted', 'Generated', 'In Progress'],
+                    datasets: [{
+                        data: [45, 30, 15, 10],
+                        backgroundColor: ['#27ae60', '#f39c12', '#00d4ff', '#888888'],
+                        borderColor: '#252526',
+                        borderWidth: 2,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#fff' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createPerformanceDistributionBarChart() {
+            const canvas = document.getElementById('distributionChartCanvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            window.distributionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Excellent (90-100)', 'Good (70-89)', 'Average (50-69)', 'Needs Help (0-49)'],
+                    datasets: [{
+                        label: 'Number of Students',
+                        data: [5, 12, 18, 8],
+                        backgroundColor: ['#27ae60', '#2ecc71', '#f39c12', '#e74c3c'],
+                        borderColor: '#252526',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#888' }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: '#888' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createSimulationUsageChart() {
+            const canvas = document.getElementById('usageChartCanvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            window.usageChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Force Visualizer', 'Circuit Builder', 'Chemical Reactions', 'Math Grapher', 'Cell Explorer', 'Wave Simulator'],
+                    datasets: [{
+                        label: 'Usage Count',
+                        data: [45, 38, 32, 28, 25, 22],
+                        backgroundColor: '#00d4ff',
+                        borderColor: '#007acc',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { 
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#888' }
+                        },
+                        y: { 
+                            grid: { display: false },
+                            ticks: { color: '#888' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function changeChartPeriod(days) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (parseInt(btn.textContent) === days) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            if (window.trendChart) {
+                const periodData = {
+                    7: [65, 72, 68, 75, 80, 78, 82],
+                    30: [65, 72, 68, 75],
+                    90: [65, 72, 68]
+                };
                 
-                const gridLabel = document.createElement('div');
-                gridLabel.className = 'grid-label';
-                gridLabel.textContent = `${(4 - i) * 25}%`;
-                gridLabel.style.top = `${i * 25}%`;
-                gridLines.appendChild(gridLabel);
+                const labels = {
+                    7: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    30: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    90: ['Month 1', 'Month 2', 'Month 3']
+                };
+                
+                window.trendChart.data.labels = labels[days];
+                window.trendChart.data.datasets[0].data = periodData[days];
+                window.trendChart.update();
+            }
+        }
+
+        // ============================================ //
+        // ANALYTICS CHARTS - CHART.JS                 //
+        // ============================================ //
+
+        function createAdvancedAnalyticsCharts() {
+            if (!document.getElementById('analytics').classList.contains('active')) {
+                return;
             }
             
-            container.appendChild(gridLines);
+            setTimeout(() => {
+                createEngagementTrendChart();
+                createSubjectPerformanceChart();
+                createDifficultySuccessChart();
+            }, 100);
+        }
+
+        function createEngagementTrendChart() {
+            const canvas = document.getElementById('engagementChartCanvas');
+            if (!canvas) return;
             
-            data.forEach((item, index) => {
-                const bar = document.createElement('div');
-                bar.className = 'chart-bar';
-                bar.style.height = `${(item.value / maxValue) * 100}%`;
-                
-                const barValue = document.createElement('div');
-                barValue.className = 'bar-value';
-                barValue.textContent = `${item.value}%`;
-                bar.appendChild(barValue);
-                
-                const barLabel = document.createElement('div');
-                barLabel.className = 'bar-label';
-                barLabel.textContent = item.week;
-                bar.appendChild(barLabel);
-                
-                container.appendChild(bar);
+            const ctx = canvas.getContext('2d');
+            
+            window.engagementChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7'],
+                    datasets: [{
+                        label: 'Student Engagement %',
+                        data: [65, 72, 80, 75, 85, 78, 90],
+                        borderColor: '#00d4ff',
+                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#007acc',
+                        pointBorderColor: '#fff',
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBorderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: { color: '#fff', font: { size: 12 } }
+                        },
+                        tooltip: {
+                            backgroundColor: '#252526',
+                            titleColor: '#fff',
+                            bodyColor: '#ddd',
+                            borderColor: '#464647',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: {
+                                color: '#888',
+                                stepSize: 25,
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Engagement Rate',
+                                color: '#888',
+                                font: { size: 11 }
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#888', font: { size: 11 } }
+                        }
+                    }
+                }
             });
         }
 
         function createSubjectPerformanceChart() {
-            const container = document.getElementById('subjectPerformanceChart');
+            const canvas = document.getElementById('subjectChartCanvas');
+            if (!canvas) return;
             
-            // Sample data for subjects
-            const subjectData = [
-                { subject: 'Physics', value: 78, color: '#007acc' },
-                { subject: 'Math', value: 85, color: '#28a745' },
-                { subject: 'Chemistry', value: 72, color: '#ff6b6b' },
-                { subject: 'Biology', value: 68, color: '#20c997' },
-                { subject: 'Computer', value: 90, color: '#6f42c1' }
-            ];
+            const ctx = canvas.getContext('2d');
             
-            renderSubjectChart(subjectData);
-        }
-
-        function renderSubjectChart(data) {
-            const container = document.getElementById('subjectPerformanceChart');
-            
-            const maxValue = Math.max(...data.map(d => d.value));
-            
-            container.innerHTML = '';
-            
-            const gridLines = document.createElement('div');
-            gridLines.className = 'chart-grid-lines';
-            
-            for (let i = 0; i <= 4; i++) {
-                const gridLine = document.createElement('div');
-                gridLine.className = 'grid-line';
-                gridLine.style.top = `${i * 25}%`;
-                gridLines.appendChild(gridLine);
-                
-                const gridLabel = document.createElement('div');
-                gridLabel.className = 'grid-label';
-                gridLabel.textContent = `${(4 - i) * 25}%`;
-                gridLabel.style.top = `${i * 25}%`;
-                gridLines.appendChild(gridLabel);
-            }
-            
-            container.appendChild(gridLines);
-            
-            data.forEach((item, index) => {
-                const bar = document.createElement('div');
-                bar.className = 'chart-bar';
-                bar.style.height = `${(item.value / maxValue) * 100}%`;
-                bar.style.background = `linear-gradient(to top, ${item.color}, ${adjustColor(item.color, 30)})`;
-                
-                const barValue = document.createElement('div');
-                barValue.className = 'bar-value';
-                barValue.textContent = `${item.value}%`;
-                bar.appendChild(barValue);
-                
-                const barLabel = document.createElement('div');
-                barLabel.className = 'bar-label';
-                barLabel.textContent = item.subject;
-                bar.appendChild(barLabel);
-                
-                container.appendChild(bar);
+            window.subjectChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Physics', 'Mathematics', 'Chemistry', 'Biology', 'Computer Science'],
+                    datasets: [{
+                        label: 'Average Performance %',
+                        data: [78, 85, 72, 68, 90],
+                        backgroundColor: ['#007accCC', '#28a745CC', '#ff6b6bCC', '#20c997CC', '#6f42c1CC'],
+                        borderColor: ['#007acc', '#28a745', '#ff6b6b', '#20c997', '#6f42c1'],
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barPercentage: 0.7,
+                        categoryPercentage: 0.8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: { color: '#fff', font: { size: 12 } }
+                        },
+                        tooltip: {
+                            backgroundColor: '#252526',
+                            titleColor: '#fff',
+                            bodyColor: '#ddd',
+                            borderColor: '#464647',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return `Performance: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: {
+                                color: '#888',
+                                stepSize: 20,
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Performance Score',
+                                color: '#888',
+                                font: { size: 11 }
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                color: '#888',
+                                font: { size: 11 },
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
             });
         }
 
         function createDifficultySuccessChart() {
-            const container = document.getElementById('difficultySuccessChart');
+            const canvas = document.getElementById('difficultyChartCanvas');
+            if (!canvas) return;
             
-            // Sample data for difficulty vs success
-            const difficultyData = [
-                { difficulty: 'Easy', success: 92, color: '#28a745' },
-                { difficulty: 'Medium', success: 78, color: '#f39c12' },
-                { difficulty: 'Hard', success: 45, color: '#e74c3c' },
-                { difficulty: 'Advanced', success: 32, color: '#9b59b6' }
-            ];
+            const ctx = canvas.getContext('2d');
             
-            renderDifficultyChart(difficultyData);
-        }
-
-        function renderDifficultyChart(data) {
-            const container = document.getElementById('difficultySuccessChart');
-            
-            const maxValue = Math.max(...data.map(d => d.success));
-            
-            container.innerHTML = '';
-            
-            const gridLines = document.createElement('div');
-            gridLines.className = 'chart-grid-lines';
-            
-            for (let i = 0; i <= 4; i++) {
-                const gridLine = document.createElement('div');
-                gridLine.className = 'grid-line';
-                gridLine.style.top = `${i * 25}%`;
-                gridLines.appendChild(gridLine);
-                
-                const gridLabel = document.createElement('div');
-                gridLabel.className = 'grid-label';
-                gridLabel.textContent = `${(4 - i) * 25}%`;
-                gridLabel.style.top = `${i * 25}%`;
-                gridLines.appendChild(gridLabel);
-            }
-            
-            container.appendChild(gridLines);
-            
-            data.forEach((item, index) => {
-                const bar = document.createElement('div');
-                bar.className = 'chart-bar';
-                bar.style.height = `${(item.success / maxValue) * 100}%`;
-                bar.style.background = `linear-gradient(to top, ${item.color}, ${adjustColor(item.color, 30)})`;
-                
-                const barValue = document.createElement('div');
-                barValue.className = 'bar-value';
-                barValue.textContent = `${item.success}%`;
-                bar.appendChild(barValue);
-                
-                const barLabel = document.createElement('div');
-                barLabel.className = 'bar-label';
-                barLabel.textContent = item.difficulty;
-                bar.appendChild(barLabel);
-                
-                container.appendChild(bar);
+            window.difficultyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Easy', 'Medium', 'Hard', 'Advanced'],
+                    datasets: [{
+                        label: 'Success Rate %',
+                        data: [92, 78, 45, 32],
+                        backgroundColor: ['#28a745CC', '#f39c12CC', '#e74c3cCC', '#9b59b6CC'],
+                        borderColor: ['#28a745', '#f39c12', '#e74c3c', '#9b59b6'],
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: { color: '#fff', font: { size: 12 } }
+                        },
+                        tooltip: {
+                            backgroundColor: '#252526',
+                            titleColor: '#fff',
+                            bodyColor: '#ddd',
+                            borderColor: '#464647',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return `Success Rate: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: {
+                                color: '#888',
+                                stepSize: 20,
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Success Rate',
+                                color: '#888',
+                                font: { size: 11 }
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#888', font: { size: 11 } }
+                        }
+                    }
+                }
             });
         }
+
         // ============================================ //
-        // NEP TEACHING STUDIO JAVASCRIPT //
+        // NEP TEACHING STUDIO JAVASCRIPT              //
         // ============================================ //
 
         let currentLesson = {
@@ -4241,34 +4292,25 @@
         let currentTool = 'notes-builder';
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize teaching studio
             selectTool('notes-builder');
             
-            // Set up event listeners
-            document.getElementById('generate-btn').addEventListener('click', generateContent);
-            document.getElementById('clear-btn').addEventListener('click', clearWorkspace);
-            document.getElementById('edit-toggle').addEventListener('click', toggleEditMode);
+            document.getElementById('generate-btn')?.addEventListener('click', generateContent);
+            document.getElementById('clear-btn')?.addEventListener('click', clearWorkspace);
+            document.getElementById('edit-toggle')?.addEventListener('click', toggleEditMode);
             
-            // Load any saved lesson state
             loadLessonState();
         });
 
         function selectTool(tool) {
             currentTool = tool;
             
-            // Update UI
             document.querySelectorAll('.tool-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            document.querySelector(`.tool-btn[data-tool="${tool}"]`).classList.add('active');
+            document.querySelector(`.tool-btn[data-tool="${tool}"]`)?.classList.add('active');
             
-            // Update workflow progress
             updateWorkflowProgress(tool);
-            
-            // Load appropriate form
             loadToolForm(tool);
-            
-            // Update workspace
             updateWorkspace(tool);
         }
 
@@ -4281,17 +4323,14 @@
                     titleElement.textContent = 'Create Teaching Notes';
                     formContainer.innerHTML = getNotesBuilderForm();
                     break;
-                    
                 case 'question-builder':
                     titleElement.textContent = 'Create Assessment Questions';
                     formContainer.innerHTML = getQuestionBuilderForm();
                     break;
-                    
                 case 'simulator-builder':
                     titleElement.textContent = 'Create Learning Simulator';
                     formContainer.innerHTML = getSimulatorBuilderForm();
                     break;
-                    
                 case 'export-pdf':
                     titleElement.textContent = 'Export Lesson as PDF';
                     formContainer.innerHTML = getExportPDFForm();
@@ -4645,11 +4684,10 @@
             };
             
             const currentStep = stepMap[tool];
-            document.querySelectorAll('.progress-step')[currentStep].classList.add('active');
+            document.querySelectorAll('.progress-step')[currentStep]?.classList.add('active');
             
-            // Activate previous steps
             for (let i = 0; i < currentStep; i++) {
-                document.querySelectorAll('.progress-step')[i].classList.add('active');
+                document.querySelectorAll('.progress-step')[i]?.classList.add('active');
             }
         }
 
@@ -4657,7 +4695,6 @@
             const emptyWorkspace = document.getElementById('empty-workspace');
             const contentWorkspace = document.getElementById('content-workspace');
             
-            // Check if we have content for this tool
             if (currentLesson[tool] || (tool === 'export-pdf' && hasContentToExport())) {
                 emptyWorkspace.style.display = 'none';
                 contentWorkspace.style.display = 'block';
@@ -4986,26 +5023,17 @@
             const originalText = generateBtn.innerHTML;
             
             try {
-                // Show loading state
                 generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
                 generateBtn.disabled = true;
                 
-                // Collect form data based on current tool
                 const formData = collectFormData();
-                
-                // Simulate API call (in real implementation, this would be an actual API call)
                 await simulateAPICall(formData);
                 
-                // Store generated content
                 currentLesson[currentTool] = formData;
-                
-                // Update workspace
                 updateWorkspace(currentTool);
                 
-                // Show success message
                 showNotification('Content generated successfully!', 'success');
                 
-                // If this is notes, auto-advance to question builder
                 if (currentTool === 'notes-builder') {
                     setTimeout(() => {
                         selectTool('question-builder');
@@ -5086,7 +5114,6 @@
         }
 
         function simulateAPICall(formData) {
-            // Simulate API delay
             return new Promise(resolve => setTimeout(resolve, 1500));
         }
 
@@ -5100,10 +5127,7 @@
                     exportConfig: null
                 };
                 
-                // Reset to notes builder
                 selectTool('notes-builder');
-                
-                // Clear forms
                 document.getElementById('input-form-container').innerHTML = getNotesBuilderForm();
                 
                 showNotification('Workspace cleared', 'info');
@@ -5116,42 +5140,33 @@
             
             if (isEditing) {
                 editBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
-                // Enable editing in workspace
                 enableEditing();
                 showNotification('Edit mode enabled. Make your changes and save.', 'info');
             } else {
                 editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit Mode';
-                // Save changes and disable editing
                 disableEditing();
                 showNotification('Changes saved successfully.', 'success');
             }
         }
 
         function enableEditing() {
-            // Implementation for enabling editing mode
             console.log('Edit mode enabled');
         }
 
         function disableEditing() {
-            // Implementation for saving changes and disabling edit mode
             console.log('Edit mode disabled');
         }
 
         function addAIEnhancements() {
             showNotification('AI enhancements added to your lesson', 'success');
-            
-            // In real implementation, this would call AI service
-            // and update the current lesson with enhancements
         }
 
         function loadLesson(lessonId) {
-            // In real implementation, this would load from database
             console.log('Loading lesson:', lessonId);
             showNotification('Lesson loaded successfully', 'success');
         }
 
         function loadLessonState() {
-            // Load saved lesson state from localStorage
             const savedLesson = localStorage.getItem('nep_teaching_studio_lesson');
             if (savedLesson) {
                 try {
@@ -5163,12 +5178,10 @@
         }
 
         function saveLessonState() {
-            // Save current lesson state to localStorage
             localStorage.setItem('nep_teaching_studio_lesson', JSON.stringify(currentLesson));
         }
 
         function showNotification(message, type = 'info') {
-            // Create notification element
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.innerHTML = `
@@ -5176,16 +5189,13 @@
                 <span>${message}</span>
             `;
             
-            // Add to page
             document.body.appendChild(notification);
             
-            // Remove after delay
             setTimeout(() => {
                 notification.remove();
             }, 3000);
         }
 
-        // Add notification styles
         const notificationStyles = `
             <style>
                 .notification {
@@ -5246,8 +5256,657 @@
             </style>
         `;
 
-        // Inject notification styles
         document.head.insertAdjacentHTML('beforeend', notificationStyles);
+
+        // ============================================ //
+        // CLASS PERFORMANCE - COMPLETE IMPLEMENTATION  //
+        // ============================================ //
+
+        let currentClassData = null;
+        let currentClass = 10;
+        let currentSection = 'A';
+        let performanceSortAscending = true;
+
+        async function loadClassPerformance() {
+            const classSelector = document.getElementById('classSelector');
+            const sectionSelector = document.getElementById('sectionSelector');
+            
+            if (classSelector) currentClass = classSelector.value;
+            if (sectionSelector) currentSection = sectionSelector.value;
+            
+            console.log(`📊 Loading class performance for Class ${currentClass}-${currentSection}...`);
+            
+            try {
+                showPerformanceLoading();
+                
+                const lastUpdated = document.getElementById('lastUpdated');
+                if (lastUpdated) {
+                    lastUpdated.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Loading...`;
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/teacher/reports/class-performance?class=${currentClass}&section=${currentSection}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.status === 404) {
+                    console.log(`ℹ️ No data for Class ${currentClass}-${currentSection}`);
+                    showEmptyClassState(currentClass, currentSection);
+                    resetAllCardsToZero(currentClass, currentSection);
+                    
+                    if (lastUpdated) {
+                        lastUpdated.innerHTML = `<i class="fas fa-info-circle" style="color: #f39c12;"></i> No students in this class`;
+                    }
+                    hidePerformanceLoading();
+                    return;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result && result.success === true && result.data) {
+                    console.log('✅ API Response received:', result.data);
+                    
+                    currentClassData = result.data;
+                    
+                    mapClassInfoToCards(result.data);
+                    mapStatisticsToCards(result.data);
+                    mapDistributionToCards(result.data);
+                    mapStudentTable(result.data.students || []);
+                    mapInterventionSection(result.data.students || []);
+                    
+                    const distribution = result.data.statistics?.distribution || {
+                        excellent: 0, good: 0, average: 0, needsImprovement: 0
+                    };
+                    createPerformanceDistributionChart(distribution);
+                    
+                    const now = new Date();
+                    if (lastUpdated) {
+                        lastUpdated.innerHTML = `<i class="fas fa-clock"></i> Last updated: ${formatTime(now)}`;
+                    }
+                    
+                    showNotification(`Class ${currentClass}-${currentSection} data loaded successfully`, 'success');
+                } else {
+                    throw new Error('Invalid data format received');
+                }
+                
+            } catch (error) {
+                console.error('❌ API Error:', error);
+                
+                showEmptyClassState(currentClass, currentSection);
+                resetAllCardsToZero(currentClass, currentSection);
+                
+                const lastUpdated = document.getElementById('lastUpdated');
+                if (lastUpdated) {
+                    lastUpdated.innerHTML = `<i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i> Failed to load data`;
+                }
+                
+                showNotification(`Could not load data for Class ${currentClass}-${currentSection}`, 'error');
+            } finally {
+                hidePerformanceLoading();
+            }
+        }
+
+        function resetAllCardsToZero(classVal, sectionVal) {
+            updateElementText('totalStudents', '0');
+            updateElementHtml('studentCountBadge', 'Total: 0 Students');
+            updateElementHtml('classInfo', `<i class="fas fa-school"></i> Class ${classVal}-${sectionVal}`);
+            updateElementText('className', `${classVal}-${sectionVal}`);
+            
+            updateElementText('avgPerformance', '0%');
+            updateElementText('meanScore', '0%');
+            
+            const avgLabel = document.getElementById('avgPerformanceLabel');
+            if (avgLabel) {
+                avgLabel.className = 'stat-change';
+                avgLabel.innerHTML = '<i class="fas fa-minus-circle"></i> No Data';
+            }
+            
+            updateElementText('topPerformer', '0%');
+            updateElementHtml('topPerformerName', '<i class="fas fa-minus"></i> No students');
+            
+            updateElementText('needsHelp', '0');
+            updateElementText('interventionCount', '0');
+            
+            updateElementText('excellentCount', '0');
+            updateElementText('goodCount', '0');
+            updateElementText('averageCount', '0');
+            updateElementText('needsCount', '0');
+            
+            updateElementText('medianScore', '0%');
+            updateElementText('scoreRange', '0% - 0%');
+            updateElementText('stdDev', '±0%');
+        }
+
+        function mapClassInfoToCards(data) {
+            const totalStudents = data.class?.totalStudents || data.students?.length || 0;
+            updateElementText('totalStudents', totalStudents);
+            updateElementHtml('studentCountBadge', `Total: ${totalStudents} Students`);
+            
+            const className = data.class?.class || currentClass;
+            const sectionName = data.class?.section || currentSection;
+            updateElementHtml('classInfo', `<i class="fas fa-school"></i> Class ${className}-${sectionName}`);
+            updateElementText('className', `${className}-${sectionName}`);
+        }
+
+        function mapStatisticsToCards(data) {
+            const students = data.students || [];
+            const avgPerformance = data.statistics?.averagePerformance || 0;
+            
+            updateElementText('avgPerformance', `${avgPerformance}%`);
+            updateElementText('meanScore', `${avgPerformance}%`);
+            
+            const avgLabel = document.getElementById('avgPerformanceLabel');
+            if (avgLabel) {
+                if (avgPerformance >= 75) {
+                    avgLabel.className = 'stat-change positive';
+                    avgLabel.innerHTML = '<i class="fas fa-arrow-up"></i> Excellent';
+                } else if (avgPerformance >= 60) {
+                    avgLabel.className = 'stat-change';
+                    avgLabel.innerHTML = '<i class="fas fa-minus-circle"></i> Satisfactory';
+                } else if (avgPerformance > 0) {
+                    avgLabel.className = 'stat-change negative';
+                    avgLabel.innerHTML = '<i class="fas fa-arrow-down"></i> Needs Improvement';
+                } else {
+                    avgLabel.className = 'stat-change';
+                    avgLabel.innerHTML = '<i class="fas fa-minus-circle"></i> No Data';
+                }
+            }
+            
+            if (students.length > 0) {
+                const sorted = [...students].sort((a, b) => b.performanceIndex - a.performanceIndex);
+                const topPerformer = sorted[0];
+                updateElementText('topPerformer', `${topPerformer.performanceIndex}%`);
+                updateElementHtml('topPerformerName', `<i class="fas fa-arrow-up"></i> ${escapeHtml(topPerformer.name)}`);
+            } else {
+                updateElementText('topPerformer', '0%');
+                updateElementHtml('topPerformerName', '<i class="fas fa-minus"></i> No students');
+            }
+            
+            const needsHelpCount = students.filter(s => s.performanceIndex < 50).length;
+            updateElementText('needsHelp', needsHelpCount);
+            updateElementText('interventionCount', needsHelpCount);
+        }
+
+        function mapDistributionToCards(data) {
+            const distribution = data.statistics?.distribution || {};
+            const students = data.students || [];
+            
+            updateElementText('excellentCount', distribution.excellent || 0);
+            updateElementText('goodCount', distribution.good || 0);
+            updateElementText('averageCount', distribution.average || 0);
+            updateElementText('needsCount', distribution.needsImprovement || 0);
+            
+            if (students.length > 0) {
+                const performances = students.map(s => s.performanceIndex).sort((a, b) => a - b);
+                
+                let median;
+                if (performances.length % 2 === 0) {
+                    median = (performances[performances.length/2 - 1] + performances[performances.length/2]) / 2;
+                } else {
+                    median = performances[Math.floor(performances.length/2)];
+                }
+                updateElementText('medianScore', `${median.toFixed(1)}%`);
+                
+                const min = performances[0];
+                const max = performances[performances.length - 1];
+                updateElementText('scoreRange', `${min}% - ${max}%`);
+                
+                const mean = data.statistics?.averagePerformance || 0;
+                if (performances.length > 1) {
+                    const squareDiffs = performances.map(value => Math.pow(value - mean, 2));
+                    const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / squareDiffs.length;
+                    const stdDev = Math.sqrt(avgSquareDiff).toFixed(1);
+                    updateElementText('stdDev', `±${stdDev}%`);
+                } else {
+                    updateElementText('stdDev', '±0%');
+                }
+            } else {
+                updateElementText('medianScore', '0%');
+                updateElementText('scoreRange', '0% - 0%');
+                updateElementText('stdDev', '±0%');
+            }
+        }
+
+        function mapStudentTable(students) {
+            const tbody = document.getElementById('studentPerformanceTable');
+            if (!tbody) return;
+            
+            if (!students || students.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px;">
+                            <i class="fas fa-user-graduate" style="font-size: 2.5rem; color: var(--text-secondary); margin-bottom: 10px;"></i>
+                            <h3 style="color: var(--text-secondary); margin-bottom: 5px;">No Students Found</h3>
+                            <p style="color: var(--text-secondary);">This class section has no enrolled students</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const sorted = [...students].sort((a, b) => b.performanceIndex - a.performanceIndex);
+            
+            tbody.innerHTML = sorted.map((student, index) => {
+                const studentId = student.studentId || 'N/A';
+                const studentName = escapeHtml(student.name || 'Unknown Student');
+                const performanceIndex = student.performanceIndex || 0;
+                const grade = student.grade || 'N/A';
+                
+                let statusBadge, statusClass;
+                if (performanceIndex >= 75) {
+                    statusBadge = 'Excellent';
+                    statusClass = 'badge-success';
+                } else if (performanceIndex >= 60) {
+                    statusBadge = 'Good';
+                    statusClass = 'badge-info';
+                } else if (performanceIndex >= 50) {
+                    statusBadge = 'Average';
+                    statusClass = 'badge-warning';
+                } else {
+                    statusBadge = 'Needs Help';
+                    statusClass = 'badge-danger';
+                }
+                
+                let gradeClass = 'badge-info';
+                if (grade === 'A' || grade === 'A+') gradeClass = 'badge-success';
+                else if (grade === 'B' || grade === 'B+') gradeClass = 'badge-info';
+                else if (grade === 'C') gradeClass = 'badge-warning';
+                else if (grade === 'F') gradeClass = 'badge-danger';
+                
+                const rankDisplay = index === 0 
+                    ? '<i class="fas fa-crown" style="color: #f39c12;"></i>' 
+                    : `#${index + 1}`;
+                
+                return `
+                    <tr>
+                        <td style="font-weight: 600; ${index === 0 ? 'color: #f39c12;' : ''}">${rankDisplay}</td>
+                        <td><span style="font-family: monospace; font-size: 0.85rem;">${studentId}</span></td>
+                        <td><strong>${studentName}</strong></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-weight: 700; color: ${getScoreColor(performanceIndex)}; min-width: 45px;">
+                                    ${performanceIndex}%
+                                </span>
+                                <div class="progress-bar" style="width: 80px; height: 8px; background: rgba(255,255,255,0.1);">
+                                    <div class="progress-fill" style="width: ${performanceIndex}%; background: ${getScoreGradient(performanceIndex)}; height: 100%; border-radius: 4px;"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge ${gradeClass}" style="min-width: 70px;">Grade ${grade}</span>
+                        </td>
+                        <td>
+                            <span class="badge ${statusClass}" style="min-width: 90px;">${statusBadge}</span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 5px;">
+                                <button class="btn btn-secondary btn-sm" onclick="viewStudentDetails('${studentId}')" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-primary btn-sm" onclick="generateStudentReport('${studentId}')" title="Generate Report">
+                                    <i class="fas fa-file-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function mapInterventionSection(students) {
+            const interventionSection = document.getElementById('interventionSection');
+            const interventionContainer = document.getElementById('interventionStudents');
+            
+            if (!interventionSection || !interventionContainer) return;
+            
+            const needsHelpStudents = students.filter(s => s.performanceIndex < 50);
+            
+            if (needsHelpStudents.length > 0) {
+                interventionSection.style.display = 'block';
+                
+                interventionContainer.innerHTML = needsHelpStudents.map(student => {
+                    const studentId = student.studentId || 'N/A';
+                    const studentName = escapeHtml(student.name || 'Unknown Student');
+                    const performanceIndex = student.performanceIndex || 0;
+                    
+                    return `
+                        <div style="background: rgba(231, 76, 60, 0.05); border-left: 4px solid #e74c3c; padding: 18px; border-radius: 8px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <div style="width: 40px; height: 40px; background: rgba(231,76,60,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-exclamation-triangle" style="color: #e74c3c; font-size: 1.1rem;"></i>
+                                </div>
+                                <div>
+                                    <strong style="color: #e74c3c; font-size: 1rem;">${studentName}</strong>
+                                    <div style="font-size: 0.75rem; color: #888; margin-top: 3px;">${studentId}</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span style="color: var(--text-secondary);">Current Score:</span>
+                                <span style="font-weight: 700; color: #e74c3c;">${performanceIndex}%</span>
+                            </div>
+                            <div class="progress-bar" style="margin-bottom: 15px; height: 8px; background: rgba(255,255,255,0.1);">
+                                <div class="progress-fill" style="width: ${performanceIndex}%; background: #e74c3c; height: 100%; border-radius: 4px;"></div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-danger btn-sm" onclick="createInterventionPlan('${studentId}')" style="flex: 1;">
+                                    <i class="fas fa-plus-circle"></i> Intervention
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="viewStudentDetails('${studentId}')" style="flex: 1;">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                interventionSection.style.display = 'none';
+            }
+        }
+
+        function createPerformanceDistributionChart(distribution) {
+            const canvas = document.getElementById('performanceDistributionChart');
+            if (!canvas) {
+                console.log('⚠️ Performance distribution chart canvas not found - skipping');
+                return;
+            }
+            
+            if (!(canvas instanceof HTMLCanvasElement)) {
+                console.error('❌ Element is not a canvas:', canvas);
+                return;
+            }
+            
+            try {
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    console.error('❌ Could not get canvas context');
+                    return;
+                }
+                
+                if (window.performanceDistChart) {
+                    window.performanceDistChart.destroy();
+                    window.performanceDistChart = null;
+                }
+                
+                const chartData = [
+                    distribution.excellent || 0,
+                    distribution.good || 0,
+                    distribution.average || 0,
+                    distribution.needsImprovement || 0
+                ];
+                
+                const total = chartData.reduce((a, b) => a + b, 0);
+                
+                window.performanceDistChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Excellent (90-100%)', 'Good (70-89%)', 'Average (50-69%)', 'Needs Help (0-49%)'],
+                        datasets: [{
+                            data: chartData,
+                            backgroundColor: ['#27ae60', '#2ecc71', '#f39c12', '#e74c3c'],
+                            borderColor: '#252526',
+                            borderWidth: 3,
+                            hoverOffset: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        cutout: '65%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#252526',
+                                titleColor: '#fff',
+                                bodyColor: '#ddd',
+                                borderColor: '#464647',
+                                borderWidth: 1,
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.raw || 0;
+                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                        return `${context.label}: ${value} student${value !== 1 ? 's' : ''} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                updateDistributionLegend(chartData, total);
+                
+            } catch (error) {
+                console.error('❌ Error creating performance distribution chart:', error);
+            }
+        }
+
+        function updateDistributionLegend(data, total) {
+            const legend = document.getElementById('distributionLegend');
+            if (!legend) return;
+            
+            const items = [
+                { label: 'Excellent', count: data[0], color: '#27ae60' },
+                { label: 'Good', count: data[1], color: '#2ecc71' },
+                { label: 'Average', count: data[2], color: '#f39c12' },
+                { label: 'Needs Help', count: data[3], color: '#e74c3c' }
+            ];
+            
+            legend.innerHTML = items.map(item => {
+                const percentage = total > 0 ? ((item.count / total) * 100).toFixed(1) : 0;
+                return `
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: ${item.color};"></div>
+                        <span style="font-size: 0.85rem; color: var(--text-secondary);">
+                            ${item.label}: <strong style="color: ${item.color};">${item.count}</strong> (${percentage}%)
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateElementText(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        }
+
+        function updateElementHtml(id, html) {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = html;
+        }
+
+        function showPerformanceLoading() {
+            const loadingElements = [
+                'totalStudents', 'avgPerformance', 'topPerformer', 'needsHelp',
+                'excellentCount', 'goodCount', 'averageCount', 'needsCount',
+                'meanScore', 'medianScore', 'scoreRange', 'stdDev'
+            ];
+            
+            loadingElements.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            });
+        }
+
+        function hidePerformanceLoading() {
+            // Loading is removed when data is populated
+        }
+
+        function showEmptyClassState(classVal, sectionVal) {
+            const tbody = document.getElementById('studentPerformanceTable');
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 50px;">
+                            <i class="fas fa-users" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 15px;"></i>
+                            <h3 style="color: var(--text-secondary); margin-bottom: 10px;">No Students Found</h3>
+                            <p style="color: var(--text-secondary); margin-bottom: 5px;">Class ${classVal}-${sectionVal} has no enrolled students</p>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">Add students to this class to see performance data</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function getScoreColor(score) {
+            if (score >= 80) return '#27ae60';
+            if (score >= 60) return '#2ecc71';
+            if (score >= 40) return '#f39c12';
+            return '#e74c3c';
+        }
+
+        function getScoreGradient(score) {
+            if (score >= 80) return 'linear-gradient(90deg, #27ae60, #2ecc71)';
+            if (score >= 60) return 'linear-gradient(90deg, #2ecc71, #f39c12)';
+            if (score >= 40) return 'linear-gradient(90deg, #f39c12, #e74c3c)';
+            return 'linear-gradient(90deg, #e74c3c, #c0392b)';
+        }
+
+        function formatTime(date) {
+            const hours = date.getHours();
+            const minutes = date.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const formattedHours = hours % 12 || 12;
+            const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+            return `${formattedHours}:${formattedMinutes} ${ampm}`;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function sortStudents(criteria) {
+            if (!currentClassData || !currentClassData.students) {
+                showNotification('No data to sort', 'info');
+                return;
+            }
+            
+            const students = [...currentClassData.students];
+            
+            if (criteria === 'name') {
+                students.sort((a, b) => {
+                    return performanceSortAscending 
+                        ? a.name.localeCompare(b.name) 
+                        : b.name.localeCompare(a.name);
+                });
+                showNotification(`Sorted by name ${performanceSortAscending ? 'A-Z' : 'Z-A'}`, 'info');
+            } else {
+                students.sort((a, b) => {
+                    return performanceSortAscending 
+                        ? a.performanceIndex - b.performanceIndex 
+                        : b.performanceIndex - a.performanceIndex;
+                });
+                showNotification(`Sorted by score ${performanceSortAscending ? 'low to high' : 'high to low'}`, 'info');
+            }
+            
+            mapStudentTable(students);
+            performanceSortAscending = !performanceSortAscending;
+        }
+
+        function exportClassReport(format = 'pdf') {
+            const classVal = document.getElementById('classSelector')?.value || currentClass;
+            const sectionVal = document.getElementById('sectionSelector')?.value || currentSection;
+            
+            if (!currentClassData || !currentClassData.students || currentClassData.students.length === 0) {
+                showNotification(`No data to export for Class ${classVal}-${sectionVal}`, 'warning');
+                return;
+            }
+            
+            showNotification(`Generating ${format.toUpperCase()} report for Class ${classVal}-${sectionVal}...`, 'info');
+            
+            setTimeout(() => {
+                showNotification(`${format.toUpperCase()} report generated successfully!`, 'success');
+            }, 1500);
+        }
+
+        function refreshClassPerformance() {
+            showNotification('Refreshing class performance data...', 'info');
+            loadClassPerformance();
+        }
+
+        function createInterventionPlan(studentId) {
+            showNotification(`Creating intervention plan for student ${studentId}`, 'info');
+        }
+
+        function generateStudentReport(studentId) {
+            showNotification(`Generating report for student ${studentId}`, 'info');
+        }
+
+        function viewStudentDetails(studentId) {
+            showNotification(`Loading details for student ${studentId}`, 'info');
+        }
+
+        function initClassPerformance() {
+            console.log('🚀 Initializing Class Performance Dashboard...');
+            
+            const classSelector = document.getElementById('classSelector');
+            const sectionSelector = document.getElementById('sectionSelector');
+            
+            if (classSelector) {
+                classSelector.addEventListener('change', function() {
+                    console.log(`Class changed to: ${this.value}`);
+                    loadClassPerformance();
+                });
+            }
+            
+            if (sectionSelector) {
+                sectionSelector.addEventListener('change', function() {
+                    console.log(`Section changed to: ${this.value}`);
+                    loadClassPerformance();
+                });
+            }
+        }
+
+        // Override showPage to handle class performance initialization
+        const originalShowPage = window.showPage;
+        window.showPage = function(pageId) {
+            if (originalShowPage) {
+                originalShowPage(pageId);
+            }
+            
+            if (pageId === 'validations') {
+                console.log('📊 Class Performance Dashboard opened');
+                setTimeout(() => {
+                    initClassPerformance();
+                    loadClassPerformance();
+                }, 150);
+            }
+            
+            if (pageId === 'analytics') {
+                setTimeout(() => {
+                    createAdvancedAnalyticsCharts();
+                }, 100);
+            }
+            
+            if (pageId === 'overview') {
+                setTimeout(() => {
+                    initializeOverviewCharts();
+                }, 100);
+            }
+        };
+
+        // Auto-initialize if page is already active
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('validations')?.classList.contains('active')) {
+                setTimeout(() => {
+                    initClassPerformance();
+                    loadClassPerformance();
+                }, 200);
+            }
+            
+            if (document.getElementById('overview')?.classList.contains('active')) {
+                setTimeout(() => {
+                    initializeOverviewCharts();
+                }, 200);
+            }
+        });
     </script>
 </body>
 </html>

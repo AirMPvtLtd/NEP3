@@ -51,6 +51,7 @@ const activitySchema = new mongoose.Schema({
       'data_exported',
       'report_downloaded',
       'report_viewed',
+      'password_reset_request',
       'other'
     ],
     index: true

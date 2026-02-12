@@ -729,49 +729,82 @@ const forgotPassword = async (req, res) => {
     const { email, userType } = req.body;
 
     if (!email) {
-      return res.status(400).json({ success: false, message: 'Email is required' });
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
     }
 
-    let Model, emailField;
-    if (userType) {
-      switch (userType) {
-        case 'admin': Model = School; emailField = 'adminEmail'; break;
-        case 'teacher': Model = Teacher; emailField = 'email'; break;
-        case 'student': Model = Student; emailField = 'email'; break;
-        case 'parent': Model = Parent; emailField = 'email'; break;
-        default: return res.status(400).json({ success: false, message: 'Invalid user type' });
-      }
-    } else {
-      // Try all models if userType not provided
-      const models = [
-        { Model: School, field: 'adminEmail', type: 'admin' },
-        { Model: Teacher, field: 'email', type: 'teacher' },
-        { Model: Student, field: 'email', type: 'student' },
-        { Model: Parent, field: 'email', type: 'parent' }
-      ];
+    const normalizedEmail = email.toLowerCase();
 
-      for (const m of models) {
-        const user = await m.Model.findOne({ [m.field]: email.toLowerCase() });
-        if (user) {
-          return await processPasswordReset(email, m.type, user, req, res);
+    const models = [
+      { Model: School, field: 'adminEmail', type: 'admin', nameField: 'adminName' },
+      { Model: Teacher, field: 'email', type: 'teacher', nameField: 'name' },
+      { Model: Student, field: 'email', type: 'student', nameField: 'name' },
+      { Model: Parent, field: 'email', type: 'parent', nameField: 'name' }
+    ];
+
+    // If userType provided, restrict search
+    const searchModels = userType
+      ? models.filter(m => m.type === userType)
+      : models;
+
+    for (const m of searchModels) {
+      const user = await m.Model.findOne({ [m.field]: normalizedEmail });
+      if (!user) continue;
+
+      // 🔐 ONLY correct way
+      const token = await PasswordReset.createToken(
+        normalizedEmail,
+        m.type,
+        user._id.toString(),
+        {
+          schoolId: user.schoolId,
+          ip: req.ip || req.headers['x-forwarded-for'] || 'unknown',
+          userAgent: req.headers['user-agent']
         }
+      );
+
+      // 📧 Email
+      try {
+        await sendPasswordResetEmail({
+          to: normalizedEmail,
+          name: user[m.nameField] || 'User',
+          resetUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password/${token}`
+        });
+      } catch (emailErr) {
+        logger.error('Password reset email failed', emailErr);
       }
 
-      // No user found - still send success message for security
-      return res.json({ success: true, message: 'If email exists, password reset link sent' });
+      // 🧾 Audit log
+      await Activity.log({
+        userId: user._id.toString(),
+        userType: m.type,
+        schoolId: user.schoolId,
+        activityType: 'password_reset_request',
+        action: 'Password reset requested',
+        ipAddress: req.ip,
+        success: true
+      });
+
+      break; // IMPORTANT: stop after first match
     }
 
-    const user = await Model.findOne({ [emailField]: email.toLowerCase() });
-    if (!user) {
-      return res.json({ success: true, message: 'If email exists, password reset link sent' });
-    }
+    // 🔒 Always same response (anti-enumeration)
+    return res.json({
+      success: true,
+      message: 'If email exists, password reset link sent'
+    });
 
-    await processPasswordReset(email, userType, user, req, res);
   } catch (error) {
     logger.error('Forgot password error:', error);
-    res.status(500).json({ success: false, message: 'Password reset request failed' });
+    return res.status(400).json({
+      success: false,
+      message: error.message || 'Password reset request failed'
+    });
   }
 };
+
 
 async function processPasswordReset(email, userType, user, req, res) {
   const resetToken = crypto.randomBytes(32).toString('hex');

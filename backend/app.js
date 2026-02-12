@@ -983,7 +983,7 @@
  * @description Complete Express application with all middleware, routes, and error handling
  */
 
-require('dotenv').config();
+/*require('dotenv').config();
 console.log('JWT_SECRET length:', process.env.JWT_SECRET?.length);
 console.log('NODE_ENV:', process.env.NODE_ENV || 'development');
 console.log('Starting application initialization...');
@@ -2015,4 +2015,205 @@ console.log(`✓ Frontend: ${frontendPath ? `✅ ACTIVE (${frontendPath})` : '�
 console.log('✓ New ledger-anchored report system: READY');
 console.log('✓ Global error handlers active');
 console.log('✓ Graceful shutdown configured');
-console.log('='.repeat(60) + '\n');
+console.log('='.repeat(60) + '\n');*/
+
+
+require('dotenv').config();
+
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
+const mongoSanitize = require('express-mongo-sanitize');
+const cookieParser = require('cookie-parser');
+const fs = require('fs');
+const path = require('path');
+
+const app = express();
+app.set('trust proxy',1);
+
+// ============================================================================
+// 🔐 SECURITY (FIXED CSP)
+// ============================================================================
+
+app.use(helmet({
+  contentSecurityPolicy:{
+    directives:{
+      defaultSrc:["'self'"],
+
+      styleSrc:[
+        "'self'","'unsafe-inline'",
+        "https://cdnjs.cloudflare.com",
+        "https://fonts.googleapis.com",
+        "https://cdn.jsdelivr.net"
+      ],
+
+      scriptSrc:[
+        "'self'","'unsafe-inline'",
+        "https://cdn.jsdelivr.net",
+        "https://cdnjs.cloudflare.com"
+      ],
+
+      scriptSrcAttr:["'unsafe-inline'"],
+
+      fontSrc:[
+        "'self'",
+        "https://fonts.gstatic.com",
+        "https://cdnjs.cloudflare.com",
+        "data:"
+      ],
+
+      imgSrc:["'self'","data:","https:"],
+
+      connectSrc:[
+        "'self'",
+        "https://cdn.jsdelivr.net",
+        "https://cdnjs.cloudflare.com"
+      ]
+    }
+  },
+  crossOriginEmbedderPolicy:false,
+  crossOriginResourcePolicy:{policy:"cross-origin"}
+}));
+
+// ============================================================================
+// CORE MIDDLEWARE
+// ============================================================================
+
+app.use(cors({
+  origin:(origin,cb)=>{
+    const allowed=process.env.ALLOWED_ORIGINS
+      ? process.env.ALLOWED_ORIGINS.split(',')
+      : ['http://localhost:3000'];
+
+    if(!origin || allowed.includes(origin)) return cb(null,true);
+    cb(new Error('CORS blocked'));
+  },
+  credentials:true
+}));
+
+app.use(mongoSanitize());
+app.use(compression());
+app.use(express.json({limit:'10mb'}));
+app.use(express.urlencoded({extended:true,limit:'10mb'}));
+app.use(cookieParser());
+
+// ============================================================================
+// HEALTH
+// ============================================================================
+
+app.get('/health',(req,res)=>{
+  res.json({status:'ok',time:new Date(),uptime:process.uptime()});
+});
+
+// ============================================================================
+// STATIC FILES
+// ============================================================================
+
+app.use('/uploads',express.static('uploads'));
+app.use('/exports',express.static('exports'));
+
+// ============================================================================
+// 🚀 SPYRAL MULTI FRONTEND (FINAL FIXED)
+// ============================================================================
+
+const homePath = path.join(__dirname,'../frontend/home');
+const nepPath  = path.join(__dirname,'../frontend/nep-workbench');
+const upscPath = path.join(__dirname,'../frontend/upsc-workbench');
+
+// HOME
+if(fs.existsSync(homePath)){
+  app.use('/',express.static(homePath));
+  console.log('✅ Home mounted');
+}
+
+// NEP
+if(fs.existsSync(nepPath)){
+  app.use('/nep-workbench',express.static(nepPath));
+  console.log('✅ NEP Workbench mounted');
+
+  // 🔥 IMPORTANT FIX (login.html NOT FOUND ISSUE)
+  app.get('/nep-workbench/login.html',(req,res)=>{
+    res.sendFile(path.join(nepPath,'login.html'));
+  });
+}
+
+// UPSC
+if(fs.existsSync(upscPath)){
+  app.use('/upsc-workbench',express.static(upscPath));
+  console.log('✅ UPSC Workbench mounted');
+}
+
+// SPA fallback
+app.get('/nep-workbench/*',(req,res)=>{
+  res.sendFile(path.join(nepPath,'index.html'));
+});
+
+app.get('/upsc-workbench/*',(req,res)=>{
+  res.sendFile(path.join(upscPath,'index.html'));
+});
+
+// ============================================================================
+// API ROUTES
+// ============================================================================
+
+const API_PREFIX='/api';
+
+function loadRoute(name,routePath){
+  try{
+    const r=require(routePath);
+    console.log(`✅ ${name} loaded`);
+    return r;
+  }catch(err){
+    console.error(`❌ ${name} failed`,err.message);
+    const router=express.Router();
+    router.all('*',(req,res)=>res.status(503).json({message:`${name} unavailable`}));
+    return router;
+  }
+}
+
+app.use(`${API_PREFIX}/auth`,loadRoute('auth','./routes/auth.routes.js'));
+app.use(`${API_PREFIX}/student`,loadRoute('student','./routes/student.routes.js'));
+app.use(`${API_PREFIX}/teacher`,loadRoute('teacher','./routes/teacher.routes.js'));
+app.use(`${API_PREFIX}/parent`,loadRoute('parent','./routes/parent.routes.js'));
+app.use(`${API_PREFIX}/challenges`,loadRoute('challenge','./routes/challenge.routes.js'));
+app.use(`${API_PREFIX}/analytics`,loadRoute('analytics','./routes/analytics.routes.js'));
+app.use(`${API_PREFIX}/admin`,loadRoute('admin','./routes/admin.routes.js'));
+app.use(`${API_PREFIX}/spi`,loadRoute('spi','./routes/spi.routes.js'));
+app.use(`${API_PREFIX}/reports`,loadRoute('reports','./routes/report.routes.js'));
+
+// ============================================================================
+// ROOT
+// ============================================================================
+
+app.get('/',(req,res)=>{
+  const indexFile=path.join(homePath,'index.html');
+  if(fs.existsSync(indexFile)) return res.sendFile(indexFile);
+  res.json({message:'SPYRAL API Running'});
+});
+
+// ============================================================================
+// 404
+// ============================================================================
+
+app.all('*',(req,res)=>{
+  if(req.path.startsWith('/api/')){
+    return res.status(404).json({message:'API route not found'});
+  }
+  res.status(404).send('Not Found');
+});
+
+// ============================================================================
+// ERROR HANDLER
+// ============================================================================
+
+try{
+  const {errorHandler}=require('./middleware/errorHandler');
+  app.use(errorHandler);
+}catch{
+  app.use((err,req,res,next)=>{
+    res.status(500).json({message:err.message});
+  });
+}
+
+module.exports=app;
