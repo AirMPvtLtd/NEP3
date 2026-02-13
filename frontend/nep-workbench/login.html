@@ -586,7 +586,7 @@
                 </div>
             </form>
 
-            <!-- ADMIN SIGNUP FORM -->
+            <!-- ADMIN SIGNUP FORM - FIXED VERSION -->
             <form id="adminSignupForm" style="display: none;">
                 <div class="role-notice" style="background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 0.8rem; color: #ffc107;">
                     <div class="notice-icon" style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
@@ -917,7 +917,7 @@
         }
 
         // ============================================================================
-        // FORM SUBMISSION HANDLERS
+        // FORM SUBMISSION HANDLERS - FIXED VERSION
         // ============================================================================
         function initializeFormSubmissions() {
             // Login form submissions
@@ -926,10 +926,21 @@
             document.getElementById('adminLoginForm').addEventListener('submit', (e) => handleLogin(e, 'admin'));
             document.getElementById('parentLoginForm').addEventListener('submit', (e) => handleLogin(e, 'parent'));
             
-            // Signup form submissions (except teacher)
-            document.getElementById('studentSignupForm').addEventListener('submit', (e) => handleSignup(e, 'student'));
-            document.getElementById('adminSignupForm').addEventListener('submit', (e) => handleSignup(e, 'admin'));
-            document.getElementById('parentSignupForm').addEventListener('submit', (e) => handleSignup(e, 'parent'));
+            // Signup form submissions - WITH PROPER SCOPE CHECKING
+            const studentSignupForm = document.getElementById('studentSignupForm');
+            if (studentSignupForm) {
+                studentSignupForm.addEventListener('submit', (e) => handleSignup(e, 'student'));
+            }
+            
+            const adminSignupForm = document.getElementById('adminSignupForm');
+            if (adminSignupForm) {
+                adminSignupForm.addEventListener('submit', (e) => handleSignup(e, 'admin'));
+            }
+            
+            const parentSignupForm = document.getElementById('parentSignupForm');
+            if (parentSignupForm) {
+                parentSignupForm.addEventListener('submit', (e) => handleSignup(e, 'parent'));
+            }
         }
 
         // ============================================================================
@@ -1133,17 +1144,61 @@
         }
 
         // ============================================================================
-        // SIGNUP HANDLER - FOR OTHER ROLES (EXCEPT TEACHER)
+        // SIGNUP HANDLER - FIXED VERSION WITH NULL CHECKS
         // ============================================================================
         async function handleSignup(e, role) {
             e.preventDefault();
             
-            // Get common fields
-            const name = document.getElementById(`${role}SignupName`).value.trim();
-            const email = document.getElementById(`${role}SignupEmail`).value.trim();
-            const password = document.getElementById(`${role}SignupPassword`).value;
-            const confirmPassword = document.getElementById(`${role}ConfirmPassword`).value;
-            const btn = document.getElementById(`${role}SignupBtn`);
+            // Get common fields - with null checks
+            const nameInput = document.getElementById(`${role}SignupName`);
+            if (!nameInput) {
+                showError(role, 'Form field error. Please refresh the page.');
+                return;
+            }
+            const name = nameInput.value.trim();
+            
+            let email, password, confirmPassword, btn;
+            
+            // Role-specific field access
+            if (role === 'admin') {
+                // For admin, we need adminOfficialEmail
+                const adminEmailInput = document.getElementById('adminOfficialEmail');
+                if (!adminEmailInput) {
+                    showError(role, 'Email field not found. Please refresh the page.');
+                    return;
+                }
+                email = adminEmailInput.value.trim();
+                
+                const passwordInput = document.getElementById('adminSignupPassword');
+                const confirmPasswordInput = document.getElementById('adminConfirmPassword');
+                if (!passwordInput || !confirmPasswordInput) {
+                    showError(role, 'Password fields not found. Please refresh the page.');
+                    return;
+                }
+                password = passwordInput.value;
+                confirmPassword = confirmPasswordInput.value;
+                
+                btn = document.getElementById('adminSignupBtn');
+            } else {
+                // For student and parent
+                const emailInput = document.getElementById(`${role}SignupEmail`);
+                if (!emailInput) {
+                    showError(role, 'Email field not found. Please refresh the page.');
+                    return;
+                }
+                email = emailInput.value.trim();
+                
+                const passwordInput = document.getElementById(`${role}SignupPassword`);
+                const confirmPasswordInput = document.getElementById(`${role}ConfirmPassword`);
+                if (!passwordInput || !confirmPasswordInput) {
+                    showError(role, 'Password fields not found. Please refresh the page.');
+                    return;
+                }
+                password = passwordInput.value;
+                confirmPassword = confirmPasswordInput.value;
+                
+                btn = document.getElementById(`${role}SignupBtn`);
+            }
             
             // Basic validation
             if (!name || name.length < 2) {
@@ -1171,9 +1226,18 @@
             
             if (role === 'student') {
                 // STUDENT SIGNUP
-                const studentId = document.getElementById('studentSignupId').value.trim();
-                const schoolId = document.getElementById('studentSchoolId').value.trim();
-                const grade = document.getElementById('studentGrade').value;
+                const studentIdInput = document.getElementById('studentSignupId');
+                const schoolIdInput = document.getElementById('studentSchoolId');
+                const gradeInput = document.getElementById('studentGrade');
+                
+                if (!studentIdInput || !schoolIdInput || !gradeInput) {
+                    showError(role, 'Form fields not found. Please refresh the page.');
+                    return;
+                }
+                
+                const studentId = studentIdInput.value.trim();
+                const schoolId = schoolIdInput.value.trim();
+                const grade = gradeInput.value;
                 
                 if (!studentId) {
                     showError(role, 'Student ID is required');
@@ -1201,16 +1265,19 @@
                 };
                 
             } else if (role === 'admin') {
-                // ADMIN SIGNUP - FIXED VERSION
-                const adminOfficialEmail = document.getElementById('adminOfficialEmail').value.trim();
-                const schoolName = document.getElementById('adminSchoolName').value.trim();
-                const schoolAddress = document.getElementById('adminSchoolAddress').value.trim();
-                const phone = document.getElementById('adminPhone').value.trim();
+                // ADMIN SIGNUP
+                const schoolNameInput = document.getElementById('adminSchoolName');
+                const schoolAddressInput = document.getElementById('adminSchoolAddress');
+                const phoneInput = document.getElementById('adminPhone');
                 
-                if (!adminOfficialEmail) {
-                    showError(role, 'Admin official email is required');
+                if (!schoolNameInput || !schoolAddressInput) {
+                    showError(role, 'School fields not found. Please refresh the page.');
                     return;
                 }
+                
+                const schoolName = schoolNameInput.value.trim();
+                const schoolAddress = schoolAddressInput.value.trim();
+                const phone = phoneInput ? phoneInput.value.trim() : '';
                 
                 if (!schoolName) {
                     showError(role, 'School name is required');
@@ -1222,12 +1289,11 @@
                     return;
                 }
                 
-                // CORRECT PAYLOAD FOR ADMIN/SCHOOL SIGNUP
                 payload = {
-                    userType: 'admin',  // REQUIRED by controller
-                    adminName: name,    // School model expects adminName
-                    adminEmail: adminOfficialEmail,  // School model expects adminEmail
-                    adminPassword: password,  // School model expects adminPassword
+                    userType: 'admin',
+                    adminName: name,
+                    adminEmail: email,
+                    adminPassword: password,
                     schoolName: schoolName,
                     schoolAddress: schoolAddress
                 };
@@ -1236,9 +1302,18 @@
                 
             } else if (role === 'parent') {
                 // PARENT SIGNUP
-                const studentId = document.getElementById('parentStudentId').value.trim();
-                const schoolId = document.getElementById('parentSchoolId').value.trim();
-                const phone = document.getElementById('parentPhone').value.trim();
+                const studentIdInput = document.getElementById('parentStudentId');
+                const schoolIdInput = document.getElementById('parentSchoolId');
+                const phoneInput = document.getElementById('parentPhone');
+                
+                if (!studentIdInput || !schoolIdInput) {
+                    showError(role, 'Form fields not found. Please refresh the page.');
+                    return;
+                }
+                
+                const studentId = studentIdInput.value.trim();
+                const schoolId = schoolIdInput.value.trim();
+                const phone = phoneInput ? phoneInput.value.trim() : '';
                 
                 if (!studentId) {
                     showError(role, 'Student ID is required');
@@ -1263,11 +1338,13 @@
             }
             
             // Disable button and show loading
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Creating account...`;
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Creating account...`;
+            }
             
             try {
-                console.log('Sending payload:', payload); // For debugging
+                console.log('Sending payload:', payload);
                 
                 const response = await fetch(`${API_BASE_URL}/auth/signup`, {
                     method: 'POST',
@@ -1276,7 +1353,7 @@
                 });
                 
                 const data = await response.json();
-                console.log('Response:', data); // For debugging
+                console.log('Response:', data);
                 
                 if (response.ok && data.success) {
                     showSuccess(role, data.message || 'Account created successfully! Please check your email to verify your account.');
@@ -1288,10 +1365,16 @@
                     setTimeout(() => {
                         showAuthTab(role, 'login');
                         // Pre-fill login form with email
-                        const loginFieldId = role === 'student' ? 'studentLoginId' : `${role}LoginEmail`;
-                        const emailValue = role === 'admin' ? adminOfficialEmail : email;
-                        document.getElementById(loginFieldId).value = emailValue;
-                        document.getElementById(`${role}LoginPassword`).focus();
+                        if (role === 'admin') {
+                            const loginEmailField = document.getElementById('adminLoginEmail');
+                            if (loginEmailField) loginEmailField.value = email;
+                        } else {
+                            const loginFieldId = role === 'student' ? 'studentLoginId' : `${role}LoginEmail`;
+                            const loginField = document.getElementById(loginFieldId);
+                            if (loginField) loginField.value = email;
+                        }
+                        const passwordField = document.getElementById(`${role}LoginPassword`);
+                        if (passwordField) passwordField.focus();
                     }, 2000);
                 } else {
                     showError(role, data.message || 'Signup failed. Please try again.');
@@ -1300,8 +1383,10 @@
                 console.error(`${role} signup error:`, error);
                 showError(role, 'Network error. Please check your connection and try again.');
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<i class="fas fa-user-plus"></i> Register as ${role.charAt(0).toUpperCase() + role.slice(1)}`;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fas fa-user-plus"></i> Register as ${role.charAt(0).toUpperCase() + role.slice(1)}`;
+                }
             }
         }
 
