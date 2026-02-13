@@ -789,7 +789,7 @@
         <!-- ============================================================ -->
         <div id="generateSection" class="page-section active">
             <div class="page-title">
-                <h1><i class="fas fa-brain"></i> Generate SPYRAL AI Challenge</h1>
+                <h1><i class="fas fa-brain"></i> Generate SPYRAL Challenge</h1>
             </div>
             <p class="page-subtitle">Create personalized challenges based on simulations or custom topics</p>
 
@@ -1245,29 +1245,29 @@
                 this.querySelector('input[type="radio"]').checked = true;
             });
         });
-
         document.getElementById('challengeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const subject = document.getElementById('subjectSelect').value;
             const simulationType = document.getElementById('simulationSelect').value;
             const customTopic = document.getElementById('customTopic').value.trim();
             const difficulty = document.querySelector('input[name="difficulty"]:checked').value;
             const numberOfQuestions = parseInt(document.querySelector('input[name="questionCount"]:checked').value);
-            
+
             if (!subject) {
                 alert('⚠️ Please select a subject');
                 return;
             }
-            
+
             if (!simulationType && !customTopic) {
                 alert('⚠️ Please select a simulation or enter a custom topic');
                 return;
             }
-            
-            showLoading('Generating Challenge...', 'SPYRAL AI is creating personalized questions');
-            
+
+            showLoading('Generating Challenge...', 'SPYRAL is creating personalized questions');
+
             try {
+
                 const requestData = {
                     subject,
                     simulationType: simulationType || null,
@@ -1275,25 +1275,34 @@
                     difficulty,
                     numberOfQuestions
                 };
-                
+
                 const response = await apiCall('/challenges/generate', {
                     method: 'POST',
                     body: JSON.stringify(requestData)
                 });
-                
+
                 hideLoading();
-                
-                alert(`✅ Challenge generated successfully!\n\nChallenge ID: ${response.data.challenge.challengeId}\n\nClick OK to start the challenge.`);
-                
-                // Load challenge for attempt
-                await loadChallengeForAttempt(response.data.challenge.challengeId);
-                
+
+                const challengeId = response?.data?.challengeId;
+
+                if (!challengeId) {
+                    console.error("Invalid challenge response:", response);
+                    alert('❌ Challenge created but invalid response received.');
+                    return;
+                }
+
+                alert(`✅ Challenge generated successfully!\n\nChallenge ID: ${challengeId}\n\nClick OK to start the challenge.`);
+
+                await loadChallengeForAttempt(challengeId);
+
+
             } catch (error) {
                 hideLoading();
                 console.error('Challenge generation error:', error);
-                alert('❌ ' + error.message);
+                alert('❌ ' + (error.message || 'Challenge generation failed'));
             }
         });
+
 
         async function loadChallengeLimits() {
             try {
@@ -1675,7 +1684,7 @@
             stopTimer();
             stopAutoSave();
             
-            showLoading('Submitting Challenge...', 'SPYRAL AI is evaluating your answers');
+            showLoading('Submitting Challenge...', 'SPYRAL is evaluating your answers');
             
             try {
                 await apiCall(`/student/challenges/${currentChallenge.challengeId}/submit`, {

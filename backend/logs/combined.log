@@ -5631,3 +5631,55 @@
 {"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":274879,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-13 11:40:01"}
 {"level":"info","message":"✅ Email sent to: admin5@nepschool.com","service":"nep-workbench","timestamp":"2026-02-13 11:41:00"}
 {"level":"info","message":"SIGINT received — starting graceful shutdown","service":"nep-workbench","timestamp":"2026-02-13 16:13:17"}
+{"level":"info","message":"✅ Brevo initialized","service":"nep-workbench","timestamp":"2026-02-13 16:33:05"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-13 16:33:06"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-13 16:33:06"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-13 16:33:06"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-13 16:33:06"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-13 16:33:06"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-13 16:33:06"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-13 16:33:06"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":289778,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-13 16:33:06"}
+{"customTopic":"N/A","difficulty":"hard","level":"info","message":"🎯 Challenge Generation Request","numberOfQuestions":3,"service":"nep-workbench","simulationType":"sound-wave-generator","subject":"physics","timestamp":"2026-02-13 16:33:22"}
+{"difficulty":"hard","ferrariEngine":false,"hasMetadata":false,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":3,"service":"nep-workbench","subject":"physics","timestamp":"2026-02-13 16:33:23","topic":"sound-wave-generator"}
+{"level":"info","message":"✅ Mistral AI responded in 31535ms","service":"nep-workbench","timestamp":"2026-02-13 16:33:54"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-02-13 16:33:54"}
+{"level":"info","message":"✅ Validated 3 questions","service":"nep-workbench","timestamp":"2026-02-13 16:33:54"}
+{"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-02-13 16:33:54"}
+{"level":"info","message":"SIGINT received — starting graceful shutdown","service":"nep-workbench","timestamp":"2026-02-13 16:42:52"}
+{"level":"info","message":"✅ Brevo initialized","service":"nep-workbench","timestamp":"2026-02-13 16:42:54"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-13 16:42:55"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-13 16:42:55"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-13 16:42:55"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-13 16:42:55"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-13 16:42:55"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-13 16:42:55"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-13 16:42:55"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":290269,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-13 16:42:55"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request","numberOfQuestions":5,"service":"nep-workbench","simulationType":"sound-wave-generator","subject":"physics","timestamp":"2026-02-13 16:44:11"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":false,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-02-13 16:44:11","topic":"sound-wave-generator"}
+{"level":"info","message":"✅ Mistral AI responded in 18716ms","service":"nep-workbench","timestamp":"2026-02-13 16:44:29"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-02-13 16:44:29"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-02-13 16:44:29"}
+{"MCQ":1,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":2,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-02-13 16:44:29"}
+{"level":"info","message":"SIGINT received — starting graceful shutdown","service":"nep-workbench","timestamp":"2026-02-13 16:50:26"}
+{"level":"info","message":"✅ Brevo initialized","service":"nep-workbench","timestamp":"2026-02-13 16:50:27"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-13 16:50:27"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-13 16:50:27"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-13 16:50:28"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-13 16:50:28"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-13 16:50:28"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-13 16:50:28"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-13 16:50:28"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":290782,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-13 16:50:28"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request","numberOfQuestions":5,"service":"nep-workbench","simulationType":"electric-field-mapper","subject":"physics","timestamp":"2026-02-13 16:50:40"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":false,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":5,"service":"nep-workbench","subject":"physics","timestamp":"2026-02-13 16:50:40","topic":"electric-field-mapper"}
+{"level":"info","message":"✅ Mistral AI responded in 22336ms","service":"nep-workbench","timestamp":"2026-02-13 16:51:02"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-02-13 16:51:02"}
+{"level":"info","message":"✅ Validated 5 questions","service":"nep-workbench","timestamp":"2026-02-13 16:51:02"}
+{"MCQ":1,"NUMERICAL":1,"REASONING":1,"SHORT_ANSWER":2,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-02-13 16:51:02"}
+{"challengeId":"CHL-1770981662599","level":"info","message":"Challenge submitted, auto-evaluation scheduled","service":"nep-workbench","timestamp":"2026-02-13 16:51:58"}
+{"level":"info","message":"🧠 Auto-evaluating challenge CHL-1770981662599","service":"nep-workbench","timestamp":"2026-02-13 16:51:58"}
+{"level":"info","message":"✅ Challenge CHL-1770981662599 evaluated","passed":false,"score":0,"service":"nep-workbench","timestamp":"2026-02-13 16:52:19"}
+{"challengeId":"CHL-1770981662599","level":"info","message":"Ledger anchored for challenge evaluation","service":"nep-workbench","timestamp":"2026-02-13 16:52:19"}
+{"level":"info","message":"SIGINT received — starting graceful shutdown","service":"nep-workbench","timestamp":"2026-02-13 16:54:45"}
