@@ -111,11 +111,14 @@ companyMemberSchema.index({ email: 1 });
 companyMemberSchema.index({ employeeId: 1 });
 companyMemberSchema.index({ status: 1 });
 
-companyMemberSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+companyMemberSchema.pre('save', async function () {
+
+  if (!this.isModified('password')) return;
+
   this.password = await bcrypt.hash(this.password, 12);
-  next();
+
 });
+
 
 companyMemberSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);

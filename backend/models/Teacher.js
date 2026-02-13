@@ -242,23 +242,27 @@ teacherSchema.virtual('isApproved').get(function() {
 // ============================================================================
 
 // Hash password before saving
-teacherSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  
-  try {
-    this.password = await bcrypt.hash(this.password, SECURITY.BCRYPT_ROUNDS);
-    next();
-  } catch (error) {
-    next(error);
-  }
+// Hash password before saving
+teacherSchema.pre('save', async function () {
+
+  if (!this.isModified('password')) return;
+
+  this.password = await bcrypt.hash(
+    this.password,
+    SECURITY.BCRYPT_ROUNDS
+  );
+
 });
 
+
 // Update passwordChangedAt
-teacherSchema.pre('save', function(next) {
-  if (!this.isModified('password') || this.isNew) return next();
-  
+// Update passwordChangedAt
+teacherSchema.pre('save', function () {
+
+  if (!this.isModified('password') || this.isNew) return;
+
   this.passwordChangedAt = Date.now() - 1000;
-  next();
+
 });
 
 // ============================================================================

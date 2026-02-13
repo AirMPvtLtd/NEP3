@@ -8,7 +8,7 @@
 
 class ChallengeWidget {
     constructor(options = {}) {
-        this.API_URL = options.apiUrl || 'http://localhost:3000/api';
+        this.API_URL = options.apiUrl || '/api';
         this.authToken = localStorage.getItem('authToken');
         this.eventId = options.eventId || window.currentEventId;
         this.simType = options.simType || this.detectSimType();

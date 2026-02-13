@@ -4,7 +4,7 @@
 // ============================================================================
 
 // Configuration
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = '/api';
 const COMPETENCIES = [
     'Critical Thinking', 'Communication', 'Collaboration', 'Creativity',
     'Scientific Inquiry', 'Problem Solving', 'Digital Literacy', 'Cultural Awareness',

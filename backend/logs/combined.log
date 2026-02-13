@@ -5598,3 +5598,36 @@
 {"level":"info","message":"✅ Email sent to: admin1@nepschool.com","service":"nep-workbench","timestamp":"2026-02-12 21:08:41"}
 {"level":"info","message":"✅ Email sent to: ceo1@airm.co.in","service":"nep-workbench","timestamp":"2026-02-12 21:19:08"}
 {"level":"info","message":"SIGINT received — starting graceful shutdown","service":"nep-workbench","timestamp":"2026-02-13 10:27:04"}
+{"level":"info","message":"✅ Brevo initialized","service":"nep-workbench","timestamp":"2026-02-13 11:13:40"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-13 11:13:41"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-13 11:13:41"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-13 11:13:41"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-13 11:13:41"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-13 11:13:41"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-13 11:13:41"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-13 11:13:41"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":272368,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-13 11:13:41"}
+{"level":"info","message":"✅ Email sent to: admin3@nepschool.com","service":"nep-workbench","timestamp":"2026-02-13 11:20:22"}
+{"level":"info","message":"SIGINT received — starting graceful shutdown","service":"nep-workbench","timestamp":"2026-02-13 11:36:53"}
+{"level":"info","message":"✅ Brevo initialized","service":"nep-workbench","timestamp":"2026-02-13 11:36:56"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-13 11:36:56"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-13 11:36:56"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-13 11:36:56"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-13 11:36:56"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-13 11:36:56"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-13 11:36:56"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-13 11:36:56"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":274622,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-13 11:36:56"}
+{"level":"info","message":"✅ Email sent to: admin4@nepschool.com","service":"nep-workbench","timestamp":"2026-02-13 11:37:59"}
+{"level":"info","message":"SIGINT received — starting graceful shutdown","service":"nep-workbench","timestamp":"2026-02-13 11:39:59"}
+{"level":"info","message":"✅ Brevo initialized","service":"nep-workbench","timestamp":"2026-02-13 11:40:01"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-13 11:40:01"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-13 11:40:01"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-13 11:40:01"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-13 11:40:01"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-13 11:40:01"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-13 11:40:01"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-13 11:40:01"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":274879,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-13 11:40:01"}
+{"level":"info","message":"✅ Email sent to: admin5@nepschool.com","service":"nep-workbench","timestamp":"2026-02-13 11:41:00"}
+{"level":"info","message":"SIGINT received — starting graceful shutdown","service":"nep-workbench","timestamp":"2026-02-13 16:13:17"}

@@ -259,16 +259,22 @@ studentSchema.virtual('grade').get(function() {
 // MIDDLEWARE
 // ============================================================================
 
-studentSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, SECURITY.BCRYPT_ROUNDS);
-  next();
+studentSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
+
+  this.password = await bcrypt.hash(
+    this.password,
+    SECURITY.BCRYPT_ROUNDS
+  );
 });
 
-studentSchema.pre('save', async function(next) {
-  if (!this.isModified('parentPassword') || !this.parentPassword) return next();
-  this.parentPassword = await bcrypt.hash(this.parentPassword, SECURITY.BCRYPT_ROUNDS);
-  next();
+studentSchema.pre('save', async function () {
+  if (!this.isModified('parentPassword') || !this.parentPassword) return;
+
+  this.parentPassword = await bcrypt.hash(
+    this.parentPassword,
+    SECURITY.BCRYPT_ROUNDS
+  );
 });
 
 // ============================================================================

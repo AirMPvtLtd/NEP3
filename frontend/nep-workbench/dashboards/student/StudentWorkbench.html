@@ -12,7 +12,7 @@
         style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
         font-src 'self' https://cdnjs.cloudflare.com;
         img-src 'self' data: https:;
-        connect-src 'self' http://localhost:3000;
+        connect-src 'self' ;
     ">
     <title>NEP Workbench - Student Dashboard</title>
     <!-- Font Awesome -->
@@ -1515,7 +1515,7 @@
         // ================================================================
         // CONFIGURATION & GLOBAL STORE
         // ================================================================
-        const API_BASE_URL = 'http://localhost:3000/api';
+        const API_BASE_URL = '/api';
         let authToken = localStorage.getItem('authToken');
         let STUDENT_OVERVIEW = null; // Global store for student data
         let isInitializing = false;

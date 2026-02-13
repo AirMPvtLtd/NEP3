@@ -118,12 +118,14 @@ exportLogSchema.index({ exportType: 1, createdAt: -1 });
 exportLogSchema.index({ deleted: 1, deleteAfter: 1 });
 exportLogSchema.index({ approvalStatus: 1 });
 
-exportLogSchema.pre('save', function(next) {
+exportLogSchema.pre('save', function () {
   if (!this.deleteAfter && this.retentionPeriod) {
-    this.deleteAfter = new Date(Date.now() + this.retentionPeriod * 24 * 60 * 60 * 1000);
+    this.deleteAfter = new Date(
+      Date.now() + this.retentionPeriod * 24 * 60 * 60 * 1000
+    );
   }
-  next();
 });
+
 
 exportLogSchema.statics.getStatistics = async function(companyMemberId, days = 30) {
   const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);

@@ -644,31 +644,32 @@ metaParametersSchema.virtual('adaptationSuccess').get(function() {
 // MIDDLEWARE
 // ============================================================================
 
-metaParametersSchema.pre('save', function(next) {
+metaParametersSchema.pre('save', function () {
   // Ensure weights sum to 1
   const answerWeight = this.parameters.answerWeight || 0.7;
   const reasoningWeight = 1 - answerWeight;
+
   this.parameters.answerWeight = answerWeight;
   this.parameters.reasoningWeight = reasoningWeight;
-  
+
   // Ensure component importances sum to ~1
-  const total = 
+  const total =
     (this.parameters.formulaImportance || 0) +
     (this.parameters.calculationImportance || 0) +
     (this.parameters.explanationImportance || 0) +
     (this.parameters.unitsImportance || 0);
-  
-  if (Math.abs(total - 1.0) > 0.01) {
+
+  if (total > 0 && Math.abs(total - 1.0) > 0.01) {
     // Normalize
     const factor = 1.0 / total;
+
     this.parameters.formulaImportance *= factor;
     this.parameters.calculationImportance *= factor;
     this.parameters.explanationImportance *= factor;
     this.parameters.unitsImportance *= factor;
   }
-  
-  next();
 });
+
 
 // ============================================================================
 // JSON TRANSFORMATION

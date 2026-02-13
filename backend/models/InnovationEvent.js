@@ -102,18 +102,20 @@ innovationEventSchema.index({ eventType: 1 });
 innovationEventSchema.index({ 'innovationQuality.overallScore': -1 });
 innovationEventSchema.index({ 'connectionToBaseline.predictedBySystem': 1 });
 
-innovationEventSchema.pre('save', function(next) {
+innovationEventSchema.pre('save', function () {
+
   if (this.innovationQuality) {
     const { novelty, impact, complexity, scalability, sustainability } = this.innovationQuality;
-    this.innovationQuality.overallScore = (
+
+    this.innovationQuality.overallScore =
       novelty * 0.30 +
       impact * 0.30 +
       complexity * 0.20 +
       (scalability || 5) * 0.10 +
-      (sustainability || 5) * 0.10
-    );
+      (sustainability || 5) * 0.10;
   }
-  next();
+
 });
+
 
 module.exports = mongoose.model('InnovationEvent', innovationEventSchema);

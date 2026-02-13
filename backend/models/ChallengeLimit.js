@@ -453,12 +453,14 @@ challengeLimitSchema.virtual('resetTime').get(function() {
 // ============================================================================
 
 // Ensure date is always normalized
-challengeLimitSchema.pre('save', function(next) {
-  if (this.isModified('date')) {
+challengeLimitSchema.pre('save', function () {
+
+  if (this.isModified('date') && this.date) {
     this.date.setHours(0, 0, 0, 0);
   }
-  next();
+
 });
+
 
 // ============================================================================
 // JSON TRANSFORMATION

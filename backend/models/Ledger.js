@@ -314,47 +314,43 @@ ledgerSchema.index({ createdBy: 1, timestamp: -1 });
 // PRE-SAVE MIDDLEWARE
 // ============================================================================
 
-ledgerSchema.pre('save', async function(next) {
-  try {
-    // Generate hash if not already set
-    if (!this.hash) {
-      this.hash = this.generateEventHash();
-    }
-    
-    // Set metadata if not present
-    if (!this.metadata) {
-      this.metadata = {};
-    }
-    
-    // Set timestamp for metadata
-    if (!this.metadata.timestamp) {
-      this.metadata.timestamp = this.timestamp;
-    }
-    
-    // Get previous hash for chain linking
-    if (!this.metadata.previousHash) {
-      const lastEvent = await this.constructor.findOne(
-        { studentId: this.studentId },
-        { hash: 1 },
-        { sort: { timestamp: -1 } }
-      );
-      
-      if (lastEvent) {
-        this.metadata.previousHash = lastEvent.hash;
-        this.metadata.blockIndex = lastEvent.metadata?.blockIndex + 1 || 1;
-      } else {
-        this.metadata.blockIndex = 0;
-      }
-    }
-    
-    // Generate validation hash
-    this.validationHash = this.generateValidationHash();
-    
-    next();
-  } catch (error) {
-    next(error);
+ledgerSchema.pre('save', async function () {
+  // Generate hash if not already set
+  if (!this.hash) {
+    this.hash = this.generateEventHash();
   }
+
+  // Ensure metadata object exists
+  if (!this.metadata) {
+    this.metadata = {};
+  }
+
+  // Set timestamp for metadata
+  if (!this.metadata.timestamp) {
+    this.metadata.timestamp = this.timestamp;
+  }
+
+  // Get previous hash for chain linking
+  if (!this.metadata.previousHash) {
+    const lastEvent = await this.constructor.findOne(
+      { studentId: this.studentId },
+      { hash: 1, metadata: 1 },   // ⚠️ metadata bhi fetch karo
+      { sort: { timestamp: -1 } }
+    );
+
+    if (lastEvent) {
+      this.metadata.previousHash = lastEvent.hash;
+      this.metadata.blockIndex =
+        (lastEvent.metadata?.blockIndex || 0) + 1;
+    } else {
+      this.metadata.blockIndex = 0;
+    }
+  }
+
+  // Generate validation hash
+  this.validationHash = this.generateValidationHash();
 });
+
 
 // ============================================================================
 // INSTANCE METHODS

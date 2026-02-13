@@ -541,13 +541,15 @@ passwordResetSchema.virtual('wasSuccessful').get(function() {
 // MIDDLEWARE
 // ============================================================================
 
-passwordResetSchema.pre('save', function(next) {
+passwordResetSchema.pre('save', function () {
+
   // Auto-update status based on expiry
   if (!this.used && this.expiresAt < Date.now() && this.status === 'pending') {
     this.status = 'expired';
   }
-  next();
+
 });
+
 
 // ============================================================================
 // JSON TRANSFORMATION

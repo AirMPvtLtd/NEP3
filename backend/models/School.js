@@ -268,31 +268,30 @@ schoolSchema.virtual('isLocked').get(function() {
 // MIDDLEWARE (Pre-save hooks)
 // ============================================================================
 
-// Hash password before saving
-schoolSchema.pre('save', async function(next) {
-  // Only hash password if it's modified
-  if (!this.isModified('adminPassword')) return next();
-  
-  try {
-    // Hash password
-    this.adminPassword = await bcrypt.hash(
-      this.adminPassword,
-      SECURITY.BCRYPT_ROUNDS
-    );
-    next();
-  } catch (error) {
-    next(error);
-  }
+// 🔐 Hash password before saving
+schoolSchema.pre('save', async function () {
+
+  // Only hash if modified
+  if (!this.isModified('adminPassword')) return;
+
+  this.adminPassword = await bcrypt.hash(
+    this.adminPassword,
+    SECURITY.BCRYPT_ROUNDS
+  );
+
 });
 
-// Update passwordChangedAt when password is modified
-schoolSchema.pre('save', function(next) {
-  if (!this.isModified('adminPassword') || this.isNew) return next();
-  
-  // Set passwordChangedAt to 1 second ago to ensure JWT is created after
+
+// 🕒 Update passwordChangedAt when password changes
+schoolSchema.pre('save', function () {
+
+  if (!this.isModified('adminPassword') || this.isNew) return;
+
+  // Ensure JWT created after password timestamp
   this.passwordChangedAt = Date.now() - 1000;
-  next();
+
 });
+
 
 // ============================================================================
 // INSTANCE METHODS

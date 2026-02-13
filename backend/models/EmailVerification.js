@@ -422,13 +422,18 @@ emailVerificationSchema.virtual('canResend').get(function() {
 // MIDDLEWARE
 // ============================================================================
 
-emailVerificationSchema.pre('save', function(next) {
+emailVerificationSchema.pre('save', function () {
   // Auto-update status based on expiry
-  if (!this.verified && this.expiresAt < Date.now() && this.status === 'pending') {
+  if (
+    !this.verified &&
+    this.expiresAt &&
+    this.expiresAt < Date.now() &&
+    this.status === 'pending'
+  ) {
     this.status = 'expired';
   }
-  next();
 });
+
 
 // ============================================================================
 // JSON TRANSFORMATION

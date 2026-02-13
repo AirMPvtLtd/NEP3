@@ -364,37 +364,34 @@ competencyMasterSchema.virtual('domainSummary').get(function() {
 // PRE-SAVE MIDDLEWARE
 // ============================================================================
 
-competencyMasterSchema.pre('save', async function(next) {
-  try {
-    // Validate that all competency codes are unique within the framework
-    const competencyCodes = this.competencies.map(c => c.code);
-    const uniqueCodes = new Set(competencyCodes);
-    
-    if (uniqueCodes.size !== competencyCodes.length) {
-      throw new Error('Duplicate competency codes found within the framework');
-    }
-    
-    // Validate competency levels don't overlap
-    this.competencies.forEach(competency => {
-      competency.levels.sort((a, b) => a.minScore - b.minScore);
-      
-      for (let i = 1; i < competency.levels.length; i++) {
-        if (competency.levels[i].minScore <= competency.levels[i-1].maxScore) {
-          throw new Error(`Competency ${competency.code} has overlapping score ranges`);
-        }
+competencyMasterSchema.pre('save', async function () {
+
+  // Validate that all competency codes are unique
+  const competencyCodes = this.competencies.map(c => c.code);
+  const uniqueCodes = new Set(competencyCodes);
+
+  if (uniqueCodes.size !== competencyCodes.length) {
+    throw new Error('Duplicate competency codes found within the framework');
+  }
+
+  // Validate competency levels don't overlap
+  this.competencies.forEach(competency => {
+    competency.levels.sort((a, b) => a.minScore - b.minScore);
+
+    for (let i = 1; i < competency.levels.length; i++) {
+      if (competency.levels[i].minScore <= competency.levels[i - 1].maxScore) {
+        throw new Error(`Competency ${competency.code} has overlapping score ranges`);
       }
-    });
-    
-    // Set updated timestamp
-    if (this.isModified()) {
-      this.metadata.publishedDate = new Date();
     }
-    
-    next();
-  } catch (error) {
-    next(error);
+  });
+
+  // Set updated timestamp
+  if (this.isModified()) {
+    if (!this.metadata) this.metadata = {};
+    this.metadata.publishedDate = new Date();
   }
 });
+
 
 // ============================================================================
 // INSTANCE METHODS

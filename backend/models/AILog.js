@@ -551,7 +551,7 @@ aiLogSchema.virtual('hasHighLatency').get(function() {
 // MIDDLEWARE
 // ============================================================================
 
-aiLogSchema.pre('save', function(next) {
+aiLogSchema.pre('save', function () {
   // Calculate total tokens if not set
   if (!this.tokensUsed && this.response?.tokensUsed) {
     this.tokensUsed = this.response.tokensUsed;
@@ -568,9 +568,8 @@ aiLogSchema.pre('save', function(next) {
     if (!this.performance) this.performance = {};
     this.performance.throughput = this.tokensPerSecond;
   }
-  
-  next();
 });
+
 
 // ============================================================================
 // JSON TRANSFORMATION
