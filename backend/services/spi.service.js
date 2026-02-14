@@ -3,11 +3,11 @@
  * ------------------------------------------------------------
  * SPI = Student Performance Index
  * - Deterministic computation
- * - No DB writes here
+ * - No DB writes
  * - No ledger / report logic
  * - Returns ONLY plain JS objects
  *
- * Algorithms used:
+ * Uses:
  * - Kalman Filter (smoothing)
  * - HMM (learning state)
  * - Bayesian (concept mastery)
@@ -27,14 +27,14 @@ async function calculateSPI(studentId, options = {}) {
   const { includeBreakdown = true } = options;
 
   // ------------------------------------------------------------
-  // 1️⃣ Fetch evaluated challenges
+  // 1️⃣ Fetch evaluated challenges (LEAN OBJECTS)
   // ------------------------------------------------------------
   const challenges = await Challenge.find({
     studentId,
     status: 'evaluated'
   })
-    .sort({ submittedAt: 1 })
-    .lean(); // ✅ VERY IMPORTANT (plain objects)
+    .sort({ evaluatedAt: 1 })
+    .lean();
 
   if (!challenges.length) {
     return {
@@ -51,11 +51,16 @@ async function calculateSPI(studentId, options = {}) {
   }
 
   // ------------------------------------------------------------
-  // 2️⃣ Compute raw SPI components
+  // 2️⃣ Extract REAL SCORES (🔥 FIXED)
   // ------------------------------------------------------------
-  const accuracy = calculateAccuracy(challenges);
-  const consistency = calculateConsistency(challenges);
-  const improvement = calculateImprovement(challenges);
+  const scores = challenges.map(c => c.results?.totalScore || 0);
+
+  // ------------------------------------------------------------
+  // 3️⃣ Core Components
+  // ------------------------------------------------------------
+  const accuracy = calculateAccuracy(scores);
+  const consistency = calculateConsistency(scores);
+  const improvement = calculateImprovement(scores);
 
   const rawSPI = Math.round(
     accuracy * 0.35 +
@@ -64,7 +69,7 @@ async function calculateSPI(studentId, options = {}) {
   );
 
   // ------------------------------------------------------------
-  // 3️⃣ Kalman Filter (SPI smoothing)
+  // 4️⃣ Kalman Filter
   // ------------------------------------------------------------
   let kalmanEstimate = rawSPI;
   let kalmanUncertainty = 100;
@@ -74,36 +79,32 @@ async function calculateSPI(studentId, options = {}) {
     kalmanEstimate = Math.round(kalmanState.estimate);
     kalmanUncertainty = Math.round(kalmanState.uncertainty);
   } catch (err) {
-    // fail-safe: fall back to raw SPI
+    // fallback to raw SPI
   }
 
   // ------------------------------------------------------------
-  // 4️⃣ HMM Learning State
+  // 5️⃣ HMM Learning State
   // ------------------------------------------------------------
   let learningState = 'learning';
 
   try {
     learningState = await hmm.updateLearningState(studentId, rawSPI);
-  } catch (err) {
-    // fail-safe
-  }
+  } catch (err) {}
 
   // ------------------------------------------------------------
-  // 5️⃣ Bayesian Concept Mastery
+  // 6️⃣ Bayesian Concept Mastery
   // ------------------------------------------------------------
   let conceptMastery = {};
 
   try {
     const mastery = await bayesian.getConceptMastery(studentId);
-
-    // ✅ FORCE PLAIN OBJECT (NO MAP / NO $__ KEYS)
     conceptMastery = JSON.parse(JSON.stringify(mastery || {}));
   } catch (err) {
     conceptMastery = {};
   }
 
   // ------------------------------------------------------------
-  // 6️⃣ Final SPI
+  // 7️⃣ Final Result
   // ------------------------------------------------------------
   const result = {
     spi: kalmanEstimate,
@@ -128,31 +129,31 @@ async function calculateSPI(studentId, options = {}) {
 }
 
 // ============================================================================
-// HELPER FUNCTIONS (PURE, SAFE)
+// HELPER FUNCTIONS (PURE)
 // ============================================================================
 
-function calculateAccuracy(challenges) {
-  const scores = challenges.map(c => c.evaluation?.score || 0);
+function calculateAccuracy(scores) {
+  if (!scores.length) return 0;
   return scores.reduce((a, b) => a + b, 0) / scores.length;
 }
 
-function calculateConsistency(challenges) {
-  if (challenges.length < 2) return 100;
+function calculateConsistency(scores) {
+  if (scores.length < 2) return 100;
 
-  const scores = challenges.map(c => c.evaluation?.score || 0);
   const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
 
   const variance =
-    scores.reduce((sum, s) => sum + Math.pow(s - mean, 2), 0) / scores.length;
+    scores.reduce((sum, s) => sum + Math.pow(s - mean, 2), 0) /
+    scores.length;
 
   const stdDev = Math.sqrt(variance);
+
   return Math.max(0, 100 - (stdDev / 30) * 100);
 }
 
-function calculateImprovement(challenges) {
-  if (challenges.length < 3) return 50;
+function calculateImprovement(scores) {
+  if (scores.length < 3) return 50;
 
-  const scores = challenges.map(c => c.evaluation?.score || 0);
   const first = scores[0];
   const last = scores[scores.length - 1];
 

@@ -42,6 +42,8 @@ const analyticsService = require('../services/analytics.service');
 const SPIRecord = require('../models/SPIRecord');
 const Ledger = require('../models/Ledger');
 
+const cpiEngine = require('../services/cpiEngine.service');
+const spiService = require('../services/spi.service');
 
 
 
@@ -1581,31 +1583,7 @@ async function evaluateChallengeWithAI(challenge, req = {}) {
   await challenge.save();
 
   // =====================================================
-  // 4️⃣ CPI SNAPSHOT
-  // =====================================================
-  let cpiSnapshot = null;
-
-  try {
-    const ledgerEvents = await Ledger.find({
-      studentId: challenge.studentId,
-      eventType: 'challenge_evaluated',
-      status: 'confirmed'
-    }).lean();
-
-    const cpiResult = await analyticsService.generateCPI(
-      challenge.studentId,
-      ledgerEvents
-    );
-
-    if (typeof cpiResult?.cpi === 'number') {
-      cpiSnapshot = cpiResult.cpi;
-    }
-  } catch (err) {
-    logger.warn('CPI snapshot skipped:', err.message);
-  }
-
-  // =====================================================
-  // 5️⃣ LEDGER WRITE
+  // 4️⃣ LEDGER WRITE (WRITE FIRST)
   // =====================================================
   const actualSchoolId = challenge.schoolId || 'SYSTEM';
   const actualTeacherId = challenge.teacherId || 'SYSTEM';
@@ -1625,8 +1603,7 @@ async function evaluateChallengeWithAI(challenge, req = {}) {
         passed,
         timeTaken: 0,
         evaluatedAt: new Date(),
-        evaluationType: 'ai_automatic',
-        cpiSnapshot
+        evaluationType: 'ai_automatic'
       },
 
       challenge: {
@@ -1641,7 +1618,11 @@ async function evaluateChallengeWithAI(challenge, req = {}) {
 
       hash: crypto
         .createHash('sha256')
-        .update(challenge.challengeId + challenge.studentId + Date.now())
+        .update(
+          challenge.challengeId +
+          challenge.studentId +
+          Date.now().toString()
+        )
         .digest('hex'),
 
       metadata: {
@@ -1662,90 +1643,116 @@ async function evaluateChallengeWithAI(challenge, req = {}) {
   }
 
   // =====================================================
-  // 6️⃣ STUDENT CPI + SPI UPDATE (🔥 FIXED)
+  // 5️⃣ PROPER CPI + SPI PIPELINE
   // =====================================================
-  try {
-    const confirmedEvents = await Ledger.find({
-      studentId: challenge.studentId,
-      eventType: 'challenge_evaluated',
-      status: 'confirmed'
-    }).lean();
+// =====================================================
+// 6️⃣ STUDENT CPI + SPI UPDATE (PRODUCTION SAFE)
+// =====================================================
 
-    let totalCPI = 0;
-    let cpiCount = 0;
-    const competencyAggregate = {};
+try {
 
-    confirmedEvents.forEach(event => {
-      if (typeof event.data?.cpiSnapshot === 'number') {
-        totalCPI += event.data.cpiSnapshot;
-        cpiCount++;
-      }
+  const confirmedEvents = await Ledger.find({
+    studentId: String(challenge.studentId),
+    eventType: 'challenge_evaluated',
+    status: 'confirmed'
+  })
+    .sort({ timestamp: 1 })
+    .lean();
 
-      event.challenge?.competenciesAssessed?.forEach(comp => {
-        competencyAggregate[comp.competency] ??= [];
-        competencyAggregate[comp.competency].push(comp.score);
-      });
+  // --------------------------------------------------
+  // 🔹 CPI COMPUTATION (Minimum 3 signals required)
+  // --------------------------------------------------
+
+  if (confirmedEvents.length >= 3) {
+
+    const cpiResult = await cpiEngine.computeCPI({
+      ledgerEvents: confirmedEvents
     });
 
-    const averageCPI =
-      cpiCount > 0 ? totalCPI / cpiCount : null;
+    if (typeof cpiResult?.cpi === 'number') {
 
-    const competencies = Object.entries(competencyAggregate).map(
-      ([competency, scores]) => {
-        const avg =
-          scores.reduce((a, b) => a + b, 0) / scores.length;
+      // 🔹 Competency Aggregation (Average per competency)
+      const competencyAggregate = {};
 
-        return {
-          competency,
-          averageScore: avg,
-          level: determineLevel(avg)
-        };
-      }
-    );
+      confirmedEvents.forEach(event => {
+        event.challenge?.competenciesAssessed?.forEach(comp => {
+          competencyAggregate[comp.competency] ??= [];
+          competencyAggregate[comp.competency].push(comp.score);
+        });
+      });
 
-    await Student.updateOne(
-      { studentId: challenge.studentId },
-      {
-        $set: {
-          averageCPI,
-          competencies,
-          lastEvaluatedAt: new Date()
+      const competencyScores = {};
+
+      Object.entries(competencyAggregate).forEach(([key, scores]) => {
+        competencyScores[key] =
+          Math.round(
+            scores.reduce((a, b) => a + b, 0) / scores.length
+          );
+      });
+
+      // 🔥 UPDATE STUDENT CACHE LAYER
+      await Student.updateOne(
+        { studentId: String(challenge.studentId) },
+        {
+          $set: {
+            performanceIndex: cpiResult.cpi,   // 0–1 normalized CPI
+            competencyScores: competencyScores,
+            'stats.totalChallengesCompleted': confirmedEvents.length,
+            updatedAt: new Date()
+          }
         }
-      }
+      );
+
+      logger.info(`✅ CPI updated for ${challenge.studentId}`);
+
+    } else {
+      logger.warn(
+        `CPI skipped for ${challenge.studentId}: ${cpiResult.reason}`
+      );
+    }
+
+  } else {
+    logger.info(
+      `CPI skipped for ${challenge.studentId}: insufficient ledger events`
     );
+  }
 
-    const avgTotalScore =
-      confirmedEvents.reduce(
-        (sum, e) => sum + (e.data?.totalScore || 0),
-        0
-      ) / (confirmedEvents.length || 1);
+  // --------------------------------------------------
+  // 🔹 SPI COMPUTATION (Always allowed)
+  // --------------------------------------------------
 
-    const spi = Math.round(avgTotalScore);
+  const spiResult = await spiService.calculateSPI(
+    String(challenge.studentId),
+    { includeBreakdown: false }
+  );
+
+  if (spiResult && typeof spiResult.spi === 'number') {
 
     await SPIRecord.create({
-      studentId: challenge.studentId,
-      spi,
-      spi_raw: avgTotalScore,
-      grade: getGradeFromScore(spi),
-      learning_state:
-        spi >= 80
-          ? 'advanced'
-          : spi >= 60
-          ? 'stable'
-          : spi >= 40
-          ? 'learning'
-          : 'at_risk',
-      totalChallenges: confirmedEvents.length,
+      studentId: String(challenge.studentId),
+      spi: spiResult.spi,
+      spi_raw: spiResult.spi_raw,
+      kalman_estimate: spiResult.kalman_estimate,
+      kalman_uncertainty: spiResult.kalman_uncertainty,
+      grade: spiResult.grade,
+      learning_state: spiResult.learning_state,
+      concept_mastery: spiResult.concept_mastery,
+      totalChallenges: spiResult.totalChallenges,
       source: 'challenge_evaluated',
       calculatedAt: new Date()
     });
 
-  } catch (err) {
-    logger.error('Student CPI/SPI update failed:', err.message);
+    logger.info(`✅ SPI updated for ${challenge.studentId}`);
   }
 
+} catch (err) {
+  logger.error('Student CPI/SPI update failed:', err.message);
+}
+
+
+
   // =====================================================
-  // 7️⃣ ACTIVITY LOG
+  // 6️⃣ ACTIVITY LOG
   // =====================================================
   await Activity.log({
     userId: challenge.studentId,
@@ -1763,6 +1770,7 @@ async function evaluateChallengeWithAI(challenge, req = {}) {
     }ms`
   );
 }
+
 
 
 // =====================================================

@@ -42,6 +42,6 @@ exports.computeCPI = async ({ ledgerEvents }) => {
   return {
     cpi: Number((weightedSum / weightTotal).toFixed(3)),
     computedFromEvents: ledgerEvents.length,
-    model: 'FIELD-CPI-v1'
+    model: 'SPYRAL'
   };
 };
