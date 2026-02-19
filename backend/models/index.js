@@ -51,3 +51,6 @@ exports.InnovationEvent = require('./InnovationEvent');
 // Enterprise Models
 exports.CompanyMember = require('./CompanyMember');
 exports.ResearchAPIKey = require('./ResearchAPIKey');
+
+// Teaching Studio
+exports.QuestionBank = require('./QuestionBank');

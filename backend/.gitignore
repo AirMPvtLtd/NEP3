@@ -1,8 +1,5 @@
-cat <<EOF >> .gitignore
 node_modules/
-backend/node_modules/
-backend/coverage/
+coverage/
 *.log
 .cache/
-EOF
-echo -e "\n.env\nbackend/.env" >> .gitignore
+.env

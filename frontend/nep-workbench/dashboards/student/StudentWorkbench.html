@@ -869,6 +869,81 @@
                 flex-direction: column;
             }
         }
+
+        /* ============================================================ */
+        /* RESPONSIVE DESIGN                                             */
+        /* ============================================================ */
+
+        /* Hamburger button - hidden on desktop */
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: #ccc;
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 8px 10px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .hamburger-btn:hover { background: #3e3e42; color: #00d4ff; }
+
+        /* Dark overlay behind sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 99;
+        }
+        .sidebar-overlay.active { display: block; }
+
+        /* Sidebar open state (toggled by JS) */
+        .sidebar.open { transform: translateX(0) !important; }
+
+        /* Tablet / small desktop */
+        @media (max-width: 992px) {
+            body { overflow: auto; }
+            .dashboard {
+                grid-template-columns: 1fr;
+                grid-template-rows: 60px 1fr 35px;
+            }
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                width: 260px;
+                z-index: 100;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                padding-top: 70px;
+            }
+            .hamburger-btn { display: flex; align-items: center; justify-content: center; }
+            .search-box { display: none; }
+        }
+
+        /* Large phone */
+        @media (max-width: 768px) {
+            .main-content { padding: 15px; overflow-y: auto; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .panel { padding: 15px; }
+        }
+
+        /* Small phone */
+        @media (max-width: 576px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .header { padding: 0 10px; gap: 8px; }
+            .logo { font-size: 1.15rem; }
+            .user-menu { padding: 6px 8px; }
+            .panel { padding: 12px; }
+            .panel-title { font-size: 1rem; }
+        }
+
+        @media (max-width: 360px) {
+            .stat-value { font-size: 1.5rem; }
+        }
     </style>
 </head>
 <body>
@@ -880,20 +955,33 @@
     <div class="dashboard">
         <!-- HEADER -->
         <header class="header">
+            <button class="hamburger-btn" id="sidebarToggle" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="logo">
                 <i class="fas fa-graduation-cap"></i>
                 NEP Workbench
             </div>
-            
+
             <div class="search-box">
                 <i class="fas fa-search" style="color: #888; margin-right: 8px;"></i>
                 <input type="text" placeholder="Search simulations..." id="searchInput">
             </div>
             
             <div class="header-right">
-                <div class="notification-bell" id="notificationBell">
+                <div class="notification-bell" id="notificationBell" style="position:relative;">
                     <i class="fas fa-bell"></i>
                     <span class="notification-count" id="notificationCount">0</span>
+                    <!-- Notification Panel -->
+                    <div id="studentNotifPanel" style="display:none;position:absolute;top:44px;right:0;width:340px;background:#2d2d30;border:1px solid #464647;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:1000;overflow:hidden;flex-direction:column;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#252526;border-bottom:1px solid #464647;">
+                            <h3 style="margin:0;color:#00d4ff;font-size:0.9rem;"><i class="fas fa-bell" style="margin-right:8px;"></i>Recent Activity</h3>
+                            <button onclick="closeStudentNotif()" style="background:none;border:none;color:#888;cursor:pointer;"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div id="studentNotifList" style="overflow-y:auto;max-height:360px;padding:6px 0;">
+                            <div style="padding:32px;text-align:center;color:#666;font-size:0.85rem;">Loading...</div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="user-menu" id="userMenu">
@@ -907,8 +995,11 @@
             </div>
         </header>
 
+        <!-- Sidebar overlay (mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
         <!-- SIDEBAR -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <ul class="nav-menu">
                 <li class="nav-item active" data-page="overview">
                     <i class="fas fa-home"></i>
@@ -1007,7 +1098,7 @@
                         <button class="btn" onclick="showPage('simulations')">
                             <i class="fas fa-play"></i> Start Simulation
                         </button>
-                        <button class="btn" onclick="window.open('challenge.html', '_blank')">
+                        <button class="btn" onclick="window.open('/challenge', '_blank')">
                             <i class="fas fa-plus"></i> Generate New Challenge
                         </button>
                         <button class="btn btn-secondary" onclick="showPage('performance')">
@@ -1045,7 +1136,7 @@
                 <div class="panel">
                     <h2>Challenge Limits</h2>
                     <p>Daily Remaining: <strong id="dailyLimit">--</strong></p>
-                    <button class="btn" onclick="window.open('challenge.html', '_blank')">
+                    <button class="btn" onclick="window.open('/challenge', '_blank')">
                         <i class="fas fa-brain"></i> Generate Challenge
                     </button>
                 </div>
@@ -1146,8 +1237,24 @@
             <!-- REPORTS PAGE -->
             <div class="page" id="reports">
                 <h1><i class="fas fa-file-alt"></i> NEP Reports</h1>
-                <p style="color: #888; margin-bottom: 30px;">Comprehensive performance reports</p>
-                
+                <p style="color: #888; margin-bottom: 30px;">Comprehensive performance reports aligned with NEP 2020</p>
+
+                <div class="panel" style="margin-bottom: 20px;">
+                    <h2>Generate New Report</h2>
+                    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-top: 15px;">
+                        <select id="reportTypeSelect" style="background: #333337; color: #fff; border: 1px solid #464647; padding: 10px 15px; border-radius: 6px; font-size: 0.9rem; cursor: pointer;">
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly" selected>Monthly</option>
+                            <option value="quarterly">Quarterly</option>
+                            <option value="annual">Annual</option>
+                        </select>
+                        <button class="btn" id="generateReportBtn" onclick="triggerGenerateReport()">
+                            <i class="fas fa-plus"></i> Generate Report
+                        </button>
+                        <span id="generateReportMsg" style="font-size: 0.9rem;"></span>
+                    </div>
+                </div>
+
                 <div class="panel">
                     <h2>Available Reports</h2>
                     <div id="reportsList"></div>
@@ -1595,7 +1702,7 @@
                 } else if (error.message.includes('401') || error.message.includes('token')) {
                     // Clear invalid token
                     localStorage.removeItem('authToken');
-                    window.location.href = '/login.html';
+                    window.location.href = '/login';
                 } else {
                     // Show generic error
                     showRateLimitNotification('Network error. Please check your connection.');
@@ -1627,7 +1734,10 @@
                     
                     // Load recent challenges for overview page
                     await loadRecentChallenges();
-                    
+
+                    // Load daily challenge limit for overview
+                    loadChallengeLimits();
+
                     // Update session cache
                     sessionStorage.setItem('studentOverview', JSON.stringify(STUDENT_OVERVIEW));
                     
@@ -1713,8 +1823,13 @@
             
             // Update profile form
             document.getElementById('profileName').value = student?.name || '';
-            document.getElementById('profileEmail').value = student?.email || 'email@example.com';
+            document.getElementById('profileEmail').value = student?.email || '';
             document.getElementById('profilePhone').value = student?.phone || '';
+            if (student?.dateOfBirth) {
+                const d = new Date(student.dateOfBirth);
+                if (!isNaN(d)) document.getElementById('profileDOB').value = d.toISOString().split('T')[0];
+            }
+            if (student?.profilePicture) document.getElementById('profilePicture').value = student.profilePicture || '';
             
             // Update account details
             document.getElementById('profileSchoolDetail').textContent = student?.schoolId || 'N/A';
@@ -1800,45 +1915,60 @@
 
         async function updateProfile(event) {
             if (event) event.preventDefault();
-            
-            const name = document.getElementById('profileName').value;
-            const phone = document.getElementById('profilePhone').value;
+
+            const name = document.getElementById('profileName').value.trim();
+            const phone = document.getElementById('profilePhone').value.trim();
             const dob = document.getElementById('profileDOB').value;
-            const picture = document.getElementById('profilePicture').value;
-            
-            showLoading();
+            const picture = document.getElementById('profilePicture').value.trim();
+
+            if (!name) { showProfileMsg('Name is required.', 'error'); return; }
+
+            const saveBtn = document.querySelector('#profileForm button[type="submit"]');
+            if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
+
             try {
-                // Update in backend (if you have this endpoint)
-                await throttledApiCall('/student/profile', {
+                const result = await throttledApiCall('/student/profile', {
                     method: 'PUT',
-                    body: JSON.stringify({
-                        name,
-                        phone,
-                        dateOfBirth: dob,
-                        profilePicture: picture
-                    })
+                    body: JSON.stringify({ name, phone, dateOfBirth: dob || undefined, profilePicture: picture || undefined })
                 });
-                
+
+                if (!result.success) throw new Error(result.message || 'Update failed');
+
                 // Update local store
                 if (STUDENT_OVERVIEW?.student) {
                     STUDENT_OVERVIEW.student.name = name;
                     STUDENT_OVERVIEW.student.phone = phone;
-                    STUDENT_OVERVIEW.student.dateOfBirth = dob;
-                    STUDENT_OVERVIEW.student.profilePicture = picture;
+                    if (dob) STUDENT_OVERVIEW.student.dateOfBirth = dob;
+                    if (picture) STUDENT_OVERVIEW.student.profilePicture = picture;
                 }
-                
-                alert('✅ Profile updated successfully!');
-                
-                // Update UI
+
+                sessionStorage.setItem('studentOverview', JSON.stringify(STUDENT_OVERVIEW));
+                showProfileMsg('Profile updated successfully!', 'success');
                 updateProfilePage();
                 updateOverviewPage();
-                
+
             } catch (error) {
                 console.error('Error updating profile:', error);
-                alert('❌ Failed to update profile. Please try again.');
+                showProfileMsg(error.message || 'Failed to update profile.', 'error');
             } finally {
-                hideLoading();
+                if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes'; }
             }
+        }
+
+        function showProfileMsg(msg, type) {
+            let el = document.getElementById('profileStatusMsg');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'profileStatusMsg';
+                el.style.cssText = 'margin-top:12px;padding:10px 14px;border-radius:8px;font-size:0.85rem;font-weight:500;';
+                document.querySelector('#profileForm')?.appendChild(el);
+            }
+            el.textContent = msg;
+            el.style.background = type === 'success' ? 'rgba(0,212,127,0.1)' : 'rgba(231,76,60,0.1)';
+            el.style.color = type === 'success' ? '#00d47f' : '#e74c3c';
+            el.style.border = `1px solid ${type === 'success' ? 'rgba(0,212,127,0.3)' : 'rgba(231,76,60,0.3)'}`;
+            el.style.display = 'block';
+            if (type === 'success') setTimeout(() => { el.style.display = 'none'; }, 4000);
         }
 
         // ================================================================
@@ -2146,20 +2276,13 @@
         // REPORTS PAGE FUNCTIONS
         // ================================================================
         async function loadReports() {
-            if (!STUDENT_OVERVIEW || !STUDENT_OVERVIEW.student) {
-                console.error('Student overview not loaded');
-                return;
-            }
-
             showLoading();
             try {
-                const studentId = STUDENT_OVERVIEW.student.studentId;
-                const data = await throttledApiCall(`/reports/nep/student/${studentId}?page=1&limit=5`);
-                
+                const data = await throttledApiCall('/student/reports/nep');
                 if (data.success && data.data) {
                     updateReportsPage(data.data);
                 } else {
-                    throw new Error('Invalid response from reports API');
+                    updateReportsPage(null);
                 }
             } catch (error) {
                 console.error('Error loading reports:', error);
@@ -2240,13 +2363,9 @@
         }
 
         async function loadReportPage(page) {
-            if (!STUDENT_OVERVIEW || !STUDENT_OVERVIEW.student) return;
-            
             showLoading();
             try {
-                const studentId = STUDENT_OVERVIEW.student.studentId;
-                const data = await throttledApiCall(`/reports/nep/student/${studentId}?page=${page}&limit=5`);
-                
+                const data = await throttledApiCall(`/student/reports/nep?page=${page}&limit=5`);
                 if (data.success && data.data) {
                     updateReportsPage(data.data);
                 }
@@ -2257,47 +2376,291 @@
             }
         }
 
+        function _buildReportHTML(report, forPrint) {
+            const fmt = key => key.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
+            const s = report.summary || {};
+            const comps = (report.competencies || []).filter(c => c.score > 0);
+            const typeLabel = (report.reportType || 'monthly').charAt(0).toUpperCase() + (report.reportType || 'monthly').slice(1);
+
+            const compRows = comps.map(c => `
+                <tr>
+                    <td style="padding:8px 12px;border-bottom:1px solid #dee2e6;">${fmt(c.name)}</td>
+                    <td style="padding:8px 12px;border-bottom:1px solid #dee2e6;">
+                        <div style="background:#e9ecef;border-radius:4px;height:12px;width:200px;display:inline-block;vertical-align:middle;">
+                            <div style="background:#007bff;height:100%;border-radius:4px;width:${c.score}%;"></div>
+                        </div>
+                        <span style="margin-left:8px;font-weight:600;">${c.score}%</span>
+                    </td>
+                    <td style="padding:8px 12px;border-bottom:1px solid #dee2e6;color:${c.status==='improved'?'#28a745':c.status==='declined'?'#dc3545':'#6c757d'};">
+                        ${c.status === 'improved' ? '▲' : c.status === 'declined' ? '▼' : '—'}
+                    </td>
+                </tr>`).join('');
+
+            const noCompsNote = comps.length === 0
+                ? '<p style="color:#6c757d;font-style:italic;">No challenge data available for this period.</p>'
+                : '';
+
+            const recoList = (report.recommendations || []).length
+                ? '<ul>' + report.recommendations.map(r => `<li>${r}</li>`).join('') + '</ul>'
+                : '<p style="color:#6c757d;font-style:italic;">No recommendations at this time. Keep practising!</p>';
+
+            const printScript = forPrint ? '<script>window.onload=function(){window.print();}<\/script>' : '';
+
+            return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>NEP Report — ${report.reportId}</title>
+${printScript}
+<style>
+  body{font-family:Arial,sans-serif;color:#212529;margin:0;padding:30px;background:#fff;}
+  h1{color:#003087;font-size:1.6rem;margin-bottom:4px;}
+  h2{color:#003087;font-size:1.1rem;border-bottom:2px solid #003087;padding-bottom:6px;margin-top:28px;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;background:#cce5ff;color:#004085;}
+  .tiles{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0;}
+  .tile{background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:16px 20px;min-width:120px;text-align:center;}
+  .tile .val{font-size:1.8rem;font-weight:700;color:#003087;}
+  .tile .lbl{font-size:0.75rem;color:#6c757d;margin-top:4px;}
+  table{width:100%;border-collapse:collapse;margin-top:12px;}
+  th{background:#003087;color:#fff;padding:8px 12px;text-align:left;}
+  @media print{body{padding:10px;}}
+</style>
+</head>
+<body>
+<h1>NEP 2020 Performance Report</h1>
+<p style="color:#6c757d;margin:2px 0 4px;">
+  <strong>${report.reportId}</strong> &nbsp;|&nbsp;
+  <span class="badge">${typeLabel}</span> &nbsp;|&nbsp;
+  ${fmtDate(report.periodStart)} – ${fmtDate(report.periodEnd)}
+</p>
+<p style="color:#6c757d;font-size:0.85rem;">Generated: ${fmtDate(report.generatedAt)}</p>
+
+<h2>Summary</h2>
+<div class="tiles">
+  <div class="tile"><div class="val">${s.overallSPI || 0}</div><div class="lbl">SPI Score</div></div>
+  <div class="tile"><div class="val">${s.grade || '—'}</div><div class="lbl">Grade</div></div>
+  <div class="tile"><div class="val">${s.totalChallenges || 0}</div><div class="lbl">Challenges</div></div>
+  <div class="tile"><div class="val">${s.completedChallenges || 0}</div><div class="lbl">Completed</div></div>
+  <div class="tile"><div class="val">${s.averageScore || 0}%</div><div class="lbl">Avg Score</div></div>
+  <div class="tile"><div class="val">${s.streak || 0}</div><div class="lbl">Day Streak</div></div>
+</div>
+
+<h2>NEP Competency Scores</h2>
+${noCompsNote}
+${comps.length > 0 ? `<table><thead><tr><th>Competency</th><th>Score</th><th>Trend</th></tr></thead><tbody>${compRows}</tbody></table>` : ''}
+
+<h2>Recommendations</h2>
+${recoList}
+
+<p style="margin-top:40px;font-size:0.75rem;color:#adb5bd;border-top:1px solid #dee2e6;padding-top:12px;">
+  NEP Workbench · National Education Policy 2020 · Generated on ${new Date().toLocaleDateString('en-IN')}
+</p>
+</body>
+</html>`;
+        }
+
+        async function _fetchReportWithNarration(reportId) {
+            const [nRes, rRes] = await Promise.allSettled([
+                fetch(`${API_BASE_URL}/reports/nep/${reportId}/narration`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' }
+                }).then(r => r.json()).catch(() => ({})),
+                throttledApiCall(`/student/reports/nep/${reportId}`)
+            ]);
+            return {
+                nData: nRes.status === 'fulfilled' ? nRes.value : {},
+                report: (rRes.status === 'fulfilled' ? rRes.value?.data?.report : null) || null
+            };
+        }
+
+        function _buildRichReportHTML(report, narration, blockchain, forPrint) {
+            const fmt = k => k.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
+            const s = report.summary || {};
+            const comps = (report.competencies || []).filter(c => c.score > 0);
+            const typeLabel = (report.reportType || 'monthly').charAt(0).toUpperCase() + (report.reportType || 'monthly').slice(1);
+
+            const compLabels = JSON.stringify(comps.map(c => fmt(c.name)));
+            const compScores = JSON.stringify(comps.map(c => c.score));
+            const compColors = JSON.stringify(comps.map(c => c.score >= 70 ? '#00a65a' : c.score >= 50 ? '#f39c12' : '#e74c3c'));
+
+            const total = s.totalChallenges || 0;
+            const completed = s.completedChallenges || 0;
+            const pending = Math.max(0, total - completed);
+            const donutData = JSON.stringify([completed, pending]);
+
+            const blockchainHtml = blockchain ? `
+            <div style="margin:18px 0;padding:12px 18px;background:#f0fff4;border:1px solid #00a65a;border-radius:8px;display:flex;align-items:center;gap:12px;">
+                <span style="font-size:1.5rem;">🔐</span>
+                <div>
+                    <div style="font-weight:700;color:#00a65a;font-size:0.88rem;">Blockchain Verified Report</div>
+                    <div style="font-size:0.73rem;color:#555;margin-top:3px;">
+                        Merkle Root: <code style="background:#e8f5e9;padding:1px 5px;border-radius:3px;">${blockchain.merkleRoot || 'N/A'}</code>
+                        &nbsp;|&nbsp; Status: <strong>${blockchain.verificationStatus || 'VERIFIED'}</strong>
+                        ${blockchain.reportHash ? `&nbsp;|&nbsp; Hash: <code style="background:#e8f5e9;padding:1px 5px;border-radius:3px;">${blockchain.reportHash.substring(0, 16)}…</code>` : ''}
+                    </div>
+                </div>
+            </div>` : '';
+
+            const narrationHtml = narration ? `
+            <h2 style="color:#003087;font-size:1rem;border-bottom:2px solid #003087;padding-bottom:6px;margin:28px 0 14px;text-transform:uppercase;letter-spacing:0.5px;">Official NEP 2020 Narration</h2>
+            <div style="background:#f8f9fa;border-left:4px solid #003087;padding:16px 20px;font-size:0.88rem;line-height:1.85;color:#333;white-space:pre-line;">${narration}</div>` : '';
+
+            const recoItems = (report.recommendations || []).map(r =>
+                `<li style="margin-bottom:6px;">${typeof r === 'object' ? (r.description || '') : r}</li>`
+            ).join('');
+
+            const initScript = `
+function renderCharts() {
+    var labels = ${compLabels};
+    var scores = ${compScores};
+    var colors = ${compColors};
+    if (labels.length > 0 && document.getElementById('compChart')) {
+        new Chart(document.getElementById('compChart'), {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ label: 'Score (%)', data: scores, backgroundColor: colors, borderRadius: 5 }] },
+            options: { indexAxis: 'y', responsive: true, scales: { x: { min: 0, max: 100, ticks: { callback: function(v){ return v+'%'; } } } }, plugins: { legend: { display: false } } }
+        });
+    }
+    var d = ${donutData};
+    if (document.getElementById('donutChart')) {
+        new Chart(document.getElementById('donutChart'), {
+            type: 'doughnut',
+            data: { labels: ['Completed','Pending'], datasets: [{ data: d, backgroundColor: ['#00a65a','#dee2e6'], borderWidth: 0 }] },
+            options: { cutout: '70%', plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+}
+window.addEventListener('load', function() {
+    if (typeof Chart !== 'undefined') renderCharts();
+    ${forPrint ? 'setTimeout(function(){ window.print(); }, 900);' : ''}
+});`;
+
+            return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>NEP Report — ${report.reportId}</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"><\/script>
+<style>
+  *{box-sizing:border-box;} body{font-family:'Segoe UI',Arial,sans-serif;color:#212529;margin:0;padding:36px;background:#fff;}
+  h1{color:#003087;font-size:1.5rem;margin-bottom:4px;}
+  h2{color:#003087;font-size:0.92rem;border-bottom:2px solid #003087;padding-bottom:5px;margin:26px 0 12px;text-transform:uppercase;letter-spacing:0.5px;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:0.78rem;font-weight:600;background:#cce5ff;color:#004085;}
+  .tiles{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0;}
+  .tile{background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:14px 18px;min-width:100px;text-align:center;}
+  .tile .val{font-size:1.7rem;font-weight:700;color:#003087;} .tile .lbl{font-size:0.7rem;color:#6c757d;margin-top:4px;text-transform:uppercase;}
+  .charts-row{display:flex;gap:24px;flex-wrap:wrap;margin:14px 0;align-items:flex-start;}
+  .chart-box{flex:1;min-width:260px;max-width:560px;}
+  .donut-box{width:200px;}
+  @media print{body{padding:16px;}.no-print{display:none;}}
+</style></head>
+<body>
+<div class="no-print" style="text-align:right;margin-bottom:18px;">
+  <button onclick="window.print()" style="background:#003087;color:#fff;border:none;padding:10px 22px;border-radius:5px;font-size:13px;cursor:pointer;">⬇ Download / Print as PDF</button>
+</div>
+<h1>NEP 2020 Performance Report</h1>
+<p style="color:#6c757d;margin:2px 0 4px;"><strong>${report.reportId}</strong> &nbsp;|&nbsp; <span class="badge">${typeLabel}</span> &nbsp;|&nbsp; ${fmtDate(report.periodStart)} – ${fmtDate(report.periodEnd)}</p>
+<p style="color:#6c757d;font-size:0.8rem;">Generated: ${fmtDate(report.generatedAt)}</p>
+${blockchainHtml}
+<h2>Performance Summary</h2>
+<div class="tiles">
+  <div class="tile"><div class="val">${s.overallSPI || 0}</div><div class="lbl">SPI Score</div></div>
+  <div class="tile"><div class="val">${s.grade || '—'}</div><div class="lbl">Grade</div></div>
+  <div class="tile"><div class="val">${s.totalChallenges || 0}</div><div class="lbl">Challenges</div></div>
+  <div class="tile"><div class="val">${s.completedChallenges || 0}</div><div class="lbl">Completed</div></div>
+  <div class="tile"><div class="val">${s.averageScore || 0}%</div><div class="lbl">Avg Score</div></div>
+  <div class="tile"><div class="val">${s.streak || 0} 🔥</div><div class="lbl">Day Streak</div></div>
+</div>
+${narrationHtml}
+<h2>NEP Competency Analysis</h2>
+<div class="charts-row">
+  ${comps.length > 0 ? `<div class="chart-box"><canvas id="compChart"></canvas></div>
+  <div class="donut-box" style="text-align:center;">
+    <canvas id="donutChart" width="180" height="180"></canvas>
+    <div style="font-size:0.75rem;color:#6c757d;margin-top:6px;">Challenge Completion</div>
+  </div>` : '<p style="color:#6c757d;font-style:italic;">No challenge data available for this period.</p>'}
+</div>
+<h2>Recommendations</h2>
+${recoItems ? `<ul style="padding-left:20px;line-height:1.8;font-size:0.88rem;">${recoItems}</ul>` : '<p style="color:#6c757d;font-style:italic;">Keep practising to unlock recommendations!</p>'}
+<p style="margin-top:36px;font-size:0.72rem;color:#adb5bd;border-top:1px solid #dee2e6;padding-top:10px;">NEP Workbench · National Education Policy 2020 · Generated on ${new Date().toLocaleDateString('en-IN')}</p>
+<script>${initScript}<\/script>
+</body></html>`;
+        }
+
         async function downloadReport(reportId) {
-            if (!STUDENT_OVERVIEW || !STUDENT_OVERVIEW.student) return;
-            
             showLoading();
             try {
-                const studentId = STUDENT_OVERVIEW.student.studentId;
-                const response = await fetch(`${API_BASE_URL}/reports/nep/student/${studentId}/download/${reportId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${reportId}.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                } else {
-                    alert('Report download failed. Please try again.');
-                }
+                const { nData, report } = await _fetchReportWithNarration(reportId);
+                if (!report) { alert('Could not fetch report. Please try again.'); return; }
+                const html = _buildRichReportHTML(report, nData.narration || '', nData.blockchainVerification || null, true);
+                const blob = new Blob([html], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = `NEP-Report-${reportId}.html`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 60000);
             } catch (error) {
                 console.error('Error downloading report:', error);
                 alert('Failed to download report. Please try again.');
-            } finally {
-                hideLoading();
-            }
+            } finally { hideLoading(); }
         }
 
-        function viewReport(reportId) {
-            if (!STUDENT_OVERVIEW || !STUDENT_OVERVIEW.student) return;
-            
-            // Open report in new tab
-            const studentId = STUDENT_OVERVIEW.student.studentId;
-            const reportUrl = `${API_BASE_URL}/reports/nep/student/${studentId}/view/${reportId}`;
-            window.open(reportUrl, '_blank');
+        async function viewReport(reportId) {
+            showLoading();
+            try {
+                const { nData, report } = await _fetchReportWithNarration(reportId);
+                if (!report) { alert('Could not load report. Please try again.'); return; }
+                const html = _buildRichReportHTML(report, nData.narration || '', nData.blockchainVerification || null, false);
+                const blob = new Blob([html], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+                setTimeout(() => URL.revokeObjectURL(url), 60000);
+            } catch (error) {
+                console.error('Error viewing report:', error);
+                alert('Failed to view report. Please try again.');
+            } finally { hideLoading(); }
+        }
+
+        async function triggerGenerateReport() {
+            const btn = document.getElementById('generateReportBtn');
+            const msg = document.getElementById('generateReportMsg');
+            const reportType = document.getElementById('reportTypeSelect').value;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            msg.style.color = '#888';
+            msg.textContent = 'Please wait…';
+            try {
+                const response = await fetch(`${API_BASE_URL}/student/reports/generate`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reportType })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    msg.style.color = '#888';
+                    msg.textContent = 'Report generated. Generating narration…';
+                    const reportId = data.data?.report?.reportId;
+                    if (reportId) {
+                        await fetch(`${API_BASE_URL}/reports/nep/${reportId}/narration`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' }
+                        }).catch(() => {});
+                    }
+                    msg.style.color = '#4ec9b0';
+                    msg.textContent = 'Report generated with narration!';
+                    loadReports();
+                } else {
+                    msg.style.color = '#f48771';
+                    msg.textContent = data.message || 'Failed to generate report.';
+                }
+            } catch (error) {
+                console.error('Generate report error:', error);
+                msg.style.color = '#f48771';
+                msg.textContent = 'Network error. Please try again.';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-plus"></i> Generate Report';
+                setTimeout(() => { msg.textContent = ''; }, 4000);
+            }
         }
 
 
@@ -2429,53 +2792,107 @@
         function viewChallenge(challengeId) {
             console.log('👁️ Viewing challenge:', challengeId);
             // Open challenge in new tab
-            window.open(`challenge.html?id=${challengeId}`, '_blank');
+            window.open(`/challenge?id=${challengeId}`, '_blank');
         }
 
-        // Load challenge limits (if available)
+        // Load challenge limits from backend
         async function loadChallengeLimits() {
             try {
-                // Try to load limits from a separate endpoint if it exists
                 const limitsData = await throttledApiCall('/student/challenges/limits');
+                const el = document.getElementById('dailyLimit');
+                if (!el) return;
                 if (limitsData.success && limitsData.data) {
-                    document.getElementById('dailyLimit').textContent = limitsData.data.daily?.remaining || '--';
+                    const remaining = limitsData.data.daily?.remaining ?? '--';
+                    const limit = limitsData.data.daily?.limit ?? 10;
+                    el.textContent = remaining;
+                    el.title = `${remaining} of ${limit} remaining today`;
+                    // Colour-code: green ≥5, orange 1-4, red 0
+                    el.style.color = remaining >= 5 ? '#00d47f' : remaining > 0 ? '#ffa500' : '#e74c3c';
                 } else {
-                    // Fallback: calculate based on challenges
-                    if (STUDENT_OVERVIEW && STUDENT_OVERVIEW.stats) {
-                        const totalChallenges = STUDENT_OVERVIEW.stats.totalChallenges || 0;
-                        const dailyLimit = Math.max(10 - (totalChallenges % 10), 0);
-                        document.getElementById('dailyLimit').textContent = dailyLimit;
-                    } else {
-                        document.getElementById('dailyLimit').textContent = '10';
-                    }
+                    el.textContent = '--';
                 }
             } catch (error) {
-                console.log('No limits endpoint, using default');
-                document.getElementById('dailyLimit').textContent = '10';
+                const el = document.getElementById('dailyLimit');
+                if (el) el.textContent = '--';
             }
+        }
+
+        // ================================================================
+        // STUDENT NOTIFICATIONS (recent challenges as activity feed)
+        // ================================================================
+        function toggleStudentNotif() {
+            const panel = document.getElementById('studentNotifPanel');
+            if (panel.style.display === 'flex') {
+                panel.style.display = 'none';
+            } else {
+                panel.style.display = 'flex';
+                panel.style.flexDirection = 'column';
+                renderStudentNotifications();
+            }
+        }
+
+        function closeStudentNotif() {
+            document.getElementById('studentNotifPanel').style.display = 'none';
+        }
+
+        async function renderStudentNotifications() {
+            const listEl = document.getElementById('studentNotifList');
+            listEl.innerHTML = '<div style="padding:32px;text-align:center;color:#666;font-size:0.85rem;"><i class="fas fa-spinner fa-spin"></i></div>';
+            try {
+                const data = await throttledApiCall('/student/challenges/recent');
+                const challenges = data.data?.challenges || [];
+                if (!challenges.length) {
+                    listEl.innerHTML = '<div style="padding:32px;text-align:center;color:#666;font-size:0.85rem;"><i class="fas fa-inbox" style="display:block;font-size:1.5rem;margin-bottom:8px;"></i>No recent activity</div>';
+                    return;
+                }
+                const statusIcon = { evaluated: 'fa-check-circle', 'in-progress': 'fa-spinner', generated: 'fa-circle', submitted: 'fa-paper-plane' };
+                const statusColor = { evaluated: '#00d47f', 'in-progress': '#ffa500', generated: '#888', submitted: '#3498db' };
+                listEl.innerHTML = challenges.slice(0, 10).map(c => {
+                    const icon = statusIcon[c.status] || 'fa-brain';
+                    const col = c.status === 'evaluated' ? (c.results?.passed ? '#00d47f' : '#e74c3c') : (statusColor[c.status] || '#888');
+                    const title = (c.simulationType || 'Challenge').replace(/-/g, ' ').replace(/\b\w/g, x => x.toUpperCase());
+                    const score = c.status === 'evaluated' && c.results ? `${Math.round(c.results.percentage || 0)}%` : c.status;
+                    const timeAgo = notifTimeAgo(c.generatedAt);
+                    return `<div style="display:flex;gap:12px;padding:12px 18px;border-bottom:1px solid #3a3a3c;align-items:flex-start;">
+                        <div style="width:30px;height:30px;border-radius:50%;background:${col}22;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fas ${icon}" style="color:${col};font-size:0.75rem;"></i>
+                        </div>
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:0.82rem;color:#e0e0e0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</div>
+                            <div style="font-size:0.75rem;color:#888;margin-top:2px;">${score} &nbsp;·&nbsp; ${timeAgo}</div>
+                        </div>
+                    </div>`;
+                }).join('');
+                // Update badge count
+                document.getElementById('notificationCount').textContent = Math.min(challenges.length, 9);
+            } catch (e) {
+                listEl.innerHTML = '<div style="padding:24px;text-align:center;color:#666;font-size:0.82rem;">Could not load activity</div>';
+            }
+        }
+
+        function notifTimeAgo(ts) {
+            if (!ts) return '';
+            const diff = Math.floor((Date.now() - new Date(ts)) / 1000);
+            if (diff < 60) return 'just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            return Math.floor(diff / 86400) + 'd ago';
         }
 
         // ================================================================
         // RECENT CHALLENGES FUNCTIONS (FOR OVERVIEW PAGE)
         // ================================================================
         async function loadRecentChallenges() {
-            console.log('🔄 Loading recent challenges...');
-            
-            showLoading();
             try {
-                const data = await throttledApiCall('/challenges/recent');
-                console.log('✅ Recent challenges API response:', data);
-                
+                const data = await throttledApiCall('/student/challenges/recent');
                 if (data.success && data.data) {
                     updateRecentChallengesTable(data.data);
                 } else {
-                    throw new Error('Invalid response from recent challenges API');
+                    updateRecentChallengesTable(null);
                 }
             } catch (error) {
-                console.error('❌ Error loading recent challenges:', error);
+                console.error('Error loading recent challenges:', error);
                 updateRecentChallengesTable(null);
-            } finally {
-                hideLoading();
             }
         }
 
@@ -2585,7 +3002,7 @@ function logoutStudent(event) {
         pageCache = {};
         
         // Redirect to login
-        window.location.href = 'nep-workbench/login.html';
+        window.location.href = '/login';
     } catch (error) {
         console.error('Logout error:', error);
         hideLoading();
@@ -3390,22 +3807,57 @@ function logoutStudent(event) {
                 return;
             }
             
-            // Construct the correct path based on subject
-            let filePath = '';
-            switch(simulation.subject) {
-                case 'physics':
-                    filePath = `sims/physics/${simulation.file}`;
-                    break;
-                case 'math':
-                    filePath = `sims/math/${simulation.file}`;
-                    break;
-                default:
-                    alert('Simulation path not configured for this subject');
-                    return;
+            // Map simulator filenames → clean URLs (no .html in address bar)
+            const SIM_URL = {
+                // Physics
+                'MOTIONCLASSIFIERSIM.html':             '/sim/physics/motion-classifier',
+                'Motiontimersim.html':                  '/sim/physics/motion-timer',
+                'Projectilemotionsimulator.html':       '/sim/physics/projectile',
+                'ShadowFormationSimulator.html':        '/sim/physics/shadow-formation',
+                'WeatherSystemModel.html':              '/sim/physics/weather',
+                'SoundWaveGenerator.html':              '/sim/physics/sound-wave',
+                'HeatFlowSimulator.html':               '/sim/physics/heat-flow',
+                'Lightpathvisualizer.html':             '/sim/physics/light-path',
+                'Newtonslawsdemonstrator.html':         '/sim/physics/newtons-laws',
+                'Magneticfieldvisualizer.html':         '/sim/physics/magnetic-field',
+                'Gaspropertiessimulator.html':          '/sim/physics/gas-properties',
+                'Electrolysissimulator.html':           '/sim/physics/electrolysis',
+                'Force visualizer.html':                '/sim/physics/force',
+                'Forcevisualizer.html':                 '/sim/physics/force',
+                'GravitySimulator.html':                '/sim/physics/gravity',
+                'ElectricFieldMapper.html':             '/sim/physics/electric-field',
+                'Raydiagrambuilder.html':               '/sim/physics/ray-diagram',
+                'EnergyTransformationVisualizer.html':  '/sim/physics/energy-transform',
+                'Simplecircuitbuilder.html':            '/sim/physics/circuit-builder',
+                // Math
+                'shapebuilder.html':                    '/sim/math/shapes',
+                'Fractionpievisualizer.html':           '/sim/math/fraction-pie',
+                'Equationsolver.html':                  '/sim/math/equation-sol',
+                'Datasetanalyzer.html':                 '/sim/math/data-analyzer',
+                'Unitcirclesimulator.html':             '/sim/math/unit-circle',
+                '3DVectorVisualizer.html':              '/sim/math/vector',
+                'polynomialgrapher.html':               '/sim/math/polynomial',
+                'QuadraticExplorer.html':               '/sim/math/quadratic',
+                'coordinateplotter.html':               '/sim/math/coordinates',
+                'CoordinatePlotter.html':               '/sim/math/coordinates',
+                'Equationbalancer.html':                '/sim/math/equation-bal',
+                'Geometricproofbuilder.html':           '/sim/math/geometry-proof',
+                'CalculusVisualizer.html':              '/sim/math/calculus',
+                'TrigonometryVisualizer.html':          '/sim/math/trigonometry',
+                'ProbabilitySimulator.html':            '/sim/math/probability',
+                'InteractiveGraphMaker.html':           '/sim/math/graph-maker',
+                'RatioVisualizer.html':                 '/sim/math/ratio',
+                'SymmetryExplorer.html':                '/sim/math/symmetry',
+            };
+
+            const cleanUrl = SIM_URL[simulation.file];
+            if (!cleanUrl) {
+                alert('This simulation is not available yet. Coming soon!');
+                return;
             }
-            
-            // Open simulation in a new tab
-            window.open(filePath, '_blank');
+
+            // Open simulation using clean URL
+            window.open(cleanUrl, '_blank');
             
             // Close modal
             closeModal();
@@ -3415,7 +3867,7 @@ function logoutStudent(event) {
             if (!currentSelectedSimulation) return;
             
             // Open challenge.html in new tab
-            window.open('challenge.html', '_blank');
+            window.open('/challenge', '_blank');
             
             closeModal();
         }
@@ -3483,7 +3935,7 @@ function logoutStudent(event) {
                 STUDENT_OVERVIEW = null;
                 
                 // Redirect to login page
-                window.location.href = '/nep-workbench/login.html';
+                window.location.href = '/login';
             }
         }
 
@@ -3492,7 +3944,7 @@ function logoutStudent(event) {
         // ================================================================
         function openReasoningPad(event) {
             event.stopPropagation();
-            window.open('Mathscratchpad.html', 'ReasoningPad', 'width=1400,height=900,resizable=yes,scrollbars=yes');
+            window.open('/math-lab', 'ReasoningPad', 'width=1400,height=900,resizable=yes,scrollbars=yes');
         }
 
         // ================================================================
@@ -3505,7 +3957,7 @@ function logoutStudent(event) {
             // Check for token
             authToken = localStorage.getItem('authToken');
             if (!authToken) {
-                window.location.href = '/login.html';
+                window.location.href = '/login';
                 return;
             }
             
@@ -3533,7 +3985,7 @@ function logoutStudent(event) {
             } catch (error) {
                 console.error('❌ Initialization error:', error);
                 if (error.message.includes('401')) {
-                    window.location.href = '/login.html';
+                    window.location.href = '/login';
                 }
             } finally {
                 hideLoading();
@@ -3575,8 +4027,18 @@ function logoutStudent(event) {
             });
             
             // Notification bell click
-            document.getElementById('notificationBell').addEventListener('click', () => {
-                alert('Notifications feature coming soon!');
+            document.getElementById('notificationBell').addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleStudentNotif();
+            });
+
+            // Close notif panel when clicking outside
+            document.addEventListener('click', (e) => {
+                const panel = document.getElementById('studentNotifPanel');
+                const bell = document.getElementById('notificationBell');
+                if (panel && panel.style.display !== 'none' && !bell.contains(e.target)) {
+                    panel.style.display = 'none';
+                }
             });
             
             // User menu click
@@ -3609,6 +4071,23 @@ function logoutStudent(event) {
                 closeModal();
             }
         });
+
+        // ================================================================
+        // RESPONSIVE SIDEBAR TOGGLE
+        // ================================================================
+        (function() {
+            const sidebar  = document.getElementById('sidebar');
+            const toggle   = document.getElementById('sidebarToggle');
+            const overlay  = document.getElementById('sidebarOverlay');
+            if (!sidebar || !toggle) return;
+            function openSidebar()  { sidebar.classList.add('open');    overlay.classList.add('active'); }
+            function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+            toggle.addEventListener('click', () => sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
+            overlay.addEventListener('click', closeSidebar);
+            sidebar.querySelectorAll('.nav-item').forEach(el => {
+                el.addEventListener('click', () => { if (window.innerWidth <= 992) closeSidebar(); });
+            });
+        })();
     </script>
 </body>
 </html>

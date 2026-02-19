@@ -1,0 +1,363 @@
+{
+  "report": {
+    "normal": {
+      "section_completeness": 0.02857142857142857,
+      "balance_score": 0.33333333333333337,
+      "factual_accuracy": 0.7966666666666666,
+      "hallucination_rate": 0.6248690022495433,
+      "vagueness_index": 0.0693014705882353,
+      "epistemic_quality": 0.09,
+      "variance_score": 0.022312499999999996,
+      "avg_latency": 18.04128122329712,
+      "token_usage": 451.8,
+      "calibration_error": 0.18366666666666667,
+      "overconfidence": 0.0
+    },
+    "tank": {
+      "section_completeness": 0.3428571428571428,
+      "balance_score": 0.25,
+      "factual_accuracy": 0.785,
+      "hallucination_rate": 0.4110953120953121,
+      "vagueness_index": 0.10011294261294261,
+      "epistemic_quality": 0.6900000000000001,
+      "variance_score": 0.0,
+      "avg_latency": 10.726184050242107,
+      "token_usage": 238.1,
+      "calibration_error": 0.125,
+      "overconfidence": 0.095
+    },
+    "improvement": {
+      "section_completeness": 1099.9999999999998,
+      "balance_score": -25.000000000000007,
+      "factual_accuracy": -1.4644351464435066,
+      "hallucination_rate": 34.21096091895115,
+      "epistemic_quality": 666.6666666666667,
+      "variance_score": 100.0,
+      "calibration_error": 31.941923774954628,
+      "overconfidence": 0
+    }
+  },
+  "detailed": [
+    {
+      "query_id": 1,
+      "category": "policy_analysis",
+      "metrics": {
+        "normal": {
+          "section_completeness": 0.2857142857142857,
+          "balance_score": 0.5,
+          "factual_accuracy": 1.0,
+          "hallucination_rate": 0.5806451612903226,
+          "vagueness_index": 0.09375,
+          "epistemic_quality": 0.1,
+          "variance_score": 0.062499999999999986,
+          "avg_latency": 32.782989621162415,
+          "token_usage": 565,
+          "calibration_error": 0.30000000000000004,
+          "overconfidence": 0.0
+        },
+        "tank": {
+          "section_completeness": 0.5714285714285714,
+          "balance_score": 0.0,
+          "factual_accuracy": 0.75,
+          "hallucination_rate": 0.35,
+          "vagueness_index": 0.2,
+          "epistemic_quality": 0.7,
+          "variance_score": 0.0,
+          "avg_latency": 10.24629791577657,
+          "token_usage": 265,
+          "calibration_error": 0.09999999999999998,
+          "overconfidence": 0.09999999999999998
+        }
+      }
+    },
+    {
+      "query_id": 2,
+      "category": "policy_analysis",
+      "metrics": {
+        "normal": {
+          "section_completeness": 0.0,
+          "balance_score": 0.5,
+          "factual_accuracy": 0.5,
+          "hallucination_rate": 0.6538461538461539,
+          "vagueness_index": 0.0,
+          "epistemic_quality": 0.1,
+          "variance_score": 0.0484,
+          "avg_latency": 19.88332450389862,
+          "token_usage": 603,
+          "calibration_error": 0.0,
+          "overconfidence": 0.0
+        },
+        "tank": {
+          "section_completeness": 0.2857142857142857,
+          "balance_score": 0.0,
+          "factual_accuracy": 0.8,
+          "hallucination_rate": 0.48999999999999994,
+          "vagueness_index": 0.0,
+          "epistemic_quality": 0.7,
+          "variance_score": 0.0,
+          "avg_latency": 5.454805771509807,
+          "token_usage": 186,
+          "calibration_error": 0.04999999999999993,
+          "overconfidence": 0.04999999999999993
+        }
+      }
+    },
+    {
+      "query_id": 3,
+      "category": "lesson_design",
+      "metrics": {
+        "normal": {
+          "section_completeness": 0.0,
+          "balance_score": 0.0,
+          "factual_accuracy": 0.7,
+          "hallucination_rate": 0.75,
+          "vagueness_index": 0.0,
+          "epistemic_quality": 0.1,
+          "variance_score": 0.0,
+          "avg_latency": 18.411442518234253,
+          "token_usage": 509,
+          "calibration_error": 0.0,
+          "overconfidence": 0.0
+        },
+        "tank": {
+          "section_completeness": 0.2857142857142857,
+          "balance_score": 0.0,
+          "factual_accuracy": 0.7,
+          "hallucination_rate": 0.3888888888888889,
+          "vagueness_index": 0.1111111111111111,
+          "epistemic_quality": 0.7,
+          "variance_score": 0.0,
+          "avg_latency": 17.526054342587788,
+          "token_usage": 148,
+          "calibration_error": 0.15000000000000002,
+          "overconfidence": 0.15000000000000002
+        }
+      }
+    },
+    {
+      "query_id": 4,
+      "category": "lesson_design",
+      "metrics": {
+        "normal": {
+          "section_completeness": 0.0,
+          "balance_score": 0.5,
+          "factual_accuracy": 0.7,
+          "hallucination_rate": 0.4090909090909091,
+          "vagueness_index": 0.0,
+          "epistemic_quality": 0.1,
+          "variance_score": 0.0,
+          "avg_latency": 19.446324586868286,
+          "token_usage": 455,
+          "calibration_error": 0.0,
+          "overconfidence": 0.0
+        },
+        "tank": {
+          "section_completeness": 0.42857142857142855,
+          "balance_score": 0.0,
+          "factual_accuracy": 0.7,
+          "hallucination_rate": 0.41481481481481475,
+          "vagueness_index": 0.17857142857142858,
+          "epistemic_quality": 0.7,
+          "variance_score": 0.0,
+          "avg_latency": 17.725697318712868,
+          "token_usage": 474,
+          "calibration_error": 0.15000000000000002,
+          "overconfidence": 0.15000000000000002
+        }
+      }
+    },
+    {
+      "query_id": 5,
+      "category": "implementation",
+      "metrics": {
+        "normal": {
+          "section_completeness": 0.0,
+          "balance_score": 0.6666666666666667,
+          "factual_accuracy": 1.0,
+          "hallucination_rate": 0.6956521739130435,
+          "vagueness_index": 0.0,
+          "epistemic_quality": 0.1,
+          "variance_score": 0.0,
+          "avg_latency": 16.57824468612671,
+          "token_usage": 437,
+          "calibration_error": 0.30000000000000004,
+          "overconfidence": 0.0
+        },
+        "tank": {
+          "section_completeness": 0.2857142857142857,
+          "balance_score": 0.0,
+          "factual_accuracy": 1.0,
+          "hallucination_rate": 0.35,
+          "vagueness_index": 0.125,
+          "epistemic_quality": 0.7,
+          "variance_score": 0.0,
+          "avg_latency": 12.254244804382324,
+          "token_usage": 154,
+          "calibration_error": 0.15000000000000002,
+          "overconfidence": 0.0
+        }
+      }
+    },
+    {
+      "query_id": 6,
+      "category": "implementation",
+      "metrics": {
+        "normal": {
+          "section_completeness": 0.0,
+          "balance_score": 0.6666666666666667,
+          "factual_accuracy": 1.0,
+          "hallucination_rate": 0.6333333333333333,
+          "vagueness_index": 0.0,
+          "epistemic_quality": 0.1,
+          "variance_score": 0.0,
+          "avg_latency": 19.70097804069519,
+          "token_usage": 473,
+          "calibration_error": 0.30000000000000004,
+          "overconfidence": 0.0
+        },
+        "tank": {
+          "section_completeness": 0.2857142857142857,
+          "balance_score": 0.5,
+          "factual_accuracy": 1.0,
+          "hallucination_rate": 0.5384615384615384,
+          "vagueness_index": 0.07692307692307693,
+          "epistemic_quality": 0.6,
+          "variance_score": 0.0,
+          "avg_latency": 12.836260120073955,
+          "token_usage": 233,
+          "calibration_error": 0.15000000000000002,
+          "overconfidence": 0.0
+        }
+      }
+    },
+    {
+      "query_id": 7,
+      "category": "framing_test",
+      "metrics": {
+        "normal": {
+          "section_completeness": 0.0,
+          "balance_score": 0.5,
+          "factual_accuracy": 0.6666666666666666,
+          "hallucination_rate": 0.5625,
+          "vagueness_index": 0.11764705882352941,
+          "epistemic_quality": 0.1,
+          "variance_score": 0.11222499999999998,
+          "avg_latency": 13.22881555557251,
+          "token_usage": 306,
+          "calibration_error": 0.6366666666666666,
+          "overconfidence": 0.0
+        },
+        "tank": {
+          "section_completeness": 0.2857142857142857,
+          "balance_score": 0.5,
+          "factual_accuracy": 0.6666666666666666,
+          "hallucination_rate": 0.44545454545454544,
+          "vagueness_index": 0.0,
+          "epistemic_quality": 0.7,
+          "variance_score": 0.0,
+          "avg_latency": 8.208912253379822,
+          "token_usage": 190,
+          "calibration_error": 0.18333333333333335,
+          "overconfidence": 0.18333333333333335
+        }
+      }
+    },
+    {
+      "query_id": 8,
+      "category": "framing_test",
+      "metrics": {
+        "normal": {
+          "section_completeness": 0.0,
+          "balance_score": 0.0,
+          "factual_accuracy": 1.0,
+          "hallucination_rate": 0.5294117647058824,
+          "vagueness_index": 0.29411764705882354,
+          "epistemic_quality": 0.0,
+          "variance_score": 0.0,
+          "avg_latency": 13.858822226524353,
+          "token_usage": 435,
+          "calibration_error": 0.30000000000000004,
+          "overconfidence": 0.0
+        },
+        "tank": {
+          "section_completeness": 0.42857142857142855,
+          "balance_score": 1.0,
+          "factual_accuracy": 0.8333333333333334,
+          "hallucination_rate": 0.43333333333333335,
+          "vagueness_index": 0.14285714285714285,
+          "epistemic_quality": 0.7,
+          "variance_score": 0.0,
+          "avg_latency": 9.764482617378235,
+          "token_usage": 440,
+          "calibration_error": 0.016666666666666607,
+          "overconfidence": 0.016666666666666607
+        }
+      }
+    },
+    {
+      "query_id": 9,
+      "category": "general",
+      "metrics": {
+        "normal": {
+          "section_completeness": 0.0,
+          "balance_score": 0.0,
+          "factual_accuracy": 0.7,
+          "hallucination_rate": 0.75,
+          "vagueness_index": 0.1875,
+          "epistemic_quality": 0.1,
+          "variance_score": 0.0,
+          "avg_latency": 8.929280161857605,
+          "token_usage": 350,
+          "calibration_error": 0.0,
+          "overconfidence": 0.0
+        },
+        "tank": {
+          "section_completeness": 0.2857142857142857,
+          "balance_score": 0.0,
+          "factual_accuracy": 0.7,
+          "hallucination_rate": 0.35,
+          "vagueness_index": 0.0,
+          "epistemic_quality": 0.7,
+          "variance_score": 0.0,
+          "avg_latency": 6.736562132835388,
+          "token_usage": 143,
+          "calibration_error": 0.15000000000000002,
+          "overconfidence": 0.15000000000000002
+        }
+      }
+    },
+    {
+      "query_id": 10,
+      "category": "general",
+      "metrics": {
+        "normal": {
+          "section_completeness": 0.0,
+          "balance_score": 0.0,
+          "factual_accuracy": 0.7,
+          "hallucination_rate": 0.6842105263157895,
+          "vagueness_index": 0.0,
+          "epistemic_quality": 0.1,
+          "variance_score": 0.0,
+          "avg_latency": 17.59259033203125,
+          "token_usage": 385,
+          "calibration_error": 0.0,
+          "overconfidence": 0.0
+        },
+        "tank": {
+          "section_completeness": 0.2857142857142857,
+          "balance_score": 0.5,
+          "factual_accuracy": 0.7,
+          "hallucination_rate": 0.35,
+          "vagueness_index": 0.16666666666666666,
+          "epistemic_quality": 0.7,
+          "variance_score": 0.0,
+          "avg_latency": 6.508523225784302,
+          "token_usage": 148,
+          "calibration_error": 0.15000000000000002,
+          "overconfidence": 0.15000000000000002
+        }
+      }
+    }
+  ],
+  "timestamp": "2026-02-18T19:01:19.712059"
+}

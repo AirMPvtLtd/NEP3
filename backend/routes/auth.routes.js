@@ -17,18 +17,14 @@ const authController = require('../controllers/auth.controller');
 const { validateRequest } = require('../middleware/validation.middleware');
 const { protect } = require('../middleware/auth.middleware');
 
-// Rate limiter - conditionally load based on environment
+// Rate limiter - always enabled (disable only in explicit unit-test runner, not via NODE_ENV)
 let loginRateLimit;
 try {
   const rateLimiter = require('../middleware/rateLimiter');
-  // Disable rate limiting in test environment
-  if (process.env.NODE_ENV === 'test') {
-    loginRateLimit = (req, res, next) => next();
-  } else {
-    loginRateLimit = rateLimiter.loginRateLimit || rateLimiter.login || ((req, res, next) => next());
-  }
+  loginRateLimit = rateLimiter.loginRateLimit || rateLimiter.login || ((req, res, next) => next());
 } catch (error) {
-  console.warn('Rate limiter not available, continuing without it');
+  const logger = require('../utils/logger');
+  logger.warn('Rate limiter not available, continuing without it');
   loginRateLimit = (req, res, next) => next();
 }
 

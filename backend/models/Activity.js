@@ -51,8 +51,18 @@ const activitySchema = new mongoose.Schema({
       'data_exported',
       'report_downloaded',
       'report_viewed',
+      'report_shared',
+      'report_verified',
       'password_reset_request',
       'registration',
+      'parent_message',
+      'challenge_started',
+      'score_override',
+      'batch_report_started',
+      'batch_report_completed',
+      'batch_verification',
+      'email_verification',
+      'external_verification',
       'other'
     ],
     index: true

@@ -20,6 +20,8 @@ const {
 const logger = require('../utils/logger');
 
 const SPIRecord = require('../models/SPIRecord');
+const { callMistralAPI } = require('../services/mistral.service');
+const QuestionBank = require('../models/QuestionBank');
 // ============================================================================
 // PROFILE & DASHBOARD
 // ============================================================================
@@ -679,22 +681,36 @@ exports.addStudent = async (req, res) => {
     const existingStudent = await Student.findOne({
       email: req.body.email
     });
-    
+
     if (existingStudent) {
       return res.status(409).json({
         success: false,
         message: 'A student with this email already exists'
       });
     }
-    
+
+    // Check school student limit before creating
+    const school = await School.findOne({ schoolId: teacher.schoolId });
+    if (!school || !school.canAddStudent()) {
+      const limit = school ? school.limits.maxStudents : 50;
+      return res.status(403).json({
+        success: false,
+        code: 'STUDENT_LIMIT_REACHED',
+        message: `Student limit of ${limit} reached for your current plan.`,
+        upgradeUrl: '/contact',
+        upgradeMessage: 'Contact us to upgrade your plan.',
+      });
+    }
+
     // Create student
     const student = await Student.create({
       ...req.body,
       schoolId: teacher.schoolId,
       teacherId: teacher.teacherId
     });
-    
-    // Increment teacher student count
+
+    // Increment school and teacher student counts
+    await school.incrementStudentCount();
     await teacher.incrementStudentCount();
     
     await Activity.log({
@@ -1453,9 +1469,10 @@ exports.getStudentReport = async (req, res) => {
         performance: {
           totalChallenges,
           passedChallenges,
-          passRate: totalChallenges > 0 ? (passedChallenges / totalChallenges * 100) : 0,
-          currentStreak: student.stats.dailyStreak,
-          bestStreak: student.stats.bestStreak
+          passRate: totalChallenges > 0 ? Math.round(passedChallenges / totalChallenges * 100) : 0,
+          currentStreak: student.stats?.dailyStreak || 0,
+          weeklyActivity: student.stats?.weeklyActivity || 0,
+          averageScore: student.stats?.averageChallengeScore || 0
         },
         competencies: student.competencyScores,
         nepReports: nepReports.map(r => ({
@@ -1900,6 +1917,308 @@ exports.resolveTicket = async (req, res) => {
       message: 'Error resolving ticket',
       error: error.message
     });
+  }
+};
+
+// ============================================================================
+// TEACHING STUDIO
+// ============================================================================
+
+exports.generateSmartNotes = async (req, res) => {
+  try {
+    const { subject, grade, topic, format } = req.body;
+    if (!subject || !grade || !topic) {
+      return res.status(400).json({ success: false, message: 'subject, grade, and topic are required' });
+    }
+
+    const formatInstructions = {
+      detailed: 'Write comprehensive, detailed notes with full explanations for each section. Include rich content, multiple examples, and thorough coverage of each concept.',
+      summary: 'Write concise bullet-point summary notes. Each section should have short, crisp points (1-2 sentences each). Keep content minimal and easy to revise quickly.',
+      vocational: 'Focus on real-world industry and vocational applications of the topic. Emphasize practical skills, workplace relevance, career connections, and hands-on examples aligned to NEP 2020 vocational education.',
+      mindmap: 'Organise content as a mind-map-friendly outline. Each section heading is a main branch; content is a comma-separated list of short sub-nodes or keywords (not full sentences).'
+    };
+
+    const formatGuide = formatInstructions[format] || formatInstructions.detailed;
+
+    const messages = [
+      {
+        role: 'system',
+        content: 'You are an expert Indian school teacher content generator following NEP 2020. Return ONLY valid JSON — no markdown, no prose, no code fences.'
+      },
+      {
+        role: 'user',
+        content: `Generate lesson notes for a Class ${grade} ${subject} lesson on "${topic}".
+
+Format style: "${format || 'detailed'}" — ${formatGuide}
+
+Return JSON exactly matching this schema: { "title": string, "objectives": [string], "sections": [{ "heading": string, "content": string }], "formulas": [string], "applications": [string], "misconceptions": [string] }`
+      }
+    ];
+
+    let mistralRes;
+    try {
+      mistralRes = await callMistralAPI({ messages, maxTokens: 1500, operation: 'teaching_studio_notes' });
+    } catch (err) {
+      return res.status(503).json({ success: false, message: 'AI service unavailable' });
+    }
+
+    let notes;
+    try {
+      const raw = mistralRes.content.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/, '');
+      notes = JSON.parse(raw);
+    } catch (e) {
+      return res.status(502).json({ success: false, message: 'AI response malformed' });
+    }
+
+    return res.json({ success: true, notes });
+  } catch (error) {
+    logger.error('generateSmartNotes error:', error);
+    return res.status(500).json({ success: false, message: 'Error generating smart notes', error: error.message });
+  }
+};
+
+exports.generateIndustryScenario = async (req, res) => {
+  try {
+    const { industry, difficulty, duration } = req.body;
+    if (!industry || !difficulty || !duration) {
+      return res.status(400).json({ success: false, message: 'industry, difficulty, and duration are required' });
+    }
+
+    const messages = [
+      {
+        role: 'system',
+        content: 'You are an expert workplace scenario designer for NEP 2020 vocational education. Return ONLY valid JSON — no markdown, no prose, no code fences.'
+      },
+      {
+        role: 'user',
+        content: `Create a realistic ${difficulty} difficulty workplace scenario for the ${industry} industry, designed to take ${duration} minutes. Return JSON matching: { "title": string, "role": string, "brief": string, "tasks": [{ "id": number, "title": string, "description": string }], "learningObjectives": [string], "evaluationCriteria": [string] }`
+      }
+    ];
+
+    let mistralRes;
+    try {
+      mistralRes = await callMistralAPI({ messages, maxTokens: 1000, operation: 'teaching_studio_scenario' });
+    } catch (err) {
+      return res.status(503).json({ success: false, message: 'AI service unavailable' });
+    }
+
+    let scenario;
+    try {
+      const raw = mistralRes.content.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/, '');
+      scenario = JSON.parse(raw);
+    } catch (e) {
+      return res.status(502).json({ success: false, message: 'AI response malformed' });
+    }
+
+    return res.json({ success: true, scenario });
+  } catch (error) {
+    logger.error('generateIndustryScenario error:', error);
+    return res.status(500).json({ success: false, message: 'Error generating scenario', error: error.message });
+  }
+};
+
+exports.generateQuestion = async (req, res) => {
+  try {
+    const { subject, grade, questionType, topic, difficulty, count } = req.body;
+    if (!subject || !grade || !questionType) {
+      return res.status(400).json({ success: false, message: 'subject, grade, and questionType are required' });
+    }
+
+    const numQuestions = Math.min(parseInt(count) || 1, 5);
+    const topicStr = topic ? ` on "${topic}"` : '';
+    const difficultyStr = difficulty ? ` at ${difficulty} difficulty` : '';
+
+    const messages = [
+      {
+        role: 'system',
+        content: 'You are an expert Indian school examiner following NEP 2020 and Bloom\'s taxonomy. Return ONLY valid JSON — no markdown, no prose, no code fences.'
+      },
+      {
+        role: 'user',
+        content: `Generate ${numQuestions} ${questionType} question(s) for Class ${grade} ${subject}${topicStr}${difficultyStr}. Return JSON matching: { "questions": [{ "questionText": string, "options": [string], "correctAnswer": string, "explanation": string, "marks": number, "bloomsLevel": string }] }. For non-MCQ types, options should be an empty array.`
+      }
+    ];
+
+    let mistralRes;
+    try {
+      mistralRes = await callMistralAPI({ messages, maxTokens: 800, operation: 'teaching_studio_questions' });
+    } catch (err) {
+      return res.status(503).json({ success: false, message: 'AI service unavailable' });
+    }
+
+    let parsed;
+    try {
+      const raw = mistralRes.content.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/, '');
+      parsed = JSON.parse(raw);
+    } catch (e) {
+      return res.status(502).json({ success: false, message: 'AI response malformed' });
+    }
+
+    return res.json({ success: true, questions: parsed.questions || [] });
+  } catch (error) {
+    logger.error('generateQuestion error:', error);
+    return res.status(500).json({ success: false, message: 'Error generating question', error: error.message });
+  }
+};
+
+exports.saveQuestion = async (req, res) => {
+  try {
+    const { questionText, questionType, subject, grade, topic, options, correctAnswer, marks, difficulty, bloomsLevel, aiGenerated } = req.body;
+    if (!questionText || !questionType || !subject || !grade) {
+      return res.status(400).json({ success: false, message: 'questionText, questionType, subject, and grade are required' });
+    }
+
+    const teacherId = req.user.userId;
+    const schoolId = req.user.schoolId;
+
+    const question = await QuestionBank.create({
+      teacherId,
+      schoolId,
+      subject,
+      grade,
+      topic,
+      questionType,
+      questionText,
+      options: options || [],
+      correctAnswer,
+      marks: marks || 1,
+      difficulty: difficulty || 'medium',
+      bloomsLevel,
+      aiGenerated: aiGenerated || false
+    });
+
+    return res.json({ success: true, question });
+  } catch (error) {
+    logger.error('saveQuestion error:', error);
+    return res.status(500).json({ success: false, message: 'Error saving question', error: error.message });
+  }
+};
+
+exports.getQuestions = async (req, res) => {
+  try {
+    const teacherId = req.user.userId;
+    const filter = { teacherId };
+
+    if (req.query.subject) filter.subject = req.query.subject;
+    if (req.query.grade) filter.grade = req.query.grade;
+    if (req.query.difficulty) filter.difficulty = req.query.difficulty;
+
+    const questions = await QuestionBank.find(filter).sort({ createdAt: -1 });
+    return res.json({ success: true, questions });
+  } catch (error) {
+    logger.error('getQuestions error:', error);
+    return res.status(500).json({ success: false, message: 'Error fetching questions', error: error.message });
+  }
+};
+
+exports.generateSimulator = async (req, res) => {
+  try {
+    const { topic, grade, subject, simulationType, interactionType, visualStyle, variables } = req.body;
+    if (!topic || !grade || !subject) {
+      return res.status(400).json({ success: false, message: 'topic, grade, and subject are required' });
+    }
+
+    // Per-type structural instructions
+    const typeInstructions = {
+      interactive: `Build an INTERACTIVE DIAGRAM simulator:
+- Render the core concept visually using SVG or Canvas (e.g. ray diagrams, force vectors, cell diagrams)
+- Labelled parts that highlight or animate on hover/click
+- Sliders or number inputs to change key parameters and see the diagram update live
+- Display calculated values (e.g. angles, forces, voltages) updating in real time`,
+
+      virtuallab: `Build a VIRTUAL LAB simulator:
+- Simulate a real laboratory experiment for the topic (e.g. titration, inclined plane, circuit builder)
+- Include a "lab bench" layout with apparatus drawn via SVG/Canvas
+- Step-by-step experiment flow: setup → run → observe → record
+- Show measurable outputs (readings, graphs, tables) that change as user adjusts variables
+- Include a Results section that populates after the experiment runs`,
+
+      stepprocess: `Build a STEP-BY-STEP PROCESS simulator:
+- Break the topic into 4–7 clearly numbered steps
+- Show one step at a time with a large visual (SVG/Canvas) and explanation text
+- "Previous" and "Next" navigation buttons to move through steps
+- Progress bar at the top showing current step
+- Each step must include an interactive element (click to reveal, fill-in, or toggle) before proceeding`,
+
+      realscenario: `Build a REAL-WORLD SCENARIO simulator:
+- Present a realistic workplace or daily-life scenario that applies the topic (NEP 2020 vocational link)
+- Give the student a role (e.g. engineer, doctor, scientist) and a problem to solve
+- Provide input controls (dropdowns, sliders, text inputs) to make decisions
+- Show consequence of each decision visually and numerically
+- End with a score or evaluation summary based on choices made`
+    };
+
+    // Interaction style additions
+    const interactionInstructions = {
+      dragdrop: 'Use drag-and-drop interactions (mousedown/mousemove/mouseup on SVG/Canvas elements) as the primary control mechanism.',
+      clickreveal: 'Use click-to-reveal interactions — clicking elements uncovers labels, values, or next steps.',
+      sliders: 'Use HTML range sliders as the primary controls. Every slider change must instantly update visuals and output values.',
+      stepnav: 'Use Previous/Next buttons for step navigation as the primary interaction. No free-form input.'
+    };
+
+    // Visual style additions
+    const visualInstructions = {
+      minimal: 'Keep visuals minimal and clean — simple shapes, monochrome lines, maximum whitespace. No decorative elements.',
+      detailed: 'Use detailed, richly labelled visuals with colour-coded components, legends, and annotations.',
+      animated: 'Add CSS or JS animations — moving particles, flowing arrows, pulsing elements — to make the concept visually dynamic.',
+      diagrammatic: 'Use clean diagrammatic style: technical drawing conventions, precise labels, dimension lines, and scientific notation.'
+    };
+
+    const variablesHint = variables
+      ? `The key variables/parameters to include are: ${variables}.`
+      : '';
+
+    const typeGuide        = typeInstructions[simulationType]  || typeInstructions.interactive;
+    const interactionGuide = interactionInstructions[interactionType] || '';
+    const visualGuide      = visualInstructions[visualStyle]   || '';
+
+    const messages = [
+      {
+        role: 'system',
+        content: 'You are an expert educational simulation developer. Output ONLY raw HTML — no markdown, no code fences, no explanation. The HTML must be a complete self-contained page.'
+      },
+      {
+        role: 'user',
+        content: `Create a complete interactive HTML simulator for Class ${grade} ${subject} topic: "${topic}".
+
+SIMULATION TYPE — follow this strictly:
+${typeGuide}
+
+INTERACTION STYLE:
+${interactionGuide}
+
+VISUAL STYLE:
+${visualGuide}
+
+${variablesHint}
+
+UNIVERSAL REQUIREMENTS (apply to all types):
+- Full HTML page with <html>, <head>, <body> tags
+- Dark background (#1e1e1e), text color #ffffff
+- Inline <style> and <script> only — no external CDN, no libraries
+- Vanilla JS only
+- Real scientific/mathematical behaviour aligned to NEP 2020
+- Blue/cyan accent colours (#007acc / #00d4ff)
+- Responsive layout that fills the viewport height
+- Output ONLY the raw HTML — no markdown, no explanation`
+      }
+    ];
+
+    let mistralRes;
+    try {
+      mistralRes = await callMistralAPI({ messages, maxTokens: 3000, operation: 'teaching_studio_simulator' });
+    } catch (err) {
+      return res.status(503).json({ success: false, message: 'AI service unavailable' });
+    }
+
+    let htmlContent = mistralRes.content.trim();
+    // Strip any accidental markdown fences
+    htmlContent = htmlContent.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/, '').trim();
+
+    return res.json({ success: true, htmlContent });
+  } catch (error) {
+    logger.error('generateSimulator error:', error);
+    return res.status(500).json({ success: false, message: 'Error generating simulator', error: error.message });
   }
 };
 

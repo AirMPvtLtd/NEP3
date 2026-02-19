@@ -1142,8 +1142,13 @@ exports.getStreak = async (req, res) => {
 exports.getNEPReports = async (req, res) => {
   try {
     const { NEPReport } = require('../models');
-    const reports = await NEPReport.find({ studentId: req.user.studentId });
-    res.json({ success: true, data: { reports } });
+    // Get student to resolve studentId from userId
+    const student = await Student.findById(req.user.userId).lean();
+    if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
+    const reports = await NEPReport.find({ studentId: student.studentId })
+      .sort({ generatedAt: -1 })
+      .lean();
+    res.json({ success: true, data: { reports, total: reports.length } });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -1161,9 +1166,66 @@ exports.getNEPReportDetails = async (req, res) => {
 
 exports.generateReport = async (req, res) => {
   try {
-    res.json({ success: true, message: 'Report generation started' });
+    const { NEPReport } = require('../models');
+    const student = await Student.findById(req.user.userId).lean();
+    if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
+
+    const reportType = req.body.reportType || 'monthly';
+    const validTypes = ['weekly', 'monthly', 'quarterly', 'annual'];
+    const safeType = validTypes.includes(reportType) ? reportType : 'monthly';
+
+    // Period boundaries
+    const now = new Date();
+    let periodStart = new Date();
+    if (safeType === 'weekly') periodStart.setDate(now.getDate() - 7);
+    else if (safeType === 'monthly') periodStart.setMonth(now.getMonth() - 1);
+    else if (safeType === 'quarterly') periodStart.setMonth(now.getMonth() - 3);
+    else periodStart.setFullYear(now.getFullYear() - 1);
+
+    // Gather challenge stats for the period
+    const challenges = await Challenge.find({
+      studentId: student.studentId,
+      generatedAt: { $gte: periodStart }
+    }).lean();
+    const evaluated = challenges.filter(c => c.status === 'evaluated');
+    const passed = evaluated.filter(c => c.results?.passed);
+    const avgScore = evaluated.length
+      ? Math.round(evaluated.reduce((s, c) => s + (c.results?.percentage || 0), 0) / evaluated.length)
+      : 0;
+
+    // Build competencies array from student.competencyScores
+    const competencies = Object.entries(student.competencyScores || {}).map(([name, score]) => ({
+      name,
+      score: Math.round(score),
+      previousScore: Math.round(score),
+      change: 0,
+      status: 'stable'
+    }));
+
+    const report = await NEPReport.create({
+      studentId: student.studentId,
+      schoolId: student.schoolId,
+      reportType: safeType,
+      periodStart,
+      periodEnd: now,
+      summary: {
+        overallSPI: student.performanceIndex || 0,
+        grade: student.grade || 'N/A',
+        totalChallenges: challenges.length,
+        completedChallenges: evaluated.length,
+        averageScore: avgScore,
+        improvement: 0,
+        streak: student.stats?.dailyStreak || 0
+      },
+      competencies,
+      challengeStats: {},
+      recommendations: []
+    });
+
+    res.json({ success: true, data: { report } });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    logger.error('Generate report error:', error);
+    res.status(500).json({ success: false, message: 'Error generating report', error: error.message });
   }
 };
 

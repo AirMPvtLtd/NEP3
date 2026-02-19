@@ -205,6 +205,13 @@ router.delete('/classes/:classSectionId', adminController.deleteClass);
 // ============================================================================
 
 /**
+ * @route   GET /api/admin/reports
+ * @desc    Get all institutional reports (alias used by admin dashboard)
+ * @access  Private (Admin)
+ */
+router.get('/reports', adminController.getInstitutionalReports);
+
+/**
  * @route   GET /api/admin/reports/institutional
  * @desc    Get institutional reports
  * @access  Private (Admin)
@@ -221,6 +228,20 @@ router.post(
   validateRequest('generateReport'),
   adminController.generateInstitutionalReport
 );
+
+/**
+ * @route   POST /api/admin/reports/:reportId/narrate
+ * @desc    Generate AI narration for an institutional report
+ * @access  Private (Admin)
+ */
+router.post('/reports/:reportId/narrate', adminController.narrateInstitutionalReport);
+
+/**
+ * @route   GET /api/admin/reports/:reportId/download
+ * @desc    Download report as NEP-formatted HTML (print-to-PDF)
+ * @access  Private (Admin)
+ */
+router.get('/reports/:reportId/download', adminController.downloadReport);
 
 /**
  * @route   GET /api/admin/analytics/overview

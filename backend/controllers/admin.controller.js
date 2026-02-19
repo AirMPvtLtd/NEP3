@@ -17,6 +17,7 @@ const {
   NEPReport
 } = require('../models');
 const logger = require('../utils/logger');
+const { callMistralAPI } = require('../services/mistral.service');
 
 // ============================================================================
 // SCHOOL MANAGEMENT
@@ -868,20 +869,37 @@ exports.bulkUploadStudents = async (req, res) => {
       });
     }
     
-    // Validate school capacity
-    if (!school.canAddStudent()) {
+    // Validate school capacity against the full batch size
+    const remaining = school.limits.maxStudents - school.stats.totalStudents;
+    if (remaining <= 0) {
       return res.status(403).json({
         success: false,
-        message: 'School has reached maximum student limit'
+        code: 'STUDENT_LIMIT_REACHED',
+        message: `Student limit of ${school.limits.maxStudents} reached for your current plan.`,
+        currentStudents: school.stats.totalStudents,
+        maxStudents: school.limits.maxStudents,
+        upgradeUrl: '/contact',
+        upgradeMessage: 'Contact us to upgrade your plan and add more students.',
       });
     }
+
+    // If the batch is larger than remaining capacity, truncate it
+    const batchSize = students.length;
+    const canAdd = Math.min(batchSize, remaining);
+    const studentsToProcess = students.slice(0, canAdd);
+    const truncated = batchSize > canAdd
+      ? students.slice(canAdd).map(s => ({
+          data: s,
+          reason: `Plan limit reached — only ${remaining} slot(s) available. Contact us to upgrade.`,
+        }))
+      : [];
     
     const results = {
       successful: [],
-      failed: []
+      failed: [...truncated]
     };
-    
-    for (const studentData of students) {
+
+    for (const studentData of studentsToProcess) {
       try {
         // Validate required fields
         if (!studentData.name || !studentData.class || !studentData.section || !studentData.teacherId) {
@@ -931,20 +949,28 @@ exports.bulkUploadStudents = async (req, res) => {
       action: 'Bulk student upload',
       metadata: {
         total: students.length,
+        attempted: studentsToProcess.length,
         successful: results.successful.length,
-        failed: results.failed.length
+        failed: results.failed.length,
+        truncatedByLimit: truncated.length,
       },
       ipAddress: req.ip,
       success: true
     });
-    
+
+    const limitWarning = truncated.length > 0
+      ? ` ${truncated.length} record(s) rejected — plan limit reached. Upgrade to add more.`
+      : '';
+
     res.json({
       success: true,
-      message: `Uploaded ${results.successful.length} students. ${results.failed.length} failed.`,
+      message: `Uploaded ${results.successful.length} students. ${results.failed.length} failed.${limitWarning}`,
       data: {
         successful: results.successful.length,
         failed: results.failed.length,
-        failedRecords: results.failed
+        failedRecords: results.failed,
+        limitReached: truncated.length > 0,
+        upgradeUrl: truncated.length > 0 ? '/contact' : undefined,
       }
     });
     
@@ -1300,42 +1326,148 @@ exports.generateInstitutionalReport = async (req, res) => {
   try {
     const school = await School.findById(req.user.userId);
     const { reportType, periodStart, periodEnd } = req.body;
-    
+
     if (!reportType || !periodStart || !periodEnd) {
       return res.status(400).json({
         success: false,
         message: 'Report type, period start, and period end are required'
       });
     }
-    
-    // This would trigger a background job to generate the report
-    // For now, we'll create a placeholder
-    
-    const report = await InstitutionalReport.create({
-      schoolId: school.schoolId,
-      reportType,
-      periodStart: new Date(periodStart),
-      periodEnd: new Date(periodEnd),
-      generatedBy: req.user.userId
+
+    const schoolId  = school.schoolId;
+    const startDate = new Date(periodStart);
+    const endDate   = new Date(periodEnd);
+
+    // Normalise 'institutional' (UI label) → 'quarterly' (model enum)
+    const validTypes = ['weekly', 'monthly', 'quarterly', 'annual'];
+    const safeType   = validTypes.includes(reportType) ? reportType : 'quarterly';
+
+    // ── Real stats from DB ──────────────────────────────────────────────
+    const [
+      totalStudents,
+      activeStudents,
+      totalTeachers,
+      classSections,
+      totalChallenges,
+      periodChallenges
+    ] = await Promise.all([
+      Student.countDocuments({ schoolId }),
+      Student.countDocuments({ schoolId, isActive: true }),
+      Teacher.countDocuments({ schoolId }),
+      ClassSection.find({ schoolId }).select('class section').lean(),
+      Challenge.countDocuments({ schoolId }),
+      Challenge.find({
+        schoolId,
+        status: 'evaluated',
+        createdAt: { $gte: startDate, $lte: endDate }
+      }).select('results.totalScore studentId').lean()
+    ]);
+
+    // Average score from challenges in period (real field: results.totalScore)
+    const scores = periodChallenges.map(c => c.results?.totalScore).filter(s => typeof s === 'number');
+    const averageSPI = scores.length
+      ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10
+      : null;
+
+    // Performance distribution (grade bands based on results.totalScore 0–100)
+    const dist = { aPlus: 0, a: 0, b: 0, c: 0, d: 0, f: 0 };
+    scores.forEach(s => {
+      if (s >= 90)      dist.aPlus++;
+      else if (s >= 80) dist.a++;
+      else if (s >= 70) dist.b++;
+      else if (s >= 60) dist.c++;
+      else if (s >= 50) dist.d++;
+      else              dist.f++;
     });
-    
+
+    // Class-wise performance (studentId in Challenge is a String)
+    const classwisePerformance = await Promise.all(
+      classSections.map(async cs => {
+        const students = await Student.find({
+          schoolId, class: cs.class, section: cs.section
+        }).select('studentId').lean();
+        const studentIds = students.map(s => s.studentId);
+        const classChallenges = await Challenge.find({
+          schoolId,
+          status: 'evaluated',
+          studentId: { $in: studentIds },
+          createdAt: { $gte: startDate, $lte: endDate }
+        }).select('results.totalScore').lean();
+        const cScores = classChallenges.map(c => c.results?.totalScore).filter(s => typeof s === 'number');
+        const avg = cScores.length
+          ? Math.round((cScores.reduce((a, b) => a + b, 0) / cScores.length) * 10) / 10
+          : null;
+        return {
+          class: cs.class,
+          section: cs.section,
+          totalStudents: students.length,
+          averageSPI: avg,
+          averageChallengeScore: avg
+        };
+      })
+    );
+
+    // Top performers — sort by results.totalScore
+    const topChallenges = await Challenge.find({
+      schoolId,
+      status: 'evaluated',
+      createdAt: { $gte: startDate, $lte: endDate },
+      'results.totalScore': { $exists: true, $ne: null }
+    }).sort({ 'results.totalScore': -1 }).limit(5).select('studentId results.totalScore').lean();
+
+    const topStudentIds = topChallenges.map(c => c.studentId);
+    const topStudents   = await Student.find({ studentId: { $in: topStudentIds } })
+      .select('studentId name class').lean();
+    const studentMap    = Object.fromEntries(topStudents.map(s => [s.studentId, s]));
+
+    const topPerformers = topChallenges.map((c, i) => {
+      const s = studentMap[c.studentId] || {};
+      return {
+        studentId: c.studentId || '',
+        name: s.name || 'Unknown',
+        class: s.class || 0,
+        spi: c.results?.totalScore ?? 0,
+        rank: i + 1
+      };
+    });
+
+    const report = await InstitutionalReport.create({
+      schoolId,
+      reportType: safeType,
+      periodStart: startDate,
+      periodEnd: endDate,
+      generatedBy: req.user.userId,
+      generatedByRole: 'admin',
+      overview: {
+        totalStudents,
+        activeStudents,
+        totalTeachers,
+        totalClasses: classSections.length,
+        totalChallenges,
+        averageSPI
+      },
+      performanceDistribution: dist,
+      classwisePerformance,
+      topPerformers
+    });
+
     await Activity.log({
       userId: req.user.userId,
       userType: 'admin',
-      schoolId: school.schoolId,
+      schoolId,
       activityType: 'report_generated',
-      action: 'Institutional report generated',
+      action: `${reportType} institutional report generated`,
       metadata: { reportId: report.reportId, reportType },
       ipAddress: req.ip,
       success: true
     });
-    
+
     res.status(201).json({
       success: true,
-      message: 'Report generation started',
+      message: `${reportType} report generated successfully`,
       data: { report }
     });
-    
+
   } catch (error) {
     logger.error('Generate report error:', error);
     res.status(500).json({
@@ -1343,6 +1475,334 @@ exports.generateInstitutionalReport = async (req, res) => {
       message: 'Error generating report',
       error: error.message
     });
+  }
+};
+
+/**
+ * @desc    Generate AI narration for an institutional report
+ * @route   POST /api/admin/reports/:reportId/narrate
+ * @access  Private (Admin)
+ */
+exports.narrateInstitutionalReport = async (req, res) => {
+  try {
+    const school = await School.findById(req.user.userId);
+    const report = await InstitutionalReport.findOne({
+      reportId: req.params.reportId,
+      schoolId: school.schoolId
+    });
+
+    if (!report) {
+      return res.status(404).json({ success: false, message: 'Report not found' });
+    }
+
+    // Return cached narration if already generated
+    if (report.narration) {
+      return res.json({ success: true, data: { narration: report.narration, cached: true } });
+    }
+
+    const ov   = report.overview || {};
+    const dist = report.performanceDistribution || {};
+    const typeLabel = { weekly: 'Weekly', monthly: 'Monthly', quarterly: 'Quarterly', annual: 'Annual' };
+    const fmt  = d => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
+
+    const systemPrompt = `You are an official NEP 2020 institutional audit narrator for the Government of India. Generate formal, audit-safe narration for school institutional reports. Use ONLY the provided data. Write plain formal English with no markdown, no bullets, no symbols. Maintain CBSE/Government inspection tone.`;
+
+    const userPrompt = `Generate a formal NEP 2020 institutional performance narration for the following report data:
+
+School: ${school.name || school.schoolId}
+Report Type: ${typeLabel[report.reportType] || report.reportType}
+Report ID: ${report.reportId}
+Assessment Period: ${fmt(report.periodStart)} to ${fmt(report.periodEnd)}
+Generated On: ${fmt(report.generatedAt)}
+
+Overview Metrics:
+- Total Students: ${ov.totalStudents || 0}
+- Active Students: ${ov.activeStudents || 0}
+- Total Teachers: ${ov.totalTeachers || 0}
+- Total Classes: ${ov.totalClasses || 0}
+- Total Challenges Attempted: ${ov.totalChallenges || 0}
+- Average SPI Score: ${ov.averageSPI != null ? ov.averageSPI : 'Not available'}
+
+Performance Distribution:
+- A+ Grade (90 and above): ${dist.aPlus || 0} students
+- A Grade (80-89): ${dist.a || 0} students
+- B Grade (70-79): ${dist.b || 0} students
+- C Grade (60-69): ${dist.c || 0} students
+- D Grade (50-59): ${dist.d || 0} students
+- F Grade (below 50): ${dist.f || 0} students
+
+Write a formal institutional narration in exactly these four sections:
+1. Institution and Assessment Overview
+2. Student Performance and Achievement Analysis
+3. NEP 2020 Compliance and Alignment Summary
+4. Concluding Administrative Statement`;
+
+    const response = await callMistralAPI({
+      operation: 'institutional_narration',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      temperature: 0.25,
+      maxTokens: 800
+    });
+
+    if (!response?.content) {
+      throw new Error('Empty narration received from AI');
+    }
+
+    const narration = response.content.trim();
+    report.narration = narration;
+    await report.save();
+
+    return res.json({ success: true, data: { narration, cached: false } });
+
+  } catch (error) {
+    logger.error('Narrate institutional report error:', error);
+    res.status(500).json({ success: false, message: 'Error generating narration', error: error.message });
+  }
+};
+
+/**
+ * @desc    Download institutional report as NEP-formatted HTML (print-to-PDF)
+ * @route   GET /api/admin/reports/:reportId/download
+ * @access  Private (Admin)
+ */
+exports.downloadReport = async (req, res) => {
+  try {
+    const school = await School.findById(req.user.userId);
+    const report = await InstitutionalReport.findOne({
+      reportId: req.params.reportId,
+      schoolId: school.schoolId
+    }).lean();
+
+    if (!report) {
+      return res.status(404).json({ success: false, message: 'Report not found' });
+    }
+
+    const ov   = report.overview || {};
+    const dist = report.performanceDistribution || {};
+    const fmt  = d => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
+    const pct  = (n, total) => total > 0 ? ((n / total) * 100).toFixed(1) + '%' : '0%';
+    const totalScored = (dist.aPlus||0)+(dist.a||0)+(dist.b||0)+(dist.c||0)+(dist.d||0)+(dist.f||0);
+
+    const classwiseRows = (report.classwisePerformance || []).map(c => `
+      <tr>
+        <td>Class ${c.class} – ${c.section}</td>
+        <td>${c.totalStudents}</td>
+        <td>${c.averageSPI != null ? c.averageSPI : '—'}</td>
+        <td>${c.averageChallengeScore != null ? c.averageChallengeScore : '—'}</td>
+      </tr>`).join('');
+
+    const topRows = (report.topPerformers || []).map(p => `
+      <tr>
+        <td>${p.rank}</td>
+        <td>${p.name}</td>
+        <td>${p.class || '—'}</td>
+        <td><strong>${p.spi}</strong></td>
+      </tr>`).join('');
+
+    const typeLabel = { weekly: 'Weekly', monthly: 'Monthly', quarterly: 'Quarterly', annual: 'Annual' };
+
+    // Chart data for the HTML report
+    const chartDistLabels = ['A+ (90-100)', 'A (80-89)', 'B (70-79)', 'C (60-69)', 'D (50-59)', 'F (<50)'];
+    const chartDistData   = [dist.aPlus||0, dist.a||0, dist.b||0, dist.c||0, dist.d||0, dist.f||0];
+    const chartDistColors = ['#1a6e3c','#27ae60','#2980b9','#f39c12','#e67e22','#e74c3c'];
+    const chartClassLabels = (report.classwisePerformance||[]).map(c => `Class ${c.class}-${c.section}`);
+    const chartClassData   = (report.classwisePerformance||[]).map(c => c.averageSPI != null ? c.averageSPI : 0);
+    const chartClassColors = chartClassData.map(v => v >= 70 ? '#27ae60' : v >= 50 ? '#f39c12' : '#e74c3c');
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NEP 2020 Institutional Report – ${school.name || 'School'}</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #1a1a1a; background: #fff; }
+  .page { max-width: 900px; margin: 0 auto; padding: 40px; }
+
+  /* Header */
+  .report-header { border-bottom: 3px solid #1a3c6e; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-start; }
+  .school-name { font-size: 22px; font-weight: 700; color: #1a3c6e; }
+  .report-title { font-size: 15px; color: #444; margin-top: 4px; }
+  .report-meta { text-align: right; font-size: 12px; color: #666; }
+  .nep-badge { background: #1a3c6e; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-top: 6px; display: inline-block; }
+
+  /* Section headings */
+  h2 { font-size: 14px; font-weight: 700; color: #1a3c6e; text-transform: uppercase; letter-spacing: 0.5px; border-left: 4px solid #1a3c6e; padding-left: 10px; margin: 28px 0 14px; }
+
+  /* Summary tiles */
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 10px; }
+  .tile { border: 1px solid #d0d8e8; border-radius: 6px; padding: 16px; text-align: center; }
+  .tile-value { font-size: 28px; font-weight: 700; color: #1a3c6e; }
+  .tile-label { font-size: 11px; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+  th { background: #1a3c6e; color: #fff; padding: 9px 12px; text-align: left; font-size: 12px; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e8ecf3; font-size: 12px; }
+  tr:nth-child(even) td { background: #f5f7fb; }
+
+  /* Grade distribution bar */
+  .grade-row { display: flex; gap: 8px; margin: 10px 0; align-items: center; }
+  .grade-label { width: 32px; font-weight: 600; color: #1a3c6e; font-size: 12px; }
+  .grade-bar-wrap { flex: 1; background: #e8ecf3; border-radius: 3px; height: 18px; overflow: hidden; }
+  .grade-bar { height: 100%; border-radius: 3px; }
+  .grade-count { width: 60px; text-align: right; font-size: 12px; color: #444; }
+
+  /* Footer */
+  .report-footer { border-top: 1px solid #ccc; margin-top: 40px; padding-top: 14px; font-size: 11px; color: #888; display: flex; justify-content: space-between; }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .no-print { display: none; }
+    .page { padding: 20px; }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="page">
+
+  <!-- Print button -->
+  <div class="no-print" style="text-align:right;margin-bottom:20px;">
+    <button onclick="window.print()" style="background:#1a3c6e;color:#fff;border:none;padding:10px 22px;border-radius:5px;font-size:13px;cursor:pointer;">
+      ⬇ Download / Print as PDF
+    </button>
+  </div>
+
+  <!-- Header -->
+  <div class="report-header">
+    <div>
+      <div class="school-name">${school.name || 'School'}</div>
+      <div class="report-title">${typeLabel[report.reportType] || report.reportType} Institutional Report</div>
+      <div class="report-title" style="margin-top:6px;color:#888;">Period: ${fmt(report.periodStart)} – ${fmt(report.periodEnd)}</div>
+    </div>
+    <div class="report-meta">
+      <div>Report ID: <strong>${report.reportId}</strong></div>
+      <div>Generated: ${fmt(report.generatedAt)}</div>
+      <div class="nep-badge">NEP 2020 Compliant</div>
+    </div>
+  </div>
+
+  <!-- Executive Summary -->
+  <h2>Executive Summary</h2>
+  <div class="tiles">
+    <div class="tile"><div class="tile-value">${ov.totalStudents ?? 0}</div><div class="tile-label">Total Students</div></div>
+    <div class="tile"><div class="tile-value">${ov.activeStudents ?? 0}</div><div class="tile-label">Active Students</div></div>
+    <div class="tile"><div class="tile-value">${ov.totalTeachers ?? 0}</div><div class="tile-label">Teachers</div></div>
+    <div class="tile"><div class="tile-value">${ov.totalClasses ?? 0}</div><div class="tile-label">Classes</div></div>
+    <div class="tile"><div class="tile-value">${ov.totalChallenges ?? 0}</div><div class="tile-label">Challenges</div></div>
+    <div class="tile"><div class="tile-value">${ov.averageSPI != null ? ov.averageSPI : '—'}</div><div class="tile-label">Avg Score</div></div>
+  </div>
+
+  <!-- Performance Distribution -->
+  <h2>Performance Distribution</h2>
+  ${[
+    { grade: 'A+', key: 'aPlus', color: '#1a6e3c' },
+    { grade: 'A',  key: 'a',    color: '#27ae60' },
+    { grade: 'B',  key: 'b',    color: '#2980b9' },
+    { grade: 'C',  key: 'c',    color: '#f39c12' },
+    { grade: 'D',  key: 'd',    color: '#e67e22' },
+    { grade: 'F',  key: 'f',    color: '#e74c3c' }
+  ].map(g => {
+    const n = dist[g.key] || 0;
+    const w = totalScored > 0 ? ((n / totalScored) * 100).toFixed(1) : 0;
+    return `<div class="grade-row">
+      <div class="grade-label">${g.grade}</div>
+      <div class="grade-bar-wrap"><div class="grade-bar" style="width:${w}%;background:${g.color};"></div></div>
+      <div class="grade-count">${n} (${pct(n, totalScored)})</div>
+    </div>`;
+  }).join('')}
+
+  <!-- Charts: Grade Distribution + Class-wise SPI -->
+  <div style="display:flex;gap:24px;margin:24px 0;flex-wrap:wrap;align-items:flex-start;">
+    <div style="background:#f5f7fb;border:1px solid #d0d8e8;border-radius:6px;padding:16px;flex:0 0 260px;">
+      <div style="font-size:12px;font-weight:700;color:#1a3c6e;text-align:center;margin-bottom:10px;">Grade Distribution</div>
+      <canvas id="gradeChart" width="220" height="220"></canvas>
+    </div>
+    ${chartClassLabels.length ? `<div style="background:#f5f7fb;border:1px solid #d0d8e8;border-radius:6px;padding:16px;flex:1;min-width:280px;">
+      <div style="font-size:12px;font-weight:700;color:#1a3c6e;text-align:center;margin-bottom:10px;">Class-wise Average SPI</div>
+      <canvas id="classChart" height="${Math.max(100, chartClassLabels.length * 32)}"></canvas>
+    </div>` : ''}
+  </div>
+
+  <!-- Class-wise Performance -->
+  ${classwiseRows ? `<h2>Class-wise Performance</h2>
+  <table>
+    <thead><tr><th>Class / Section</th><th>Students</th><th>Avg SPI</th><th>Avg Challenge Score</th></tr></thead>
+    <tbody>${classwiseRows}</tbody>
+  </table>` : ''}
+
+  <!-- Top Performers -->
+  ${topRows ? `<h2>Top Performers</h2>
+  <table>
+    <thead><tr><th>Rank</th><th>Student Name</th><th>Class</th><th>Score</th></tr></thead>
+    <tbody>${topRows}</tbody>
+  </table>` : ''}
+
+  <!-- NEP 2020 Alignment Note -->
+  <h2>NEP 2020 Alignment</h2>
+  <table>
+    <thead><tr><th>NEP 2020 Principle</th><th>Metric Addressed</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Holistic & Multidisciplinary Education</td><td>Challenge diversity across subjects</td><td>✓ Tracked</td></tr>
+      <tr><td>Competency-Based Learning</td><td>Average Challenge Score</td><td>✓ Tracked</td></tr>
+      <tr><td>Equitable & Inclusive Education</td><td>Active student participation rate</td><td>✓ Tracked</td></tr>
+      <tr><td>Technology Integration</td><td>AI-evaluated challenge count</td><td>✓ Tracked</td></tr>
+      <tr><td>Teacher Empowerment</td><td>Teacher-to-student ratio</td><td>✓ Tracked</td></tr>
+    </tbody>
+  </table>
+
+  ${report.narration ? `
+  <!-- AI Narration -->
+  <h2>Official Narration</h2>
+  <div style="background:#f8faff;border:1px solid #d0d8e8;border-radius:6px;padding:18px 20px;font-size:13px;line-height:1.8;color:#2c3e50;white-space:pre-line;">${report.narration}</div>` : ''}
+
+  <!-- Footer -->
+  <div class="report-footer">
+    <div>Generated by NEP Workbench Platform · Report ID: ${report.reportId}</div>
+    <div>© ${new Date().getFullYear()} NEP Workbench · Confidential</div>
+  </div>
+
+</div>
+<script>
+window.onload = function() {
+  var gEl = document.getElementById('gradeChart');
+  if (gEl) {
+    new Chart(gEl, {
+      type: 'doughnut',
+      data: {
+        labels: ${JSON.stringify(chartDistLabels)},
+        datasets: [{ data: ${JSON.stringify(chartDistData)}, backgroundColor: ${JSON.stringify(chartDistColors)}, borderWidth: 2 }]
+      },
+      options: { responsive: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } } }
+    });
+  }
+  var cEl = document.getElementById('classChart');
+  if (cEl) {
+    new Chart(cEl, {
+      type: 'bar',
+      data: {
+        labels: ${JSON.stringify(chartClassLabels)},
+        datasets: [{ label: 'Avg SPI', data: ${JSON.stringify(chartClassData)}, backgroundColor: ${JSON.stringify(chartClassColors)}, borderRadius: 4 }]
+      },
+      options: { indexAxis: 'y', responsive: true, scales: { x: { min: 0, max: 100, ticks: { callback: function(v){ return v; } } } }, plugins: { legend: { display: false } } }
+    });
+  }
+};
+</script>
+</body>
+</html>`;
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Disposition', `inline; filename="NEP-Report-${report.reportId}.html"`);
+    return res.send(html);
+
+  } catch (error) {
+    logger.error('Download report error:', error);
+    res.status(500).json({ success: false, message: 'Error generating report download', error: error.message });
   }
 };
 

@@ -7,7 +7,9 @@
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -156,6 +158,56 @@
             font-size: 0.7rem;
             font-weight: 600;
         }
+
+        /* Notification Panel */
+        #notificationPanel {
+            display: none;
+            position: fixed;
+            top: 70px;
+            right: 24px;
+            width: 360px;
+            max-height: 480px;
+            background: #2d2d30;
+            border: 1px solid #464647;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow: hidden;
+            flex-direction: column;
+        }
+        #notificationPanel.open { display: flex; }
+        .notif-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid #464647;
+            background: #252526;
+        }
+        .notif-panel-header h3 { margin: 0; color: #00d4ff; font-size: 0.95rem; }
+        .notif-panel-close { background: none; border: none; color: #888; cursor: pointer; font-size: 1rem; }
+        .notif-panel-close:hover { color: #fff; }
+        .notif-list { overflow-y: auto; flex: 1; padding: 8px 0; }
+        .notif-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid #3a3a3c;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            cursor: default;
+            transition: background 0.2s;
+        }
+        .notif-item:hover { background: #333335; }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.75rem; }
+        .notif-icon.success { background: rgba(0,212,127,0.15); color: #00d47f; }
+        .notif-icon.warning { background: rgba(255,165,0,0.15); color: #ffa500; }
+        .notif-icon.error { background: rgba(231,76,60,0.15); color: #e74c3c; }
+        .notif-icon.info { background: rgba(0,212,255,0.15); color: #00d4ff; }
+        .notif-body { flex: 1; min-width: 0; }
+        .notif-action { font-size: 0.82rem; color: #e0e0e0; margin: 0 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .notif-meta { font-size: 0.75rem; color: #888; }
+        .notif-empty { padding: 40px 20px; text-align: center; color: #666; font-size: 0.9rem; }
         
         .user-profile {
             display: flex;
@@ -669,6 +721,138 @@
         .mb-1 { margin-bottom: 10px; }
         .mb-2 { margin-bottom: 20px; }
         .mb-3 { margin-bottom: 30px; }
+
+        /* ============================================================ */
+        /* RESPONSIVE DESIGN                                             */
+        /* ============================================================ */
+
+        /* Hamburger button */
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: #ccc;
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 8px 10px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            flex-shrink: 0;
+            margin-right: 8px;
+        }
+        .hamburger-btn:hover { background: #3e3e42; color: #00d4ff; }
+
+        /* Sidebar dark overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 98;
+        }
+        .sidebar-overlay.active { display: block; }
+
+        /* Sidebar open state */
+        .sidebar.open { transform: translateX(0) !important; }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-280px);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .hamburger-btn { display: flex; align-items: center; justify-content: center; }
+        }
+
+        @media (max-width: 768px) {
+            .main-content { padding: 15px; }
+            .header { flex-wrap: wrap; gap: 10px; padding: 12px 15px; }
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .grid-3 { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 576px) {
+            .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+            .card { padding: 15px; }
+            .header-left h1 { font-size: 1.1rem; }
+        }
+
+        /* ── Plan status card ─────────────────────────────────────────── */
+        .plan-status-card {
+            background: #2d2d30;
+            border: 1px solid #464647;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .plan-badge {
+            background: #3c3c3f;
+            color: #ccc;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .plan-badge.free   { background: #1e3a2f; color: #4ade80; border: 1px solid #166534; }
+        .plan-badge.basic  { background: #1e2f4a; color: #60a5fa; border: 1px solid #1d4ed8; }
+        .plan-badge.premium{ background: #3a1e4a; color: #c084fc; border: 1px solid #7e22ce; }
+        .plan-badge.enterprise { background: #3a2a1e; color: #fb923c; border: 1px solid #c2410c; }
+
+        .plan-usage {
+            font-size: 0.85rem;
+            color: #ccc;
+            white-space: nowrap;
+        }
+        .plan-progress-bar {
+            flex: 1;
+            min-width: 120px;
+            max-width: 300px;
+            height: 8px;
+            background: #464647;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .plan-progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.4s ease;
+            background: #4ade80;
+        }
+        .plan-progress-fill.warning { background: #f59e0b; }
+        .plan-progress-fill.full    { background: #ef4444; }
+
+        .upgrade-btn {
+            background: #2563eb;
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+        .upgrade-btn:hover { background: #1d4ed8; }
+
+        /* ── Limit-reached banner ────────────────────────────────────── */
+        .limit-banner {
+            background: #3b1818;
+            border: 1px solid #7f1d1d;
+            color: #fca5a5;
+            border-radius: 6px;
+            padding: 12px 18px;
+            margin-bottom: 16px;
+            font-size: 0.88rem;
+        }
+        .limit-banner a { color: #f87171; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -678,6 +862,9 @@
     </div>
     
     <div class="app-container">
+        <!-- Sidebar overlay (mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
         <!-- SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -749,6 +936,9 @@
         <main class="main-content">
             <!-- Header -->
             <header class="header">
+                <button class="hamburger-btn" id="sidebarToggle" aria-label="Toggle menu">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <div class="header-left">
                     <h1>Admin Dashboard</h1>
                     <div class="breadcrumb">
@@ -756,9 +946,19 @@
                     </div>
                 </div>
                 <div class="header-right">
-                    <div class="notification-badge" onclick="showNotifications()">
+                    <div class="notification-badge" onclick="toggleNotifications()">
                         <i class="notification-icon fas fa-bell"></i>
                         <span class="badge" id="notificationCount">0</span>
+                    </div>
+                    <!-- Notification Panel -->
+                    <div id="notificationPanel">
+                        <div class="notif-panel-header">
+                            <h3><i class="fas fa-bell" style="margin-right:8px;"></i>Recent Activity</h3>
+                            <button class="notif-panel-close" onclick="closeNotifications()"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="notif-list" id="notifList">
+                            <div class="notif-empty"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Loading...</div>
+                        </div>
                     </div>
                     <div class="user-profile">
                         <div class="user-avatar" id="userAvatar">A</div>
@@ -822,7 +1022,28 @@
                         </div>
                     </div>
                 </div>
-                
+
+                <!-- Limit-reached banner (shown only when at 100%) -->
+                <div class="limit-banner" id="limitBanner" style="display:none">
+                    &#9888; Student limit reached for your current plan.
+                    <a href="/contact">Contact us to upgrade</a> and add more students.
+                </div>
+
+                <!-- Plan status bar -->
+                <div class="plan-status-card" id="planStatusCard" style="display:none">
+                    <span class="plan-badge" id="planBadge">Free</span>
+                    <span class="plan-usage">
+                        <span id="planStudentUsed">0</span> /
+                        <span id="planStudentLimit">50</span> students
+                    </span>
+                    <div class="plan-progress-bar">
+                        <div class="plan-progress-fill" id="planProgressFill" style="width:0%"></div>
+                    </div>
+                    <a href="/contact" class="upgrade-btn" id="upgradeBtn" style="display:none">
+                        Upgrade Plan &#8594;
+                    </a>
+                </div>
+
                 <!-- Charts Row -->
                 <div class="grid grid-2 mb-3">
                     <!-- Performance Distribution -->
@@ -833,31 +1054,8 @@
                                 <div class="card-subtitle">Students by performance range</div>
                             </div>
                         </div>
-                        <div class="simple-chart" id="performanceChart">
-                            <div class="bar" style="height: 20%">
-                                <div class="bar-value">5</div>
-                                <div class="bar-label">0-50</div>
-                            </div>
-                            <div class="bar" style="height: 40%">
-                                <div class="bar-value">12</div>
-                                <div class="bar-label">50-60</div>
-                            </div>
-                            <div class="bar" style="height: 60%">
-                                <div class="bar-value">25</div>
-                                <div class="bar-label">60-70</div>
-                            </div>
-                            <div class="bar" style="height: 80%">
-                                <div class="bar-value">45</div>
-                                <div class="bar-label">70-80</div>
-                            </div>
-                            <div class="bar" style="height: 70%">
-                                <div class="bar-value">38</div>
-                                <div class="bar-label">80-90</div>
-                            </div>
-                            <div class="bar" style="height: 50%">
-                                <div class="bar-value">15</div>
-                                <div class="bar-label">90-100</div>
-                            </div>
+                        <div style="position:relative; height:230px; padding-top:10px;">
+                            <canvas id="adminPerformanceChart"></canvas>
                         </div>
                     </div>
                     
@@ -869,35 +1067,8 @@
                                 <div class="card-subtitle">Last 7 days</div>
                             </div>
                         </div>
-                        <div class="simple-chart" id="activityChart">
-                            <div class="bar" style="height: 45%">
-                                <div class="bar-value">45</div>
-                                <div class="bar-label">Mon</div>
-                            </div>
-                            <div class="bar" style="height: 52%">
-                                <div class="bar-value">52</div>
-                                <div class="bar-label">Tue</div>
-                            </div>
-                            <div class="bar" style="height: 48%">
-                                <div class="bar-value">48</div>
-                                <div class="bar-label">Wed</div>
-                            </div>
-                            <div class="bar" style="height: 65%">
-                                <div class="bar-value">65</div>
-                                <div class="bar-label">Thu</div>
-                            </div>
-                            <div class="bar" style="height: 70%">
-                                <div class="bar-value">70</div>
-                                <div class="bar-label">Fri</div>
-                            </div>
-                            <div class="bar" style="height: 58%">
-                                <div class="bar-value">58</div>
-                                <div class="bar-label">Sat</div>
-                            </div>
-                            <div class="bar" style="height: 42%">
-                                <div class="bar-value">42</div>
-                                <div class="bar-label">Sun</div>
-                            </div>
+                        <div style="position:relative; height:230px; padding-top:10px;">
+                            <canvas id="adminActivityChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -1094,31 +1265,8 @@
                 
                 <div class="card mb-3">
                     <div class="card-title">Performance Analytics</div>
-                    <div class="simple-chart" id="analyticsChart">
-                        <div class="bar" style="height: 30%">
-                            <div class="bar-value">30</div>
-                            <div class="bar-label">Jan</div>
-                        </div>
-                        <div class="bar" style="height: 45%">
-                            <div class="bar-value">45</div>
-                            <div class="bar-label">Feb</div>
-                        </div>
-                        <div class="bar" style="height: 60%">
-                            <div class="bar-value">60</div>
-                            <div class="bar-label">Mar</div>
-                        </div>
-                        <div class="bar" style="height: 75%">
-                            <div class="bar-value">75</div>
-                            <div class="bar-label">Apr</div>
-                        </div>
-                        <div class="bar" style="height: 80%">
-                            <div class="bar-value">80</div>
-                            <div class="bar-label">May</div>
-                        </div>
-                        <div class="bar" style="height: 85%">
-                            <div class="bar-value">85</div>
-                            <div class="bar-label">Jun</div>
-                        </div>
+                    <div style="position:relative; height:260px; padding-top:10px;">
+                        <canvas id="adminAnalyticsChart"></canvas>
                     </div>
                 </div>
                 
@@ -1495,7 +1643,7 @@
                 
                 if (response.status === 401 || response.status === 403) {
                     localStorage.clear();
-                    window.location.href = '/login.html';
+                    window.location.href = '/login';
                     return;
                 }
                 
@@ -1516,7 +1664,7 @@
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.clear();
                 sessionStorage.clear();
-                window.location.href = '/nep-workbench/login.html';
+                window.location.href = '/login';
             }
         }
         
@@ -1620,7 +1768,41 @@
                 } catch (error) {
                     console.error('Error loading pending teachers:', error);
                 }
-                
+
+                // ── Wire Performance Distribution chart ──────────────────
+                try {
+                    const perfDist = await queuedApiCall('/admin/analytics/performance');
+                    const dist = perfDist.data?.distribution || [];
+                    const boundaries = [0, 50, 60, 70, 80, 90];
+                    const counts = boundaries.map(id => {
+                        const b = dist.find(d => Number(d._id) === id);
+                        return b ? b.count : 0;
+                    });
+                    if (window.ADMIN_CHARTS?.performance) {
+                        window.ADMIN_CHARTS.performance.data.datasets[0].data = counts;
+                        window.ADMIN_CHARTS.performance.options.scales.y.suggestedMax =
+                            Math.max(...counts, 10) * 1.2;
+                        window.ADMIN_CHARTS.performance.update('none');
+                    }
+                } catch (e) { console.warn('Performance distribution chart: using placeholder'); }
+
+                // ── Wire Activity Timeline chart ─────────────────────────
+                try {
+                    const actData = await queuedApiCall('/admin/analytics/overview');
+                    const recentActivity = actData.data?.recentActivity || [];
+                    if (recentActivity.length && window.ADMIN_CHARTS?.activity) {
+                        window.ADMIN_CHARTS.activity.data.labels = recentActivity.map(d => {
+                            const dt = new Date(d._id);
+                            return dt.toLocaleDateString('en', { weekday: 'short' });
+                        });
+                        window.ADMIN_CHARTS.activity.data.datasets[0].data =
+                            recentActivity.map(d => d.count || 0);
+                        window.ADMIN_CHARTS.activity.options.scales.y.suggestedMax =
+                            Math.max(...recentActivity.map(d => d.count || 0), 10) * 1.2;
+                        window.ADMIN_CHARTS.activity.update('none');
+                    }
+                } catch (e) { console.warn('Activity chart: using placeholder'); }
+
             } catch (error) {
                 console.error('Error loading overview:', error);
                 setDefaultValues();
@@ -1634,7 +1816,65 @@
             document.getElementById('totalClasses').textContent = '0';
             document.getElementById('totalChallenges').textContent = '0';
         }
-        
+
+        // ── Plan / subscription status ──────────────────────────────────
+        async function loadPlanStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/subscription/status`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (!response.ok) return; // Non-fatal — leave card hidden
+
+                const result = await response.json();
+                if (!result.success || !result.data) return;
+
+                const { plan, label, students, isAtLimit } = result.data;
+
+                // Show the card
+                const card = document.getElementById('planStatusCard');
+                if (card) card.style.display = 'flex';
+
+                // Plan badge
+                const badge = document.getElementById('planBadge');
+                if (badge) {
+                    badge.textContent = label || 'Free Plan';
+                    badge.className = 'plan-badge ' + (plan || 'free');
+                }
+
+                // Usage counters
+                const usedEl  = document.getElementById('planStudentUsed');
+                const limitEl = document.getElementById('planStudentLimit');
+                if (usedEl)  usedEl.textContent  = students.used;
+                if (limitEl) limitEl.textContent = (students.limit === null) ? '\u221e' : students.limit;
+
+                // Progress bar
+                const fill = document.getElementById('planProgressFill');
+                if (fill) {
+                    const pct = students.limit === null ? 0 : Math.min(students.percentUsed, 100);
+                    fill.style.width = pct + '%';
+                    if      (pct >= 100) fill.className = 'plan-progress-fill full';
+                    else if (pct >= 80)  fill.className = 'plan-progress-fill warning';
+                    else                 fill.className = 'plan-progress-fill';
+                }
+
+                // Upgrade button (show at >= 80 %)
+                const btn = document.getElementById('upgradeBtn');
+                if (btn && (isAtLimit || (students.percentUsed >= 80 && students.limit !== null))) {
+                    btn.style.display = 'inline-block';
+                }
+
+                // Limit banner (show at 100 %)
+                const banner = document.getElementById('limitBanner');
+                if (banner && isAtLimit) {
+                    banner.style.display = 'block';
+                }
+
+            } catch (err) {
+                console.warn('Could not load plan status:', err);
+            }
+        }
+
         async function loadTeachers() {
             try {
                 console.log('DEBUG: Loading teachers...');
@@ -1884,80 +2124,157 @@
         }
         
         function displayReports(reports) {
-            console.log('DEBUG: Displaying reports:', reports);
             const tbody = document.getElementById('reportsTable');
-            
+
             if (!reports || reports.length === 0) {
-                console.log('DEBUG: No reports to display');
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No reports available</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No reports generated yet</td></tr>';
                 return;
             }
-            
-            console.log('DEBUG: Rendering', reports.length, 'reports');
+
+            const typeLabels = { weekly: 'Weekly', monthly: 'Monthly', quarterly: 'Quarterly', annual: 'Annual', institutional: 'Institutional' };
+
             tbody.innerHTML = reports.map(report => {
-                const reportDate = new Date(report.generatedAt || report.createdAt);
-                const formattedDate = reportDate.toLocaleDateString() + ' ' + reportDate.toLocaleTimeString();
-                
+                const generatedDate = new Date(report.generatedAt || report.createdAt);
+                const formattedDate = generatedDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                    + ' ' + generatedDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+                const start = report.periodStart ? new Date(report.periodStart).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+                const end   = report.periodEnd   ? new Date(report.periodEnd).toLocaleDateString('en-IN',   { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+                const period = `${start} – ${end}`;
+
+                const label = typeLabels[report.reportType] || report.reportType || 'N/A';
+
+                // Build summary tooltip from overview if present
+                const ov = report.overview;
+                const summary = ov
+                    ? `Students: ${ov.totalStudents} | Teachers: ${ov.totalTeachers} | Challenges: ${ov.totalChallenges}${ov.averageSPI != null ? ' | Avg Score: ' + ov.averageSPI : ''}`
+                    : '';
+
                 return `
                     <tr>
-                        <td>${report.reportType || 'N/A'}</td>
-                        <td>${report.period || 'N/A'}</td>
-                        <td>${formattedDate}</td>
-                        <td><span class="status-badge ${report.status === 'completed' ? 'status-approved' : 'status-pending'}">${report.status || 'pending'}</span></td>
+                        <td><strong>${label}</strong></td>
+                        <td style="font-size:0.85rem;">${period}</td>
+                        <td style="font-size:0.85rem;">${formattedDate}</td>
                         <td>
-                            ${report.downloadUrl ? `
-                            <a href="${report.downloadUrl}" class="btn btn-outline btn-sm" download>
-                                <i class="fas fa-download"></i>
-                            </a>
-                            ` : ''}
+                            <span class="status-badge status-approved">Completed</span>
+                            ${summary ? `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">${summary}</div>` : ''}
+                        </td>
+                        <td>
+                            <button class="btn btn-outline btn-sm" onclick="downloadReport('${report.reportId}')">
+                                <i class="fas fa-download"></i> Download PDF
+                            </button>
                         </td>
                     </tr>
                 `;
             }).join('');
         }
-        
-        async function generateReport(type) {
-            console.log('DEBUG: Generating report:', type);
-            if (!confirm(`Generate ${type} report? This may take a few moments.`)) return;
-            
-            document.getElementById('reportGenerationModal').classList.add('active');
-            
+
+        async function downloadReport(reportId) {
             try {
-                const payload = {
-                    reportType: type,
-                    periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-                    periodEnd: new Date().toISOString(),
-                    format: 'pdf'
-                };
-                
-                if (type === 'monthly') {
-                    payload.periodStart = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-                } else if (type === 'institutional') {
-                    payload.periodStart = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
-                }
-                
-                console.log('DEBUG: Report generation payload:', payload);
-                
+                // Ensure narration is generated before downloading
+                await fetch(`${API_BASE_URL}/admin/reports/${reportId}/narrate`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' }
+                }).catch(() => {}); // non-fatal
+
+                const res = await fetch(`${API_BASE_URL}/admin/reports/${reportId}/download`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!res.ok) throw new Error('Report fetch failed');
+                const html = await res.text();
+                const blob = new Blob([html], { type: 'text/html' });
+                const url  = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+                setTimeout(() => URL.revokeObjectURL(url), 60000);
+            } catch (err) {
+                console.error('Download error:', err);
+                alert('Could not download report: ' + err.message);
+            }
+        }
+
+        async function generateReport(type) {
+            const modal    = document.getElementById('reportGenerationModal');
+            const statusEl = document.getElementById('reportGenerationStatus');
+
+            const periodDays = { weekly: 7, monthly: 30, institutional: 90 };
+            const days = periodDays[type] || 7;
+            const periodEnd   = new Date();
+            const periodStart = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+            statusEl.innerHTML = `<p>Generating <strong>${type}</strong> report...</p><div class="spinner" style="margin:20px auto;"></div>`;
+            modal.classList.add('active');
+
+            try {
                 const response = await apiCall('/admin/reports/generate', {
                     method: 'POST',
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        reportType: type,
+                        periodStart: periodStart.toISOString(),
+                        periodEnd:   periodEnd.toISOString()
+                    })
                 });
-                
-                console.log('DEBUG: Report generation response:', response);
-                closeModal('reportGenerationModal');
-                
-                if (response.data?.downloadUrl) {
-                    alert(`${type} report generated successfully!`);
-                    window.open(response.data.downloadUrl, '_blank');
+
+                const report = response.data?.report;
+                const ov = report?.overview;
+                const summaryHtml = ov ? `
+                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:15px;text-align:center;">
+                        <div style="background:rgba(39,174,96,0.1);padding:10px;border-radius:6px;">
+                            <div style="font-size:1.4rem;font-weight:700;">${ov.totalStudents ?? '—'}</div>
+                            <div style="font-size:0.8rem;">Students</div>
+                        </div>
+                        <div style="background:rgba(0,122,204,0.1);padding:10px;border-radius:6px;">
+                            <div style="font-size:1.4rem;font-weight:700;">${ov.totalTeachers ?? '—'}</div>
+                            <div style="font-size:0.8rem;">Teachers</div>
+                        </div>
+                        <div style="background:rgba(243,156,18,0.1);padding:10px;border-radius:6px;">
+                            <div style="font-size:1.4rem;font-weight:700;">${ov.totalChallenges ?? '—'}</div>
+                            <div style="font-size:0.8rem;">Challenges</div>
+                        </div>
+                        <div style="background:rgba(231,76,60,0.1);padding:10px;border-radius:6px;">
+                            <div style="font-size:1.4rem;font-weight:700;">${ov.averageSPI ?? '—'}</div>
+                            <div style="font-size:0.8rem;">Avg Score</div>
+                        </div>
+                    </div>` : '';
+
+                // Trigger narration generation in background
+                if (report?.reportId) {
+                    statusEl.innerHTML = `
+                        <p style="color:#27ae60;font-size:1rem;"><i class="fas fa-check-circle"></i> <strong>${type.charAt(0).toUpperCase()+type.slice(1)} Report</strong> generated successfully!</p>
+                        <p style="font-size:0.85rem;color:var(--text-muted);">Report ID: ${report.reportId}</p>
+                        ${summaryHtml}
+                        <p style="font-size:0.82rem;color:#888;margin-top:10px;"><i class="fas fa-spinner fa-spin"></i> Generating AI narration…</p>`;
+
+                    try {
+                        await apiCall(`/admin/reports/${report.reportId}/narrate`, { method: 'POST' });
+                        statusEl.querySelector('p:last-child').innerHTML = '<i class="fas fa-check" style="color:#27ae60;"></i> Narration generated and included in report.';
+                    } catch (ne) {
+                        statusEl.querySelector('p:last-child').style.display = 'none';
+                    }
+
+                    statusEl.innerHTML += `
+                        <div style="display:flex;gap:10px;margin-top:15px;">
+                            <button class="btn btn-primary btn-sm" onclick="downloadReport('${report.reportId}');closeModal('reportGenerationModal')">
+                                <i class="fas fa-download"></i> Download PDF
+                            </button>
+                            <button class="btn btn-outline btn-sm" onclick="closeModal('reportGenerationModal')">Close</button>
+                        </div>`;
                 } else {
-                    alert('Report generation started. You will be notified when it is ready.');
+                    statusEl.innerHTML = `
+                        <p style="color:#27ae60;font-size:1rem;"><i class="fas fa-check-circle"></i> <strong>${type.charAt(0).toUpperCase()+type.slice(1)} Report</strong> generated successfully!</p>
+                        ${summaryHtml}
+                        <div style="display:flex;gap:10px;margin-top:15px;">
+                            <button class="btn btn-outline btn-sm" onclick="closeModal('reportGenerationModal')">Close</button>
+                        </div>`;
                 }
-                
+
                 loadReports();
+
             } catch (error) {
-                closeModal('reportGenerationModal');
                 console.error('Error generating report:', error);
-                alert('Error generating report: ' + error.message);
+                statusEl.innerHTML = `
+                    <p style="color:#e74c3c;"><i class="fas fa-exclamation-circle"></i> Failed to generate report</p>
+                    <p style="font-size:0.85rem;color:var(--text-muted);">${error.message}</p>
+                    <button class="btn btn-outline btn-sm" style="margin-top:15px;" onclick="closeModal('reportGenerationModal')">Close</button>`;
             }
         }
         
@@ -2280,20 +2597,35 @@
                 const data = await queuedApiCall('/admin/analytics/overview');
                 console.log('DEBUG: Analytics API response:', data);
                 if (data.data?.overview) {
-                    document.getElementById('avgPerformance').textContent = 
-                        data.data.overview.averagePerformance ? 
+                    document.getElementById('avgPerformance').textContent =
+                        data.data.overview.averagePerformance ?
                         data.data.overview.averagePerformance.toFixed(1) : '0';
-                    document.getElementById('passRate').textContent = 
-                        data.data.overview.passRate ? 
+                    document.getElementById('passRate').textContent =
+                        data.data.overview.passRate ?
                         data.data.overview.passRate.toFixed(1) + '%' : '0%';
-                    document.getElementById('activeUsers').textContent = 
+                    document.getElementById('activeUsers').textContent =
                         data.data.overview.activeUsers || 0;
-                    
+
                     console.log('DEBUG: Analytics data updated:', {
                         avgPerformance: data.data.overview.averagePerformance,
                         passRate: data.data.overview.passRate,
                         activeUsers: data.data.overview.activeUsers
                     });
+                }
+
+                // ── Wire Analytics chart with 7-day activity data ────────
+                const recentActivity = data.data?.recentActivity || [];
+                if (recentActivity.length && window.ADMIN_CHARTS?.analytics) {
+                    window.ADMIN_CHARTS.analytics.data.labels = recentActivity.map(d => {
+                        const dt = new Date(d._id);
+                        return dt.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+                    });
+                    window.ADMIN_CHARTS.analytics.data.datasets[0].data =
+                        recentActivity.map(d => d.count || 0);
+                    window.ADMIN_CHARTS.analytics.data.datasets[0].label = 'Daily Sessions';
+                    window.ADMIN_CHARTS.analytics.options.scales.y.suggestedMax =
+                        Math.max(...recentActivity.map(d => d.count || 0), 10) * 1.2;
+                    window.ADMIN_CHARTS.analytics.update('none');
                 }
             } catch (error) {
                 console.error('Error loading analytics:', error);
@@ -2405,10 +2737,96 @@
             loadTeachers();
         }
         
-        function showNotifications() {
-            console.log('DEBUG: Showing notifications');
-            alert('Notifications feature - Coming soon!');
+        async function loadNotificationCount() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/admin/activity-logs?limit=20`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                const logs = data.logs || data.activities || data.data || [];
+                const count = Math.min(logs.length, 9);
+                const badge = document.getElementById('notificationCount');
+                if (badge) badge.textContent = count > 0 ? count : '0';
+            } catch (e) { /* silent */ }
         }
+
+        async function toggleNotifications() {
+            const panel = document.getElementById('notificationPanel');
+            if (panel.classList.contains('open')) {
+                panel.classList.remove('open');
+                return;
+            }
+            panel.classList.add('open');
+            await fetchAndRenderNotifications();
+        }
+
+        function closeNotifications() {
+            document.getElementById('notificationPanel').classList.remove('open');
+        }
+
+        async function fetchAndRenderNotifications() {
+            const listEl = document.getElementById('notifList');
+            listEl.innerHTML = '<div class="notif-empty"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Loading...</div>';
+            try {
+                const res = await fetch(`${API_BASE_URL}/admin/activity-logs?limit=15`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!res.ok) throw new Error('Failed');
+                const data = await res.json();
+                const logs = data.logs || data.activities || data.data || [];
+                if (!logs.length) {
+                    listEl.innerHTML = '<div class="notif-empty"><i class="fas fa-inbox" style="margin-right:8px;"></i>No recent activity</div>';
+                    return;
+                }
+                const iconMap = {
+                    login: { cls: 'info', icon: 'fa-sign-in-alt' },
+                    logout: { cls: 'info', icon: 'fa-sign-out-alt' },
+                    create: { cls: 'success', icon: 'fa-plus-circle' },
+                    add: { cls: 'success', icon: 'fa-plus-circle' },
+                    update: { cls: 'warning', icon: 'fa-edit' },
+                    delete: { cls: 'error', icon: 'fa-trash-alt' },
+                    approve: { cls: 'success', icon: 'fa-check-circle' },
+                    reject: { cls: 'error', icon: 'fa-times-circle' },
+                    suspend: { cls: 'warning', icon: 'fa-pause-circle' },
+                    report: { cls: 'info', icon: 'fa-file-alt' },
+                    upload: { cls: 'success', icon: 'fa-upload' },
+                };
+                listEl.innerHTML = logs.map(log => {
+                    const action = (log.action || '').toLowerCase();
+                    const matchKey = Object.keys(iconMap).find(k => action.includes(k)) || 'info';
+                    const { cls, icon } = iconMap[matchKey] || { cls: 'info', icon: 'fa-info-circle' };
+                    const timeAgo = formatNotifTime(log.createdAt || log.timestamp);
+                    const desc = log.description || log.action || log.message || 'System activity';
+                    const who = log.performedBy || log.userName || log.userId || '';
+                    return `<div class="notif-item">
+                        <div class="notif-icon ${cls}"><i class="fas ${icon}"></i></div>
+                        <div class="notif-body">
+                            <p class="notif-action">${desc}</p>
+                            <span class="notif-meta">${who ? who + ' · ' : ''}${timeAgo}</span>
+                        </div>
+                    </div>`;
+                }).join('');
+                const badge = document.getElementById('notificationCount');
+                if (badge) badge.textContent = Math.min(logs.length, 9);
+            } catch (e) {
+                listEl.innerHTML = '<div class="notif-empty"><i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i>Could not load activity</div>';
+            }
+        }
+
+        function formatNotifTime(ts) {
+            if (!ts) return '';
+            const d = new Date(ts);
+            if (isNaN(d)) return '';
+            const diff = Math.floor((Date.now() - d) / 1000);
+            if (diff < 60) return 'just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            return Math.floor(diff / 86400) + 'd ago';
+        }
+
+        // Legacy alias for any existing calls
+        function showNotifications() { toggleNotifications(); }
         
         function openAddTeacherModal() {
             console.log('DEBUG: Opening add teacher modal');
@@ -2446,7 +2864,7 @@
             console.log('DEBUG: Initializing dashboard...');
             if (!authToken) {
                 console.log('DEBUG: No auth token, redirecting to login');
-                window.location.href = '/login.html';
+                window.location.href = '/login';
                 return;
             }
             
@@ -2473,6 +2891,8 @@
                         }
                         
                         await loadOverview();
+                        loadPlanStatus();
+                        loadNotificationCount();
                     } catch (error) {
                         console.error('Error loading school data:', error);
                         document.getElementById('userName').textContent = 'Administrator';
@@ -2487,9 +2907,220 @@
             }
         }
         
+        // Close notification panel when clicking outside
+        document.addEventListener('click', function(e) {
+            const panel = document.getElementById('notificationPanel');
+            const badge = document.querySelector('.notification-badge');
+            if (panel && panel.classList.contains('open') && !panel.contains(e.target) && !badge.contains(e.target)) {
+                panel.classList.remove('open');
+            }
+        });
+
         // Initialize the dashboard
         console.log('DEBUG: Starting dashboard initialization...');
         init();
+    </script>
+
+    <script>
+        // RESPONSIVE SIDEBAR TOGGLE
+        (function() {
+            const sidebar  = document.getElementById('sidebar');
+            const toggle   = document.getElementById('sidebarToggle');
+            const overlay  = document.getElementById('sidebarOverlay');
+            if (!sidebar || !toggle) return;
+            function openSidebar()  { sidebar.classList.add('open');    overlay.classList.add('active'); }
+            function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+            toggle.addEventListener('click', () => sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
+            overlay.addEventListener('click', closeSidebar);
+            sidebar.querySelectorAll('.nav-link').forEach(el => {
+                el.addEventListener('click', () => { if (window.innerWidth <= 992) closeSidebar(); });
+            });
+        })();
+    </script>
+
+    <script>
+    // ============================================================
+    // CHART.JS - ADMIN DASHBOARD CHARTS
+    // ============================================================
+    window.ADMIN_CHARTS = {};
+    (function initAdminCharts() {
+        Chart.defaults.color = '#aaaaaa';
+        Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+
+        // Helper: create blue→cyan gradient fill
+        function makeGradient(ctx, height) {
+            const g = ctx.createLinearGradient(0, 0, 0, height);
+            g.addColorStop(0, 'rgba(0,212,255,0.45)');
+            g.addColorStop(1, 'rgba(0,122,204,0.02)');
+            return g;
+        }
+
+        // Shared axis/grid style
+        const gridOpts = {
+            color: 'rgba(255,255,255,0.06)',
+            drawBorder: false
+        };
+        const tickOpts = { color: '#888', font: { size: 11 } };
+
+        // ── 1. Performance Distribution (Bar) ───────────────────
+        (function() {
+            const canvas = document.getElementById('adminPerformanceChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const barColors = [
+                'rgba(244,135,113,0.85)',  // 0-50  red-ish
+                'rgba(220,220,170,0.85)',  // 50-60 yellow
+                'rgba(86,156,214,0.85)',   // 60-70 blue
+                'rgba(0,212,255,0.90)',    // 70-80 cyan
+                'rgba(78,201,176,0.85)',   // 80-90 teal
+                'rgba(197,134,192,0.85)',  // 90-100 purple
+            ];
+            window.ADMIN_CHARTS.performance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['0–50', '50–60', '60–70', '70–80', '80–90', '90–100'],
+                    datasets: [{
+                        label: 'Students',
+                        data: [0, 0, 0, 0, 0, 0],
+                        backgroundColor: barColors,
+                        borderColor: barColors.map(c => c.replace('0.85','1').replace('0.90','1')),
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#2d2d30',
+                            borderColor: '#464647',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: ctx => ` ${ctx.parsed.y} students`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: gridOpts, ticks: tickOpts },
+                        y: {
+                            grid: gridOpts,
+                            ticks: { ...tickOpts, stepSize: 10 },
+                            beginAtZero: true,
+                            suggestedMax: 55
+                        }
+                    }
+                }
+            });
+        })();
+
+        // ── 2. Activity Timeline (Line) ─────────────────────────
+        (function() {
+            const canvas = document.getElementById('adminActivityChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const grad = makeGradient(ctx, 230);
+            window.ADMIN_CHARTS.activity = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Active Sessions',
+                        data: [0, 0, 0, 0, 0, 0, 0],
+                        borderColor: '#00d4ff',
+                        borderWidth: 2.5,
+                        backgroundColor: grad,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#00d4ff',
+                        pointBorderColor: '#1e1e1e',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#2d2d30',
+                            borderColor: '#464647',
+                            borderWidth: 1,
+                            callbacks: { label: ctx => ` ${ctx.parsed.y} sessions` }
+                        }
+                    },
+                    scales: {
+                        x: { grid: gridOpts, ticks: tickOpts },
+                        y: {
+                            grid: gridOpts,
+                            ticks: { ...tickOpts, stepSize: 15 },
+                            beginAtZero: true,
+                            suggestedMax: 85
+                        }
+                    }
+                }
+            });
+        })();
+
+        // ── 3. Analytics – Performance Over Months (Line) ───────
+        (function() {
+            const canvas = document.getElementById('adminAnalyticsChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const grad = makeGradient(ctx, 260);
+            window.ADMIN_CHARTS.analytics = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Avg Score',
+                        data: [0, 0, 0, 0, 0, 0],
+                        borderColor: '#4ec9b0',
+                        borderWidth: 3,
+                        backgroundColor: (function() {
+                            const g = ctx.createLinearGradient(0, 0, 0, 260);
+                            g.addColorStop(0, 'rgba(78,201,176,0.5)');
+                            g.addColorStop(1, 'rgba(78,201,176,0.02)');
+                            return g;
+                        })(),
+                        fill: true,
+                        tension: 0.45,
+                        pointBackgroundColor: '#4ec9b0',
+                        pointBorderColor: '#1e1e1e',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#2d2d30',
+                            borderColor: '#464647',
+                            borderWidth: 1,
+                            callbacks: { label: ctx => ` Score: ${ctx.parsed.y}` }
+                        }
+                    },
+                    scales: {
+                        x: { grid: gridOpts, ticks: tickOpts },
+                        y: {
+                            grid: gridOpts,
+                            ticks: { ...tickOpts, stepSize: 20 },
+                            beginAtZero: true,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        })();
+    })();
     </script>
 </body>
 </html>

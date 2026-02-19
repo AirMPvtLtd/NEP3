@@ -1690,12 +1690,11 @@ try {
           );
       });
 
-      // 🔥 UPDATE STUDENT CACHE LAYER
+      // 🔥 UPDATE STUDENT CACHE LAYER (competency scores only — SPI written below)
       await Student.updateOne(
         { studentId: String(challenge.studentId) },
         {
           $set: {
-            performanceIndex: cpiResult.cpi,   // 0–1 normalized CPI
             competencyScores: competencyScores,
             'stats.totalChallengesCompleted': confirmedEvents.length,
             updatedAt: new Date()
@@ -1742,7 +1741,19 @@ try {
       calculatedAt: new Date()
     });
 
-    logger.info(`✅ SPI updated for ${challenge.studentId}`);
+    // Write SPI (0-100) as the authoritative performanceIndex on Student
+    await Student.updateOne(
+      { studentId: String(challenge.studentId) },
+      {
+        $set: {
+          performanceIndex: Math.round(spiResult.spi),
+          grade: spiResult.grade,
+          lastSPIUpdate: new Date()
+        }
+      }
+    );
+
+    logger.info(`✅ SPI updated for ${challenge.studentId}: ${spiResult.spi}`);
   }
 
 } catch (err) {

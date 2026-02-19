@@ -1188,36 +1188,11 @@
         }
         
         @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            
-            .sidebar {
-                display: none;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .profile-header {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .simple-bar-chart {
-                height: 180px;
-            }
-            
-            .donut-chart-container {
-                width: 200px;
-                height: 200px;
-            }
-            
-            .donut-center {
-                width: 100px;
-                height: 100px;
-            }
+            .stats-grid { grid-template-columns: 1fr; }
+            .profile-header { flex-direction: column; text-align: center; }
+            .simple-bar-chart { height: 180px; }
+            .donut-chart-container { width: 200px; height: 200px; }
+            .donut-center { width: 100px; height: 100px; }
         }
         /* ============================================ */
         /* NEP TEACHING STUDIO STYLES */
@@ -1765,17 +1740,85 @@ th, td {
         grid-template-columns: 1fr !important;
     }
 }
+
+        /* ============================================================ */
+        /* RESPONSIVE DESIGN                                             */
+        /* ============================================================ */
+
+        /* Hamburger button */
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: #ccc;
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 8px 10px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .hamburger-btn:hover { background: #3e3e42; color: #00d4ff; }
+
+        /* Sidebar dark overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 99;
+        }
+        .sidebar-overlay.active { display: block; }
+
+        /* Sidebar open state */
+        .sidebar.open { transform: translateX(0) !important; }
+
+        @media (max-width: 992px) {
+            body { overflow: auto; height: auto; }
+            .dashboard {
+                grid-template-columns: 1fr;
+                grid-template-rows: 60px 1fr;
+                height: auto;
+                min-height: 100vh;
+            }
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                width: 260px;
+                z-index: 100;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                padding-top: 70px;
+            }
+            .hamburger-btn { display: flex; align-items: center; justify-content: center; }
+        }
+
+        @media (max-width: 768px) {
+            .main-content { padding: 15px; overflow-y: auto; }
+            .panel { padding: 15px; }
+        }
+
+        @media (max-width: 576px) {
+            .header { padding: 0 10px; gap: 8px; }
+            .logo { font-size: 1.15rem; }
+            .panel { padding: 12px; }
+        }
     </style>
 </head>
 <body>
     <div class="dashboard">
         <!-- HEADER -->
         <div class="header">
+            <button class="hamburger-btn" id="sidebarToggle" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="logo">
                 <i class="fas fa-graduation-cap"></i>
                 NEP Workbench
             </div>
-            
+
             <div class="header-actions">
                 <div class="notification-bell">
                     <i class="fas fa-bell" style="font-size: 1.2rem;"></i>
@@ -1793,8 +1836,11 @@ th, td {
             </div>
         </div>
         
+        <!-- Sidebar overlay (mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
         <!-- SIDEBAR -->
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
             <div class="nav-item active" onclick="showPage('overview')">
                 <i class="fas fa-home"></i>
                 <span>Overview</span>
@@ -2166,7 +2212,7 @@ th, td {
                             <i class="fas fa-users"></i>
                         </div>
                         <div class="stat-details">
-                            <div class="stat-value" id="totalStudents">0</div>
+                            <div class="stat-value" id="classTotalStudents">0</div>
                             <div class="stat-label">Total Students</div>
                             <div class="stat-change" id="classInfo" style="color: var(--accent-cyan);">
                                 <i class="fas fa-school"></i> Class 10-A
@@ -2421,32 +2467,47 @@ th, td {
             <div class="page" id="reports">
                 <div class="page-header">
                     <h1>Reports</h1>
-                    <p>Generate and download performance reports</p>
+                    <p>Generate and download NEP 2020 performance reports</p>
                 </div>
-                
+
+                <!-- Class Report -->
                 <div class="panel">
-                    <h3>Generate Class Report</h3>
-                    <div class="filters-bar">
-                        <select id="reportClass">
+                    <h3><i class="fas fa-users" style="margin-right:8px;color:#00d4ff;"></i>Class Performance Report</h3>
+                    <div class="filters-bar" style="flex-wrap:wrap;gap:10px;align-items:center;">
+                        <select id="reportClass" onchange="onReportClassChange()" style="min-width:140px;">
                             <option value="">Select Class</option>
                         </select>
-                        <select id="reportSection">
+                        <select id="reportSection" style="min-width:140px;">
                             <option value="">Select Section</option>
                         </select>
+                        <select id="reportPeriod" style="min-width:150px;">
+                            <option value="">All Time</option>
+                            <option value="monthly">This Month</option>
+                            <option value="weekly">This Week</option>
+                        </select>
                         <button class="btn btn-primary" onclick="generateClassReport()">
-                            <i class="fas fa-file-pdf"></i> Generate Report
+                            <i class="fas fa-chart-bar"></i> Generate Report
+                        </button>
+                        <button class="btn btn-secondary" id="downloadClassReportBtn" onclick="downloadClassReportPDF()" style="display:none;">
+                            <i class="fas fa-download"></i> Download PDF
                         </button>
                     </div>
+                    <div id="classReportResult" style="margin-top:16px;"></div>
                 </div>
-                
+
+                <!-- Student Individual Report -->
                 <div class="panel">
-                    <h3>Student Individual Report</h3>
-                    <div class="filters-bar">
-                        <input type="text" class="search-input" placeholder="Enter Student ID" id="reportStudentId">
+                    <h3><i class="fas fa-user-graduate" style="margin-right:8px;color:#00d4ff;"></i>Student Individual Report</h3>
+                    <div class="filters-bar" style="gap:10px;align-items:center;">
+                        <input type="text" class="search-input" placeholder="Enter Student ID (e.g. STU-XXXXX)" id="reportStudentId" style="min-width:240px;" onkeydown="if(event.key==='Enter')generateStudentReport()">
                         <button class="btn btn-primary" onclick="generateStudentReport()">
-                            <i class="fas fa-file-pdf"></i> Generate Report
+                            <i class="fas fa-file-alt"></i> Generate Report
+                        </button>
+                        <button class="btn btn-secondary" id="downloadStudentReportBtn" onclick="downloadStudentReportPDF()" style="display:none;">
+                            <i class="fas fa-download"></i> Download PDF
                         </button>
                     </div>
+                    <div id="studentReportResult" style="margin-top:16px;"></div>
                 </div>
             </div>
 
@@ -2624,20 +2685,7 @@ th, td {
                                 <h3><i class="fas fa-history"></i> Recent Lessons</h3>
                             </div>
                             <div class="history-list" id="history-list">
-                                <div class="history-item" onclick="loadLesson('lesson-1')">
-                                    <div class="history-title">Newton's Laws of Motion</div>
-                                    <div class="history-meta">Physics • Class 10 • 2 hours ago</div>
-                                </div>
-                                
-                                <div class="history-item" onclick="loadLesson('lesson-2')">
-                                    <div class="history-title">Chemical Reactions</div>
-                                    <div class="history-meta">Chemistry • Class 9 • Yesterday</div>
-                                </div>
-                                
-                                <div class="history-item" onclick="loadLesson('lesson-3')">
-                                    <div class="history-title">Algebra Basics</div>
-                                    <div class="history-meta">Mathematics • Class 8 • 3 days ago</div>
-                                </div>
+                                <div style="color:var(--text-secondary);font-size:0.85rem;padding:10px;">Loading...</div>
                             </div>
                         </div>
                     </div>
@@ -2927,7 +2975,7 @@ th, td {
             const userType = localStorage.getItem('userType');
             
             if (!token || userType !== 'teacher') {
-                window.location.href = '../login.html';
+                window.location.href = '/login';
                 return;
             }
         }
@@ -2977,7 +3025,7 @@ th, td {
                 
                 if (response.status === 401) {
                     localStorage.clear();
-                    window.location.href = '../login.html';
+                    window.location.href = '/login';
                     return;
                 }
                 
@@ -3400,7 +3448,7 @@ th, td {
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.clear();
-                window.location.href = '/nep-workbench/login.html';
+                window.location.href = '/login';
             }
         }
 
@@ -3593,6 +3641,9 @@ th, td {
                     break;
                 case 'help':
                     loadHelpTickets();
+                    break;
+                case 'reports':
+                    initReports();
                     break;
             }
         }
@@ -4726,7 +4777,64 @@ th, td {
 
         function getNotesWorkspaceContent() {
             if (!currentLesson.notes) return getEmptyWorkspaceMessage();
-            
+
+            const ai = currentLesson.notes.aiNotes;
+
+            // If we have real AI notes, render them
+            if (ai) {
+                let html = `
+                    <div class="content-preview">
+                        <div class="lesson-header">
+                            <h1 class="lesson-title">${ai.title || currentLesson.notes.topic || 'Teaching Notes'}</h1>
+                            <div class="lesson-meta">
+                                <span><i class="fas fa-book"></i> ${currentLesson.notes.subject || 'Subject'}</span>
+                                <span><i class="fas fa-users"></i> Class ${currentLesson.notes.class || ''}</span>
+                                <span><i class="fas fa-file-alt"></i> ${currentLesson.notes.format || 'Detailed Notes'}</span>
+                            </div>
+                        </div>`;
+
+                if (ai.objectives && ai.objectives.length) {
+                    html += `<div class="lesson-section"><h2 class="section-title">Learning Objectives</h2><div class="notes-content"><ul>`;
+                    ai.objectives.forEach(o => { html += `<li>${o}</li>`; });
+                    html += `</ul></div></div>`;
+                }
+
+                if (ai.sections && ai.sections.length) {
+                    ai.sections.forEach(s => {
+                        html += `<div class="lesson-section"><h2 class="section-title">${s.heading}</h2>
+                            <div class="notes-content"><p>${s.content}</p></div></div>`;
+                    });
+                }
+
+                if (ai.formulas && ai.formulas.length) {
+                    html += `<div class="lesson-section"><h2 class="section-title">Key Formulas</h2>
+                        <div class="notes-content" style="font-family:monospace;background:rgba(39,174,96,0.08);padding:15px;border-radius:8px;">`;
+                    ai.formulas.forEach(f => { html += `<div>${f}</div>`; });
+                    html += `</div></div>`;
+                }
+
+                if (ai.applications && ai.applications.length) {
+                    html += `<div class="lesson-section"><h2 class="section-title">Real-world Applications</h2><div class="notes-content"><ul>`;
+                    ai.applications.forEach(a => { html += `<li>${a}</li>`; });
+                    html += `</ul></div></div>`;
+                }
+
+                if (ai.misconceptions && ai.misconceptions.length) {
+                    html += `<div class="lesson-section"><h2 class="section-title">Common Misconceptions</h2>
+                        <div class="notes-content" style="background:rgba(231,76,60,0.08);padding:15px;border-radius:8px;">`;
+                    ai.misconceptions.forEach(m => { html += `<p>• ${m}</p>`; });
+                    html += `</div></div>`;
+                }
+
+                html += `<div style="margin-top:20px;padding-top:15px;border-top:1px solid var(--border-color);">
+                    <button class="btn btn-secondary btn-sm" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print / Export PDF
+                    </button>
+                </div></div>`;
+                return html;
+            }
+
+            // Fallback static template (old behaviour)
             return `
                 <div class="content-preview">
                     <div class="lesson-header">
@@ -4737,50 +4845,12 @@ th, td {
                             <span><i class="fas fa-file-alt"></i> ${currentLesson.notes.format || 'Detailed Notes'}</span>
                         </div>
                     </div>
-                    
-                    <div class="lesson-section">
-                        <h2 class="section-title">Learning Objectives</h2>
-                        <div class="notes-content">
-                            ${currentLesson.notes.objectives ? 
-                                `<p>${currentLesson.notes.objectives}</p>` : 
-                                '<p class="text-secondary"><i>No learning objectives specified</i></p>'}
-                        </div>
-                    </div>
-                    
                     <div class="lesson-section">
                         <h2 class="section-title">Content</h2>
                         <div class="notes-content">
-                            <h3>Introduction</h3>
-                            <p>${currentLesson.notes.content?.introduction || 'Content will be generated based on the topic and format selected.'}</p>
-                            
-                            <h3>Key Concepts</h3>
-                            <ul>
-                                <li>First Law of Motion (Inertia)</li>
-                                <li>Second Law of Motion (F=ma)</li>
-                                <li>Third Law of Motion (Action-Reaction)</li>
-                                <li>Applications in daily life</li>
-                            </ul>
-                            
-                            <h3>Examples</h3>
-                            <p>${currentLesson.notes.content?.examples || 'Real-world examples will be included based on the topic.'}</p>
-                            
-                            ${currentLesson.notes.includeDiagrams ? `
-                                <h3>Diagrams & Visuals</h3>
-                                <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 8px; margin: 20px 0;">
-                                    <p><i>Diagrams and visuals would be generated here based on the topic</i></p>
-                                </div>
-                            ` : ''}
+                            <p>Content will be generated based on the topic and format selected.</p>
                         </div>
                     </div>
-                    
-                    ${currentLesson.notes.includeExamples ? `
-                        <div class="lesson-section">
-                            <h2 class="section-title">Real-world Applications</h2>
-                            <div class="notes-content">
-                                <p>Practical applications and industry relevance of the concepts.</p>
-                            </div>
-                        </div>
-                    ` : ''}
                 </div>
             `;
         }
@@ -4836,76 +4906,81 @@ th, td {
                     ${currentLesson.questionsConfig?.includeAnswers ? `
                         <div class="lesson-section">
                             <h2 class="section-title">Answer Key</h2>
-                            <div style="background: rgba(39, 174, 96, 0.05); padding: 20px; border-radius: 8px;">
-                                <p><i>Complete answer key would be generated here</i></p>
+                            <div style="background:rgba(39,174,96,0.05);padding:20px;border-radius:8px;">
+                                ${currentLesson.questions.map((q, i) => `
+                                    <div style="margin-bottom:10px;">
+                                        <strong>Q${i+1}:</strong> ${q.answer || '—'}
+                                        ${q.explanation ? `<br><small style="color:var(--text-secondary);">${q.explanation}</small>` : ''}
+                                    </div>`).join('')}
                             </div>
                         </div>
                     ` : ''}
+                    <div style="margin-top:20px;padding-top:15px;border-top:1px solid var(--border-color);">
+                        <button class="btn btn-secondary btn-sm" onclick="window.print()">
+                            <i class="fas fa-print"></i> Print / Export PDF
+                        </button>
+                    </div>
                 </div>
             `;
         }
 
         function getSimulatorWorkspaceContent() {
             if (!currentLesson.simulator) return getEmptyWorkspaceMessage();
-            
+
+            const sim = currentLesson.simulator;
+
+            // If we have AI-generated HTML, render it in an iframe
+            if (sim.htmlContent) {
+                const escaped = sim.htmlContent.replace(/"/g, '&quot;');
+                return `
+                    <div class="content-preview">
+                        <div class="lesson-header">
+                            <h1 class="lesson-title">${sim.concept || 'Concept'} Simulator</h1>
+                            <div class="lesson-meta">
+                                <span><i class="fas fa-flask"></i> ${sim.type || 'Interactive'}</span>
+                                <span><i class="fas fa-clock"></i> ${sim.duration || 15} min</span>
+                                <span><i class="fas fa-mouse-pointer"></i> ${sim.interaction || 'Sliders'}</span>
+                            </div>
+                        </div>
+                        <div class="lesson-section">
+                            <h2 class="section-title">Live Interactive Simulator</h2>
+                            <iframe
+                                srcdoc="${escaped}"
+                                style="width:100%;height:80vh;min-height:500px;border:none;border-radius:8px;background:#1e1e1e;"
+                                sandbox="allow-scripts allow-forms"
+                                onload="this.style.height=(this.contentDocument.body?.scrollHeight || 600)+'px'">
+                            </iframe>
+                        </div>
+                        ${sim.includeGuide ? `
+                        <div class="lesson-section">
+                            <h2 class="section-title">Teacher's Guide</h2>
+                            <div style="background:rgba(0,122,204,0.05);padding:20px;border-radius:8px;">
+                                <p><strong>Setup:</strong> Share this page with students or project it on screen.</p>
+                                <p><strong>Discussion:</strong> Ask students to vary the parameters and note the effects.</p>
+                                <p><strong>Assessment:</strong> Ask students to predict outcomes before adjusting controls.</p>
+                            </div>
+                        </div>` : ''}
+                    </div>
+                `;
+            }
+
+            // Fallback placeholder
             return `
                 <div class="content-preview">
                     <div class="lesson-header">
                         <h1 class="lesson-title">Learning Simulator</h1>
                         <div class="lesson-meta">
-                            <span><i class="fas fa-flask"></i> ${currentLesson.simulator.type || 'Interactive Diagram'}</span>
-                            <span><i class="fas fa-clock"></i> ${currentLesson.simulator.duration || 15} minutes</span>
-                            <span><i class="fas fa-mouse-pointer"></i> ${currentLesson.simulator.interaction || 'Sliders'}</span>
+                            <span><i class="fas fa-flask"></i> ${sim.type || 'Interactive Diagram'}</span>
+                            <span><i class="fas fa-clock"></i> ${sim.duration || 15} minutes</span>
                         </div>
                     </div>
-                    
                     <div class="lesson-section">
-                        <h2 class="section-title">Simulator Preview</h2>
-                        
-                        <div class="simulator-preview">
-                            <div style="text-align: center;">
-                                <i class="fas fa-flask" style="font-size: 4rem; color: var(--accent-cyan); margin-bottom: 20px;"></i>
-                                <h3 style="margin-bottom: 10px;">${currentLesson.simulator.concept || 'Concept'} Simulator</h3>
-                                <p style="color: var(--text-secondary); max-width: 500px;">
-                                    Interactive simulation would be loaded here based on the selected parameters.
-                                    Students can adjust variables and see real-time effects.
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <div class="simulator-controls">
-                            <button class="btn btn-primary">
-                                <i class="fas fa-play"></i> Start Simulation
-                            </button>
-                            <button class="btn btn-secondary">
-                                <i class="fas fa-redo"></i> Reset
-                            </button>
-                            <button class="btn btn-secondary">
-                                <i class="fas fa-question-circle"></i> Show Instructions
-                            </button>
+                        <div style="text-align:center;padding:40px;">
+                            <i class="fas fa-flask" style="font-size:3rem;color:var(--accent-cyan);"></i>
+                            <h3 style="margin-top:15px;">${sim.concept || 'Concept'} Simulator</h3>
+                            <p style="color:var(--text-secondary);">Simulator configuration saved. Click Generate Content to create the interactive simulation.</p>
                         </div>
                     </div>
-                    
-                    <div class="lesson-section">
-                        <h2 class="section-title">Learning Objectives</h2>
-                        <ul>
-                            <li>Understand the relationship between variables</li>
-                            <li>Observe cause and effect in real-time</li>
-                            <li>Apply theoretical knowledge to practical scenarios</li>
-                            <li>Develop problem-solving skills through interaction</li>
-                        </ul>
-                    </div>
-                    
-                    ${currentLesson.simulator.includeGuide ? `
-                        <div class="lesson-section">
-                            <h2 class="section-title">Teacher's Guide</h2>
-                            <div style="background: rgba(0, 122, 204, 0.05); padding: 20px; border-radius: 8px;">
-                                <p><strong>Setup Instructions:</strong> Ensure students have access to the simulation interface.</p>
-                                <p><strong>Discussion Points:</strong> Key concepts to discuss after the simulation.</p>
-                                <p><strong>Assessment:</strong> How to evaluate student understanding.</p>
-                            </div>
-                        </div>
-                    ` : ''}
                 </div>
             `;
         }
@@ -4999,6 +5074,11 @@ th, td {
                                 This PDF will be generated with professional formatting, proper headers, and pagination suitable for classroom use and school records.
                             </p>
                         </div>
+                        <div style="margin-top:20px;">
+                            <button class="btn btn-primary" onclick="window.print()">
+                                <i class="fas fa-file-pdf"></i> Print / Save as PDF
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -5021,29 +5101,158 @@ th, td {
         async function generateContent() {
             const generateBtn = document.getElementById('generate-btn');
             const originalText = generateBtn.innerHTML;
-            
+
             try {
                 generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
                 generateBtn.disabled = true;
-                
-                const formData = collectFormData();
-                await simulateAPICall(formData);
-                
-                currentLesson[currentTool] = formData;
-                updateWorkspace(currentTool);
-                
-                showNotification('Content generated successfully!', 'success');
-                
-                if (currentTool === 'notes-builder') {
-                    setTimeout(() => {
-                        selectTool('question-builder');
-                        showNotification('Now you can create questions based on these notes', 'info');
-                    }, 1000);
+
+                const token = localStorage.getItem('authToken');
+
+                switch (currentTool) {
+                    case 'notes-builder': {
+                        const subject = document.getElementById('notes-subject')?.value;
+                        const grade   = document.getElementById('notes-class')?.value;
+                        const topic   = document.getElementById('notes-topic')?.value;
+                        if (!topic) { showNotification('Please enter a topic', 'error'); return; }
+
+                        const format = document.getElementById('notes-format')?.value || 'detailed';
+                        const res  = await fetch(`${API_BASE_URL}/teacher/studio/notes`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                            body: JSON.stringify({ subject, grade, topic, format })
+                        });
+                        const data = await res.json();
+                        if (!data.success) throw new Error(data.message || 'Notes generation failed');
+
+                        const notes = data.notes;
+                        currentLesson['notes-builder'] = {
+                            subject, class: grade, topic,
+                            format: document.getElementById('notes-format')?.value,
+                            objectives: document.getElementById('learning-objectives')?.value,
+                            includeDiagrams: document.getElementById('include-diagrams')?.checked,
+                            includeExamples: document.getElementById('include-examples')?.checked,
+                            aiNotes: notes,
+                            timestamp: new Date().toISOString()
+                        };
+                        // Also store in currentLesson.notes for export
+                        currentLesson.notes = currentLesson['notes-builder'];
+
+                        updateWorkspace('notes-builder');
+                        showNotification('Smart Notes generated!', 'success');
+                        setTimeout(() => {
+                            selectTool('question-builder');
+                            showNotification('Now create questions based on these notes', 'info');
+                        }, 1200);
+                        break;
+                    }
+
+                    case 'question-builder': {
+                        const subject = currentLesson.notes?.subject || '';
+                        const grade   = currentLesson.notes?.class  || '10';
+                        const topic   = currentLesson.notes?.topic  || '';
+                        const questionTypesSelect = document.getElementById('question-types');
+                        const selectedTypes = Array.from(questionTypesSelect.selectedOptions).map(o => o.value);
+                        const questionType = selectedTypes.includes('all') ? 'mcq' : (selectedTypes[0] || 'mcq');
+                        const difficulty  = document.getElementById('question-difficulty')?.value || 'medium';
+                        const count       = Math.min(parseInt(document.getElementById('total-questions')?.value) || 5, 5);
+
+                        const res  = await fetch(`${API_BASE_URL}/teacher/studio/questions/generate`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                            body: JSON.stringify({ subject, grade, topic, questionType, difficulty, count })
+                        });
+                        const data = await res.json();
+                        if (!data.success) throw new Error(data.message || 'Question generation failed');
+
+                        currentLesson.questions = (data.questions || []).map(q => ({
+                            type: questionType,
+                            text: q.questionText,
+                            difficulty: q.difficulty || difficulty,
+                            answer: q.correctAnswer,
+                            explanation: q.explanation,
+                            bloomsLevel: q.bloomsLevel,
+                            options: (q.options || []).map((opt, i) => ({
+                                text: opt,
+                                correct: opt === q.correctAnswer
+                            }))
+                        }));
+                        currentLesson.questionsConfig = {
+                            difficulty,
+                            bloomsLevel: document.getElementById('blooms-level')?.value,
+                            includeAnswers: document.getElementById('include-answers')?.checked
+                        };
+                        currentLesson['question-builder'] = { ...currentLesson.questionsConfig, timestamp: new Date().toISOString() };
+
+                        updateWorkspace('question-builder');
+                        showNotification(`${currentLesson.questions.length} questions generated!`, 'success');
+                        break;
+                    }
+
+                    case 'simulator-builder': {
+                        const topic   = document.getElementById('simulation-concept')?.value
+                                     || currentLesson.notes?.topic || '';
+                        const subject = currentLesson.notes?.subject || '';
+                        const grade   = currentLesson.notes?.class  || '10';
+                        if (!topic) { showNotification('Please enter a concept to simulate', 'error'); return; }
+
+                        const simulationType  = document.getElementById('simulation-type')?.value || 'interactive';
+                        const interactionType = document.getElementById('interaction-type')?.value || 'sliders';
+                        const visualStyle     = document.getElementById('visual-style')?.value || 'detailed';
+                        const variables       = document.getElementById('simulation-variables')?.value || '';
+
+                        const res  = await fetch(`${API_BASE_URL}/teacher/studio/simulator`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                            body: JSON.stringify({ topic, subject, grade, simulationType, interactionType, visualStyle, variables })
+                        });
+                        const data = await res.json();
+                        if (!data.success) throw new Error(data.message || 'Simulator generation failed');
+
+                        currentLesson.simulator = {
+                            concept: topic,
+                            type: document.getElementById('simulation-type')?.value,
+                            interaction: document.getElementById('interaction-type')?.value,
+                            duration: document.getElementById('simulation-duration')?.value,
+                            includeGuide: document.getElementById('sim-include-guide')?.checked,
+                            htmlContent: data.htmlContent
+                        };
+                        currentLesson['simulator-builder'] = { ...currentLesson.simulator, timestamp: new Date().toISOString() };
+
+                        updateWorkspace('simulator-builder');
+                        showNotification('Interactive simulator generated!', 'success');
+                        break;
+                    }
+
+                    case 'export-pdf': {
+                        currentLesson.exportConfig = {
+                            title: document.getElementById('pdf-title')?.value,
+                            includeNotes: document.getElementById('include-notes')?.checked,
+                            includeQuestions: document.getElementById('include-questions')?.checked,
+                            includeSimulator: document.getElementById('include-simulator')?.checked,
+                            includeObjectives: document.getElementById('include-objectives')?.checked,
+                            includeGuide: document.getElementById('include-guide')?.checked,
+                            pageLayout: document.getElementById('page-layout')?.value,
+                            fontSize: document.getElementById('font-size')?.value,
+                            headerText: document.getElementById('header-text')?.value,
+                            includeAnswerKey: document.getElementById('include-answerkey')?.checked,
+                            includeWatermark: document.getElementById('include-watermark')?.checked,
+                            timestamp: new Date().toISOString()
+                        };
+                        currentLesson['export-pdf'] = currentLesson.exportConfig;
+                        updateWorkspace('export-pdf');
+                        showNotification('PDF preview ready. Use print/save to export.', 'success');
+                        break;
+                    }
+
+                    default:
+                        break;
                 }
-                
+
+                saveLessonState();
+
             } catch (error) {
                 console.error('Generate content error:', error);
-                showNotification('Failed to generate content. Please try again.', 'error');
+                showNotification('Failed: ' + error.message, 'error');
             } finally {
                 generateBtn.innerHTML = originalText;
                 generateBtn.disabled = false;
@@ -5051,70 +5260,8 @@ th, td {
         }
 
         function collectFormData() {
-            switch(currentTool) {
-                case 'notes-builder':
-                    return {
-                        subject: document.getElementById('notes-subject')?.value,
-                        class: document.getElementById('notes-class')?.value,
-                        topic: document.getElementById('notes-topic')?.value,
-                        format: document.getElementById('notes-format')?.value,
-                        objectives: document.getElementById('learning-objectives')?.value,
-                        includeDiagrams: document.getElementById('include-diagrams')?.checked,
-                        includeExamples: document.getElementById('include-examples')?.checked,
-                        includeMisconceptions: document.getElementById('include-misconceptions')?.checked,
-                        timestamp: new Date().toISOString()
-                    };
-                    
-                case 'question-builder':
-                    const questionTypesSelect = document.getElementById('question-types');
-                    const selectedTypes = Array.from(questionTypesSelect.selectedOptions).map(opt => opt.value);
-                    
-                    return {
-                        types: selectedTypes,
-                        difficulty: document.getElementById('question-difficulty')?.value,
-                        bloomsLevel: document.getElementById('blooms-level')?.value,
-                        totalQuestions: document.getElementById('total-questions')?.value,
-                        includeAnswers: document.getElementById('include-answers')?.checked,
-                        includeHints: document.getElementById('include-hints')?.checked,
-                        timestamp: new Date().toISOString()
-                    };
-                    
-                case 'simulator-builder':
-                    return {
-                        type: document.getElementById('simulation-type')?.value,
-                        concept: document.getElementById('simulation-concept')?.value,
-                        visualStyle: document.getElementById('visual-style')?.value,
-                        interaction: document.getElementById('interaction-type')?.value,
-                        variables: document.getElementById('simulation-variables')?.value,
-                        duration: document.getElementById('simulation-duration')?.value,
-                        showObjectives: document.getElementById('sim-show-objectives')?.checked,
-                        includeGuide: document.getElementById('sim-include-guide')?.checked,
-                        timestamp: new Date().toISOString()
-                    };
-                    
-                case 'export-pdf':
-                    return {
-                        title: document.getElementById('pdf-title')?.value,
-                        includeNotes: document.getElementById('include-notes')?.checked,
-                        includeQuestions: document.getElementById('include-questions')?.checked,
-                        includeSimulator: document.getElementById('include-simulator')?.checked,
-                        includeObjectives: document.getElementById('include-objectives')?.checked,
-                        includeGuide: document.getElementById('include-guide')?.checked,
-                        pageLayout: document.getElementById('page-layout')?.value,
-                        fontSize: document.getElementById('font-size')?.value,
-                        headerText: document.getElementById('header-text')?.value,
-                        includeAnswerKey: document.getElementById('include-answerkey')?.checked,
-                        includeWatermark: document.getElementById('include-watermark')?.checked,
-                        timestamp: new Date().toISOString()
-                    };
-                    
-                default:
-                    return {};
-            }
-        }
-
-        function simulateAPICall(formData) {
-            return new Promise(resolve => setTimeout(resolve, 1500));
+            // Kept for compatibility — generateContent() now handles everything directly
+            return {};
         }
 
         function clearWorkspace() {
@@ -5161,9 +5308,69 @@ th, td {
             showNotification('AI enhancements added to your lesson', 'success');
         }
 
-        function loadLesson(lessonId) {
-            console.log('Loading lesson:', lessonId);
-            showNotification('Lesson loaded successfully', 'success');
+        function loadLesson(index) {
+            const history = getLessonHistory();
+            const lesson = history[index];
+            if (!lesson) return;
+
+            currentLesson = lesson;
+            selectTool('notes-builder');
+            updateWorkspace('notes-builder');
+            showNotification(`Loaded: ${lesson.notes?.topic || lesson.notes?.aiNotes?.title || 'Lesson'}`, 'success');
+        }
+
+        function getLessonHistory() {
+            try {
+                return JSON.parse(localStorage.getItem('nep_lesson_history') || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function pushToHistory(lesson) {
+            if (!lesson.notes) return;
+            const history = getLessonHistory();
+            // Avoid exact duplicate (same topic + subject + timestamp prefix)
+            const isDup = history.some(h =>
+                h.notes?.topic === lesson.notes?.topic &&
+                h.notes?.subject === lesson.notes?.subject
+            );
+            if (!isDup) {
+                history.unshift({ ...lesson, savedAt: new Date().toISOString() });
+                if (history.length > 10) history.pop(); // keep last 10
+                localStorage.setItem('nep_lesson_history', JSON.stringify(history));
+            }
+            renderHistoryList();
+        }
+
+        function renderHistoryList() {
+            const history = getLessonHistory();
+            const container = document.getElementById('history-list');
+            if (!container) return;
+
+            if (history.length === 0) {
+                container.innerHTML = `<div style="color:var(--text-secondary);font-size:0.85rem;padding:10px;">No lessons yet. Generate your first lesson!</div>`;
+                return;
+            }
+
+            container.innerHTML = history.map((lesson, i) => {
+                const topic   = lesson.notes?.aiNotes?.title || lesson.notes?.topic || 'Untitled';
+                const subject = lesson.notes?.subject ? lesson.notes.subject.charAt(0).toUpperCase() + lesson.notes.subject.slice(1) : '—';
+                const grade   = lesson.notes?.class ? `Class ${lesson.notes.class}` : '';
+                const when    = lesson.savedAt ? timeAgo(new Date(lesson.savedAt)) : '';
+                return `<div class="history-item" onclick="loadLesson(${i})">
+                    <div class="history-title">${topic}</div>
+                    <div class="history-meta">${subject}${grade ? ' • ' + grade : ''}${when ? ' • ' + when : ''}</div>
+                </div>`;
+            }).join('');
+        }
+
+        function timeAgo(date) {
+            const diff = Math.floor((Date.now() - date) / 1000);
+            if (diff < 60) return 'just now';
+            if (diff < 3600) return Math.floor(diff / 60) + ' min ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + ' hr ago';
+            return Math.floor(diff / 86400) + ' day(s) ago';
         }
 
         function loadLessonState() {
@@ -5175,10 +5382,12 @@ th, td {
                     console.error('Error loading saved lesson:', e);
                 }
             }
+            renderHistoryList();
         }
 
         function saveLessonState() {
             localStorage.setItem('nep_teaching_studio_lesson', JSON.stringify(currentLesson));
+            pushToHistory(currentLesson);
         }
 
         function showNotification(message, type = 'info') {
@@ -5353,7 +5562,7 @@ th, td {
         }
 
         function resetAllCardsToZero(classVal, sectionVal) {
-            updateElementText('totalStudents', '0');
+            updateElementText('classTotalStudents', '0');
             updateElementHtml('studentCountBadge', 'Total: 0 Students');
             updateElementHtml('classInfo', `<i class="fas fa-school"></i> Class ${classVal}-${sectionVal}`);
             updateElementText('className', `${classVal}-${sectionVal}`);
@@ -5385,7 +5594,7 @@ th, td {
 
         function mapClassInfoToCards(data) {
             const totalStudents = data.class?.totalStudents || data.students?.length || 0;
-            updateElementText('totalStudents', totalStudents);
+            updateElementText('classTotalStudents', totalStudents);
             updateElementHtml('studentCountBadge', `Total: ${totalStudents} Students`);
             
             const className = data.class?.class || currentClass;
@@ -5721,7 +5930,7 @@ th, td {
 
         function showPerformanceLoading() {
             const loadingElements = [
-                'totalStudents', 'avgPerformance', 'topPerformer', 'needsHelp',
+                'classTotalStudents', 'avgPerformance', 'topPerformer', 'needsHelp',
                 'excellentCount', 'goodCount', 'averageCount', 'needsCount',
                 'meanScore', 'medianScore', 'scoreRange', 'stdDev'
             ];
@@ -5835,8 +6044,540 @@ th, td {
             showNotification(`Creating intervention plan for student ${studentId}`, 'info');
         }
 
-        function generateStudentReport(studentId) {
-            showNotification(`Generating report for student ${studentId}`, 'info');
+        // ============================================================================
+        // REPORTS PAGE
+        // ============================================================================
+        let _classReportData = null;
+        let _studentReportData = null;
+        let _studentNepReportId = null;
+
+        // Format hyphenated competency key → "Title Case" label
+        function formatCompLabel(key) {
+            return key.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        async function initReports() {
+            const classSelect = document.getElementById('reportClass');
+            const sectionSelect = document.getElementById('reportSection');
+            if (!classSelect || classSelect._loaded) return;
+
+            try {
+                const data = await apiCall('/teacher/classes');
+                const classes = data.data?.classes || [];
+                classSelect._allClasses = classes;
+
+                const uniqueClasses = [...new Set(classes.map(c => c.class))].sort((a, b) => a - b);
+                classSelect.innerHTML = '<option value="">Select Class</option>' +
+                    uniqueClasses.map(c => `<option value="${c}">Class ${c}</option>`).join('');
+                classSelect._loaded = true;
+
+                if (uniqueClasses.length === 1) {
+                    classSelect.value = uniqueClasses[0];
+                    onReportClassChange();
+                }
+            } catch (e) {
+                // Fallback: standard Indian school classes
+                classSelect.innerHTML = '<option value="">Select Class</option>' +
+                    Array.from({ length: 12 }, (_, i) =>
+                        `<option value="${i + 1}">Class ${i + 1}</option>`).join('');
+                sectionSelect.innerHTML = '<option value="">Select Section</option>' +
+                    ['A', 'B', 'C', 'D'].map(s => `<option value="${s}">${s}</option>`).join('');
+                classSelect._loaded = true;
+            }
+        }
+
+        function onReportClassChange() {
+            const classSelect = document.getElementById('reportClass');
+            const sectionSelect = document.getElementById('reportSection');
+            const selectedClass = parseInt(classSelect.value);
+            const allClasses = classSelect._allClasses || [];
+
+            sectionSelect.innerHTML = '<option value="">Select Section</option>';
+            if (!selectedClass) return;
+
+            const sections = allClasses
+                .filter(c => c.class === selectedClass)
+                .map(c => c.section)
+                .sort();
+
+            if (sections.length) {
+                sections.forEach(s => {
+                    sectionSelect.innerHTML += `<option value="${s}">${s}</option>`;
+                });
+                if (sections.length === 1) sectionSelect.value = sections[0];
+            } else {
+                // Fallback sections
+                ['A', 'B', 'C', 'D'].forEach(s => {
+                    sectionSelect.innerHTML += `<option value="${s}">${s}</option>`;
+                });
+            }
+        }
+
+        async function generateClassReport() {
+            const classVal = document.getElementById('reportClass').value;
+            const sectionVal = document.getElementById('reportSection').value;
+            const periodVal = document.getElementById('reportPeriod').value;
+            const resultEl = document.getElementById('classReportResult');
+            const downloadBtn = document.getElementById('downloadClassReportBtn');
+
+            if (!classVal || !sectionVal) {
+                showNotification('Please select both Class and Section', 'warning');
+                return;
+            }
+
+            resultEl.innerHTML = '<div style="text-align:center;padding:32px;color:#888;"><i class="fas fa-spinner fa-spin" style="font-size:1.6rem;display:block;margin-bottom:10px;"></i>Generating report...</div>';
+            downloadBtn.style.display = 'none';
+            _classReportData = null;
+
+            try {
+                let url = `/teacher/reports/class-performance?class=${classVal}&section=${sectionVal}`;
+                if (periodVal) url += `&period=${periodVal}`;
+                const data = await apiCall(url);
+                _classReportData = data.data;
+                renderClassReport(data.data, resultEl);
+                downloadBtn.style.display = '';
+            } catch (e) {
+                resultEl.innerHTML = `<div style="color:#e74c3c;padding:16px;background:rgba(231,76,60,0.08);border-radius:8px;border:1px solid rgba(231,76,60,0.2);"><i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i>${e.message || 'Failed to generate report'}</div>`;
+            }
+        }
+
+        function renderClassReport(data, container) {
+            const cls = data.class || {};
+            const stats = data.statistics || {};
+            const dist = stats.distribution || {};
+            const students = data.students || [];
+            const comps = data.competencies || {};
+            const gradeColor = { A: '#00d47f', B: '#00d4ff', C: '#ffa500', D: '#ff6b35', F: '#e74c3c' };
+
+            container.innerHTML = `
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px;">
+                    <div style="background:#1e1e1e;border-radius:10px;padding:16px;text-align:center;">
+                        <div style="font-size:1.8rem;font-weight:700;color:#00d4ff;">${cls.totalStudents || 0}</div>
+                        <div style="font-size:0.78rem;color:#888;margin-top:4px;">Total Students</div>
+                    </div>
+                    <div style="background:#1e1e1e;border-radius:10px;padding:16px;text-align:center;">
+                        <div style="font-size:1.8rem;font-weight:700;color:#00d47f;">${stats.averagePerformance || 0}</div>
+                        <div style="font-size:0.78rem;color:#888;margin-top:4px;">Avg SPI Score</div>
+                    </div>
+                    <div style="background:#1e1e1e;border-radius:10px;padding:16px;text-align:center;">
+                        <div style="font-size:1.8rem;font-weight:700;color:#00d47f;">${dist.excellent || 0}</div>
+                        <div style="font-size:0.78rem;color:#888;margin-top:4px;">Excellent ≥90</div>
+                    </div>
+                    <div style="background:#1e1e1e;border-radius:10px;padding:16px;text-align:center;">
+                        <div style="font-size:1.8rem;font-weight:700;color:#3498db;">${dist.good || 0}</div>
+                        <div style="font-size:0.78rem;color:#888;margin-top:4px;">Good 70–89</div>
+                    </div>
+                    <div style="background:#1e1e1e;border-radius:10px;padding:16px;text-align:center;">
+                        <div style="font-size:1.8rem;font-weight:700;color:#e74c3c;">${dist.needsImprovement || 0}</div>
+                        <div style="font-size:0.78rem;color:#888;margin-top:4px;">Needs Support</div>
+                    </div>
+                </div>
+                ${Object.keys(comps).length ? `
+                <div style="background:#1e1e1e;border-radius:10px;padding:16px;margin-bottom:16px;">
+                    <h4 style="color:#ccc;margin:0 0 12px;font-size:0.88rem;text-transform:uppercase;letter-spacing:0.5px;">Competency Averages</h4>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                        ${Object.entries(comps).map(([comp, score]) => `
+                        <div style="background:#2d2d30;border-radius:6px;padding:8px 14px;font-size:0.82rem;">
+                            <span style="color:#888;">${formatCompLabel(comp)}:</span>
+                            <span style="color:${score>=70?'#00d47f':score>=50?'#ffa500':'#e74c3c'};font-weight:600;margin-left:6px;">${score}%</span>
+                        </div>`).join('')}
+                    </div>
+                </div>` : ''}
+                <div style="background:#1e1e1e;border-radius:10px;padding:16px;">
+                    <h4 style="color:#ccc;margin:0 0 12px;font-size:0.88rem;text-transform:uppercase;letter-spacing:0.5px;">Student Rankings — Class ${cls.class}${cls.section}</h4>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+                            <thead>
+                                <tr style="border-bottom:1px solid #464647;">
+                                    <th style="text-align:left;padding:8px 12px;color:#888;font-weight:600;">#</th>
+                                    <th style="text-align:left;padding:8px 12px;color:#888;font-weight:600;">Name</th>
+                                    <th style="text-align:left;padding:8px 12px;color:#888;font-weight:600;">ID</th>
+                                    <th style="text-align:center;padding:8px 12px;color:#888;font-weight:600;">SPI</th>
+                                    <th style="text-align:center;padding:8px 12px;color:#888;font-weight:600;">Grade</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${students.map((s, i) => `
+                                <tr style="border-bottom:1px solid #2a2a2c;">
+                                    <td style="padding:8px 12px;color:#555;">${i + 1}</td>
+                                    <td style="padding:8px 12px;color:#e0e0e0;font-weight:500;">${s.name}</td>
+                                    <td style="padding:8px 12px;color:#888;font-size:0.78rem;">${s.studentId}</td>
+                                    <td style="padding:8px 12px;text-align:center;color:#00d4ff;font-weight:700;">${s.performanceIndex}</td>
+                                    <td style="padding:8px 12px;text-align:center;">
+                                        <span style="background:${(gradeColor[s.grade]||'#888')}22;color:${gradeColor[s.grade]||'#888'};padding:2px 10px;border-radius:12px;font-weight:600;font-size:0.8rem;">${s.grade}</span>
+                                    </td>
+                                </tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+        }
+
+        async function generateStudentReport(directStudentId) {
+            // Called either from the Reports page input or directly from students list with an ID
+            if (directStudentId) {
+                // Navigate to Reports page and pre-fill the student ID
+                showPage('reports');
+                await new Promise(r => setTimeout(r, 100)); // wait for page render
+                const inputEl = document.getElementById('reportStudentId');
+                if (inputEl) inputEl.value = directStudentId;
+            }
+
+            const studentId = directStudentId || document.getElementById('reportStudentId')?.value.trim();
+            const resultEl = document.getElementById('studentReportResult');
+            const downloadBtn = document.getElementById('downloadStudentReportBtn');
+
+            if (!studentId) {
+                showNotification('Please enter a Student ID', 'warning');
+                return;
+            }
+
+            resultEl.innerHTML = '<div style="text-align:center;padding:32px;color:#888;"><i class="fas fa-spinner fa-spin" style="font-size:1.6rem;display:block;margin-bottom:10px;"></i>Generating report...</div>';
+            downloadBtn.style.display = 'none';
+            _studentReportData = null;
+            _studentNepReportId = null;
+
+            try {
+                const data = await apiCall(`/teacher/reports/student/${studentId}`);
+                _studentReportData = data.data;
+                renderStudentReport(data.data, resultEl);
+                downloadBtn.style.display = '';
+
+                // Ensure NEP report exists; generate one if student has none
+                let nepReports = data.data?.nepReports || [];
+                const _tk = localStorage.getItem('authToken');
+                if (nepReports.length === 0 && data.data?.student?.studentId) {
+                    try {
+                        const genRes = await fetch(`${API_BASE_URL}/reports/nep/generate`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${_tk}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ studentId: data.data.student.studentId, reportType: 'monthly' })
+                        });
+                        const genData = await genRes.json();
+                        if (genData.success && genData.data?.report?.reportId) {
+                            nepReports = [{ reportId: genData.data.report.reportId }];
+                        }
+                    } catch (_) {}
+                }
+
+                if (nepReports.length > 0) {
+                    _studentNepReportId = nepReports[0].reportId;
+                    const narrateStatus = document.createElement('div');
+                    narrateStatus.style.cssText = 'margin-top:12px;padding:10px 14px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:6px;font-size:0.82rem;color:#888;';
+                    narrateStatus.textContent = 'Generating NEP narration…';
+                    resultEl.appendChild(narrateStatus);
+                    try {
+                        const nRes = await fetch(`${API_BASE_URL}/reports/nep/${_studentNepReportId}/narration`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${_tk}`, 'Content-Type': 'application/json' }
+                        });
+                        const nData = await nRes.json();
+                        const narrationText = nData.narration || nData.data?.narration;
+                        const blockchain = nData.blockchainVerification;
+                        if (nData.success && narrationText) {
+                            const blockchainBadge = blockchain ? `
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:rgba(0,166,90,0.1);border:1px solid rgba(0,166,90,0.3);border-radius:6px;">
+                                <span>🔐</span>
+                                <div style="font-size:0.75rem;">
+                                    <span style="color:#00d47f;font-weight:600;">Blockchain Verified</span>
+                                    <span style="color:#888;margin-left:8px;">Merkle: ${(blockchain.merkleRoot||'').substring(0,14)}… &nbsp;|&nbsp; ${blockchain.verificationStatus||'VERIFIED'}</span>
+                                </div>
+                            </div>` : '';
+                            narrateStatus.style.cssText = 'margin-top:12px;padding:14px 16px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);border-radius:6px;';
+                            narrateStatus.innerHTML = blockchainBadge + `<div style="font-size:0.78rem;color:#00d4ff;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">NEP 2020 Official Narration</div><div style="font-size:0.83rem;color:#ccc;line-height:1.7;white-space:pre-line;">${narrationText}</div>`;
+                        } else {
+                            narrateStatus.remove();
+                        }
+                    } catch (ne) {
+                        narrateStatus.remove();
+                    }
+                }
+            } catch (e) {
+                resultEl.innerHTML = `<div style="color:#e74c3c;padding:16px;background:rgba(231,76,60,0.08);border-radius:8px;border:1px solid rgba(231,76,60,0.2);"><i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i>${e.message || 'Student not found or access denied'}</div>`;
+            }
+        }
+
+        function renderStudentReport(data, container) {
+            const stu = data.student || {};
+            const perf = data.performance || {};
+            const comps = data.competencies || {};
+            const gradeColor = { A: '#00d47f', B: '#00d4ff', C: '#ffa500', D: '#ff6b35', F: '#e74c3c' };
+
+            // Filter out zero-score competencies to detect if student has done challenges
+            const activeComps = Object.entries(comps).filter(([, v]) => v > 0);
+            const hasCompData = activeComps.length > 0;
+
+            container.innerHTML = `
+                <div style="background:#1e1e1e;border-radius:10px;padding:16px;margin-bottom:14px;">
+                    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+                        <div>
+                            <div style="font-size:1.1rem;font-weight:700;color:#e0e0e0;">${stu.name || '-'}</div>
+                            <div style="font-size:0.82rem;color:#888;margin-top:2px;">${stu.studentId || '-'} &nbsp;|&nbsp; Class ${stu.class || '-'}-${stu.section || '-'}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                        <div style="text-align:center;background:#252526;border-radius:8px;padding:12px 16px;">
+                            <div style="font-size:1.5rem;font-weight:700;color:#00d4ff;">${stu.performanceIndex || 0}</div>
+                            <div style="font-size:0.75rem;color:#888;margin-top:2px;">SPI Score</div>
+                        </div>
+                        <div style="text-align:center;background:#252526;border-radius:8px;padding:12px 16px;">
+                            <div style="font-size:1.5rem;font-weight:700;color:${gradeColor[stu.grade]||'#888'};">${stu.grade || 'N/A'}</div>
+                            <div style="font-size:0.75rem;color:#888;margin-top:2px;">Grade</div>
+                        </div>
+                        <div style="text-align:center;background:#252526;border-radius:8px;padding:12px 16px;">
+                            <div style="font-size:1.5rem;font-weight:700;color:#00d47f;">${perf.passedChallenges || 0}/${perf.totalChallenges || 0}</div>
+                            <div style="font-size:0.75rem;color:#888;margin-top:2px;">Challenges Passed</div>
+                        </div>
+                        <div style="text-align:center;background:#252526;border-radius:8px;padding:12px 16px;">
+                            <div style="font-size:1.5rem;font-weight:700;color:#ffa500;">${perf.passRate || 0}%</div>
+                            <div style="font-size:0.75rem;color:#888;margin-top:2px;">Pass Rate</div>
+                        </div>
+                        <div style="text-align:center;background:#252526;border-radius:8px;padding:12px 16px;">
+                            <div style="font-size:1.5rem;font-weight:700;color:#9b59b6;">🔥 ${perf.currentStreak || 0}</div>
+                            <div style="font-size:0.75rem;color:#888;margin-top:2px;">Day Streak</div>
+                        </div>
+                        <div style="text-align:center;background:#252526;border-radius:8px;padding:12px 16px;">
+                            <div style="font-size:1.5rem;font-weight:700;color:#3498db;">${perf.weeklyActivity || 0}</div>
+                            <div style="font-size:0.75rem;color:#888;margin-top:2px;">Days Active (Week)</div>
+                        </div>
+                        <div style="text-align:center;background:#252526;border-radius:8px;padding:12px 16px;">
+                            <div style="font-size:1.5rem;font-weight:700;color:#e67e22;">${perf.averageScore || 0}</div>
+                            <div style="font-size:0.75rem;color:#888;margin-top:2px;">Avg Challenge Score</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="background:#1e1e1e;border-radius:10px;padding:16px;">
+                    <h4 style="color:#ccc;margin:0 0 14px;font-size:0.88rem;text-transform:uppercase;letter-spacing:0.5px;">
+                        NEP 2020 Competency Assessment
+                        ${!hasCompData ? '<span style="font-size:0.78rem;color:#666;font-weight:400;text-transform:none;margin-left:8px;">(No challenges completed yet)</span>' : ''}
+                    </h4>
+                    ${Object.entries(comps).map(([comp, score]) => {
+                        const pct = Math.min(Math.round(score), 100);
+                        const col = pct >= 70 ? '#00d47f' : pct >= 50 ? '#ffa500' : pct > 0 ? '#e74c3c' : '#464647';
+                        return `<div style="margin-bottom:12px;">
+                            <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:4px;">
+                                <span style="color:#ccc;">${formatCompLabel(comp)}</span>
+                                <span style="color:${col};font-weight:600;">${pct > 0 ? pct + '%' : '—'}</span>
+                            </div>
+                            <div style="height:6px;background:#2d2d30;border-radius:3px;">
+                                <div style="height:100%;width:${pct}%;background:${col};border-radius:3px;transition:width 0.6s ease;"></div>
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>`;
+        }
+
+        function downloadClassReportPDF() {
+            if (!_classReportData) return;
+            const cls = _classReportData.class || {};
+            const stats = _classReportData.statistics || {};
+            const dist = stats.distribution || {};
+            const students = _classReportData.students || [];
+            const comps = _classReportData.competencies || {};
+            const gradeColor = { A: '#00a65a', B: '#3498db', C: '#f39c12', D: '#e67e22', F: '#e74c3c' };
+            const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+
+            // Chart data
+            const distData   = [dist.excellent||0, dist.good||0, dist.average||0, dist.needsImprovement||0];
+            const distLabels = ['Excellent (>=90)', 'Good (70-89)', 'Average (50-69)', 'Needs Support (<50)'];
+            const distColors = ['#00a65a','#3498db','#f39c12','#e74c3c'];
+            const compKeys   = Object.keys(comps);
+            const compVals   = compKeys.map(k => comps[k] || 0);
+            const compLabels = compKeys.map(c => c.replace(/-/g, ' ').replace(/\b\w/g, x => x.toUpperCase()));
+            const compColors = compVals.map(v => v >= 70 ? '#00a65a' : v >= 50 ? '#f39c12' : '#e74c3c');
+
+            const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>NEP 2020 Class Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"><\/script>
+<style>
+  body{font-family:'Segoe UI',sans-serif;color:#1a1a2e;margin:0;padding:36px;background:#fff;}
+  h1{color:#007acc;border-bottom:3px solid #007acc;padding-bottom:12px;margin-bottom:6px;font-size:1.5rem;}
+  .sub{color:#555;font-size:0.88rem;margin-bottom:24px;}
+  .tiles{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:24px;}
+  .tile{border:1px solid #dde;border-radius:8px;padding:14px 18px;text-align:center;min-width:100px;}
+  .tv{font-size:1.9rem;font-weight:700;color:#007acc;}
+  .tl{font-size:0.75rem;color:#666;margin-top:3px;}
+  h2{color:#333;font-size:1rem;margin:22px 0 8px;border-left:4px solid #007acc;padding-left:10px;}
+  table{width:100%;border-collapse:collapse;font-size:0.86rem;}
+  th{background:#007acc;color:#fff;padding:9px 12px;text-align:left;font-weight:600;}
+  td{padding:7px 12px;border-bottom:1px solid #eee;}
+  tr:nth-child(even) td{background:#f8faff;}
+  .gr{display:inline-block;padding:2px 9px;border-radius:12px;font-weight:700;font-size:0.8rem;}
+  .charts-row{display:flex;gap:24px;margin:24px 0;align-items:flex-start;flex-wrap:wrap;}
+  .chart-box{background:#f8faff;border:1px solid #dde;border-radius:8px;padding:16px;flex:1;min-width:250px;}
+  .chart-box h3{font-size:0.85rem;color:#555;margin-bottom:12px;text-align:center;font-weight:600;}
+  .no-print{text-align:right;margin-bottom:20px;}
+  .footer{margin-top:32px;padding-top:14px;border-top:1px solid #ddd;font-size:0.76rem;color:#999;text-align:center;}
+  @media print{body{padding:20px;}.no-print{display:none;}}
+</style></head><body>
+<div class="no-print">
+  <button onclick="window.print()" style="background:#007acc;color:#fff;border:none;padding:10px 22px;border-radius:5px;font-size:13px;cursor:pointer;">Download / Print as PDF</button>
+</div>
+<h1>NEP 2020 Class Performance Report</h1>
+<div class="sub">Class ${cls.class}-${cls.section} &nbsp;&bull;&nbsp; Generated: ${dateStr} &nbsp;&bull;&nbsp; Total Students: ${cls.totalStudents || 0}</div>
+<div class="tiles">
+  <div class="tile"><div class="tv">${stats.averagePerformance || 0}</div><div class="tl">Avg SPI</div></div>
+  <div class="tile"><div class="tv" style="color:#00a65a;">${dist.excellent || 0}</div><div class="tl">Excellent >=90</div></div>
+  <div class="tile"><div class="tv" style="color:#3498db;">${dist.good || 0}</div><div class="tl">Good 70-89</div></div>
+  <div class="tile"><div class="tv" style="color:#f39c12;">${dist.average || 0}</div><div class="tl">Average 50-69</div></div>
+  <div class="tile"><div class="tv" style="color:#e74c3c;">${dist.needsImprovement || 0}</div><div class="tl">Needs Support</div></div>
+</div>
+<div class="charts-row">
+  <div class="chart-box" style="max-width:280px;">
+    <h3>Grade Distribution</h3>
+    <canvas id="distChart" width="240" height="240"></canvas>
+  </div>
+  ${compKeys.length ? `<div class="chart-box" style="flex:2;min-width:300px;">
+    <h3>NEP Competency Performance</h3>
+    <canvas id="compChart" height="${Math.max(120, compKeys.length * 28)}"></canvas>
+  </div>` : ''}
+</div>
+${students.length ? `<h2>Student Rankings</h2>
+<table><thead><tr><th>#</th><th>Name</th><th>Student ID</th><th>SPI Score</th><th>Grade</th></tr></thead><tbody>
+${students.map((s, i) => `<tr>
+  <td>${i + 1}</td><td>${s.name}</td>
+  <td style="font-size:0.8rem;color:#777;">${s.studentId}</td>
+  <td style="font-weight:700;color:#007acc;">${s.performanceIndex}</td>
+  <td><span class="gr" style="background:${gradeColor[s.grade] || '#888'}22;color:${gradeColor[s.grade] || '#888'};">${s.grade}</span></td>
+</tr>`).join('')}
+</tbody></table>` : ''}
+<div class="footer">Generated per NEP 2020 — National Education Policy 2020, Government of India. Confidential — For educational use only.</div>
+<script>
+window.onload = function() {
+  var dCtx = document.getElementById('distChart');
+  if (dCtx) {
+    new Chart(dCtx, {
+      type: 'doughnut',
+      data: { labels: ${JSON.stringify(distLabels)}, datasets: [{ data: ${JSON.stringify(distData)}, backgroundColor: ${JSON.stringify(distColors)}, borderWidth: 2 }] },
+      options: { responsive: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
+    });
+  }
+  ${compKeys.length ? `var cCtx = document.getElementById('compChart');
+  if (cCtx) {
+    new Chart(cCtx, {
+      type: 'bar',
+      data: { labels: ${JSON.stringify(compLabels)}, datasets: [{ label: 'Score %', data: ${JSON.stringify(compVals)}, backgroundColor: ${JSON.stringify(compColors)}, borderRadius: 4 }] },
+      options: { indexAxis: 'y', responsive: true, scales: { x: { min: 0, max: 100, ticks: { callback: function(v){ return v + '%'; } } } }, plugins: { legend: { display: false } } }
+    });
+  }` : ''}
+};
+<\/script>
+</body></html>`;
+
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+        }
+
+        async function downloadStudentReportPDF() {
+            if (!_studentReportData) return;
+
+            // If a NEP report exists for this student, download the narrate report (PDF with narration)
+            if (_studentNepReportId) {
+                try {
+                    showNotification('Downloading NEP narrate report…', 'info');
+                    const token = localStorage.getItem('authToken');
+                    const res = await fetch(`${API_BASE_URL}/reports/nep/${_studentNepReportId}/download`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (!res.ok) throw new Error('Download failed');
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `NEP-Report-${_studentNepReportId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(url), 60000);
+                    return;
+                } catch (e) {
+                    showNotification('NEP download failed, falling back to local PDF', 'warning');
+                }
+            }
+
+            // Fallback: build local HTML with Chart.js
+            const stu = _studentReportData.student || {};
+            const perf = _studentReportData.performance || {};
+            const comps = _studentReportData.competencies || {};
+            const gradeColor = { A: '#00a65a', B: '#3498db', C: '#f39c12', D: '#e67e22', F: '#e74c3c' };
+            const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+
+            const stuCompKeys   = Object.keys(comps);
+            const stuCompVals   = stuCompKeys.map(k => Math.min(Math.round(comps[k]||0), 100));
+            const stuCompLabels = stuCompKeys.map(c => c.replace(/-/g, ' ').replace(/\b\w/g, x => x.toUpperCase()));
+            const stuCompColors = stuCompVals.map(v => v >= 70 ? '#00a65a' : v >= 50 ? '#f39c12' : v > 0 ? '#e74c3c' : '#bbb');
+            const stuPassed = perf.passedChallenges || 0;
+            const stuFailed = Math.max(0, (perf.totalChallenges || 0) - stuPassed);
+
+            const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>NEP 2020 Student Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"><\/script>
+<style>
+  body{font-family:'Segoe UI',sans-serif;color:#1a1a2e;margin:0;padding:36px;background:#fff;}
+  h1{color:#007acc;border-bottom:3px solid #007acc;padding-bottom:12px;margin-bottom:6px;font-size:1.5rem;}
+  .sub{color:#555;font-size:0.88rem;margin-bottom:24px;}
+  .tiles{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:24px;}
+  .tile{border:1px solid #dde;border-radius:8px;padding:14px 18px;text-align:center;min-width:100px;}
+  .tv{font-size:1.9rem;font-weight:700;color:#007acc;}
+  .tl{font-size:0.75rem;color:#666;margin-top:3px;}
+  h2{color:#333;font-size:1rem;margin:22px 0 8px;border-left:4px solid #007acc;padding-left:10px;}
+  .charts-row{display:flex;gap:24px;margin:24px 0;align-items:flex-start;flex-wrap:wrap;}
+  .chart-box{background:#f8faff;border:1px solid #dde;border-radius:8px;padding:16px;flex:1;min-width:250px;}
+  .chart-box h3{font-size:0.85rem;color:#555;margin-bottom:12px;text-align:center;font-weight:600;}
+  .no-print{text-align:right;margin-bottom:20px;}
+  .footer{margin-top:32px;padding-top:14px;border-top:1px solid #ddd;font-size:0.76rem;color:#999;text-align:center;}
+  @media print{body{padding:20px;}.no-print{display:none;}}
+</style></head><body>
+<div class="no-print">
+  <button onclick="window.print()" style="background:#007acc;color:#fff;border:none;padding:10px 22px;border-radius:5px;font-size:13px;cursor:pointer;">Download / Print as PDF</button>
+</div>
+<h1>NEP 2020 Student Performance Report</h1>
+<div class="sub"><strong>${stu.name || '-'}</strong> &nbsp;&bull;&nbsp; ${stu.studentId || '-'} &nbsp;&bull;&nbsp; Class ${stu.class || '-'}-${stu.section || '-'} &nbsp;&bull;&nbsp; Generated: ${dateStr}</div>
+<div class="tiles">
+  <div class="tile"><div class="tv">${stu.performanceIndex || 0}</div><div class="tl">SPI Score</div></div>
+  <div class="tile"><div class="tv" style="color:${gradeColor[stu.grade]||'#888'};">${stu.grade || 'N/A'}</div><div class="tl">Grade</div></div>
+  <div class="tile"><div class="tv" style="color:#00a65a;">${perf.passedChallenges || 0}/${perf.totalChallenges || 0}</div><div class="tl">Challenges Passed</div></div>
+  <div class="tile"><div class="tv" style="color:#f39c12;">${perf.passRate || 0}%</div><div class="tl">Pass Rate</div></div>
+  <div class="tile"><div class="tv">🔥 ${perf.currentStreak || 0}</div><div class="tl">Day Streak</div></div>
+  <div class="tile"><div class="tv" style="color:#e67e22;">${perf.averageScore || 0}</div><div class="tl">Avg Score</div></div>
+</div>
+<div class="charts-row">
+  <div class="chart-box" style="max-width:260px;">
+    <h3>Challenge Completion</h3>
+    <canvas id="perfChart" width="220" height="220"></canvas>
+  </div>
+  ${stuCompKeys.length ? `<div class="chart-box" style="flex:2;min-width:300px;">
+    <h3>NEP 2020 Competency Scores</h3>
+    <canvas id="compChart2" height="${Math.max(120, stuCompKeys.length * 28)}"></canvas>
+  </div>` : ''}
+</div>
+<div class="footer">Generated per NEP 2020 — National Education Policy 2020, Government of India. Confidential — For educational use only.</div>
+<script>
+window.onload = function() {
+  var pCtx = document.getElementById('perfChart');
+  if (pCtx) {
+    new Chart(pCtx, {
+      type: 'doughnut',
+      data: { labels: ['Passed', 'Failed'], datasets: [{ data: [${stuPassed}, ${stuFailed}], backgroundColor: ['#00a65a','#e74c3c'], borderWidth: 2 }] },
+      options: { responsive: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
+    });
+  }
+  ${stuCompKeys.length ? `var cCtx = document.getElementById('compChart2');
+  if (cCtx) {
+    new Chart(cCtx, {
+      type: 'bar',
+      data: { labels: ${JSON.stringify(stuCompLabels)}, datasets: [{ label: 'Score %', data: ${JSON.stringify(stuCompVals)}, backgroundColor: ${JSON.stringify(stuCompColors)}, borderRadius: 4 }] },
+      options: { indexAxis: 'y', responsive: true, scales: { x: { min: 0, max: 100, ticks: { callback: function(v){ return v + '%'; } } } }, plugins: { legend: { display: false } } }
+    });
+  }` : ''}
+};
+<\/script>
+</body></html>`;
+
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
         }
 
         function viewStudentDetails(studentId) {
@@ -5884,6 +6625,10 @@ th, td {
                     createAdvancedAnalyticsCharts();
                 }, 100);
             }
+
+            if (pageId === 'reports') {
+                initReports();
+            }
             
             if (pageId === 'overview') {
                 setTimeout(() => {
@@ -5907,6 +6652,23 @@ th, td {
                 }, 200);
             }
         });
+    </script>
+
+    <script>
+        // RESPONSIVE SIDEBAR TOGGLE
+        (function() {
+            const sidebar  = document.getElementById('sidebar');
+            const toggle   = document.getElementById('sidebarToggle');
+            const overlay  = document.getElementById('sidebarOverlay');
+            if (!sidebar || !toggle) return;
+            function openSidebar()  { sidebar.classList.add('open');    overlay.classList.add('active'); }
+            function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+            toggle.addEventListener('click', () => sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
+            overlay.addEventListener('click', closeSidebar);
+            sidebar.querySelectorAll('.nav-item').forEach(el => {
+                el.addEventListener('click', () => { if (window.innerWidth <= 992) closeSidebar(); });
+            });
+        })();
     </script>
 </body>
 </html>

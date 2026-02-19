@@ -222,4 +222,15 @@ router.put(
  */
 router.put('/help-tickets/:ticketId/resolve', teacherController.resolveTicket);
 
+// ============================================================================
+// TEACHING STUDIO
+// ============================================================================
+
+router.post('/studio/notes', teacherController.generateSmartNotes);
+router.post('/studio/scenario', teacherController.generateIndustryScenario);
+router.post('/studio/questions/generate', teacherController.generateQuestion);
+router.post('/studio/questions/save', teacherController.saveQuestion);
+router.get('/studio/questions', teacherController.getQuestions);
+router.post('/studio/simulator', teacherController.generateSimulator);
+
 module.exports = router;

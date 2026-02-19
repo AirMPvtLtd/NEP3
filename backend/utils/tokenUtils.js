@@ -13,10 +13,13 @@ const crypto = require('crypto');
 // TOKEN CONFIGURATION
 // ============================================================================
 
+if (!process.env.JWT_ACCESS_SECRET || !process.env.JWT_REFRESH_SECRET) {
+  throw new Error('FATAL: JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must be set in environment variables');
+}
+
 const TOKEN_CONFIG = {
-  // JWT secrets (should be environment variables in production)
-  accessTokenSecret: process.env.JWT_ACCESS_SECRET || 'nep-access-secret-key-2024',
-  refreshTokenSecret: process.env.JWT_REFRESH_SECRET || 'nep-refresh-secret-key-2024',
+  accessTokenSecret: process.env.JWT_ACCESS_SECRET,
+  refreshTokenSecret: process.env.JWT_REFRESH_SECRET,
   
   // Token expiry
   accessTokenExpiry: '15m',      // 15 minutes

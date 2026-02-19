@@ -21,6 +21,7 @@ async function init() {
     // Load admin data
     await loadAdminProfile();
     await loadSystemStats();
+    await loadPlanStatus();
     await loadUsers();
 }
 
@@ -1761,3 +1762,81 @@ showPage = function(pageId) {
         loadAnalytics();
     }
 };
+
+// ── Plan / subscription status ──────────────────────────────────────────────
+
+async function loadPlanStatus() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/subscription/status`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+
+        if (!response.ok) return; // Non-fatal — leave card hidden
+
+        const result = await response.json();
+        if (!result.success || !result.data) return;
+
+        const { plan, label, students, isAtLimit } = result.data;
+
+        // Show the card
+        const card = document.getElementById('planStatusCard');
+        if (card) card.style.display = 'flex';
+
+        // Plan badge
+        const badge = document.getElementById('planBadge');
+        if (badge) {
+            badge.textContent = label || 'Free Plan';
+            badge.className = 'plan-badge ' + (plan || 'free');
+        }
+
+        // Usage counters
+        const usedEl  = document.getElementById('planStudentUsed');
+        const limitEl = document.getElementById('planStudentLimit');
+        if (usedEl)  usedEl.textContent  = students.used;
+        if (limitEl) limitEl.textContent = (students.limit === null) ? '\u221e' : students.limit;
+
+        // Progress bar
+        const fill = document.getElementById('planProgressFill');
+        if (fill) {
+            const pct = students.limit === null ? 0 : Math.min(students.percentUsed, 100);
+            fill.style.width = pct + '%';
+            if      (pct >= 100) fill.className = 'plan-progress-fill full';
+            else if (pct >= 80)  fill.className = 'plan-progress-fill warning';
+            else                 fill.className = 'plan-progress-fill';
+        }
+
+        // Upgrade button (show at >= 80 %)
+        const btn = document.getElementById('upgradeBtn');
+        if (btn && (isAtLimit || (students.percentUsed >= 80 && students.limit !== null))) {
+            btn.style.display = 'inline-block';
+        }
+
+        // Limit banner (show at 100 %)
+        const banner = document.getElementById('limitBanner');
+        if (banner && isAtLimit) {
+            banner.style.display = 'block';
+        }
+
+    } catch (err) {
+        // Non-fatal — plan status is informational only
+        console.warn('Could not load plan status:', err);
+    }
+}
+
+/**
+ * Show a user-friendly message when a student-add API call returns
+ * STUDENT_LIMIT_REACHED. Call this wherever the dashboard adds students.
+ * @param {Object} errorBody - Parsed JSON error response body
+ * @returns {boolean} true if the error was a limit error and was handled
+ */
+function handleStudentLimitError(errorBody) {
+    if (!errorBody || errorBody.code !== 'STUDENT_LIMIT_REACHED') return false;
+
+    const msg = (errorBody.upgradeMessage || 'Plan limit reached.')
+        + '\n\nVisit the Contact page to upgrade your plan.';
+    alert(msg); // Intentional — matches existing alert() pattern in this file
+
+    // Refresh plan status UI to reflect current state
+    loadPlanStatus();
+    return true;
+}

@@ -96,6 +96,13 @@ router.post(
 router.get('/challenges/limits', studentController.getChallengeLimits);
 
 /**
+ * @route   GET /api/student/challenges/recent
+ * @desc    Get recent challenges  ← MUST be before /:challengeId
+ * @access  Private (Student)
+ */
+router.get('/challenges/recent', studentController.getRecentChallenges);
+
+/**
  * @route   GET /api/student/challenges/:challengeId
  * @desc    Get challenge details
  * @access  Private (Student)
@@ -151,13 +158,6 @@ router.get('/challenges/:challengeId/results', studentController.getChallengeRes
  * @access  Private (Student)
  */
 router.get('/challenges', studentController.getAllChallenges);
-
-/**
- * @route   GET /api/student/challenges/recent
- * @desc    Get recent challenges
- * @access  Private (Student)
- */
-router.get('/challenges/recent', studentController.getRecentChallenges);
 
 // ============================================================================
 // PERFORMANCE & ANALYTICS

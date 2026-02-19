@@ -7,7 +7,9 @@
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1012,6 +1014,60 @@
         .text-right { text-align: right; }
         
         .hidden { display: none; }
+
+        /* ============================================================ */
+        /* RESPONSIVE DESIGN                                             */
+        /* ============================================================ */
+
+        /* Hamburger button */
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            transition: background var(--transition-fast);
+            flex-shrink: 0;
+            margin-right: 8px;
+        }
+        .hamburger-btn:hover { background: var(--bg-hover); color: var(--secondary); }
+
+        /* Sidebar dark overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 98;
+        }
+        .sidebar-overlay.active { display: block; }
+
+        /* Sidebar open state */
+        .sidebar.open { transform: translateX(0) !important; }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-280px);
+            }
+            .main-content {
+                margin-left: 0 !important;
+            }
+            .hamburger-btn { display: flex; align-items: center; justify-content: center; }
+        }
+
+        @media (max-width: 768px) {
+            .main-content { padding: var(--spacing-md); }
+            .header { flex-wrap: wrap; gap: 10px; padding: 12px var(--spacing-md); }
+            .grid { grid-template-columns: 1fr !important; }
+        }
+
+        @media (max-width: 576px) {
+            .card { padding: var(--spacing-sm); }
+            .header-left h1 { font-size: 1.1rem; }
+        }
     </style>
 </head>
 <body>
@@ -1021,10 +1077,13 @@
     </div>
     
     <div class="app-container">
+        <!-- Sidebar overlay (mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
         <!-- ============================================================ -->
         <!-- SIDEBAR -->
         <!-- ============================================================ -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
                     <i class="fas fa-graduation-cap"></i>
@@ -1091,6 +1150,9 @@
         <main class="main-content">
             <!-- Header -->
             <header class="header">
+                <button class="hamburger-btn" id="sidebarToggle" aria-label="Toggle menu">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <div class="header-left">
                     <h1>Parent Dashboard</h1>
                     <div class="breadcrumb">
@@ -1098,9 +1160,19 @@
                     </div>
                 </div>
                 <div class="header-right">
-                    <div class="notification-badge">
+                    <div class="notification-badge" id="notificationBell" onclick="toggleNotificationPanel()" style="cursor:pointer;position:relative;">
                         <span class="notification-icon"><i class="fas fa-bell"></i></span>
                         <span class="badge" id="notificationCount">0</span>
+                        <!-- Notification dropdown panel -->
+                        <div id="notificationPanel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--bg-sidebar);border:1px solid var(--border-color);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:1000;overflow:hidden;">
+                            <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;">
+                                <strong style="color:var(--text-primary);">Notifications</strong>
+                                <span onclick="loadNotifications()" style="color:var(--secondary);font-size:0.8rem;cursor:pointer;"><i class="fas fa-sync"></i> Refresh</span>
+                            </div>
+                            <div id="notificationList" style="max-height:320px;overflow-y:auto;padding:0.5rem 0;">
+                                <div style="padding:1rem;text-align:center;color:var(--text-secondary);">Loading...</div>
+                            </div>
+                        </div>
                     </div>
                     <div class="user-profile">
                         <div class="user-avatar" id="userAvatar">P</div>
@@ -1186,47 +1258,8 @@
                                 <div class="card-subtitle">Last 10 challenges</div>
                             </div>
                         </div>
-                        <div class="simple-chart" id="performanceChart">
-                            <div class="bar" style="height: 65%">
-                                <div class="bar-value">65</div>
-                                <div class="bar-label">1</div>
-                            </div>
-                            <div class="bar" style="height: 72%">
-                                <div class="bar-value">72</div>
-                                <div class="bar-label">2</div>
-                            </div>
-                            <div class="bar" style="height: 68%">
-                                <div class="bar-value">68</div>
-                                <div class="bar-label">3</div>
-                            </div>
-                            <div class="bar" style="height: 78%">
-                                <div class="bar-value">78</div>
-                                <div class="bar-label">4</div>
-                            </div>
-                            <div class="bar" style="height: 82%">
-                                <div class="bar-value">82</div>
-                                <div class="bar-label">5</div>
-                            </div>
-                            <div class="bar" style="height: 75%">
-                                <div class="bar-value">75</div>
-                                <div class="bar-label">6</div>
-                            </div>
-                            <div class="bar" style="height: 85%">
-                                <div class="bar-value">85</div>
-                                <div class="bar-label">7</div>
-                            </div>
-                            <div class="bar" style="height: 88%">
-                                <div class="bar-value">88</div>
-                                <div class="bar-label">8</div>
-                            </div>
-                            <div class="bar" style="height: 90%">
-                                <div class="bar-value">90</div>
-                                <div class="bar-label">9</div>
-                            </div>
-                            <div class="bar" style="height: 92%">
-                                <div class="bar-value">92</div>
-                                <div class="bar-label">10</div>
-                            </div>
+                        <div style="position:relative; height:230px; padding-top:10px;">
+                            <canvas id="parentPerformanceChart"></canvas>
                         </div>
                     </div>
                     
@@ -1240,52 +1273,9 @@
                             <button class="btn btn-secondary btn-sm" onclick="switchPage('teacher')">More Info</button>
                         </div>
                         <div id="teacherCardContent">
-                            <div class="text-center">
-                                <div class="teacher-avatar">S</div>
-                                <h3 style="margin-bottom: 0.5rem; color: var(--accent);">Dr. Sarah Miller</h3>
-                                <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
-                                    Mathematics & Physics Teacher
-                                </p>
-                            </div>
-                            <div class="teacher-details">
-                                <div class="teacher-detail-row">
-                                    <div class="teacher-detail-icon">
-                                        <i class="fas fa-envelope"></i>
-                                    </div>
-                                    <div class="teacher-detail-text">
-                                        <strong>Email:</strong> sarah.miller@school.edu
-                                    </div>
-                                </div>
-                                <div class="teacher-detail-row">
-                                    <div class="teacher-detail-icon">
-                                        <i class="fas fa-phone"></i>
-                                    </div>
-                                    <div class="teacher-detail-text">
-                                        <strong>Phone:</strong> +91 9876543210
-                                    </div>
-                                </div>
-                                <div class="teacher-detail-row">
-                                    <div class="teacher-detail-icon">
-                                        <i class="fas fa-graduation-cap"></i>
-                                    </div>
-                                    <div class="teacher-detail-text">
-                                        <strong>Experience:</strong> 12 years
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="teacher-contact-buttons">
-                                <button class="contact-btn" onclick="sendEmail()">
-                                    <i class="fas fa-envelope"></i>
-                                    <span>Email</span>
-                                </button>
-                                <button class="contact-btn" onclick="scheduleMeeting()">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    <span>Schedule</span>
-                                </button>
-                                <button class="contact-btn" onclick="callTeacher()">
-                                    <i class="fas fa-phone"></i>
-                                    <span>Call</span>
-                                </button>
+                            <div class="text-center" style="padding:1rem; color:var(--text-secondary);">
+                                <i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i>
+                                <p style="margin-top:0.5rem;">Loading teacher info...</p>
                             </div>
                         </div>
                     </div>
@@ -1377,31 +1367,8 @@
                         <div class="card-title">Performance Over Time</div>
                         <div class="card-subtitle">Monthly averages</div>
                     </div>
-                    <div class="simple-chart" id="performanceDetailChart">
-                        <div class="bar" style="height: 65%">
-                            <div class="bar-value">65</div>
-                            <div class="bar-label">Jan</div>
-                        </div>
-                        <div class="bar" style="height: 72%">
-                            <div class="bar-value">72</div>
-                            <div class="bar-label">Feb</div>
-                        </div>
-                        <div class="bar" style="height: 78%">
-                            <div class="bar-value">78</div>
-                            <div class="bar-label">Mar</div>
-                        </div>
-                        <div class="bar" style="height: 82%">
-                            <div class="bar-value">82</div>
-                            <div class="bar-label">Apr</div>
-                        </div>
-                        <div class="bar" style="height: 85%">
-                            <div class="bar-value">85</div>
-                            <div class="bar-label">May</div>
-                        </div>
-                        <div class="bar" style="height: 88%">
-                            <div class="bar-value">88</div>
-                            <div class="bar-label">Jun</div>
-                        </div>
+                    <div style="position:relative; height:260px; padding-top:10px;">
+                        <canvas id="parentPerfDetailChart"></canvas>
                     </div>
                 </div>
                 
@@ -1439,55 +1406,8 @@
                         <div class="card-title">Competency Analysis</div>
                         <div class="card-subtitle">All 12 NEP competencies with colorful indicators</div>
                     </div>
-                    <div class="simple-chart" id="competencyDetailChart">
-                        <div class="bar bar-ct" style="height: 85%">
-                            <div class="bar-value">85</div>
-                            <div class="bar-label">CT</div>
-                        </div>
-                        <div class="bar bar-ps" style="height: 78%">
-                            <div class="bar-value">78</div>
-                            <div class="bar-label">PS</div>
-                        </div>
-                        <div class="bar bar-cr" style="height: 92%">
-                            <div class="bar-value">92</div>
-                            <div class="bar-label">CR</div>
-                        </div>
-                        <div class="bar bar-cm" style="height: 88%">
-                            <div class="bar-value">88</div>
-                            <div class="bar-label">CM</div>
-                        </div>
-                        <div class="bar bar-co" style="height: 75%">
-                            <div class="bar-value">75</div>
-                            <div class="bar-label">CO</div>
-                        </div>
-                        <div class="bar bar-dl" style="height: 90%">
-                            <div class="bar-value">90</div>
-                            <div class="bar-label">DL</div>
-                        </div>
-                        <div class="bar bar-sa" style="height: 82%">
-                            <div class="bar-value">82</div>
-                            <div class="bar-label">SA</div>
-                        </div>
-                        <div class="bar bar-em" style="height: 79%">
-                            <div class="bar-value">79</div>
-                            <div class="bar-label">EM</div>
-                        </div>
-                        <div class="bar bar-et" style="height: 85%">
-                            <div class="bar-value">85</div>
-                            <div class="bar-label">ET</div>
-                        </div>
-                        <div class="bar bar-ld" style="height: 70%">
-                            <div class="bar-value">70</div>
-                            <div class="bar-label">LD</div>
-                        </div>
-                        <div class="bar bar-rs" style="height: 88%">
-                            <div class="bar-value">88</div>
-                            <div class="bar-label">RS</div>
-                        </div>
-                        <div class="bar bar-ga" style="height: 83%">
-                            <div class="bar-value">83</div>
-                            <div class="bar-label">GA</div>
-                        </div>
+                    <div style="position:relative; height:340px; padding-top:10px;">
+                        <canvas id="parentCompDetailChart"></canvas>
                     </div>
                     <div class="text-center mt-3">
                         <div style="display: inline-flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
@@ -1673,6 +1593,7 @@
         const API_BASE_URL = '/api';
         let authToken = localStorage.getItem('authToken');
         let dashboardData = null;
+        let currentTeacherId = null;   // stored when teacher info loads
         
         // Competency data with colors
         const COMPETENCIES_DATA = [
@@ -1698,7 +1619,7 @@
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 sessionStorage.clear();
-                window.location.href = '/login.html';
+                window.location.href = '/login';
             }
         }
         
@@ -1742,7 +1663,7 @@
                 console.error('API Error:', error);
                 if (error.message.includes('401') || error.message.includes('token')) {
                     // Redirect to login
-                    window.location.href = '/login.html';
+                    window.location.href = '/login';
                 }
                 throw error;
             }
@@ -1861,18 +1782,35 @@
                 document.getElementById('avgScore').textContent = stats.averageScore.toFixed(1);
                 document.getElementById('currentStreak').textContent = stats.currentStreak;
                 
-                // Update notifications
-                document.getElementById('notificationCount').textContent = dashboardData.notifications || 0;
+                // Update notification count (backend returns "notifications" field)
+                const notifCount = dashboardData.notifications || 0;
+                document.getElementById('notificationCount').textContent = notifCount;
+                document.getElementById('notificationCount').style.display = notifCount > 0 ? '' : 'none';
                 
                 // Load comparison data
                 await loadComparisonData();
-                
+
                 // Load competency grid
                 loadCompetencyGrid();
-                
-                // Update teacher card with sample data
-                updateTeacherCardSample();
-                
+
+                // Update overview teacher card with real data
+                populateOverviewTeacherCard(dashboardData.teacher);
+
+                // ── Wire Performance Trend chart from real challenge data ──
+                try {
+                    const perfData = await apiCall('/parent/child/performance');
+                    const trend = perfData.data?.trend || [];
+                    if (trend.length && window.PARENT_CHARTS?.trend) {
+                        window.PARENT_CHARTS.trend.data.labels =
+                            trend.map((_, i) => `Ch.${i + 1}`);
+                        window.PARENT_CHARTS.trend.data.datasets[0].data =
+                            trend.map(t => t.score || 0);
+                        window.PARENT_CHARTS.trend.options.scales.y.min =
+                            Math.max(0, Math.min(...trend.map(t => t.score || 0)) - 10);
+                        window.PARENT_CHARTS.trend.update('none');
+                    }
+                } catch (e) { console.warn('Trend chart: using placeholder'); }
+
             } catch (error) {
                 console.error('Error loading dashboard:', error);
                 // Use sample data if API fails
@@ -1881,11 +1819,43 @@
         }
         
         // ================================================================
-        // TEACHER CARD SAMPLE DATA
+        // OVERVIEW TEACHER CARD — populated from dashboardData.teacher
         // ================================================================
-        function updateTeacherCardSample() {
-            // This would be replaced with real data from API
-            console.log('Teacher card loaded with sample data');
+        function populateOverviewTeacherCard(teacher) {
+            const el = document.getElementById('teacherCardContent');
+            if (!el) return;
+            if (!teacher) {
+                el.innerHTML = '<div style="padding:1rem;color:var(--text-secondary);text-align:center;">No teacher linked yet.</div>';
+                return;
+            }
+            // Store teacherId for send-message
+            currentTeacherId = teacher.teacherId || teacher._id || null;
+            el.innerHTML = `
+                <div class="text-center" style="margin-bottom:var(--spacing-md);">
+                    <div class="teacher-avatar" style="margin:0 auto 0.75rem auto;">${(teacher.name || 'T').charAt(0)}</div>
+                    <h3 style="margin-bottom:0.25rem;color:var(--accent);">${teacher.name || 'N/A'}</h3>
+                    <p style="color:var(--text-secondary);">${(teacher.subjects || []).join(', ') || 'N/A'}</p>
+                </div>
+                <div class="teacher-details">
+                    <div class="teacher-detail-row">
+                        <div class="teacher-detail-icon"><i class="fas fa-envelope"></i></div>
+                        <div class="teacher-detail-text"><strong>Email:</strong> ${teacher.email || 'N/A'}</div>
+                    </div>
+                    <div class="teacher-detail-row">
+                        <div class="teacher-detail-icon"><i class="fas fa-phone"></i></div>
+                        <div class="teacher-detail-text"><strong>Phone:</strong> ${teacher.phone || 'N/A'}</div>
+                    </div>
+                    <div class="teacher-detail-row">
+                        <div class="teacher-detail-icon"><i class="fas fa-briefcase"></i></div>
+                        <div class="teacher-detail-text"><strong>Experience:</strong> ${teacher.experience || '—'} yrs</div>
+                    </div>
+                </div>
+                <div class="teacher-contact-buttons" style="margin-top:1rem;">
+                    <button class="contact-btn" onclick="switchPage('teacher')">
+                        <i class="fas fa-comment-alt"></i><span>Message</span>
+                    </button>
+                </div>
+            `;
         }
         
         // ================================================================
@@ -1973,14 +1943,37 @@
             try {
                 const data = await apiCall('/parent/child/performance');
                 const perf = data.data.performance;
-                
+
                 document.getElementById('perfTotalChallenges').textContent = perf.totalChallenges || '0';
                 document.getElementById('perfPassRate').textContent = (perf.passRate || 0).toFixed(1) + '%';
                 document.getElementById('perfAvgScore').textContent = (perf.averageScore || 0).toFixed(1);
-                
+
                 // Load competency table
                 loadCompetencyTable();
-                
+
+                // ── Wire Performance Over Time chart (monthly avg) ────────
+                const trend = data.data?.trend || [];
+                if (trend.length && window.PARENT_CHARTS?.perfDetail) {
+                    // Group by month: {YYYY-MM: [scores]}
+                    const byMonth = {};
+                    trend.forEach(t => {
+                        if (!t.date) return;
+                        const key = new Date(t.date).toLocaleDateString('en', { year: 'numeric', month: 'short' });
+                        if (!byMonth[key]) byMonth[key] = [];
+                        byMonth[key].push(t.score || 0);
+                    });
+                    const months = Object.keys(byMonth);
+                    const avgs = months.map(m => {
+                        const scores = byMonth[m];
+                        return +(scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+                    });
+                    window.PARENT_CHARTS.perfDetail.data.labels = months;
+                    window.PARENT_CHARTS.perfDetail.data.datasets[0].data = avgs;
+                    window.PARENT_CHARTS.perfDetail.options.scales.y.min =
+                        Math.max(0, Math.min(...avgs) - 10);
+                    window.PARENT_CHARTS.perfDetail.update('none');
+                }
+
             } catch (error) {
                 console.error('Error loading performance data:', error);
                 // Use sample data
@@ -2077,7 +2070,18 @@
                     </div>
                 `).join('');
                 document.getElementById('weakCompetencies').innerHTML = weakHTML;
-                
+
+                // ── Wire Competency Radar chart with real scores ──────────
+                // competencies = { ct: {currentScore, trend, ...}, ps: {...}, ... }
+                if (competencies && window.PARENT_CHARTS?.radar) {
+                    const COMP_KEYS = ['ct','ps','cr','cm','co','dl','sa','em','et','ld','rs','ga'];
+                    const scores = COMP_KEYS.map(k =>
+                        competencies[k]?.currentScore ?? competencies[k] ?? 0
+                    );
+                    window.PARENT_CHARTS.radar.data.datasets[0].data = scores;
+                    window.PARENT_CHARTS.radar.update('none');
+                }
+
             } catch (error) {
                 console.error('Error loading competencies:', error);
                 // Use sample data
@@ -2179,60 +2183,147 @@
         // REPORTS
         // ================================================================
         async function loadReports() {
+            const container = document.getElementById('reportsList');
+            container.innerHTML = '<div style="padding:1rem;color:var(--text-secondary);text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading reports...</div>';
             try {
-                const data = await apiCall('/parent/child/reports/nep');
-                const reports = data.data.reports;
-                
+                // Correct endpoint: /parent/reports/nep (not /parent/child/reports/nep)
+                const data = await apiCall('/parent/reports/nep');
+                const reports = data.data?.reports || [];
                 updateReportsList(reports);
             } catch (error) {
                 console.error('Error loading reports:', error);
-                // Show sample reports
-                const sampleReports = [
-                    { reportId: 'RPT-2024-001', reportType: 'Weekly Performance', generatedAt: '2024-01-22' },
-                    { reportId: 'RPT-2024-002', reportType: 'Monthly Summary', generatedAt: '2024-01-15' },
-                    { reportId: 'RPT-2024-003', reportType: 'NEP Competency', generatedAt: '2024-01-08' }
-                ];
-                updateReportsList(sampleReports);
+                container.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-secondary);">No NEP reports found. Reports are generated by teachers after evaluating challenges.</div>';
             }
         }
-        
+
         function updateReportsList(reports) {
             const container = document.getElementById('reportsList');
-            
             if (!reports || reports.length === 0) {
-                container.innerHTML = '<div class="text-center" style="padding: 2rem; color: var(--text-secondary);">No reports available</div>';
+                container.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-secondary);">No reports available yet.</div>';
                 return;
             }
-            
-            const html = reports.map(report => `
-                <div style="padding: 1rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            container.innerHTML = reports.map(report => `
+                <div style="padding:1rem;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;">
                     <div>
-                        <div style="font-weight: 600; color: var(--secondary);">${report.reportId}</div>
-                        <div style="color: var(--text-secondary); font-size: 0.9rem;">
-                            ${report.reportType} - ${new Date(report.generatedAt).toLocaleDateString()}
+                        <div style="font-weight:600;color:var(--secondary);">${report.reportId || report._id || 'Report'}</div>
+                        <div style="color:var(--text-secondary);font-size:0.9rem;">
+                            ${report.reportType || 'NEP Report'} &mdash;
+                            ${report.generatedAt ? new Date(report.generatedAt).toLocaleDateString() : 'N/A'}
                         </div>
+                        ${report.narrativeReport ? `<div style="color:var(--text-light);font-size:0.8rem;margin-top:0.25rem;">${report.narrativeReport.substring(0, 100)}...</div>` : ''}
                     </div>
-                    <button class="btn btn-secondary btn-sm" onclick="viewReport('${report.reportId}')">
-                        <i class="fas fa-download"></i> Download
+                    <button class="btn btn-secondary btn-sm" onclick="viewReport('${report.reportId || report._id}')">
+                        <i class="fas fa-eye"></i> View
                     </button>
                 </div>
             `).join('');
-            
-            container.innerHTML = html;
         }
-        
-        function viewReport(reportId) {
-            alert(`Downloading report: ${reportId}\n\nThis would trigger a download in a real application.`);
+
+        async function viewReport(reportId) {
+            try {
+                const data = await apiCall(`/parent/reports/nep/${reportId}`);
+                const report = data.data?.report || {};
+                const win = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
+                const date = report.generatedAt ? new Date(report.generatedAt).toLocaleDateString() : '';
+                win.document.write(`<!DOCTYPE html><html><head><title>NEP Report ${report.reportId || ''}</title>
+                <style>body{font-family:Segoe UI,sans-serif;padding:2rem;background:#1e1e1e;color:#ccc;max-width:800px;margin:0 auto;}
+                h1,h2{color:#00d4ff;} .section{background:#2d2d30;border-radius:8px;padding:1.5rem;margin:1rem 0;border-left:4px solid #007acc;}
+                .label{color:#888;font-size:0.85rem;} .value{font-size:1.1rem;color:#fff;font-weight:600;margin-bottom:0.75rem;}
+                pre{white-space:pre-wrap;line-height:1.6;color:#ccc;}</style></head><body>
+                <h1>NEP Report</h1>
+                <div class="section">
+                    <div class="label">Report ID</div><div class="value">${report.reportId || reportId}</div>
+                    <div class="label">Type</div><div class="value">${report.reportType || 'N/A'}</div>
+                    <div class="label">Generated</div><div class="value">${date}</div>
+                    <div class="label">Performance Index</div><div class="value">${report.performanceIndex || 'N/A'}</div>
+                    <div class="label">Grade</div><div class="value">${report.grade || 'N/A'}</div>
+                </div>
+                ${report.narrativeReport ? `<div class="section"><h2>Narrative Report</h2><pre>${report.narrativeReport}</pre></div>` : ''}
+                </body></html>`);
+                win.document.close();
+            } catch (error) {
+                alert('Could not load report details: ' + error.message);
+            }
         }
-        
+
         async function loadWeeklyReport() {
-            alert('Weekly Report\n\nThis would show the weekly performance report in a real application.');
+            try {
+                const data = await apiCall('/parent/reports/weekly');
+                const r = data.data;
+                const container = document.getElementById('reportsList');
+                container.innerHTML = `
+                    <div style="padding:1rem;">
+                        <h3 style="color:var(--secondary);margin-bottom:1rem;">Weekly Report — ${r.period || 'Last 7 days'}</h3>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:1rem;">
+                            <div style="background:var(--bg-card);border-radius:8px;padding:1rem;text-align:center;">
+                                <div style="font-size:1.8rem;font-weight:700;color:var(--secondary);">${r.summary?.totalChallenges || 0}</div>
+                                <div style="color:var(--text-secondary);font-size:0.85rem;">Challenges</div>
+                            </div>
+                            <div style="background:var(--bg-card);border-radius:8px;padding:1rem;text-align:center;">
+                                <div style="font-size:1.8rem;font-weight:700;color:var(--success);">${(r.summary?.passRate || 0).toFixed(1)}%</div>
+                                <div style="color:var(--text-secondary);font-size:0.85rem;">Pass Rate</div>
+                            </div>
+                            <div style="background:var(--bg-card);border-radius:8px;padding:1rem;text-align:center;">
+                                <div style="font-size:1.8rem;font-weight:700;color:var(--accent);">${(r.summary?.averageScore || 0).toFixed(1)}</div>
+                                <div style="color:var(--text-secondary);font-size:0.85rem;">Avg Score</div>
+                            </div>
+                            <div style="background:var(--bg-card);border-radius:8px;padding:1rem;text-align:center;">
+                                <div style="font-size:1.8rem;font-weight:700;color:var(--warning);">${r.summary?.currentStreak || 0}</div>
+                                <div style="color:var(--text-secondary);font-size:0.85rem;">Day Streak</div>
+                            </div>
+                        </div>
+                        ${r.daily?.length ? `
+                        <h4 style="color:var(--text-primary);margin-bottom:0.5rem;">Daily Breakdown</h4>
+                        ${r.daily.map(d => `
+                            <div style="display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid var(--border-color);">
+                                <span style="color:var(--text-secondary);">${d.date}</span>
+                                <span>${d.challenges} challenges &bull; ${(d.averageScore || 0).toFixed(1)} avg &bull; ${(d.passRate || 0).toFixed(0)}% pass</span>
+                            </div>`).join('')}` : '<p style="color:var(--text-secondary);">No activity this week.</p>'}
+                    </div>`;
+            } catch (error) {
+                alert('Could not load weekly report: ' + error.message);
+            }
         }
-        
+
         async function loadMonthlyReport() {
-            alert('Monthly Report\n\nThis would show the monthly performance report in a real application.');
+            try {
+                const data = await apiCall('/parent/reports/monthly');
+                const r = data.data;
+                const container = document.getElementById('reportsList');
+                container.innerHTML = `
+                    <div style="padding:1rem;">
+                        <h3 style="color:var(--purple);margin-bottom:1rem;">Monthly Report — ${r.period || 'Last 30 days'}</h3>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:1rem;">
+                            <div style="background:var(--bg-card);border-radius:8px;padding:1rem;text-align:center;">
+                                <div style="font-size:1.8rem;font-weight:700;color:var(--secondary);">${r.summary?.totalChallenges || 0}</div>
+                                <div style="color:var(--text-secondary);font-size:0.85rem;">Challenges</div>
+                            </div>
+                            <div style="background:var(--bg-card);border-radius:8px;padding:1rem;text-align:center;">
+                                <div style="font-size:1.8rem;font-weight:700;color:var(--success);">${(r.summary?.passRate || 0).toFixed(1)}%</div>
+                                <div style="color:var(--text-secondary);font-size:0.85rem;">Pass Rate</div>
+                            </div>
+                            <div style="background:var(--bg-card);border-radius:8px;padding:1rem;text-align:center;">
+                                <div style="font-size:1.8rem;font-weight:700;color:var(--accent);">${(r.summary?.averageScore || 0).toFixed(1)}</div>
+                                <div style="color:var(--text-secondary);font-size:0.85rem;">Avg Score</div>
+                            </div>
+                            <div style="background:var(--bg-card);border-radius:8px;padding:1rem;text-align:center;">
+                                <div style="font-size:1.8rem;font-weight:700;color:var(--teal);">${r.summary?.bestStreak || 0}</div>
+                                <div style="color:var(--text-secondary);font-size:0.85rem;">Best Streak</div>
+                            </div>
+                        </div>
+                        ${r.bySimulation?.length ? `
+                        <h4 style="color:var(--text-primary);margin-bottom:0.5rem;">By Simulation Type</h4>
+                        ${r.bySimulation.map(s => `
+                            <div style="display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid var(--border-color);">
+                                <span style="color:var(--text-secondary);text-transform:capitalize;">${s.simulationType || 'Unknown'}</span>
+                                <span>${s.challenges} challenges &bull; ${(s.averageScore || 0).toFixed(1)} avg</span>
+                            </div>`).join('')}` : '<p style="color:var(--text-secondary);">No activity this month.</p>'}
+                    </div>`;
+            } catch (error) {
+                alert('Could not load monthly report: ' + error.message);
+            }
         }
-        
+
         async function loadNEPReports() {
             switchPage('reports');
         }
@@ -2241,25 +2332,35 @@
         // TEACHER INFO & MESSAGING
         // ================================================================
         async function loadTeacherInfo() {
+            let teacher = null;
+
             try {
                 const data = await apiCall('/parent/teacher');
-                const teacher = data.data.teacher;
-                
-                updateTeacherDetails(teacher);
+                // Backend returns data.data.teachers (array) — take the first one
+                const teachers = data.data.teachers || [];
+                teacher = teachers[0] || null;
             } catch (error) {
-                console.error('Error loading teacher info:', error);
-                // Show sample teacher details
-                const sampleTeacher = {
-                    name: 'Dr. Sarah Miller',
-                    subjects: ['Mathematics', 'Physics'],
-                    email: 'sarah.miller@school.edu',
-                    phone: '+91 9876543210',
-                    qualification: 'Ph.D. in Mathematics',
-                    experience: '12',
-                    bio: 'Dedicated teacher with 12 years of experience in teaching Mathematics and Physics. Specializes in making complex concepts simple and engaging for students.'
-                };
-                updateTeacherDetails(sampleTeacher);
+                console.warn('GET /parent/teacher failed:', error.message);
             }
+
+            // Fallback: use the teacher already loaded from the dashboard call
+            if (!teacher && dashboardData?.teacher) {
+                teacher = dashboardData.teacher;
+            }
+
+            if (teacher) {
+                // Store teacherId globally for send-message
+                currentTeacherId = teacher.teacherId || teacher._id || null;
+                updateTeacherDetails(teacher);
+            } else {
+                document.getElementById('teacherDetails').innerHTML =
+                    '<div style="padding:1.5rem;text-align:center;color:var(--text-secondary);">' +
+                    '<i class="fas fa-chalkboard-teacher" style="font-size:2rem;display:block;margin-bottom:0.5rem;"></i>' +
+                    '<p>No teacher linked to this student yet.</p></div>';
+            }
+
+            // Always load message history regardless
+            await loadMessageHistory();
         }
         
         function updateTeacherDetails(teacher) {
@@ -2331,47 +2432,138 @@
             `;
             
             document.getElementById('teacherDetails').innerHTML = html;
-            
-            // Load sample message history
-            const sampleMessages = [
-                { subject: 'Progress Update', createdAt: '2024-01-20', status: 'read', message: 'Alex is showing excellent progress in Mathematics.' },
-                { subject: 'Parent-Teacher Meeting', createdAt: '2024-01-15', status: 'read', message: 'Scheduled for next week to discuss performance.' },
-                { subject: 'Challenge Feedback', createdAt: '2024-01-10', status: 'unread', message: 'Recent physics challenge completed successfully.' }
-            ];
-            
-            const messageHTML = sampleMessages.map(msg => `
-                <div style="padding: 1rem; border-bottom: 1px solid var(--border-color);">
-                    <div style="font-weight: 600;">${msg.subject}</div>
-                    <div style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.25rem 0;">
-                        ${msg.message}
-                    </div>
-                    <div style="color: var(--text-light); font-size: 0.8rem;">
-                        ${new Date(msg.createdAt).toLocaleDateString()} - 
-                        <span class="status-badge status-${msg.status}">${msg.status}</span>
-                    </div>
-                </div>
-            `).join('');
-            
-            document.getElementById('messageHistory').innerHTML = messageHTML || '<div class="text-center" style="padding: 2rem; color: var(--text-secondary);">No messages yet</div>';
         }
         
+        // ================================================================
+        // NOTIFICATIONS
+        // ================================================================
+        let notificationPanelOpen = false;
+
+        function toggleNotificationPanel() {
+            const panel = document.getElementById('notificationPanel');
+            notificationPanelOpen = !notificationPanelOpen;
+            panel.style.display = notificationPanelOpen ? 'block' : 'none';
+            if (notificationPanelOpen) loadNotifications();
+        }
+
+        // Close panel when clicking outside
+        document.addEventListener('click', (e) => {
+            const bell = document.getElementById('notificationBell');
+            if (bell && !bell.contains(e.target) && notificationPanelOpen) {
+                document.getElementById('notificationPanel').style.display = 'none';
+                notificationPanelOpen = false;
+            }
+        });
+
+        async function loadNotifications() {
+            const list = document.getElementById('notificationList');
+            if (!list) return;
+            list.innerHTML = '<div style="padding:1rem;text-align:center;color:var(--text-secondary);"><i class="fas fa-spinner fa-spin"></i></div>';
+            try {
+                const data = await apiCall('/parent/notifications');
+                const notifications = data.data?.notifications || [];
+
+                // If backend returns empty (stub), build from recent challenges in dashboardData
+                if (!notifications.length && dashboardData?.recentChallenges?.length) {
+                    list.innerHTML = dashboardData.recentChallenges.map(c => `
+                        <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border-color);">
+                            <div style="font-size:0.9rem;color:var(--text-primary);">
+                                <i class="fas fa-trophy" style="color:var(--warning);margin-right:6px;"></i>
+                                Challenge ${c.status === 'evaluated' ? 'Evaluated' : 'Submitted'}
+                            </div>
+                            <div style="color:var(--text-secondary);font-size:0.8rem;margin-top:3px;">
+                                ${c.simulationType || ''} &bull;
+                                ${c.results?.totalScore != null ? 'Score: ' + c.results.totalScore : ''}
+                                &bull; ${c.generatedAt ? new Date(c.generatedAt).toLocaleDateString() : ''}
+                            </div>
+                        </div>`).join('');
+                    return;
+                }
+
+                if (!notifications.length) {
+                    list.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--text-secondary);">No notifications.</div>';
+                    return;
+                }
+
+                list.innerHTML = notifications.map(n => `
+                    <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border-color);${!n.read ? 'background:rgba(0,212,255,0.05);' : ''}">
+                        <div style="font-size:0.9rem;color:var(--text-primary);">${n.title || n.message || 'Notification'}</div>
+                        <div style="color:var(--text-secondary);font-size:0.8rem;margin-top:3px;">${n.createdAt ? new Date(n.createdAt).toLocaleString() : ''}</div>
+                    </div>`).join('');
+            } catch (e) {
+                list.innerHTML = '<div style="padding:1rem;color:var(--text-secondary);">Could not load notifications.</div>';
+            }
+        }
+
+        // ================================================================
+        // COMMUNICATION HISTORY — real data from GET /parent/messages
+        // ================================================================
+        async function loadMessageHistory() {
+            const container = document.getElementById('messageHistory');
+            if (!container) return;
+            container.innerHTML = '<div style="padding:1rem;color:var(--text-secondary);text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading messages...</div>';
+            try {
+                const data = await apiCall('/parent/messages');
+                const messages = data.data?.messages || [];
+                if (!messages.length) {
+                    container.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-secondary);">No messages yet. Send the first message to your teacher!</div>';
+                    return;
+                }
+                container.innerHTML = messages.map(msg => {
+                    const statusClass = msg.status === 'open' ? 'status-submitted'
+                        : msg.status === 'closed' ? 'status-evaluated'
+                        : 'status-pending';
+                    return `
+                        <div style="padding:1rem;border-bottom:1px solid var(--border-color);">
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                                <div style="font-weight:600;color:var(--secondary);">${msg.subject || 'No Subject'}</div>
+                                <span class="status-badge ${statusClass}">${msg.status || 'open'}</span>
+                            </div>
+                            <div style="color:var(--text-secondary);font-size:0.9rem;margin:0.35rem 0;">${msg.description || msg.message || ''}</div>
+                            <div style="color:var(--text-light);font-size:0.8rem;">${msg.createdAt ? new Date(msg.createdAt).toLocaleString() : ''}</div>
+                        </div>`;
+                }).join('');
+            } catch (error) {
+                container.innerHTML = '<div style="padding:1rem;color:var(--danger);">Failed to load messages.</div>';
+                console.error('Load messages error:', error);
+            }
+        }
+
         async function sendMessage(event) {
             event.preventDefault();
-            
-            const subject = document.getElementById('messageSubject').value;
-            const message = document.getElementById('messageBody').value;
-            
+
+            const subject = document.getElementById('messageSubject').value.trim();
+            const message = document.getElementById('messageBody').value.trim();
+
+            if (!currentTeacherId) {
+                alert('No teacher linked. Cannot send message.');
+                return;
+            }
+
+            const btn = event.target.querySelector('button[type="submit"]');
+            if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+
             try {
-                await apiCall('/parent/teacher/message', {
+                // Correct endpoint: POST /parent/messages (requires teacherId in body)
+                await apiCall('/parent/messages', {
                     method: 'POST',
-                    body: JSON.stringify({ subject, message })
+                    body: JSON.stringify({ subject, message, teacherId: currentTeacherId })
                 });
-                
-                alert('Message sent successfully!');
+
                 document.getElementById('messageForm').reset();
-                loadTeacherInfo();
+                // Reload only the message history, not full teacher info
+                await loadMessageHistory();
+                // Show success inline
+                const container = document.getElementById('messageHistory');
+                const notice = document.createElement('div');
+                notice.style.cssText = 'padding:0.75rem 1rem;background:rgba(78,201,176,0.15);border-left:3px solid var(--success);margin-bottom:0.5rem;color:var(--success);font-size:0.9rem;';
+                notice.textContent = '✓ Message sent successfully!';
+                container.prepend(notice);
+                setTimeout(() => notice.remove(), 4000);
             } catch (error) {
                 alert('Error sending message: ' + error.message);
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = 'Send Message'; }
             }
         }
         
@@ -2466,7 +2658,7 @@
         async function init() {
             // Check if user is logged in
             if (!authToken) {
-                window.location.href = '/login.html';
+                window.location.href = '/login';
                 return;
             }
             
@@ -2485,6 +2677,198 @@
             // Initialize the app
             init();
         });
+    </script>
+
+    <script>
+        // RESPONSIVE SIDEBAR TOGGLE
+        (function() {
+            const sidebar  = document.getElementById('sidebar');
+            const toggle   = document.getElementById('sidebarToggle');
+            const overlay  = document.getElementById('sidebarOverlay');
+            if (!sidebar || !toggle) return;
+            function openSidebar()  { sidebar.classList.add('open');    overlay.classList.add('active'); }
+            function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+            toggle.addEventListener('click', () => sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
+            overlay.addEventListener('click', closeSidebar);
+            sidebar.querySelectorAll('.nav-link').forEach(el => {
+                el.addEventListener('click', () => { if (window.innerWidth <= 992) closeSidebar(); });
+            });
+        })();
+    </script>
+
+    <script>
+    // ============================================================
+    // CHART.JS - PARENT DASHBOARD CHARTS
+    // ============================================================
+    window.PARENT_CHARTS = {};
+    (function initParentCharts() {
+        Chart.defaults.color = '#aaaaaa';
+        Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+
+        const gridOpts = { color: 'rgba(255,255,255,0.06)', drawBorder: false };
+        const tickOpts = { color: '#888', font: { size: 11 } };
+        const tooltipBase = { backgroundColor: '#2d2d30', borderColor: '#464647', borderWidth: 1 };
+
+        // ── 1. Performance Trend – last 10 challenges (Line) ────
+        (function() {
+            const canvas = document.getElementById('parentPerformanceChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createLinearGradient(0, 0, 0, 230);
+            grad.addColorStop(0, 'rgba(0,212,255,0.45)');
+            grad.addColorStop(1, 'rgba(0,122,204,0.02)');
+
+            window.PARENT_CHARTS.trend = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Score',
+                        data: [],
+                        borderColor: '#00d4ff',
+                        borderWidth: 2.5,
+                        backgroundColor: grad,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#00d4ff',
+                        pointBorderColor: '#1e1e1e',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { ...tooltipBase, callbacks: { label: c => ` Score: ${c.parsed.y}` } }
+                    },
+                    scales: {
+                        x: { grid: gridOpts, ticks: tickOpts },
+                        y: {
+                            grid: gridOpts,
+                            ticks: { ...tickOpts, stepSize: 10 },
+                            min: 50,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        })();
+
+        // ── 2. Performance Over Time – monthly (Line with gradient) ─
+        (function() {
+            const canvas = document.getElementById('parentPerfDetailChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createLinearGradient(0, 0, 0, 260);
+            grad.addColorStop(0, 'rgba(197,134,192,0.5)');
+            grad.addColorStop(1, 'rgba(197,134,192,0.02)');
+
+            window.PARENT_CHARTS.perfDetail = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Monthly Avg',
+                        data: [],
+                        borderColor: '#c586c0',
+                        borderWidth: 3,
+                        backgroundColor: grad,
+                        fill: true,
+                        tension: 0.45,
+                        pointBackgroundColor: '#c586c0',
+                        pointBorderColor: '#1e1e1e',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { ...tooltipBase, callbacks: { label: c => ` Avg: ${c.parsed.y}` } }
+                    },
+                    scales: {
+                        x: { grid: gridOpts, ticks: tickOpts },
+                        y: {
+                            grid: gridOpts,
+                            ticks: { ...tickOpts, stepSize: 10 },
+                            min: 50,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        })();
+
+        // ── 3. Competency Radar – all 12 NEP competencies ───────
+        (function() {
+            const canvas = document.getElementById('parentCompDetailChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const radarGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 300);
+            radarGrad.addColorStop(0, 'rgba(0,212,255,0.35)');
+            radarGrad.addColorStop(1, 'rgba(0,122,204,0.05)');
+
+            window.PARENT_CHARTS.radar = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Critical Thinking', 'Problem Solving', 'Creativity',
+                        'Communication', 'Collaboration', 'Digital Literacy',
+                        'Self Awareness', 'Empathy', 'Ethical Thinking',
+                        'Leadership', 'Resilience', 'Global Awareness'
+                    ],
+                    datasets: [{
+                        label: 'Competency Score',
+                        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(0,212,255,0.18)',
+                        borderColor: '#00d4ff',
+                        borderWidth: 2,
+                        pointBackgroundColor: [
+                            '#007acc','#00d4ff','#c586c0','#4ec9b0',
+                            '#6a9955','#569cd6','#dcdcaa','#d1699e',
+                            '#ce9178','#f48771','#4ec9b0','#007acc'
+                        ],
+                        pointBorderColor: '#1e1e1e',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { ...tooltipBase, callbacks: { label: c => ` Score: ${c.parsed.r}` } }
+                    },
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20,
+                                color: '#666',
+                                font: { size: 10 },
+                                backdropColor: 'transparent'
+                            },
+                            grid: { color: 'rgba(255,255,255,0.08)' },
+                            angleLines: { color: 'rgba(255,255,255,0.08)' },
+                            pointLabels: {
+                                color: '#bbb',
+                                font: { size: 11 }
+                            }
+                        }
+                    }
+                }
+            });
+        })();
+    })();
     </script>
 </body>
 </html>

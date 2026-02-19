@@ -10,8 +10,11 @@
 const jwt = require('jsonwebtoken');
 const { Student, Teacher, School, Parent } = require('../models');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-super-secret-refresh-key-change-in-production';
+if (!process.env.JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET must be set in environment variables');
+}
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET;
 
 // ============================================================================
 // JWT VERIFICATION - MAIN PROTECT MIDDLEWARE

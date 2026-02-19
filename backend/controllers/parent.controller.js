@@ -1309,11 +1309,9 @@ exports.getTeacherInfo = async (req, res) => {
       });
     }
 
-    // 4️⃣ Fetch only linked teachers
+    // 4️⃣ Fetch only linked teachers (no active filter — match getDashboard behaviour)
     const teachers = await Teacher.find({
-      teacherId: { $in: teacherIds },
-      schoolId: student.schoolId,
-      active: true
+      teacherId: { $in: teacherIds }
     })
       .select('teacherId name email phone subjects qualification experience')
       .lean();

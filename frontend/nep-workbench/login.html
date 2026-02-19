@@ -308,12 +308,41 @@
             color: #007acc;
             text-decoration: underline;
         }
+
+        /* ============================================================ */
+        /* RESPONSIVE DESIGN                                             */
+        /* ============================================================ */
+        @media (max-width: 576px) {
+            body { padding: 15px; }
+            .login-container {
+                padding: 25px 18px;
+                border-radius: 12px;
+            }
+            .logo h1 { font-size: 1.75rem; }
+            .logo p { font-size: 0.85rem; }
+            .role-selection {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .role-btn { padding: 12px 8px; }
+            .role-btn i { font-size: 1.4rem; margin-bottom: 6px; }
+            .role-btn span { font-size: 0.78rem; }
+            .form-group input,
+            .form-group select { padding: 11px 12px 11px 40px; }
+        }
+
+        @media (max-width: 360px) {
+            .login-container { padding: 20px 14px; }
+            .logo h1 { font-size: 1.5rem; }
+            .role-selection { gap: 8px; }
+            .role-btn { padding: 10px 6px; }
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="back-link">
-            <a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home</a>
+            <a href="/workbench"><i class="fas fa-arrow-left"></i> Back to Home</a>
         </div>
 
         <div class="logo">
@@ -808,6 +837,26 @@
         </div>
     </div>
 
+    <!-- Inline Auth Modal (forgot password / resend verification) -->
+    <div id="authActionModal" onclick="if(event.target===this)closeAuthActionModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:#2d2d30;border:1px solid #464647;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,0.6);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <h3 id="aamTitle" style="color:#00d4ff;margin:0;font-size:1.1rem;"></h3>
+                <button onclick="closeAuthActionModal()" style="background:none;border:none;color:#888;cursor:pointer;font-size:1.2rem;"><i class="fas fa-times"></i></button>
+            </div>
+            <p id="aamDesc" style="color:#aaa;font-size:0.88rem;margin-bottom:20px;line-height:1.5;"></p>
+            <div style="margin-bottom:16px;">
+                <label id="aamLabel" style="display:block;color:#ccc;font-size:0.85rem;margin-bottom:8px;font-weight:600;"></label>
+                <input type="text" id="aamInput" placeholder="" style="width:100%;padding:12px 16px;background:#1e1e1e;border:1px solid #464647;border-radius:8px;color:#fff;font-size:0.9rem;outline:none;box-sizing:border-box;transition:border 0.2s;" onfocus="this.style.borderColor='#00d4ff'" onblur="this.style.borderColor='#464647'">
+            </div>
+            <div id="aamError" style="color:#e74c3c;font-size:0.82rem;margin-bottom:14px;display:none;"></div>
+            <div style="display:flex;gap:12px;">
+                <button id="aamSubmit" onclick="submitAuthActionModal()" style="flex:1;padding:12px;background:linear-gradient(135deg,#007acc,#00d4ff);border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-size:0.9rem;transition:opacity 0.2s;">Send</button>
+                <button onclick="closeAuthActionModal()" style="flex:1;padding:12px;background:#464647;border:none;border-radius:8px;color:#ccc;cursor:pointer;font-size:0.9rem;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ============================================================================
         // CONFIGURATION
@@ -1017,7 +1066,7 @@
                     
                     // Redirect to teacher dashboard
                     setTimeout(() => {
-                        window.location.href = 'dashboards/teacher/Teacherdashboard.html';
+                        window.location.href = '/teacher';
                     }, 1000);
                 } else {
                     showError('teacher', data.message || 'Login failed. Please check your credentials.');
@@ -1426,10 +1475,10 @@
 
         function redirectToDashboard(userType) {
             const dashboards = {
-                'student': 'dashboards/student/StudentWorkbench.html',
-                'teacher': 'dashboards/teacher/Teacherdashboard.html',
-                'admin': 'dashboards/admin/Admindashboard.html',
-                'parent': 'dashboards/parent/Parentdashboard.html'
+                'student': '/student',
+                'teacher': '/teacher',
+                'admin': '/admin',
+                'parent': '/parent'
             };
             
             const normalizedType = userType.toLowerCase();
@@ -1525,68 +1574,104 @@
         }
 
         // ============================================================================
+        // AUTH ACTION MODAL (forgot password / resend verification)
+        // ============================================================================
+        let _aamRole = null;
+        let _aamMode = null; // 'forgot' | 'resend'
+
+        function openAuthActionModal(role, mode) {
+            const isForgot = mode === 'forgot';
+            const isTeacher = role === 'teacher';
+            const roleName = role.charAt(0).toUpperCase() + role.slice(1);
+            _aamRole = role;
+            _aamMode = mode;
+            document.getElementById('aamTitle').textContent = isForgot ? 'Forgot Password' : 'Resend Verification Email';
+            document.getElementById('aamDesc').textContent = isForgot
+                ? 'Enter your ' + (isTeacher ? 'Teacher ID' : 'registered email') + ' and we\'ll send password reset instructions.'
+                : 'Enter your ' + (isTeacher ? 'Teacher ID' : 'registered email') + ' to resend the account verification link.';
+            document.getElementById('aamLabel').textContent = isTeacher ? 'Teacher ID' : roleName + ' Email';
+            document.getElementById('aamInput').placeholder = isTeacher ? 'e.g. TCH-AB123' : 'Enter your email address';
+            document.getElementById('aamInput').value = '';
+            document.getElementById('aamError').style.display = 'none';
+            document.getElementById('aamSubmit').disabled = false;
+            document.getElementById('aamSubmit').textContent = 'Send';
+            const modal = document.getElementById('authActionModal');
+            modal.style.display = 'flex';
+            setTimeout(() => document.getElementById('aamInput').focus(), 100);
+        }
+
+        function closeAuthActionModal() {
+            document.getElementById('authActionModal').style.display = 'none';
+            _aamRole = null;
+            _aamMode = null;
+        }
+
+        async function submitAuthActionModal() {
+            const value = document.getElementById('aamInput').value.trim();
+            const errorEl = document.getElementById('aamError');
+            const btn = document.getElementById('aamSubmit');
+            const role = _aamRole;
+            const mode = _aamMode;
+
+            errorEl.style.display = 'none';
+            if (!value) {
+                errorEl.textContent = 'This field is required.';
+                errorEl.style.display = 'block';
+                return;
+            }
+            if (role === 'teacher') {
+                if (!value.match(/^TCH-[A-Z0-9]{5}$/)) {
+                    errorEl.textContent = 'Invalid Teacher ID format. Use: TCH-XXXXX';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+            } else {
+                if (!validateEmail(value)) {
+                    errorEl.textContent = 'Please enter a valid email address.';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+            const endpoint = mode === 'forgot' ? '/auth/forgot-password' : '/auth/resend-verification';
+            const body = role === 'teacher'
+                ? { teacherId: value, userType: role }
+                : { email: value, userType: role };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await response.json();
+                closeAuthActionModal();
+                if (response.ok) {
+                    const msg = mode === 'forgot'
+                        ? 'Password reset instructions sent to your registered email!'
+                        : 'Verification email resent! Please check your inbox.';
+                    showSuccess(role, msg);
+                    if (mode === 'resend') {
+                        const noteEl = document.getElementById(`${role}VerificationNote`);
+                        if (noteEl) noteEl.style.display = 'block';
+                    }
+                } else {
+                    showError(role, data.message || 'Request failed. Please try again.');
+                }
+            } catch (err) {
+                closeAuthActionModal();
+                showError(role, 'Network error. Please try again later.');
+            }
+        }
+
+        // ============================================================================
         // FORGOT PASSWORD FUNCTION
         // ============================================================================
         async function showForgotPassword(role) {
-            if (role === 'teacher') {
-                const teacherId = prompt(`Enter your Teacher ID to receive password reset instructions:`);
-                
-                if (!teacherId) return;
-                
-                // Teacher ID format validation
-                if (!teacherId.match(/^TCH-[A-Z0-9]{5}$/)) {
-                    showError('teacher', 'Invalid Teacher ID format. Format: TCH-XXXXX');
-                    return;
-                }
-                
-                try {
-                    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ teacherId, userType: role })
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (response.ok) {
-                        showSuccess('teacher', 'Password reset instructions have been sent to your registered email!');
-                    } else {
-                        showError('teacher', data.message || 'Failed to send reset email. Please try again.');
-                    }
-                } catch (error) {
-                    console.error('Teacher password reset error:', error);
-                    showError('teacher', 'Network error. Please try again later.');
-                }
-                return;
-            }
-            
-            const email = prompt(`Enter your ${role} email address to receive password reset instructions:`);
-            
-            if (!email) return;
-            
-            if (!validateEmail(email)) {
-                showError(role, 'Please enter a valid email address');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, userType: role })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showSuccess(role, 'Password reset instructions have been sent to your email!');
-                } else {
-                    showError(role, data.message || 'Failed to send reset email. Please try again.');
-                }
-            } catch (error) {
-                console.error('Password reset error:', error);
-                showError(role, 'Network error. Please try again later.');
-            }
+            openAuthActionModal(role, 'forgot');
         }
 
         // ============================================================================
@@ -1655,67 +1740,7 @@
         // RESEND VERIFICATION EMAIL
         // ============================================================================
         async function resendVerification(role) {
-            if (role === 'teacher') {
-                const teacherId = prompt(`Enter your Teacher ID to resend verification:`);
-                
-                if (!teacherId) return;
-                
-                // Teacher ID format validation
-                if (!teacherId.match(/^TCH-[A-Z0-9]{5}$/)) {
-                    showError('teacher', 'Invalid Teacher ID format. Format: TCH-XXXXX');
-                    return;
-                }
-                
-                try {
-                    const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ teacherId, userType: role })
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (response.ok) {
-                        showSuccess('teacher', 'Verification email has been resent! Please check your inbox.');
-                        document.getElementById('teacherVerificationNote').style.display = 'block';
-                    } else {
-                        showError('teacher', data.message || 'Failed to resend verification email.');
-                    }
-                } catch (error) {
-                    console.error('Teacher resend verification error:', error);
-                    showError('teacher', 'Network error. Please try again later.');
-                }
-                return;
-            }
-            
-            const email = prompt(`Enter your ${role} email address to resend verification:`);
-            
-            if (!email) return;
-            
-            if (!validateEmail(email)) {
-                showError(role, 'Please enter a valid email address');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, userType: role })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showSuccess(role, 'Verification email has been resent! Please check your inbox.');
-                    document.getElementById(`${role}VerificationNote`).style.display = 'block';
-                } else {
-                    showError(role, data.message || 'Failed to resend verification email.');
-                }
-            } catch (error) {
-                console.error('Resend verification error:', error);
-                showError(role, 'Network error. Please try again later.');
-            }
+            openAuthActionModal(role, 'resend');
         }
     </script>
 </body>

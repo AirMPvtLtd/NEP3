@@ -1,0 +1,2010 @@
+{
+  "report": {
+    "total_calls": 19,
+    "cache_hits": 81,
+    "mean_score_raw": 0.73,
+    "mean_score_spyral": 0.7012,
+    "mean_drift_raw": 0.0,
+    "mean_drift_spyral": 0.0,
+    "mean_angle_raw": 0.0,
+    "mean_angle_spyral": 0.0,
+    "total_arc_raw": 0.0,
+    "total_arc_spyral": 0.0,
+    "mean_var_raw": 0.0446,
+    "mean_var_spyral": 0.0166,
+    "ece_raw_uncalib": 0.306,
+    "ece_raw_calib": 0.3242,
+    "ece_spyral_uncalib": 0.292,
+    "ece_spyral_calib": 0.2,
+    "platt_T_raw": 1.2692,
+    "platt_T_spyral": 0.1,
+    "mean_sim_impact": 0.0396,
+    "spyral_validated": false
+  },
+  "batch_metrics": [
+    {
+      "batch": 1,
+      "drift_raw": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "drift_spyral": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "ewma_raw": 0.9,
+      "ewma_spyral": 0.7814,
+      "var_raw": 0.0446,
+      "var_spyral": 0.0166,
+      "sim_impact_mean": 0.0396
+    },
+    {
+      "batch": 2,
+      "drift_raw": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "drift_spyral": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "ewma_raw": 0.9,
+      "ewma_spyral": 0.7814,
+      "var_raw": 0.0446,
+      "var_spyral": 0.0166,
+      "sim_impact_mean": 0.0396
+    },
+    {
+      "batch": 3,
+      "drift_raw": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "drift_spyral": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "ewma_raw": 0.9,
+      "ewma_spyral": 0.7814,
+      "var_raw": 0.0446,
+      "var_spyral": 0.0166,
+      "sim_impact_mean": 0.0396
+    },
+    {
+      "batch": 4,
+      "drift_raw": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "drift_spyral": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "ewma_raw": 0.9,
+      "ewma_spyral": 0.7814,
+      "var_raw": 0.0446,
+      "var_spyral": 0.0166,
+      "sim_impact_mean": 0.0396
+    },
+    {
+      "batch": 5,
+      "drift_raw": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "drift_spyral": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "ewma_raw": 0.9,
+      "ewma_spyral": 0.7814,
+      "var_raw": 0.0446,
+      "var_spyral": 0.0166,
+      "sim_impact_mean": 0.0396
+    },
+    {
+      "batch": 6,
+      "drift_raw": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "drift_spyral": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "ewma_raw": 0.9,
+      "ewma_spyral": 0.7814,
+      "var_raw": 0.0446,
+      "var_spyral": 0.0166,
+      "sim_impact_mean": 0.0396
+    },
+    {
+      "batch": 7,
+      "drift_raw": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "drift_spyral": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "ewma_raw": 0.9,
+      "ewma_spyral": 0.7814,
+      "var_raw": 0.0446,
+      "var_spyral": 0.0166,
+      "sim_impact_mean": 0.0396
+    },
+    {
+      "batch": 8,
+      "drift_raw": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "drift_spyral": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "ewma_raw": 0.9,
+      "ewma_spyral": 0.7814,
+      "var_raw": 0.0446,
+      "var_spyral": 0.0166,
+      "sim_impact_mean": 0.0396
+    },
+    {
+      "batch": 9,
+      "drift_raw": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "drift_spyral": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "ewma_raw": 0.9,
+      "ewma_spyral": 0.7814,
+      "var_raw": 0.0446,
+      "var_spyral": 0.0166,
+      "sim_impact_mean": 0.0396
+    },
+    {
+      "batch": 10,
+      "drift_raw": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "drift_spyral": {
+        "magnitude": 0.0,
+        "direction": 1,
+        "angle_deg": 0.0,
+        "arc_length": 0.0
+      },
+      "ewma_raw": 0.9,
+      "ewma_spyral": 0.7814,
+      "var_raw": 0.0446,
+      "var_spyral": 0.0166,
+      "sim_impact_mean": 0.0396
+    }
+  ],
+  "calibration": {
+    "raw": {
+      "T": 1.2692095947724225,
+      "NLL": 0.4848368435319141,
+      "n": 50
+    },
+    "spyral": {
+      "T": 0.10000417828845982,
+      "NLL": 0.27725911366083,
+      "n": 50
+    }
+  },
+  "raw_results": [
+    {
+      "system": "raw",
+      "batch": 1,
+      "condition": "baseline",
+      "score": 0.9,
+      "confidence": 0.95,
+      "cached": false,
+      "latency_ms": 2203.522936000809,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 1,
+      "condition": "light_noise",
+      "score": 0.85,
+      "confidence": 0.9,
+      "cached": false,
+      "latency_ms": 1134.3434499976865,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 1,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": false,
+      "latency_ms": 1724.8069620000024,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 1,
+      "condition": "positive_frame",
+      "score": 0.95,
+      "confidence": 0.9,
+      "cached": false,
+      "latency_ms": 1442.7443940003286,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 1,
+      "condition": "negative_frame",
+      "score": 0.45,
+      "confidence": 0.78,
+      "cached": false,
+      "latency_ms": 1953.6364240011608,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 2,
+      "condition": "baseline",
+      "score": 0.9,
+      "confidence": 0.95,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 2,
+      "condition": "light_noise",
+      "score": 0.85,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 2,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 2,
+      "condition": "positive_frame",
+      "score": 0.95,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 2,
+      "condition": "negative_frame",
+      "score": 0.45,
+      "confidence": 0.78,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 3,
+      "condition": "baseline",
+      "score": 0.9,
+      "confidence": 0.95,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 3,
+      "condition": "light_noise",
+      "score": 0.85,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 3,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 3,
+      "condition": "positive_frame",
+      "score": 0.95,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 3,
+      "condition": "negative_frame",
+      "score": 0.45,
+      "confidence": 0.78,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 4,
+      "condition": "baseline",
+      "score": 0.9,
+      "confidence": 0.95,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 4,
+      "condition": "light_noise",
+      "score": 0.85,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 4,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 4,
+      "condition": "positive_frame",
+      "score": 0.95,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 4,
+      "condition": "negative_frame",
+      "score": 0.45,
+      "confidence": 0.78,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 5,
+      "condition": "baseline",
+      "score": 0.9,
+      "confidence": 0.95,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 5,
+      "condition": "light_noise",
+      "score": 0.85,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 5,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 5,
+      "condition": "positive_frame",
+      "score": 0.95,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 5,
+      "condition": "negative_frame",
+      "score": 0.45,
+      "confidence": 0.78,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 6,
+      "condition": "baseline",
+      "score": 0.9,
+      "confidence": 0.95,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 6,
+      "condition": "light_noise",
+      "score": 0.85,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 6,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 6,
+      "condition": "positive_frame",
+      "score": 0.95,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 6,
+      "condition": "negative_frame",
+      "score": 0.45,
+      "confidence": 0.78,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 7,
+      "condition": "baseline",
+      "score": 0.9,
+      "confidence": 0.95,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 7,
+      "condition": "light_noise",
+      "score": 0.85,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 7,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 7,
+      "condition": "positive_frame",
+      "score": 0.95,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 7,
+      "condition": "negative_frame",
+      "score": 0.45,
+      "confidence": 0.78,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 8,
+      "condition": "baseline",
+      "score": 0.9,
+      "confidence": 0.95,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 8,
+      "condition": "light_noise",
+      "score": 0.85,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 8,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 8,
+      "condition": "positive_frame",
+      "score": 0.95,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 8,
+      "condition": "negative_frame",
+      "score": 0.45,
+      "confidence": 0.78,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 9,
+      "condition": "baseline",
+      "score": 0.9,
+      "confidence": 0.95,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 9,
+      "condition": "light_noise",
+      "score": 0.85,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 9,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 9,
+      "condition": "positive_frame",
+      "score": 0.95,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 9,
+      "condition": "negative_frame",
+      "score": 0.45,
+      "confidence": 0.78,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 10,
+      "condition": "baseline",
+      "score": 0.9,
+      "confidence": 0.95,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 10,
+      "condition": "light_noise",
+      "score": 0.85,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 10,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 10,
+      "condition": "positive_frame",
+      "score": 0.95,
+      "confidence": 0.9,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "raw",
+      "batch": 10,
+      "condition": "negative_frame",
+      "score": 0.45,
+      "confidence": 0.78,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": null
+    }
+  ],
+  "spyral_results": [
+    {
+      "system": "spyral",
+      "batch": 1,
+      "condition": "baseline",
+      "score": 0.7814,
+      "confidence": 0.8,
+      "cached": false,
+      "latency_ms": 2455.263026000466,
+      "details": {
+        "government_alignment": 0.9,
+        "cognitive_depth": 0.85,
+        "institutional_stability": 0.75,
+        "teacher_enablement": 0.8,
+        "operational_sustainability": 0.7,
+        "confidence": 0.8
+      },
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8225,
+        "score_after": 0.7814,
+        "impact": 0.0411
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 1,
+      "condition": "light_noise",
+      "score": 0.7766,
+      "confidence": 0.82,
+      "cached": false,
+      "latency_ms": 1866.384212000412,
+      "details": {
+        "government_alignment": 0.9,
+        "cognitive_depth": 0.85,
+        "institutional_stability": 0.7,
+        "teacher_enablement": 0.8,
+        "operational_sustainability": 0.75,
+        "confidence": 0.82
+      },
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8175,
+        "score_after": 0.7766,
+        "impact": 0.0409
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 1,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": false,
+      "latency_ms": 1625.7589829983772,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "spyral",
+      "batch": 1,
+      "condition": "positive_frame",
+      "score": 0.845,
+      "confidence": 0.92,
+      "cached": false,
+      "latency_ms": 5839.276580001751,
+      "details": {
+        "government_alignment": 0.95,
+        "cognitive_depth": 0.85,
+        "institutional_stability": 0.9,
+        "teacher_enablement": 0.88,
+        "operational_sustainability": 0.8,
+        "confidence": 0.92
+      },
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8895,
+        "score_after": 0.845,
+        "impact": 0.0445
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 1,
+      "condition": "negative_frame",
+      "score": 0.6032,
+      "confidence": 0.5,
+      "cached": false,
+      "latency_ms": 3679.564248999668,
+      "details": {
+        "government_alignment": 0.9,
+        "cognitive_depth": 0.6,
+        "institutional_stability": 0.4,
+        "teacher_enablement": 0.7,
+        "operational_sustainability": 0.3,
+        "confidence": 0.5
+      },
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.635,
+        "score_after": 0.6032,
+        "impact": 0.0318
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 2,
+      "condition": "baseline",
+      "score": 0.7814,
+      "confidence": 0.8,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8225,
+        "score_after": 0.7814,
+        "impact": 0.0411
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 2,
+      "condition": "light_noise",
+      "score": 0.7766,
+      "confidence": 0.82,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8175,
+        "score_after": 0.7766,
+        "impact": 0.0409
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 2,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": false,
+      "latency_ms": 1349.7533299996576,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "spyral",
+      "batch": 2,
+      "condition": "positive_frame",
+      "score": 0.845,
+      "confidence": 0.92,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8895,
+        "score_after": 0.845,
+        "impact": 0.0445
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 2,
+      "condition": "negative_frame",
+      "score": 0.6032,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.635,
+        "score_after": 0.6032,
+        "impact": 0.0318
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 3,
+      "condition": "baseline",
+      "score": 0.7814,
+      "confidence": 0.8,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8225,
+        "score_after": 0.7814,
+        "impact": 0.0411
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 3,
+      "condition": "light_noise",
+      "score": 0.7766,
+      "confidence": 0.82,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8175,
+        "score_after": 0.7766,
+        "impact": 0.0409
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 3,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": false,
+      "latency_ms": 1153.1388770017656,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "spyral",
+      "batch": 3,
+      "condition": "positive_frame",
+      "score": 0.845,
+      "confidence": 0.92,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8895,
+        "score_after": 0.845,
+        "impact": 0.0445
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 3,
+      "condition": "negative_frame",
+      "score": 0.6032,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.635,
+        "score_after": 0.6032,
+        "impact": 0.0318
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 4,
+      "condition": "baseline",
+      "score": 0.7814,
+      "confidence": 0.8,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8225,
+        "score_after": 0.7814,
+        "impact": 0.0411
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 4,
+      "condition": "light_noise",
+      "score": 0.7766,
+      "confidence": 0.82,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8175,
+        "score_after": 0.7766,
+        "impact": 0.0409
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 4,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": false,
+      "latency_ms": 1224.5356009989337,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "spyral",
+      "batch": 4,
+      "condition": "positive_frame",
+      "score": 0.845,
+      "confidence": 0.92,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8895,
+        "score_after": 0.845,
+        "impact": 0.0445
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 4,
+      "condition": "negative_frame",
+      "score": 0.6032,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.635,
+        "score_after": 0.6032,
+        "impact": 0.0318
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 5,
+      "condition": "baseline",
+      "score": 0.7814,
+      "confidence": 0.8,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8225,
+        "score_after": 0.7814,
+        "impact": 0.0411
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 5,
+      "condition": "light_noise",
+      "score": 0.7766,
+      "confidence": 0.82,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8175,
+        "score_after": 0.7766,
+        "impact": 0.0409
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 5,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": false,
+      "latency_ms": 1913.9405340029043,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "spyral",
+      "batch": 5,
+      "condition": "positive_frame",
+      "score": 0.845,
+      "confidence": 0.92,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8895,
+        "score_after": 0.845,
+        "impact": 0.0445
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 5,
+      "condition": "negative_frame",
+      "score": 0.6032,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.635,
+        "score_after": 0.6032,
+        "impact": 0.0318
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 6,
+      "condition": "baseline",
+      "score": 0.7814,
+      "confidence": 0.8,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8225,
+        "score_after": 0.7814,
+        "impact": 0.0411
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 6,
+      "condition": "light_noise",
+      "score": 0.7766,
+      "confidence": 0.82,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8175,
+        "score_after": 0.7766,
+        "impact": 0.0409
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 6,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": false,
+      "latency_ms": 1258.72260700271,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "spyral",
+      "batch": 6,
+      "condition": "positive_frame",
+      "score": 0.845,
+      "confidence": 0.92,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8895,
+        "score_after": 0.845,
+        "impact": 0.0445
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 6,
+      "condition": "negative_frame",
+      "score": 0.6032,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.635,
+        "score_after": 0.6032,
+        "impact": 0.0318
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 7,
+      "condition": "baseline",
+      "score": 0.7814,
+      "confidence": 0.8,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8225,
+        "score_after": 0.7814,
+        "impact": 0.0411
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 7,
+      "condition": "light_noise",
+      "score": 0.7766,
+      "confidence": 0.82,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8175,
+        "score_after": 0.7766,
+        "impact": 0.0409
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 7,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": false,
+      "latency_ms": 1060.730096000043,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "spyral",
+      "batch": 7,
+      "condition": "positive_frame",
+      "score": 0.845,
+      "confidence": 0.92,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8895,
+        "score_after": 0.845,
+        "impact": 0.0445
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 7,
+      "condition": "negative_frame",
+      "score": 0.6032,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.635,
+        "score_after": 0.6032,
+        "impact": 0.0318
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 8,
+      "condition": "baseline",
+      "score": 0.7814,
+      "confidence": 0.8,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8225,
+        "score_after": 0.7814,
+        "impact": 0.0411
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 8,
+      "condition": "light_noise",
+      "score": 0.7766,
+      "confidence": 0.82,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8175,
+        "score_after": 0.7766,
+        "impact": 0.0409
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 8,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": false,
+      "latency_ms": 1456.7036059997918,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "spyral",
+      "batch": 8,
+      "condition": "positive_frame",
+      "score": 0.845,
+      "confidence": 0.92,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8895,
+        "score_after": 0.845,
+        "impact": 0.0445
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 8,
+      "condition": "negative_frame",
+      "score": 0.6032,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.635,
+        "score_after": 0.6032,
+        "impact": 0.0318
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 9,
+      "condition": "baseline",
+      "score": 0.7814,
+      "confidence": 0.8,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8225,
+        "score_after": 0.7814,
+        "impact": 0.0411
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 9,
+      "condition": "light_noise",
+      "score": 0.7766,
+      "confidence": 0.82,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8175,
+        "score_after": 0.7766,
+        "impact": 0.0409
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 9,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": false,
+      "latency_ms": 1407.705089000956,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "spyral",
+      "batch": 9,
+      "condition": "positive_frame",
+      "score": 0.845,
+      "confidence": 0.92,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8895,
+        "score_after": 0.845,
+        "impact": 0.0445
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 9,
+      "condition": "negative_frame",
+      "score": 0.6032,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.635,
+        "score_after": 0.6032,
+        "impact": 0.0318
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 10,
+      "condition": "baseline",
+      "score": 0.7814,
+      "confidence": 0.8,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8225,
+        "score_after": 0.7814,
+        "impact": 0.0411
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 10,
+      "condition": "light_noise",
+      "score": 0.7766,
+      "confidence": 0.82,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8175,
+        "score_after": 0.7766,
+        "impact": 0.0409
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 10,
+      "condition": "heavy_noise",
+      "score": 0.5,
+      "confidence": 0.5,
+      "cached": false,
+      "latency_ms": 1302.8101199997764,
+      "details": {},
+      "sim_validation": null
+    },
+    {
+      "system": "spyral",
+      "batch": 10,
+      "condition": "positive_frame",
+      "score": 0.845,
+      "confidence": 0.92,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.8895,
+        "score_after": 0.845,
+        "impact": 0.0445
+      }
+    },
+    {
+      "system": "spyral",
+      "batch": 10,
+      "condition": "negative_frame",
+      "score": 0.6032,
+      "confidence": 0.5,
+      "cached": true,
+      "latency_ms": 0.0,
+      "details": {},
+      "sim_validation": {
+        "found": [
+          "velocity",
+          "gravity",
+          "simulation",
+          "angle",
+          "assessment"
+        ],
+        "missing": [
+          "physics"
+        ],
+        "raw_factor": 0.95,
+        "final_factor": 0.95,
+        "score_before": 0.635,
+        "score_after": 0.6032,
+        "impact": 0.0318
+      }
+    }
+  ]
+}

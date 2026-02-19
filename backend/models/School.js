@@ -137,11 +137,11 @@ const schoolSchema = new mongoose.Schema({
   limits: {
     maxTeachers: {
       type: Number,
-      default: 10
+      default: 5
     },
     maxStudents: {
       type: Number,
-      default: 100
+      default: 50
     },
     maxClasses: {
       type: Number,
@@ -293,6 +293,28 @@ schoolSchema.pre('save', function () {
 });
 
 
+// 📦 Sync limits when subscriptionPlan changes
+schoolSchema.pre('save', function () {
+
+  if (!this.isModified('subscriptionPlan')) return;
+
+  const plans = require('../config/plans');
+  const planConfig = plans[this.subscriptionPlan];
+
+  if (!planConfig) return; // Unknown plan — leave limits untouched
+
+  // Infinity cannot be stored in MongoDB; use a large sentinel instead
+  this.limits.maxStudents = planConfig.maxStudents === Infinity
+    ? 999999
+    : planConfig.maxStudents;
+
+  this.limits.maxTeachers = planConfig.maxTeachers === Infinity
+    ? 999999
+    : planConfig.maxTeachers;
+
+});
+
+
 // ============================================================================
 // INSTANCE METHODS
 // ============================================================================
@@ -389,6 +411,14 @@ schoolSchema.methods.canAddTeacher = function() {
  */
 schoolSchema.methods.canAddStudent = function() {
   return this.stats.totalStudents < this.limits.maxStudents;
+};
+
+/**
+ * Check if school is on the free plan
+ * @returns {boolean} True if subscriptionPlan === 'free'
+ */
+schoolSchema.methods.isFreePlan = function() {
+  return this.subscriptionPlan === 'free';
 };
 
 /**

@@ -375,9 +375,6 @@ const login = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    console.log('\n================ LOGIN REQUEST START ================');
-    console.log('Incoming body:', req.body);
-
     const { email, password, userType, teacherId, studentId } = req.body;
 
     // 1️⃣ Basic validation
@@ -445,14 +442,11 @@ const login = async (req, res) => {
         });
     }
 
-    console.log(`Using model: ${Model.modelName}`);
-    console.log('Query:', query);
-
     // 4️⃣ Fetch user
     const user = await Model.findOne(query).select(`+${passwordField}`);
 
     if (!user) {
-      console.log('❌ User not found');
+      logger.warn('Login failed: user not found', { userType, query: Object.keys(query) });
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
@@ -461,9 +455,9 @@ const login = async (req, res) => {
 
     // 5️⃣ Password verification
     const isValid = await user.comparePassword(password);
-    console.log('Password match:', isValid);
 
     if (!isValid) {
+      logger.warn('Login failed: invalid password', { userType, userId: user._id });
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
@@ -500,8 +494,7 @@ const login = async (req, res) => {
       role: userType
     });
 
-    console.log('🎉 Login successful');
-    console.log('================ LOGIN REQUEST END =================\n');
+    logger.info('Login successful', { userType, userId: user._id });
 
     return res.json({
       success: true,
@@ -514,7 +507,7 @@ const login = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('🔥 LOGIN EXCEPTION:', error);
+    logger.error('Login exception', { error: error.message });
     return res.status(500).json({
       success: false,
       message: 'Login failed'

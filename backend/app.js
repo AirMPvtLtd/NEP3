@@ -2082,11 +2082,17 @@ app.use(helmet({
 
 app.use(cors({
   origin:(origin,cb)=>{
-    const allowed=process.env.ALLOWED_ORIGINS
-      ? process.env.ALLOWED_ORIGINS.split(',')
+    const isProduction = process.env.NODE_ENV === 'production';
+    const allowed = process.env.ALLOWED_ORIGINS
+      ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
       : ['http://localhost:3000'];
 
-    if(!origin || allowed.includes(origin)) return cb(null,true);
+    // In production, reject requests without an Origin header (non-browser clients)
+    if (!origin) {
+      if (isProduction) return cb(new Error('CORS: missing Origin header'));
+      return cb(null, true);
+    }
+    if (allowed.includes(origin)) return cb(null, true);
     cb(new Error('CORS blocked'));
   },
   credentials:true
@@ -2103,15 +2109,17 @@ app.use(cookieParser());
 // ============================================================================
 
 app.get('/health',(req,res)=>{
-  res.json({status:'ok',time:new Date(),uptime:process.uptime()});
+  res.json({status:'ok',time:new Date()});
 });
 
 // ============================================================================
-// STATIC FILES
+// STATIC FILES (auth-protected)
 // ============================================================================
 
-app.use('/uploads',express.static('uploads'));
-app.use('/exports',express.static('exports'));
+// Protect uploaded/exported files — require a valid JWT to access
+const { protect: _protectStatic } = require('./middleware/auth.middleware');
+app.use('/uploads', _protectStatic, express.static('uploads'));
+app.use('/exports', _protectStatic, express.static('exports'));
 
 // ============================================================================
 // 🚀 SPYRAL MULTI FRONTEND (FINAL FIXED)
@@ -2179,16 +2187,22 @@ app.use(`${API_PREFIX}/parent`,loadRoute('parent','./routes/parent.routes.js'));
 app.use(`${API_PREFIX}/challenges`,loadRoute('challenge','./routes/challenge.routes.js'));
 app.use(`${API_PREFIX}/analytics`,loadRoute('analytics','./routes/analytics.routes.js'));
 app.use(`${API_PREFIX}/admin`,loadRoute('admin','./routes/admin.routes.js'));
+app.use(`${API_PREFIX}/subscription`,loadRoute('subscription','./routes/subscription.routes.js'));
 app.use(`${API_PREFIX}/spi`,loadRoute('spi','./routes/spi.routes.js'));
 app.use(`${API_PREFIX}/reports`,loadRoute('reports','./routes/report.routes.js'));
+
+// ============================================================================
+// CLEAN URL PAGE ROUTES  (no .html in the address bar)
+// ============================================================================
+app.use(require('./routes/pages.routes'));
 
 // ============================================================================
 // ROOT
 // ============================================================================
 
 app.get('/',(req,res)=>{
-  const indexFile=path.join(homePath,'index.html');
-  if(fs.existsSync(indexFile)) return res.sendFile(indexFile);
+  const homeFile=path.join(__dirname,'../frontend/home.html');
+  if(fs.existsSync(homeFile)) return res.sendFile(homeFile);
   res.json({message:'SPYRAL API Running'});
 });
 
