@@ -2033,6 +2033,12 @@ const app = express();
 app.set('trust proxy',1);
 
 // ============================================================================
+// SEO HEADERS  (X-Robots-Tag, canonical Link header)
+// ============================================================================
+const { seoHeaders } = require('./middleware/seo.middleware');
+app.use(seoHeaders);
+
+// ============================================================================
 // 🔐 SECURITY (FIXED CSP)
 // ============================================================================
 
@@ -2129,15 +2135,32 @@ const homePath = path.join(__dirname,'../frontend/home');
 const nepPath  = path.join(__dirname,'../frontend/nep-workbench');
 const upscPath = path.join(__dirname,'../frontend/upsc-workbench');
 
+// Static asset cache options
+const _staticOpts = {
+  etag: true,
+  lastModified: true,
+  setHeaders(res, filePath) {
+    // HTML — never cache so deploys take effect immediately
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    } else {
+      // JS/CSS/images/fonts — cache 1 year (nginx also sets immutable)
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+    }
+  },
+};
+
 // HOME
 if(fs.existsSync(homePath)){
-  app.use('/',express.static(homePath));
+  app.use('/',express.static(homePath, _staticOpts));
   console.log('✅ Home mounted');
 }
 
 // NEP
 if(fs.existsSync(nepPath)){
-  app.use('/nep-workbench',express.static(nepPath));
+  app.use('/nep-workbench',express.static(nepPath, _staticOpts));
   console.log('✅ NEP Workbench mounted');
 
   // 🔥 IMPORTANT FIX (login.html NOT FOUND ISSUE)
@@ -2148,7 +2171,7 @@ if(fs.existsSync(nepPath)){
 
 // UPSC
 if(fs.existsSync(upscPath)){
-  app.use('/upsc-workbench',express.static(upscPath));
+  app.use('/upsc-workbench',express.static(upscPath, _staticOpts));
   console.log('✅ UPSC Workbench mounted');
 }
 
@@ -2190,6 +2213,11 @@ app.use(`${API_PREFIX}/admin`,loadRoute('admin','./routes/admin.routes.js'));
 app.use(`${API_PREFIX}/subscription`,loadRoute('subscription','./routes/subscription.routes.js'));
 app.use(`${API_PREFIX}/spi`,loadRoute('spi','./routes/spi.routes.js'));
 app.use(`${API_PREFIX}/reports`,loadRoute('reports','./routes/report.routes.js'));
+
+// ============================================================================
+// SEO ROUTES  (sitemap.xml, sitemap-index.xml — must be at domain root)
+// ============================================================================
+app.use(require('./routes/seo.routes'));
 
 // ============================================================================
 // CLEAN URL PAGE ROUTES  (no .html in the address bar)

@@ -214,7 +214,7 @@ const logger = require('../utils/logger');
 const mistralService = require('./mistral.service');
 const { Student } = require('../models');
 const { NEP_COMPETENCIES } = require('../config/constants');
-const { calculateStudentSPI } = require('../controllers/spi.controller');
+const { triggerSPIUpdate } = require('./spiTrigger.service');
 
 
 /**
@@ -365,6 +365,10 @@ async function evaluateChallenge(challenge) {
     }
 
     await student.save();
+
+    // Fire-and-forget: recalculate SPI now that a new challenge is evaluated.
+    // Not awaited so a SPI failure never blocks the evaluation response.
+    triggerSPIUpdate(challenge.studentId);
   }
 
   logger.info(`✅ Challenge ${challenge.challengeId} evaluated`, {

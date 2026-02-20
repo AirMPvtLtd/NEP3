@@ -971,7 +971,7 @@ function showDocumentation() {
 }
 
 function reportBug() {
-    alert('Report a Bug:\n\nEmail: support@nepworkbench.edu');
+    alert('Report a Bug:\n\nEmail: support@tryspyral.com');
     closeMenus();
 }
 

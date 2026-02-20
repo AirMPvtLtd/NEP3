@@ -1,0 +1,42 @@
+# robots.txt — tryspyral.com
+# https://www.robotstxt.org/robotstxt.html
+
+User-agent: *
+
+# Public marketing + content pages — allow crawling
+Allow: /$
+Allow: /workbench$
+Allow: /nep$
+Allow: /spyral$
+Allow: /contact$
+
+# Block private / authenticated app pages
+Disallow: /login
+Disallow: /reset-password
+Disallow: /dashboard/
+Disallow: /admin
+Disallow: /teacher
+Disallow: /student
+Disallow: /parent
+
+# Block student tool pages (require auth)
+Disallow: /challenge
+Disallow: /math-lab
+Disallow: /evaluation
+Disallow: /inquiry-lab
+Disallow: /practice
+Disallow: /projects
+Disallow: /journal
+Disallow: /vocational
+Disallow: /sim/
+
+# Block API entirely
+Disallow: /api/
+
+# Block static asset directories that shouldn't be indexed
+Disallow: /uploads/
+Disallow: /exports/
+Disallow: /backups/
+
+# Sitemap location
+Sitemap: https://tryspyral.com/sitemap.xml

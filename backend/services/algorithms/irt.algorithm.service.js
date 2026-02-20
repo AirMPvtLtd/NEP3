@@ -303,6 +303,23 @@ class IRTAlgorithmService {
 
       this.itemBank.set(challengeId, parameters);
 
+      // Persist to MongoDB via collection API (bypasses schema strict mode).
+      // The IRT calibration job queries 'metadata.irt' to find uncalibrated items.
+      await Challenge.collection.updateMany(
+        { challengeId },
+        {
+          $set: {
+            'metadata.irt': {
+              difficulty: parameters.difficulty,
+              discrimination: parameters.discrimination,
+              guessing: parameters.guessing,
+              sampleSize: responses.length,
+              calibratedAt: new Date(),
+            },
+          },
+        }
+      );
+
       return {
         calibrated: true,
         parameters,

@@ -20,18 +20,18 @@ const getAllowedOrigins = () => {
   
   if (env === 'production') {
     return [
-      process.env.FRONTEND_URL || 'https://nep-workbench.com',
-      process.env.ADMIN_URL || 'https://admin.nep-workbench.com',
-      process.env.TEACHER_URL || 'https://teacher.nep-workbench.com',
-      process.env.STUDENT_URL || 'https://student.nep-workbench.com',
-      process.env.PARENT_URL || 'https://parent.nep-workbench.com'
+      process.env.FRONTEND_URL || 'https://tryspyral.com',
+      process.env.ADMIN_URL || 'https://admin.tryspyral.com',
+      process.env.TEACHER_URL || 'https://teacher.tryspyral.com',
+      process.env.STUDENT_URL || 'https://student.tryspyral.com',
+      process.env.PARENT_URL || 'https://parent.tryspyral.com'
     ].filter(Boolean);
   }
   
   if (env === 'staging') {
     return [
-      'https://staging.nep-workbench.com',
-      'https://staging-admin.nep-workbench.com',
+      'https://staging.tryspyral.com',
+      'https://staging-admin.tryspyral.com',
       'http://localhost:3000',
       'http://localhost:3001',
       'http://localhost:5173',
@@ -214,7 +214,7 @@ const isOriginAllowed = (origin) => {
   
   // Pattern match for subdomains
   const allowedPatterns = [
-    /^https?:\/\/.*\.nep-workbench\.com$/,
+    /^https?:\/\/.*\.tryspyral\.com$/,
     /^http:\/\/localhost:\d+$/,
     /^http:\/\/127\.0\.0\.1:\d+$/
   ];
@@ -275,7 +275,7 @@ const customCors = (options = {}) => {
 const adminCors = cors({
   origin: (origin, callback) => {
     const adminOrigins = [
-      process.env.ADMIN_URL || 'https://admin.nep-workbench.com',
+      process.env.ADMIN_URL || 'https://admin.tryspyral.com',
       'http://localhost:3001'
     ];
     
@@ -294,7 +294,7 @@ const adminCors = cors({
 const teacherCors = cors({
   origin: (origin, callback) => {
     const teacherOrigins = [
-      process.env.TEACHER_URL || 'https://teacher.nep-workbench.com',
+      process.env.TEACHER_URL || 'https://teacher.tryspyral.com',
       'http://localhost:3002'
     ];
     
@@ -313,7 +313,7 @@ const teacherCors = cors({
 const studentCors = cors({
   origin: (origin, callback) => {
     const studentOrigins = [
-      process.env.STUDENT_URL || 'https://student.nep-workbench.com',
+      process.env.STUDENT_URL || 'https://student.tryspyral.com',
       'http://localhost:3000'
     ];
     
@@ -332,7 +332,7 @@ const studentCors = cors({
 const parentCors = cors({
   origin: (origin, callback) => {
     const parentOrigins = [
-      process.env.PARENT_URL || 'https://parent.nep-workbench.com',
+      process.env.PARENT_URL || 'https://parent.tryspyral.com',
       'http://localhost:3003'
     ];
     

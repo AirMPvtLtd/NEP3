@@ -188,7 +188,7 @@ aiLogSchema.index({ schoolId: 1, timestamp: -1 });
 aiLogSchema.index({ operation: 1, timestamp: -1 });
 aiLogSchema.index({ model: 1, timestamp: -1 });
 aiLogSchema.index({ success: 1, timestamp: -1 });
-aiLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 2592000 }); // 30 days TTL
+aiLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 63072000 }); // 2 years TTL (longitudinal research)
 
 // ============================================================================
 // STATIC METHODS

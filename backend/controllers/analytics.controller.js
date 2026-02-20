@@ -2225,4 +2225,163 @@ exports.getAIUsageStatistics = async (req, res) => {
   }
 };
 
+// ============================================================================
+// ADVANCED ANALYTICS  (Premium+ plan)
+// ============================================================================
+
+/**
+ * @route GET /api/analytics/ai-usage/projection
+ * @desc  Project monthly AI cost from last 30-day trend
+ * @plan  premium+
+ */
+exports.getAICostProjection = async (req, res) => {
+  try {
+    const schoolId = req.user?.schoolId;
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const logs = await AILog.find({
+      schoolId,
+      createdAt: { $gte: thirtyDaysAgo },
+    })
+      .select('cost createdAt')
+      .lean();
+
+    const totalCost30d = logs.reduce((sum, l) => sum + (l.cost || 0), 0);
+    const projectedMonthly = parseFloat((totalCost30d * (30 / 30)).toFixed(2));
+    const dailyAvg = parseFloat((totalCost30d / 30).toFixed(4));
+
+    return res.json({
+      success: true,
+      data: {
+        schoolId,
+        window: '30 days',
+        totalCostWindow:   parseFloat(totalCost30d.toFixed(2)),
+        dailyAverage:      dailyAvg,
+        projectedMonthly,
+        currency:          'USD',
+        generatedAt:       new Date().toISOString(),
+        note:              'Projection based on last 30-day usage. Actual costs may vary.',
+      },
+    });
+  } catch (err) {
+    logger.error('[analytics] getAICostProjection error:', err);
+    return res.status(500).json({ success: false, message: 'Error calculating AI cost projection.' });
+  }
+};
+
+/**
+ * @route GET /api/analytics/export
+ * @desc  Export school analytics summary to JSON (CSV conversion on client)
+ * @plan  premium+
+ */
+exports.exportAnalytics = async (req, res) => {
+  try {
+    const schoolId = req.user?.schoolId;
+    const { from, to } = req.query;
+
+    const dateFilter = {};
+    if (from || to) {
+      dateFilter.createdAt = {};
+      if (from) dateFilter.createdAt.$gte = new Date(from);
+      if (to)   dateFilter.createdAt.$lte = new Date(to);
+    }
+
+    const [students, aiLogs] = await Promise.all([
+      Student.find({ schoolId }).select('studentId name class section').lean(),
+      AILog.find({ schoolId, ...dateFilter })
+        .select('operation tokensUsed cost createdAt')
+        .sort({ createdAt: -1 })
+        .limit(5000)
+        .lean(),
+    ]);
+
+    const totalCost = aiLogs.reduce((s, l) => s + (l.cost || 0), 0);
+    const totalTokens = aiLogs.reduce((s, l) => s + (l.tokensUsed || 0), 0);
+
+    res.setHeader('Content-Disposition', `attachment; filename="analytics-${schoolId}-${Date.now()}.json"`);
+    res.setHeader('Content-Type', 'application/json');
+
+    return res.json({
+      success: true,
+      exportedAt: new Date().toISOString(),
+      schoolId,
+      dateRange: { from: from || null, to: to || null },
+      summary: {
+        totalStudents: students.length,
+        totalAIOperations: aiLogs.length,
+        totalTokens,
+        totalCostUSD: parseFloat(totalCost.toFixed(4)),
+      },
+      aiLogs,
+    });
+  } catch (err) {
+    logger.error('[analytics] exportAnalytics error:', err);
+    return res.status(500).json({ success: false, message: 'Error exporting analytics.' });
+  }
+};
+
+/**
+ * @route POST /api/analytics/custom-report
+ * @desc  Generate a custom analytics report with date range + filters
+ * @plan  premium+
+ * @body  { from, to, metrics: ['spi','cpi','aiUsage'], classNum, section }
+ */
+exports.getCustomReport = async (req, res) => {
+  try {
+    const schoolId = req.user?.schoolId;
+    const { from, to, metrics = [], classNum, section } = req.body;
+
+    const VALID_METRICS = ['spi', 'cpi', 'aiUsage', 'challenges'];
+    const requestedMetrics = metrics.filter(m => VALID_METRICS.includes(m));
+
+    if (requestedMetrics.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Specify at least one metric. Valid: ${VALID_METRICS.join(', ')}.`,
+      });
+    }
+
+    const dateFilter = {};
+    if (from || to) {
+      dateFilter.createdAt = {};
+      if (from) dateFilter.createdAt.$gte = new Date(from);
+      if (to)   dateFilter.createdAt.$lte = new Date(to);
+    }
+
+    const studentFilter = { schoolId };
+    if (classNum) studentFilter.class = parseInt(classNum, 10);
+    if (section)  studentFilter.section = section;
+
+    const students = await Student.find(studentFilter)
+      .select('studentId name class section')
+      .lean();
+
+    const report = {
+      schoolId,
+      generatedAt: new Date().toISOString(),
+      filters: { from: from || null, to: to || null, classNum: classNum || null, section: section || null },
+      metrics: requestedMetrics,
+      studentCount: students.length,
+      data: {},
+    };
+
+    // Populate requested metric sections
+    if (requestedMetrics.includes('aiUsage')) {
+      const aiLogs = await AILog.find({ schoolId, ...dateFilter })
+        .select('operation tokensUsed cost createdAt')
+        .lean();
+      report.data.aiUsage = {
+        totalOperations: aiLogs.length,
+        totalTokens: aiLogs.reduce((s, l) => s + (l.tokensUsed || 0), 0),
+        totalCostUSD: parseFloat(aiLogs.reduce((s, l) => s + (l.cost || 0), 0).toFixed(4)),
+      };
+    }
+
+    return res.json({ success: true, data: report });
+  } catch (err) {
+    logger.error('[analytics] getCustomReport error:', err);
+    return res.status(500).json({ success: false, message: 'Error generating custom report.' });
+  }
+};
+
 module.exports = exports;

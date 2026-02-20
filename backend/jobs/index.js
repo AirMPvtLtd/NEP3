@@ -1,5 +1,6 @@
 // jobs/index.js
 const { scheduleIRTJobs } = require('./irtCalibration.job');
+const { scheduleBackupJobs } = require('./backup.job');
 
-// In initialization
 scheduleIRTJobs();
+scheduleBackupJobs();

@@ -10,15 +10,19 @@ const express = require('express');
 const router = express.Router();
 
 // Import all route modules
-const authRoutes = require('./auth.routes');
-const adminRoutes = require('./admin.routes');
-const teacherRoutes = require('./teacher.routes');
-const studentRoutes = require('./student.routes');
-const parentRoutes = require('./parent.routes');
-const challengeRoutes = require('./challenge.routes');
-const analyticsRoutes = require('./analytics.routes');
-const healthRoutes = require('./health.routes');
-const reportRoutes = require('./report.routes'); // NEW: Ledger-anchored report routes
+const authRoutes         = require('./auth.routes');
+const adminRoutes        = require('./admin.routes');
+const teacherRoutes      = require('./teacher.routes');
+const studentRoutes      = require('./student.routes');
+const parentRoutes       = require('./parent.routes');
+const challengeRoutes    = require('./challenge.routes');
+const analyticsRoutes    = require('./analytics.routes');
+const healthRoutes       = require('./health.routes');
+const reportRoutes       = require('./report.routes');
+const subscriptionRoutes = require('./subscription.routes');
+const researchRoutes     = require('./research.routes');
+const kpiRoutes          = require('./kpi.routes');
+const developerRoutes    = require('./developer.routes');
 
 // ============================================================================
 // ROUTE MOUNTING
@@ -74,10 +78,34 @@ router.use('/health', healthRoutes);
 
 /**
  * @route   /api/reports/*
- * @desc    NEP Report routes (LEDGER-ANCHORED) - NEW
- * @feature Ledger-anchored reports with AI narration and verification
+ * @desc    NEP Report routes (LEDGER-ANCHORED)
  */
 router.use('/reports', reportRoutes);
+
+/**
+ * @route   /api/subscription/*
+ * @desc    Subscription management — plan status, upgrade requests, usage
+ */
+router.use('/subscription', subscriptionRoutes);
+
+/**
+ * @route   /api/research/*
+ * @desc    External research API — API key auth (no session JWT)
+ * @access  Enterprise / B2B (rsk_ keys)
+ */
+router.use('/research', researchRoutes);
+
+/**
+ * @route   /api/kpi/*
+ * @desc    Platform KPIs — superadmin only (operations team)
+ */
+router.use('/kpi', kpiRoutes);
+
+/**
+ * @route   /api/developer/*
+ * @desc    Developer portal — API key request form (public, no auth)
+ */
+router.use('/developer', developerRoutes);
 
 // ============================================================================
 // API ROOT - UPDATED WITH NEW FEATURES
@@ -103,15 +131,19 @@ router.get('/', (req, res) => {
       institutionalAnalytics: true
     },
     endpoints: {
-      auth: '/api/auth',
-      admin: '/api/admin',
-      teacher: '/api/teacher',
-      student: '/api/student',
-      parent: '/api/parent',
-      challenges: '/api/challenges',
-      analytics: '/api/analytics',
-      health: '/api/health',
-      reports: '/api/reports (NEW!)'
+      auth:         '/api/auth',
+      admin:        '/api/admin',
+      teacher:      '/api/teacher',
+      student:      '/api/student',
+      parent:       '/api/parent',
+      challenges:   '/api/challenges',
+      analytics:    '/api/analytics',
+      health:       '/api/health',
+      reports:      '/api/reports',
+      subscription: '/api/subscription',
+      research:     '/api/research  (API-key auth)',
+      kpi:          '/api/kpi  (superadmin only)',
+      developer:    '/api/developer  (public)',
     },
     reportEndpoints: {
       generate: 'POST /api/reports/nep/generate',
@@ -368,7 +400,7 @@ router.get('/migration', (req, res) => {
     },
     support: {
       documentation: '/api-docs',
-      contact: 'support@nepworkbench.edu'
+      contact: 'support@tryspyral.com'
     }
   });
 });
@@ -474,8 +506,11 @@ router.use('*', (req, res) => {
       '/api/parent',
       '/api/challenges',
       '/api/analytics',
-      '/api/reports (NEW!)',
-      '/api/health'
+      '/api/reports',
+      '/api/subscription',
+      '/api/research',
+      '/api/health',
+      '/api/developer',
     ],
     suggestion: suggestion ? `Try: ${suggestion}` : 'Check /api/routes for all available routes',
     documentation: '/api-docs',

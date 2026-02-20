@@ -16,9 +16,9 @@ const handlebars = require('handlebars');
 // ============================================================================
 
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@nep-workbench.com';
+const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@tryspyral.com';
 const FROM_NAME = process.env.FROM_NAME || 'NEP Workbench';
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@nep-workbench.com';
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@tryspyral.com';
 
 if (SENDGRID_API_KEY) {
   sgMail.setApiKey(SENDGRID_API_KEY);
@@ -219,7 +219,7 @@ const sendTemplatedEmail = async (options) => {
   } = options;
   
   const year = new Date().getFullYear();
-  const baseUrl = process.env.FRONTEND_URL || 'https://nep-workbench.com';
+  const baseUrl = process.env.FRONTEND_URL || 'https://tryspyral.com';
   
   const html = baseTemplateCompiled({
     subject,

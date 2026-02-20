@@ -121,8 +121,8 @@ activitySchema.index({ schoolId: 1, timestamp: -1 });
 activitySchema.index({ activityType: 1, timestamp: -1 });
 activitySchema.index({ timestamp: -1 });
 
-// TTL Index - Auto-delete activities older than 90 days
-activitySchema.index({ timestamp: 1 }, { expireAfterSeconds: 7776000 }); // 90 days
+// TTL Index - Retain activities for 5 years (longitudinal research data)
+activitySchema.index({ timestamp: 1 }, { expireAfterSeconds: 157680000 }); // 5 years
 
 // ============================================================================
 // STATIC METHODS

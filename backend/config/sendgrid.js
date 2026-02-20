@@ -12,7 +12,7 @@ const logger = require('../utils/logger');
 
 const BREVO_CONFIG = {
   apiKey: process.env.BREVO_API_KEY,
-  fromEmail: process.env.FROM_EMAIL || 'noreply@nepworkbench.com',
+  fromEmail: process.env.FROM_EMAIL || 'noreply@tryspyral.com',
   fromName: process.env.FROM_NAME || 'NEP Workbench',
   enabled: process.env.ENABLE_EMAIL_VERIFICATION !== 'false'
 };

@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Developer API Reference | SPYRAL Research API</title>
+
+  <!-- ── Primary SEO ───────────────────────────────────────────────────── -->
+  <meta name="description" content="SPYRAL Research API — complete integration guide with curl, JavaScript, and Python code examples for longitudinal SPI data, competency trends, and challenge statistics.">
+  <meta name="keywords" content="SPYRAL API, NEP research API, education data API, student performance API, SPI data API, edtech API integration">
+  <meta name="author" content="SPYRAL Technologies">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#7877c6">
+  <link rel="canonical" href="https://tryspyral.com/developer">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SPYRAL">
+  <meta property="og:title" content="Developer API Reference | SPYRAL Research API">
+  <meta property="og:description" content="Full integration guide — curl, JavaScript, Python examples for the SPYRAL Research API.">
+  <meta property="og:url" content="https://tryspyral.com/developer">
+  <meta property="og:image" content="https://tryspyral.com/images/og-spyral.png">
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:          #0a0a0f;
+      --bg2:         #111118;
+      --bg3:         #16161f;
+      --border:      rgba(255,255,255,0.07);
+      --purple:      #7877c6;
+      --blue:        #4a90e2;
+      --green:       #4caf87;
+      --orange:      #e2934a;
+      --red:         #e24a4a;
+      --text:        #ededf2;
+      --dim:         #9999b3;
+      --dimmer:      #5f5f7a;
+      --code-bg:     #0d0d14;
+      --tag-bg:      rgba(120,119,198,0.12);
+      --sidebar-w:   260px;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ───────────────────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 24px 0;
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .sidebar-logo a {
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #7877c6, #4a90e2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+
+    .sidebar-logo p { font-size: 11px; color: var(--dimmer); margin-top: 3px; }
+
+    .sidebar-section {
+      padding: 8px 20px 4px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--dimmer);
+    }
+
+    .sidebar-link {
+      display: block;
+      padding: 7px 20px;
+      font-size: 13px;
+      color: var(--dim);
+      text-decoration: none;
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+    }
+
+    .sidebar-link:hover, .sidebar-link.active {
+      color: var(--text);
+      background: rgba(120,119,198,0.08);
+      border-left-color: var(--purple);
+    }
+
+    .method-badge {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      margin-right: 6px;
+      letter-spacing: 0.05em;
+    }
+
+    .get  { background: rgba(74,144,226,0.2);  color: #4a90e2; }
+    .post { background: rgba(76,175,135,0.2);  color: #4caf87; }
+
+    /* ── Main content ──────────────────────────────────────────────────── */
+    .main {
+      flex: 1;
+      max-width: 900px;
+      padding: 48px 48px 80px;
+      overflow-x: hidden;
+    }
+
+    h1 { font-size: 32px; font-weight: 700; margin-bottom: 12px; }
+    h1 span { background: linear-gradient(135deg, #7877c6, #4a90e2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    h2 { font-size: 22px; font-weight: 600; margin: 48px 0 16px; padding-top: 8px; }
+    h2::before { content: ''; display: block; height: 1px; background: var(--border); margin-bottom: 24px; }
+
+    h3 { font-size: 16px; font-weight: 600; margin: 28px 0 10px; }
+
+    p { color: var(--dim); margin-bottom: 14px; font-size: 14px; }
+    a { color: var(--purple); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .lead { font-size: 15px; color: var(--text); margin-bottom: 20px; }
+
+    /* ── Alert boxes ────────────────────────────────────────────────────── */
+    .alert {
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin: 16px 0;
+      border-left: 3px solid;
+    }
+    .alert-info    { background: rgba(74,144,226,0.08);  border-color: var(--blue);   color: #a8c8f0; }
+    .alert-success { background: rgba(76,175,135,0.08);  border-color: var(--green);  color: #88d4b0; }
+    .alert-warn    { background: rgba(226,147,74,0.08);  border-color: var(--orange); color: #f0c890; }
+
+    /* ── Code blocks ────────────────────────────────────────────────────── */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 12px 0;
+      position: relative;
+    }
+
+    code {
+      font-family: 'Fira Code', 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 13px;
+    }
+
+    p code, li code {
+      background: rgba(120,119,198,0.12);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #b0aee8;
+    }
+
+    /* ── Language tabs ──────────────────────────────────────────────────── */
+    .tab-group { margin: 16px 0; }
+
+    .tabs {
+      display: flex;
+      gap: 2px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: -1px;
+    }
+
+    .tab-btn {
+      padding: 7px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--dimmer);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.03em;
+    }
+
+    .tab-btn:hover  { color: var(--dim); }
+    .tab-btn.active { color: var(--purple); border-bottom-color: var(--purple); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── Copy button ────────────────────────────────────────────────────── */
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 4px 10px;
+      font-size: 11px;
+      background: rgba(120,119,198,0.15);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--dim);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover { background: rgba(120,119,198,0.3); color: var(--text); }
+    .copy-btn.copied { color: var(--green); }
+
+    /* ── Endpoint cards ─────────────────────────────────────────────────── */
+    .endpoint {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin: 20px 0;
+    }
+
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .endpoint-path {
+      font-family: monospace;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .endpoint-desc { color: var(--dim); font-size: 13px; }
+
+    /* ── Params table ────────────────────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+
+    th {
+      text-align: left;
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--dimmer);
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 9px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      vertical-align: top;
+    }
+
+    td:first-child { color: #b0aee8; font-family: monospace; font-size: 12px; }
+    td:nth-child(2) { color: var(--green); font-size: 11px; }
+    td:last-child { color: var(--dim); }
+
+    .required { color: var(--orange) !important; }
+
+    /* ── Response snippet ────────────────────────────────────────────────── */
+    .json-key    { color: #7eb8f7; }
+    .json-str    { color: #a8d8a8; }
+    .json-num    { color: #e2a96e; }
+    .json-bool   { color: #d4a8f0; }
+    .json-null   { color: var(--dimmer); }
+
+    /* ── Plans grid ──────────────────────────────────────────────────────── */
+    .plans {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .plan-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .plan-card.highlight { border-color: var(--purple); background: rgba(120,119,198,0.06); }
+    .plan-card h4 { font-size: 14px; margin-bottom: 8px; }
+    .plan-card .price { font-size: 20px; font-weight: 700; color: var(--text); }
+    .plan-card .price span { font-size: 12px; color: var(--dim); font-weight: 400; }
+    .plan-card ul { list-style: none; margin-top: 10px; }
+    .plan-card li { font-size: 12px; color: var(--dim); padding: 2px 0; }
+    .plan-card li::before { content: '✓ '; color: var(--green); }
+
+    /* ── Request form ────────────────────────────────────────────────────── */
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: var(--purple);
+    }
+    .form-group textarea { resize: vertical; min-height: 90px; }
+    .form-group select option { background: var(--bg3); }
+
+    .btn {
+      padding: 11px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      color: white;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    #form-success { display: none; }
+
+    /* ── Error codes ─────────────────────────────────────────────────────── */
+    .error-row td:first-child { color: var(--red); }
+
+    /* ── Scrollbar ───────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(120,119,198,0.3); border-radius: 3px; }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { padding: 24px 20px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar ────────────────────────────────────────────────────────────── -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <a href="/">SPYRAL</a>
+    <p>Research API v1.0</p>
+  </div>
+
+  <div class="sidebar-section">Getting Started</div>
+  <a class="sidebar-link active" href="#overview">Overview</a>
+  <a class="sidebar-link" href="#auth">Authentication</a>
+  <a class="sidebar-link" href="#quickstart">Quick Start</a>
+  <a class="sidebar-link" href="#request-key">Get API Key</a>
+
+  <div class="sidebar-section">Endpoints</div>
+  <a class="sidebar-link" href="#longitudinal"><span class="method-badge get">GET</span>Longitudinal</a>
+  <a class="sidebar-link" href="#spi-timeline"><span class="method-badge get">GET</span>SPI Timeline</a>
+  <a class="sidebar-link" href="#competency-trends"><span class="method-badge get">GET</span>Competency Trends</a>
+  <a class="sidebar-link" href="#challenge-stats"><span class="method-badge get">GET</span>Challenge Stats</a>
+  <a class="sidebar-link" href="#schools"><span class="method-badge get">GET</span>Schools</a>
+  <a class="sidebar-link" href="#export"><span class="method-badge get">GET</span>Export Dataset</a>
+
+  <div class="sidebar-section">Reference</div>
+  <a class="sidebar-link" href="#response-format">Response Format</a>
+  <a class="sidebar-link" href="#errors">Error Codes</a>
+  <a class="sidebar-link" href="#rate-limits">Rate Limits</a>
+  <a class="sidebar-link" href="#plans">API Plans</a>
+</nav>
+
+<!-- ── Main ──────────────────────────────────────────────────────────────── -->
+<main class="main">
+
+  <!-- Overview -->
+  <section id="overview">
+    <h1><span>SPYRAL</span> Research API</h1>
+    <p class="lead">Programmatic access to longitudinal student performance data, competency trends, and AI challenge statistics from India's NEP 2020 adaptive learning platform.</p>
+
+    <div class="alert alert-info">
+      <strong>Base URL:</strong> <code>https://tryspyral.com/api/research</code><br>
+      All responses are JSON. All requests require an API key.
+    </div>
+
+    <p>The Research API is designed for educational researchers, government bodies, and B2B partners who need structured access to anonymised learning analytics at scale. PII is masked by default — student IDs are replaced with stable anonymised tokens.</p>
+  </section>
+
+  <!-- Authentication -->
+  <h2 id="auth">Authentication</h2>
+  <p>All Research API endpoints require an API key with the <code>rsk_</code> prefix. Pass it in one of two ways:</p>
+
+  <div class="tab-group">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab(this,'auth')">HTTP Header (recommended)</button>
+      <button class="tab-btn" onclick="switchTab(this,'auth')">Query Parameter</button>
+    </div>
+    <div class="tab-content active">
+      <pre><code><span style="color:#7eb8f7"># Recommended — header never appears in server logs
+</span>curl -H <span style="color:#a8d8a8">"X-Api-Key: rsk_your_api_key_here"</span> \
+  https://tryspyral.com/api/research/schools</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+    <div class="tab-content">
+      <pre><code><span style="color:#7eb8f7"># Query param — convenient for quick testing only
+# Avoid in production: key may appear in access logs
+</span>curl https://tryspyral.com/api/research/schools?api_key=rsk_your_api_key_here</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+  </div>
+
+  <div class="alert alert-warn">
+    <strong>Keep your key secret.</strong> Do not commit it to version control or expose it in client-side code. Treat it like a password.
+  </div>
+
+  <!-- Quick Start -->
+  <h2 id="quickstart">Quick Start</h2>
+  <p>Make your first API call in under 60 seconds. Replace <code>rsk_YOUR_KEY</code> with your actual key.</p>
+
+  <div class="tab-group">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab(this,'qs')">curl</button>
+      <button class="tab-btn" onclick="switchTab(this,'qs')">JavaScript</button>
+      <button class="tab-btn" onclick="switchTab(this,'qs')">Python</button>
+    </div>
+    <div class="tab-content active">
+<pre><code><span style="color:#7eb8f7"># 1. List schools available under your key</span>
+curl -H <span style="color:#a8d8a8">"X-Api-Key: rsk_YOUR_KEY"</span> \
+  https://tryspyral.com/api/research/schools
+
+<span style="color:#7eb8f7"># 2. Pull SPI timeline for a school (last 30 days)</span>
+curl -H <span style="color:#a8d8a8">"X-Api-Key: rsk_YOUR_KEY"</span> \
+  <span style="color:#a8d8a8">"https://tryspyral.com/api/research/spi-timeline?schoolId=SCH001&from=2025-01-01&limit=100"</span></code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+    <div class="tab-content">
+<pre><code><span style="color:#7eb8f7">// spyral-client.js — copy-paste ready</span>
+<span style="color:#d4a8f0">const</span> API_KEY  = <span style="color:#a8d8a8">'rsk_YOUR_KEY'</span>;
+<span style="color:#d4a8f0">const</span> BASE_URL = <span style="color:#a8d8a8">'https://tryspyral.com/api/research'</span>;
+
+<span style="color:#d4a8f0">async function</span> <span style="color:#7eb8f7">spyral</span>(endpoint, params = {}) {
+  <span style="color:#d4a8f0">const</span> url = <span style="color:#d4a8f0">new</span> URL(BASE_URL + endpoint);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+
+  <span style="color:#d4a8f0">const</span> res = <span style="color:#d4a8f0">await</span> fetch(url, {
+    headers: { <span style="color:#a8d8a8">'X-Api-Key'</span>: API_KEY }
+  });
+
+  <span style="color:#d4a8f0">if</span> (!res.ok) <span style="color:#d4a8f0">throw new</span> Error(<span style="color:#a8d8a8">`API error ${res.status}`</span>);
+  <span style="color:#d4a8f0">return</span> res.json();
+}
+
+<span style="color:#7eb8f7">// Usage</span>
+spyral(<span style="color:#a8d8a8">'/schools'</span>).then(d => console.log(d.data.schools));
+spyral(<span style="color:#a8d8a8">'/spi-timeline'</span>, { schoolId: <span style="color:#a8d8a8">'SCH001'</span>, limit: <span style="color:#a8d8a8">'100'</span> })
+  .then(d => console.log(d.data.records));</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+    <div class="tab-content">
+<pre><code><span style="color:#7eb8f7"># spyral_client.py — copy-paste ready</span>
+<span style="color:#d4a8f0">import</span> requests
+
+API_KEY  = <span style="color:#a8d8a8">"rsk_YOUR_KEY"</span>
+BASE_URL = <span style="color:#a8d8a8">"https://tryspyral.com/api/research"</span>
+HEADERS  = {<span style="color:#a8d8a8">"X-Api-Key"</span>: API_KEY}
+
+<span style="color:#d4a8f0">def</span> <span style="color:#7eb8f7">spyral</span>(endpoint, **params):
+    r = requests.get(BASE_URL + endpoint, headers=HEADERS, params=params)
+    r.raise_for_status()
+    <span style="color:#d4a8f0">return</span> r.json()
+
+<span style="color:#7eb8f7"># Usage</span>
+schools = spyral(<span style="color:#a8d8a8">"/schools"</span>)
+print(schools[<span style="color:#a8d8a8">"data"</span>][<span style="color:#a8d8a8">"schools"</span>])
+
+timeline = spyral(<span style="color:#a8d8a8">"/spi-timeline"</span>, schoolId=<span style="color:#a8d8a8">"SCH001"</span>, limit=<span style="color:#e2a96e">100</span>)
+print(timeline[<span style="color:#a8d8a8">"data"</span>][<span style="color:#a8d8a8">"records"</span>])</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────── ENDPOINTS ─────────────────────────── -->
+
+  <h2 id="endpoints" style="margin-top:56px">API Endpoints</h2>
+
+  <!-- 1. Longitudinal -->
+  <div class="endpoint" id="longitudinal">
+    <div class="endpoint-header">
+      <span class="method-badge get" style="font-size:11px;padding:3px 8px">GET</span>
+      <span class="endpoint-path">/api/research/longitudinal</span>
+    </div>
+    <p class="endpoint-desc">Multi-year SPI trajectory snapshots for a school cohort. Returns data points per student showing performance evolution over time.</p>
+
+    <h3>Parameters</h3>
+    <table>
+      <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="required">schoolId *</td><td>string</td><td>School identifier (required)</td></tr>
+        <tr><td>classNum</td><td>integer</td><td>Filter by class number (e.g. 8, 9, 10)</td></tr>
+        <tr><td>from</td><td>ISO date</td><td>Start date filter — <code>2024-01-01</code></td></tr>
+        <tr><td>to</td><td>ISO date</td><td>End date filter</td></tr>
+        <tr><td>page</td><td>integer</td><td>Page number (default: 1)</td></tr>
+        <tr><td>limit</td><td>integer</td><td>Records per page (default: 100, max: 500)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="tab-group">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(this,'long')">curl</button>
+        <button class="tab-btn" onclick="switchTab(this,'long')">JavaScript</button>
+        <button class="tab-btn" onclick="switchTab(this,'long')">Python</button>
+        <button class="tab-btn" onclick="switchTab(this,'long')">Response</button>
+      </div>
+      <div class="tab-content active">
+<pre><code>curl -H <span style="color:#a8d8a8">"X-Api-Key: rsk_YOUR_KEY"</span> \
+  <span style="color:#a8d8a8">"https://tryspyral.com/api/research/longitudinal?schoolId=SCH001&classNum=8&from=2024-01-01&limit=100"</span></code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code><span style="color:#d4a8f0">const</span> data = <span style="color:#d4a8f0">await</span> spyral(<span style="color:#a8d8a8">'/longitudinal'</span>, {
+  schoolId: <span style="color:#a8d8a8">'SCH001'</span>,
+  classNum: <span style="color:#e2a96e">8</span>,
+  from:     <span style="color:#a8d8a8">'2024-01-01'</span>,
+  limit:    <span style="color:#e2a96e">100</span>
+});</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code>data = spyral(<span style="color:#a8d8a8">"/longitudinal"</span>,
+              schoolId=<span style="color:#a8d8a8">"SCH001"</span>, classNum=<span style="color:#e2a96e">8</span>,
+              from_date=<span style="color:#a8d8a8">"2024-01-01"</span>, limit=<span style="color:#e2a96e">100</span>)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code>{
+  <span class="json-key">"success"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"records"</span>: [
+      {
+        <span class="json-key">"id"</span>:               <span class="json-str">"anon_dGVzdA"</span>,
+        <span class="json-key">"studentRef"</span>:      <span class="json-str">"anon_c3R1ZA"</span>,  <span style="color:var(--dimmer)">// stable anon ID</span>
+        <span class="json-key">"class"</span>:           <span class="json-num">8</span>,
+        <span class="json-key">"section"</span>:         <span class="json-str">"A"</span>,
+        <span class="json-key">"trackingStartDate"</span>: <span class="json-str">"2024-06-01T00:00:00.000Z"</span>,
+        <span class="json-key">"dataPoints"</span>: [
+          { <span class="json-key">"timestamp"</span>: <span class="json-str">"2024-06-15T..."</span>, <span class="json-key">"spi"</span>: <span class="json-num">72.4</span> },
+          { <span class="json-key">"timestamp"</span>: <span class="json-str">"2024-07-15T..."</span>, <span class="json-key">"spi"</span>: <span class="json-num">75.1</span> }
+        ],
+        <span class="json-key">"trends"</span>:          { <span class="json-key">"slope"</span>: <span class="json-num">0.23</span>, <span class="json-key">"direction"</span>: <span class="json-str">"improving"</span> }
+      }
+    ],
+    <span class="json-key">"total"</span>: <span class="json-num">248</span>, <span class="json-key">"page"</span>: <span class="json-num">1</span>, <span class="json-key">"pages"</span>: <span class="json-num">3</span>
+  }
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. SPI Timeline -->
+  <div class="endpoint" id="spi-timeline">
+    <div class="endpoint-header">
+      <span class="method-badge get" style="font-size:11px;padding:3px 8px">GET</span>
+      <span class="endpoint-path">/api/research/spi-timeline</span>
+    </div>
+    <p class="endpoint-desc">SPI (Student Performance Index) snapshots over time for a school cohort. Includes Kalman uncertainty estimates and learning state classifications.</p>
+
+    <h3>Parameters</h3>
+    <table>
+      <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="required">schoolId *</td><td>string</td><td>School identifier (required)</td></tr>
+        <tr><td>classNum</td><td>integer</td><td>Filter by class number</td></tr>
+        <tr><td>from / to</td><td>ISO date</td><td>Date range filter</td></tr>
+        <tr><td>page / limit</td><td>integer</td><td>Pagination (max limit: 500)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="tab-group">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(this,'spi')">curl</button>
+        <button class="tab-btn" onclick="switchTab(this,'spi')">JavaScript</button>
+        <button class="tab-btn" onclick="switchTab(this,'spi')">Python</button>
+        <button class="tab-btn" onclick="switchTab(this,'spi')">Response</button>
+      </div>
+      <div class="tab-content active">
+<pre><code>curl -H <span style="color:#a8d8a8">"X-Api-Key: rsk_YOUR_KEY"</span> \
+  <span style="color:#a8d8a8">"https://tryspyral.com/api/research/spi-timeline?schoolId=SCH001&from=2024-01-01&to=2024-12-31&limit=500"</span></code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code><span style="color:#d4a8f0">const</span> data = <span style="color:#d4a8f0">await</span> spyral(<span style="color:#a8d8a8">'/spi-timeline'</span>, {
+  schoolId: <span style="color:#a8d8a8">'SCH001'</span>,
+  from: <span style="color:#a8d8a8">'2024-01-01'</span>, to: <span style="color:#a8d8a8">'2024-12-31'</span>, limit: <span style="color:#e2a96e">500</span>
+});</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code>data = spyral(<span style="color:#a8d8a8">"/spi-timeline"</span>,
+              schoolId=<span style="color:#a8d8a8">"SCH001"</span>,
+              **{<span style="color:#a8d8a8">"from"</span>: <span style="color:#a8d8a8">"2024-01-01"</span>, <span style="color:#a8d8a8">"to"</span>: <span style="color:#a8d8a8">"2024-12-31"</span>},
+              limit=<span style="color:#e2a96e">500</span>)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code>{
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"records"</span>: [
+      {
+        <span class="json-key">"studentRef"</span>:       <span class="json-str">"anon_c3R1ZA"</span>,
+        <span class="json-key">"class"</span>:            <span class="json-num">9</span>,
+        <span class="json-key">"spi"</span>:              <span class="json-num">78.3</span>,
+        <span class="json-key">"grade"</span>:            <span class="json-str">"B+"</span>,
+        <span class="json-key">"learningState"</span>:   <span class="json-str">"consolidating"</span>,
+        <span class="json-key">"kalmanUncertainty"</span>: <span class="json-num">0.042</span>,
+        <span class="json-key">"totalChallenges"</span>:  <span class="json-num">34</span>,
+        <span class="json-key">"calculatedAt"</span>:    <span class="json-str">"2024-09-15T10:22:00.000Z"</span>,
+        <span class="json-key">"source"</span>:          <span class="json-str">"challenge_evaluated"</span>
+      }
+    ]
+  }
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Competency Trends -->
+  <div class="endpoint" id="competency-trends">
+    <div class="endpoint-header">
+      <span class="method-badge get" style="font-size:11px;padding:3px 8px">GET</span>
+      <span class="endpoint-path">/api/research/competency-trends</span>
+    </div>
+    <p class="endpoint-desc">Aggregated Bayesian belief scores per competency across a school cohort. Returns average mastery level per NEP 2020 competency plus Kalman ability distribution.</p>
+
+    <h3>Parameters</h3>
+    <table>
+      <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="required">schoolId *</td><td>string</td><td>School identifier</td></tr>
+        <tr><td>classNum</td><td>integer</td><td>Filter by class number</td></tr>
+      </tbody>
+    </table>
+
+    <div class="tab-group">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(this,'cpt')">curl</button>
+        <button class="tab-btn" onclick="switchTab(this,'cpt')">JavaScript</button>
+        <button class="tab-btn" onclick="switchTab(this,'cpt')">Python</button>
+        <button class="tab-btn" onclick="switchTab(this,'cpt')">Response</button>
+      </div>
+      <div class="tab-content active">
+<pre><code>curl -H <span style="color:#a8d8a8">"X-Api-Key: rsk_YOUR_KEY"</span> \
+  <span style="color:#a8d8a8">"https://tryspyral.com/api/research/competency-trends?schoolId=SCH001&classNum=10"</span></code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code><span style="color:#d4a8f0">const</span> data = <span style="color:#d4a8f0">await</span> spyral(<span style="color:#a8d8a8">'/competency-trends'</span>, {
+  schoolId: <span style="color:#a8d8a8">'SCH001'</span>, classNum: <span style="color:#e2a96e">10</span>
+});</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code>data = spyral(<span style="color:#a8d8a8">"/competency-trends"</span>, schoolId=<span style="color:#a8d8a8">"SCH001"</span>, classNum=<span style="color:#e2a96e">10</span>)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code>{
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"studentCount"</span>: <span class="json-num">142</span>,
+    <span class="json-key">"competencies"</span>: {
+      <span class="json-key">"critical_thinking"</span>:  { <span class="json-key">"averageMastery"</span>: <span class="json-num">0.712</span>, <span class="json-key">"studentsCovered"</span>: <span class="json-num">138</span> },
+      <span class="json-key">"problem_solving"</span>:    { <span class="json-key">"averageMastery"</span>: <span class="json-num">0.689</span>, <span class="json-key">"studentsCovered"</span>: <span class="json-num">140</span> },
+      <span class="json-key">"communication"</span>:      { <span class="json-key">"averageMastery"</span>: <span class="json-num">0.754</span>, <span class="json-key">"studentsCovered"</span>: <span class="json-num">135</span> }
+    },
+    <span class="json-key">"kalman"</span>: { <span class="json-key">"averageAbility"</span>: <span class="json-num">0.681</span>, <span class="json-key">"sampleSize"</span>: <span class="json-num">138</span> }
+  }
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Challenge Stats -->
+  <div class="endpoint" id="challenge-stats">
+    <div class="endpoint-header">
+      <span class="method-badge get" style="font-size:11px;padding:3px 8px">GET</span>
+      <span class="endpoint-path">/api/research/challenge-stats</span>
+    </div>
+    <p class="endpoint-desc">Aggregated challenge performance statistics broken down by simulation type. Includes pass rates, average scores, and average completion time.</p>
+
+    <div class="tab-group">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(this,'chs')">curl</button>
+        <button class="tab-btn" onclick="switchTab(this,'chs')">JavaScript</button>
+        <button class="tab-btn" onclick="switchTab(this,'chs')">Python</button>
+        <button class="tab-btn" onclick="switchTab(this,'chs')">Response</button>
+      </div>
+      <div class="tab-content active">
+<pre><code>curl -H <span style="color:#a8d8a8">"X-Api-Key: rsk_YOUR_KEY"</span> \
+  <span style="color:#a8d8a8">"https://tryspyral.com/api/research/challenge-stats?schoolId=SCH001&from=2024-01-01"</span></code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code><span style="color:#d4a8f0">const</span> data = <span style="color:#d4a8f0">await</span> spyral(<span style="color:#a8d8a8">'/challenge-stats'</span>, {
+  schoolId: <span style="color:#a8d8a8">'SCH001'</span>, from: <span style="color:#a8d8a8">'2024-01-01'</span>
+});</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code>data = spyral(<span style="color:#a8d8a8">"/challenge-stats"</span>, schoolId=<span style="color:#a8d8a8">"SCH001"</span>,
+              **{<span style="color:#a8d8a8">"from"</span>: <span style="color:#a8d8a8">"2024-01-01"</span>})</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code>{
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"bySimulation"</span>: [
+      {
+        <span class="json-key">"simulationType"</span>: <span class="json-str">"math_reasoning"</span>,
+        <span class="json-key">"totalAttempts"</span>:  <span class="json-num">1240</span>,
+        <span class="json-key">"passRate"</span>:       <span class="json-num">74.2</span>,
+        <span class="json-key">"averageScore"</span>:   <span class="json-num">68.5</span>,
+        <span class="json-key">"averageTimeMin"</span>: <span class="json-num">18.3</span>
+      }
+    ],
+    <span class="json-key">"overall"</span>: { <span class="json-key">"total"</span>: <span class="json-num">4820</span>, <span class="json-key">"passRate"</span>: <span class="json-num">71.8</span>, <span class="json-key">"avgScore"</span>: <span class="json-num">67.2</span> }
+  }
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Schools -->
+  <div class="endpoint" id="schools">
+    <div class="endpoint-header">
+      <span class="method-badge get" style="font-size:11px;padding:3px 8px">GET</span>
+      <span class="endpoint-path">/api/research/schools</span>
+    </div>
+    <p class="endpoint-desc">List schools available under your API key. School names and cities are anonymised by default. Full metadata requires the <code>canViewRawData</code> permission.</p>
+
+    <div class="tab-group">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(this,'sch')">curl</button>
+        <button class="tab-btn" onclick="switchTab(this,'sch')">JavaScript</button>
+        <button class="tab-btn" onclick="switchTab(this,'sch')">Python</button>
+        <button class="tab-btn" onclick="switchTab(this,'sch')">Response</button>
+      </div>
+      <div class="tab-content active">
+<pre><code>curl -H <span style="color:#a8d8a8">"X-Api-Key: rsk_YOUR_KEY"</span> \
+  https://tryspyral.com/api/research/schools</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code><span style="color:#d4a8f0">const</span> data = <span style="color:#d4a8f0">await</span> spyral(<span style="color:#a8d8a8">'/schools'</span>);</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code>data = spyral(<span style="color:#a8d8a8">"/schools"</span>)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code>{
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"schools"</span>: [
+      {
+        <span class="json-key">"id"</span>:           <span class="json-str">"SCH001"</span>,        <span style="color:var(--dimmer)">// real ID if canViewRawData</span>
+        <span class="json-key">"name"</span>:         <span class="json-str">"School-anon_dGVz"</span>, <span style="color:var(--dimmer)">// anonymised by default</span>
+        <span class="json-key">"state"</span>:        <span class="json-str">"Maharashtra"</span>,
+        <span class="json-key">"studentCount"</span>: <span class="json-num">480</span>,
+        <span class="json-key">"teacherCount"</span>: <span class="json-num">32</span>,
+        <span class="json-key">"plan"</span>:         <span class="json-str">"premium"</span>
+      }
+    ],
+    <span class="json-key">"total"</span>: <span class="json-num">14</span>
+  }
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Export -->
+  <div class="endpoint" id="export">
+    <div class="endpoint-header">
+      <span class="method-badge get" style="font-size:11px;padding:3px 8px">GET</span>
+      <span class="endpoint-path">/api/research/export</span>
+    </div>
+    <div class="alert alert-warn" style="margin-bottom:12px">
+      Requires <code>canExportFullDataset</code> permission on your API key.
+    </div>
+    <p class="endpoint-desc">Paginated full dataset export. Choose collection: <code>spi</code>, <code>longitudinal</code>, or <code>challenges</code>. Maximum page size is capped by your key's <code>maxExportSize</code> setting.</p>
+
+    <h3>Parameters</h3>
+    <table>
+      <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>collection</td><td>string</td><td><code>spi</code> | <code>longitudinal</code> | <code>challenges</code> (default: spi)</td></tr>
+        <tr><td>schoolId</td><td>string</td><td>Filter by school (optional)</td></tr>
+        <tr><td>from / to</td><td>ISO date</td><td>Date range</td></tr>
+        <tr><td>page / limit</td><td>integer</td><td>Pagination — capped by maxExportSize on your key</td></tr>
+      </tbody>
+    </table>
+
+    <div class="tab-group">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(this,'exp')">curl</button>
+        <button class="tab-btn" onclick="switchTab(this,'exp')">JavaScript</button>
+        <button class="tab-btn" onclick="switchTab(this,'exp')">Python (paginate all)</button>
+      </div>
+      <div class="tab-content active">
+<pre><code>curl -H <span style="color:#a8d8a8">"X-Api-Key: rsk_YOUR_KEY"</span> \
+  <span style="color:#a8d8a8">"https://tryspyral.com/api/research/export?collection=spi&schoolId=SCH001&page=1&limit=500"</span></code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code><span style="color:#7eb8f7">// Paginate through all SPI records</span>
+<span style="color:#d4a8f0">async function</span> exportAll(schoolId) {
+  <span style="color:#d4a8f0">let</span> page = <span style="color:#e2a96e">1</span>, all = [];
+  <span style="color:#d4a8f0">while</span> (<span style="color:#d4a8f0">true</span>) {
+    <span style="color:#d4a8f0">const</span> { data } = <span style="color:#d4a8f0">await</span> spyral(<span style="color:#a8d8a8">'/export'</span>, {
+      collection: <span style="color:#a8d8a8">'spi'</span>, schoolId, page, limit: <span style="color:#e2a96e">500</span>
+    });
+    all.push(...data.records);
+    <span style="color:#d4a8f0">if</span> (page >= data.pages) <span style="color:#d4a8f0">break</span>;
+    page++;
+  }
+  <span style="color:#d4a8f0">return</span> all;
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+      <div class="tab-content">
+<pre><code><span style="color:#d4a8f0">def</span> <span style="color:#7eb8f7">export_all</span>(school_id, collection=<span style="color:#a8d8a8">"spi"</span>):
+    records, page = [], <span style="color:#e2a96e">1</span>
+    <span style="color:#d4a8f0">while</span> <span style="color:#d4a8f0">True</span>:
+        r = spyral(<span style="color:#a8d8a8">"/export"</span>,
+                   collection=collection,
+                   schoolId=school_id,
+                   page=page, limit=<span style="color:#e2a96e">500</span>)
+        records.extend(r[<span style="color:#a8d8a8">"data"</span>][<span style="color:#a8d8a8">"records"</span>])
+        <span style="color:#d4a8f0">if</span> page >= r[<span style="color:#a8d8a8">"data"</span>][<span style="color:#a8d8a8">"pages"</span>]: <span style="color:#d4a8f0">break</span>
+        page += <span style="color:#e2a96e">1</span>
+    <span style="color:#d4a8f0">return</span> records</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Response Format -->
+  <h2 id="response-format">Response Format</h2>
+  <p>Every response follows the same envelope structure:</p>
+<pre><code>{
+  <span class="json-key">"success"</span>: <span class="json-bool">true</span>,          <span style="color:var(--dimmer)">// false on error</span>
+  <span class="json-key">"data"</span>: { ... }           <span style="color:var(--dimmer)">// payload on success</span>
+}
+
+<span style="color:var(--dimmer)">// Paginated endpoints include:</span>
+<span class="json-key">"total"</span>: <span class="json-num">1240</span>,             <span style="color:var(--dimmer)">// total records matching query</span>
+<span class="json-key">"page"</span>:  <span class="json-num">1</span>,
+<span class="json-key">"pages"</span>: <span class="json-num">3</span>,               <span style="color:var(--dimmer)">// ceil(total / limit)</span>
+<span class="json-key">"limit"</span>: <span class="json-num">500</span></code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+  <div class="alert alert-info">
+    <strong>PII policy.</strong> Student IDs are replaced with stable anonymised tokens (<code>"anon_..."</code>) by default. Tokens are consistent across API calls — the same student always gets the same token. If your key has <code>canViewRawData</code>, real IDs are returned.
+  </div>
+
+  <!-- Errors -->
+  <h2 id="errors">Error Codes</h2>
+  <table>
+    <thead><tr><th>HTTP</th><th>Code</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr class="error-row"><td>401</td><td>API_KEY_REQUIRED</td><td>No key provided</td></tr>
+      <tr class="error-row"><td>401</td><td>INVALID_API_KEY</td><td>Key not found</td></tr>
+      <tr class="error-row"><td>401</td><td>API_KEY_REVOKED</td><td>Key has been revoked</td></tr>
+      <tr class="error-row"><td>401</td><td>API_KEY_EXPIRED</td><td>Key past its expiry date</td></tr>
+      <tr class="error-row"><td>403</td><td>PERMISSION_DENIED</td><td>Key lacks required permission (e.g. canExportFullDataset)</td></tr>
+      <tr class="error-row"><td>400</td><td>—</td><td>Missing required parameter (message explains which)</td></tr>
+      <tr class="error-row"><td>429</td><td>—</td><td>Rate limit exceeded — back off and retry</td></tr>
+      <tr class="error-row"><td>500</td><td>—</td><td>Internal error — contact support@tryspyral.com</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Rate Limits -->
+  <h2 id="rate-limits">Rate Limits</h2>
+  <table>
+    <thead><tr><th>Tier</th><th>Calls / day</th><th>Max page size</th></tr></thead>
+    <tbody>
+      <tr><td>Basic</td><td>1,000</td><td>100</td></tr>
+      <tr><td>Premium</td><td>10,000</td><td>500</td></tr>
+      <tr><td>Enterprise</td><td>Unlimited</td><td>500 (custom on request)</td></tr>
+    </tbody>
+  </table>
+  <p>When you exceed the rate limit the API returns HTTP 429. Add exponential back-off to your retry logic.</p>
+
+  <!-- Plans -->
+  <h2 id="plans">API Plans</h2>
+  <p>Research API access is included in the <strong>Enterprise plan</strong>. Specific data-export permissions must be granted by the SPYRAL team when your key is provisioned.</p>
+
+  <div class="plans">
+    <div class="plan-card">
+      <h4>Basic</h4>
+      <div class="price">₹2,999 <span>/month</span></div>
+      <ul>
+        <li>Up to 500 students</li>
+        <li>AI challenges</li>
+        <li>SPI tracking</li>
+        <li>NEP 2020 reports</li>
+      </ul>
+    </div>
+    <div class="plan-card">
+      <h4>Premium</h4>
+      <div class="price">₹9,999 <span>/month</span></div>
+      <ul>
+        <li>Up to 2,000 students</li>
+        <li>Advanced analytics</li>
+        <li>Batch reports</li>
+        <li>Export APIs</li>
+      </ul>
+    </div>
+    <div class="plan-card highlight">
+      <h4>Enterprise</h4>
+      <div class="price">Custom</div>
+      <ul>
+        <li>Unlimited students</li>
+        <li>Research API access</li>
+        <li>Raw data export</li>
+        <li>Dedicated support</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Request Key -->
+  <h2 id="request-key">Request API Access</h2>
+  <p>API keys are provisioned by the SPYRAL team. Submit the form below — we'll set up your key within one business day.</p>
+
+  <div id="form-success" class="alert alert-success">
+    <strong>Request received!</strong> We'll be in touch within one business day with your API key.
+  </div>
+
+  <form id="key-request-form" onsubmit="submitKeyRequest(event)">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="form-group">
+        <label>Full name *</label>
+        <input type="text" name="name" required placeholder="Dr. Ananya Sharma">
+      </div>
+      <div class="form-group">
+        <label>Work email *</label>
+        <input type="email" name="email" required placeholder="researcher@iit.ac.in">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="form-group">
+        <label>Organisation *</label>
+        <input type="text" name="organisation" required placeholder="IIT Bombay / Ministry of Education">
+      </div>
+      <div class="form-group">
+        <label>Organisation type *</label>
+        <select name="orgType" required>
+          <option value="">Select…</option>
+          <option>University / Research Institute</option>
+          <option>Government / Ministry</option>
+          <option>Ed-Tech Company</option>
+          <option>NGO / Non-profit</option>
+          <option>Independent Researcher</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Intended use *</label>
+      <textarea name="intendedUse" required placeholder="Describe your research purpose and what data you need access to…"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Permissions requested</label>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:6px">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer">
+          <input type="checkbox" name="perm_longitudinal" checked style="width:auto"> Longitudinal &amp; SPI data
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer">
+          <input type="checkbox" name="perm_rawData" style="width:auto"> View raw school names (canViewRawData)
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer">
+          <input type="checkbox" name="perm_export" style="width:auto"> Full dataset export (canExportFullDataset)
+        </label>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary" id="submit-btn">Submit access request</button>
+  </form>
+
+</main>
+
+<script>
+// ── Tab switching ──────────────────────────────────────────────────────────────
+function switchTab(btn, group) {
+  const tabGroup = btn.closest('.tab-group');
+  tabGroup.querySelectorAll('.tab-btn').forEach((b, i) => {
+    const isActive = b === btn;
+    b.classList.toggle('active', isActive);
+    tabGroup.querySelectorAll('.tab-content')[i].classList.toggle('active', isActive);
+  });
+}
+
+// ── Copy to clipboard ──────────────────────────────────────────────────────────
+function copyCode(btn) {
+  const pre = btn.parentElement;
+  const text = pre.innerText.replace('Copy', '').replace('Copied!', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ── Active sidebar link on scroll ──────────────────────────────────────────────
+const sections = document.querySelectorAll('section[id], div.endpoint[id], h2[id]');
+const links    = document.querySelectorAll('.sidebar-link');
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const active = document.querySelector(`.sidebar-link[href="#${e.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+
+sections.forEach(s => observer.observe(s));
+
+// ── Key request form ──────────────────────────────────────────────────────────
+async function submitKeyRequest(e) {
+  e.preventDefault();
+  const btn  = document.getElementById('submit-btn');
+  const form = document.getElementById('key-request-form');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  const fd = new FormData(form);
+  const body = {
+    name:         fd.get('name'),
+    email:        fd.get('email'),
+    organisation: fd.get('organisation'),
+    orgType:      fd.get('orgType'),
+    intendedUse:  fd.get('intendedUse'),
+    permissions: {
+      longitudinal: !!fd.get('perm_longitudinal'),
+      rawData:      !!fd.get('perm_rawData'),
+      export:       !!fd.get('perm_export'),
+    }
+  };
+
+  try {
+    const res = await fetch('/api/developer/request-access', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    if (res.ok) {
+      form.style.display = 'none';
+      document.getElementById('form-success').style.display = 'block';
+    } else {
+      const err = await res.json();
+      alert(err.message || 'Submission failed. Email us at sales@tryspyral.com');
+      btn.disabled = false;
+      btn.textContent = 'Submit access request';
+    }
+  } catch {
+    alert('Network error. Email us at sales@tryspyral.com');
+    btn.disabled = false;
+    btn.textContent = 'Submit access request';
+  }
+}
+</script>
+
+</body>
+</html>

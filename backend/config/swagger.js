@@ -64,18 +64,18 @@ For more information, visit our [GitHub repository](https://github.com/nep-workb
     `,
     contact: {
       name: 'NEP Workbench Support',
-      email: 'support@nepworkbench.com',
-      url: 'https://nepworkbench.com'
+      email: 'support@tryspyral.com',
+      url: 'https://tryspyral.com'
     },
     license: {
       name: 'Proprietary',
-      url: 'https://nepworkbench.com/license'
+      url: 'https://tryspyral.com/license'
     }
   },
   servers: [
     {
       url: process.env.NODE_ENV === 'production' 
-        ? 'https://api.nepworkbench.com'
+        ? 'https://api.tryspyral.com'
         : 'http://localhost:3000',
       description: process.env.NODE_ENV === 'production' 
         ? 'Production Server' 

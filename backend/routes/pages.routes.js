@@ -58,9 +58,10 @@ router.get('/vocational',  page('dashboards/student/vocational-skills-studio/Voc
 // ============================================================================
 // INFO / MARKETING PAGES
 // ============================================================================
-router.get('/workbench', page('index.html'));
-router.get('/nep',       page('nep.html'));
-router.get('/spyral',    page('spyralai.html'));
+router.get('/workbench',  page('index.html'));
+router.get('/nep',        page('nep.html'));
+router.get('/spyral',     page('spyralai.html'));
+router.get('/developer',  (_req, res) => res.sendFile(path.join(FRONTEND, 'developer.html')));
 
 // ============================================================================
 // MATH SIMULATIONS  →  /sim/math/:tool
