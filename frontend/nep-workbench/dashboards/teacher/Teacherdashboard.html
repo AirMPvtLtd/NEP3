@@ -1682,6 +1682,19 @@
     height: 380px !important;
     overflow: hidden !important;
     padding: 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.chart-container .chart-header {
+    flex-shrink: 0;
+}
+
+.chart-canvas-wrapper {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
 }
 
 /* Fix donut chart container */
@@ -1988,39 +2001,49 @@ th, td {
                                 <button class="filter-btn" onclick="changeChartPeriod(90)">3 Months</button>
                             </div>
                         </div>
-                        <canvas id="trendChartCanvas" style="width:100%; height:250px;"></canvas>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="trendChartCanvas"></canvas>
+                        </div>
                     </div>
-                    
+
                     <!-- COMPETENCY RADAR CHART -->
                     <div class="chart-container">
                         <div class="chart-header">
                             <h3><i class="fas fa-brain"></i> NEP Competencies</h3>
                         </div>
-                        <canvas id="competencyBarChart" style="width:100%; height:250px;"></canvas>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="competencyBarChart"></canvas>
+                        </div>
                     </div>
-                    
+
                     <!-- CHALLENGE STATUS DONUT CHART -->
                     <div class="chart-container">
                         <div class="chart-header">
                             <h3><i class="fas fa-tasks"></i> Challenge Status</h3>
                         </div>
-                        <canvas id="donutChartCanvas" style="width:100%; height:250px;"></canvas>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="donutChartCanvas"></canvas>
+                        </div>
                     </div>
-                    
+
                     <!-- PERFORMANCE DISTRIBUTION -->
                     <div class="chart-container">
                         <div class="chart-header">
                             <h3><i class="fas fa-chart-bar"></i> Performance Distribution</h3>
                         </div>
-                        <canvas id="distributionChartCanvas" style="width:100%; height:250px;"></canvas>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="distributionChartCanvas"></canvas>
+                        </div>
                     </div>
-                    
+
                     <!-- SIMULATION USAGE -->
                     <div class="chart-container">
                         <div class="chart-header">
                             <h3><i class="fas fa-flask"></i> Top Simulations</h3>
                         </div>
-                        <canvas id="usageChartCanvas" style="width:100%; height:250px;"></canvas>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="usageChartCanvas"></canvas>
+                        </div>
                     </div>
                 </div>
                 
@@ -2444,21 +2467,27 @@ th, td {
                         <div class="chart-header">
                             <h3><i class="fas fa-chart-area"></i> Weekly Engagement Trend</h3>
                         </div>
-                        <canvas id="engagementChartCanvas" style="width:100%; height:250px;"></canvas>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="engagementChartCanvas"></canvas>
+                        </div>
                     </div>
-                    
+
                     <div class="chart-container">
                         <div class="chart-header">
                             <h3><i class="fas fa-graduation-cap"></i> Subject-wise Performance</h3>
                         </div>
-                        <canvas id="subjectChartCanvas" style="width:100%; height:250px;"></canvas>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="subjectChartCanvas"></canvas>
+                        </div>
                     </div>
-                    
+
                     <div class="chart-container">
                         <div class="chart-header">
                             <h3><i class="fas fa-tasks"></i> Challenge Difficulty vs Success</h3>
                         </div>
-                        <canvas id="difficultyChartCanvas" style="width:100%; height:250px;"></canvas>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="difficultyChartCanvas"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -3487,34 +3516,48 @@ th, td {
 
         document.getElementById('passwordForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const currentPassword = document.getElementById('currentPassword').value;
+
+            const currentPassword = document.getElementById('currentPassword').value.trim();
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            
+
+            if (!currentPassword) {
+                showError('Please enter your current password');
+                return;
+            }
+
             if (newPassword !== confirmPassword) {
                 showError('New passwords do not match!');
                 return;
             }
-            
-            if (newPassword.length < 6) {
-                showError('Password must be at least 6 characters long');
+
+            if (newPassword.length < 8) {
+                showError('New password must be at least 8 characters long');
                 return;
             }
-            
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Changing...';
+
             try {
-                await apiCall('/teacher/change-password', {
-                    method: 'PUT',
-                    body: JSON.stringify({
-                        currentPassword,
-                        newPassword
-                    })
+                const result = await apiCall('/auth/change-password', {
+                    method: 'POST',
+                    body: JSON.stringify({ currentPassword, newPassword })
                 });
-                
-                showSuccess('Password changed successfully!');
-                document.getElementById('passwordForm').reset();
+
+                if (result && result.success) {
+                    showSuccess('Password changed successfully!');
+                    document.getElementById('passwordForm').reset();
+                } else {
+                    showError(result?.message || 'Failed to change password');
+                }
             } catch (error) {
                 showError('Failed to change password: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         });
 
@@ -3826,34 +3869,65 @@ th, td {
         // OVERVIEW CHARTS - CHART.JS INITIALIZATION    //
         // ============================================ //
 
-        function initializeOverviewCharts() {
+        // Cached analytics data for chart period switching
+        window._teacherAnalyticsData = null;
+
+        async function initializeOverviewCharts() {
             if (!document.getElementById('overview').classList.contains('active')) {
                 console.log('⏸️ Overview page not active, skipping chart initialization');
                 return;
             }
 
+            // Fetch real analytics data
+            let analyticsData = null;
+            let competencyData = null;
+            try {
+                const [overviewResp, competencyResp] = await Promise.all([
+                    apiCall('/teacher/analytics/overview'),
+                    apiCall('/teacher/analytics/competencies')
+                ]);
+                if (overviewResp?.success) analyticsData = overviewResp.data;
+                if (competencyResp?.success) competencyData = competencyResp.data;
+                window._teacherAnalyticsData = analyticsData;
+            } catch (e) {
+                console.warn('⚠️ Could not load analytics data for charts:', e);
+            }
+
             setTimeout(() => {
-                createPerformanceTrendChart();
-                createCompetencyRadarChart();
-                createChallengeStatusDonutChart();
-                createPerformanceDistributionBarChart();
-                createSimulationUsageChart();
+                createPerformanceTrendChart(analyticsData);
+                createCompetencyRadarChart(competencyData);
+                createChallengeStatusDonutChart(analyticsData);
+                createPerformanceDistributionBarChart(analyticsData);
+                createSimulationUsageChart(analyticsData);
             }, 200);
         }
 
-        function createPerformanceTrendChart() {
+        function createPerformanceTrendChart(analyticsData) {
             const canvas = document.getElementById('trendChartCanvas');
             if (!canvas) return;
-            
+
             const ctx = canvas.getContext('2d');
-            
+
+            let labels, data;
+            const recent = (analyticsData?.recentActivity || []).slice(-7);
+            if (recent.length > 0) {
+                labels = recent.map(r => {
+                    const d = new Date(r._id);
+                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                });
+                data = recent.map(r => r.count);
+            } else {
+                labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                data = [0, 0, 0, 0, 0, 0, 0];
+            }
+
             window.trendChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels,
                     datasets: [{
-                        label: 'Performance %',
-                        data: [65, 72, 68, 75, 80, 78, 82],
+                        label: 'Daily Challenges',
+                        data,
                         borderColor: '#00d4ff',
                         backgroundColor: 'rgba(0, 212, 255, 0.1)',
                         borderWidth: 2,
@@ -3873,13 +3947,12 @@ th, td {
                         tooltip: { backgroundColor: '#252526' }
                     },
                     scales: {
-                        y: { 
-                            beginAtZero: true, 
-                            max: 100,
+                        y: {
+                            beginAtZero: true,
                             grid: { color: 'rgba(255,255,255,0.1)' },
-                            ticks: { color: '#888' }
+                            ticks: { color: '#888', precision: 0 }
                         },
-                        x: { 
+                        x: {
                             grid: { display: false },
                             ticks: { color: '#888' }
                         }
@@ -3888,20 +3961,35 @@ th, td {
             });
         }
 
-        function createCompetencyRadarChart() {
+        function createCompetencyRadarChart(competencyData) {
             const canvas = document.getElementById('competencyBarChart');
             if (!canvas) return;
-            
+
             const ctx = canvas.getContext('2d');
-            
+
+            let labels, data;
+            const comps = competencyData?.competencies || {};
+            const compEntries = Object.entries(comps).slice(0, 6);
+            if (compEntries.length > 0) {
+                labels = compEntries.map(([name]) => name);
+                data = compEntries.map(([, v]) => v.average || 0);
+            } else {
+                labels = ['Critical Thinking', 'Problem Solving', 'Creativity', 'Collaboration', 'Communication', 'Digital Literacy'];
+                data = [0, 0, 0, 0, 0, 0];
+            }
+
+            const bgColors = labels.map((_, i) =>
+                i % 2 === 0 ? 'rgba(0, 122, 204, 0.8)' : 'rgba(0, 212, 255, 0.8)'
+            );
+
             window.competencyChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Critical Thinking', 'Problem Solving', 'Creativity', 'Collaboration', 'Communication', 'Digital Literacy'],
+                    labels,
                     datasets: [{
                         label: 'NEP Competency Score (%)',
-                        data: [75, 68, 82, 70, 65, 85],
-                        backgroundColor: ['rgba(0, 122, 204, 0.8)', 'rgba(0, 122, 204, 0.8)', 'rgba(0, 212, 255, 0.8)', 'rgba(0, 122, 204, 0.8)', 'rgba(0, 122, 204, 0.8)', 'rgba(0, 212, 255, 0.8)'],
+                        data,
+                        backgroundColor: bgColors,
                         borderColor: '#00d4ff',
                         borderWidth: 1,
                         borderRadius: 8,
@@ -3935,9 +4023,7 @@ th, td {
                             grid: { color: 'rgba(255, 255, 255, 0.1)' },
                             ticks: {
                                 color: '#888',
-                                callback: function(value) {
-                                    return value + '%';
-                                }
+                                callback: function(value) { return value + '%'; }
                             },
                             title: {
                                 display: true,
@@ -3948,29 +4034,34 @@ th, td {
                         },
                         y: {
                             grid: { display: false },
-                            ticks: {
-                                color: '#fff',
-                                font: { size: 12, weight: '600' }
-                            }
+                            ticks: { color: '#fff', font: { size: 12, weight: '600' } }
                         }
                     }
                 }
             });
         }
 
-        function createChallengeStatusDonutChart() {
+        function createChallengeStatusDonutChart(analyticsData) {
             const canvas = document.getElementById('donutChartCanvas');
             if (!canvas) return;
-            
+
             const ctx = canvas.getContext('2d');
-            
+
+            const statusMap = analyticsData?.challengesByStatus || {};
+            const labels = Object.keys(statusMap).length > 0
+                ? Object.keys(statusMap).map(k => k.charAt(0).toUpperCase() + k.slice(1))
+                : ['Evaluated', 'Pending', 'Generated', 'Failed'];
+            const data = Object.keys(statusMap).length > 0
+                ? Object.values(statusMap)
+                : [0, 0, 0, 0];
+
             window.donutChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Evaluated', 'Submitted', 'Generated', 'In Progress'],
+                    labels,
                     datasets: [{
-                        data: [45, 30, 15, 10],
-                        backgroundColor: ['#27ae60', '#f39c12', '#00d4ff', '#888888'],
+                        data,
+                        backgroundColor: ['#27ae60', '#f39c12', '#00d4ff', '#e74c3c', '#888888'],
                         borderColor: '#252526',
                         borderWidth: 2,
                         hoverOffset: 4
@@ -3981,28 +4072,33 @@ th, td {
                     maintainAspectRatio: false,
                     cutout: '60%',
                     plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { color: '#fff' }
-                        }
+                        legend: { position: 'bottom', labels: { color: '#fff' } }
                     }
                 }
             });
         }
 
-        function createPerformanceDistributionBarChart() {
+        function createPerformanceDistributionBarChart(analyticsData) {
             const canvas = document.getElementById('distributionChartCanvas');
             if (!canvas) return;
-            
+
             const ctx = canvas.getContext('2d');
-            
+
+            const dist = analyticsData?.performanceDistribution || [];
+            const labels = dist.length > 0
+                ? dist.map(d => d.range)
+                : ['Excellent (90-100)', 'Good (70-89)', 'Average (50-69)', 'Needs Help (0-49)'];
+            const data = dist.length > 0
+                ? dist.map(d => d.count)
+                : [0, 0, 0, 0];
+
             window.distributionChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Excellent (90-100)', 'Good (70-89)', 'Average (50-69)', 'Needs Help (0-49)'],
+                    labels,
                     datasets: [{
                         label: 'Number of Students',
-                        data: [5, 12, 18, 8],
+                        data,
                         backgroundColor: ['#27ae60', '#2ecc71', '#f39c12', '#e74c3c'],
                         borderColor: '#252526',
                         borderWidth: 1,
@@ -4012,16 +4108,14 @@ th, td {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
-                        y: { 
+                        y: {
                             beginAtZero: true,
                             grid: { color: 'rgba(255,255,255,0.1)' },
-                            ticks: { color: '#888' }
+                            ticks: { color: '#888', precision: 0 }
                         },
-                        x: { 
+                        x: {
                             grid: { display: false },
                             ticks: { color: '#888' }
                         }
@@ -4030,19 +4124,23 @@ th, td {
             });
         }
 
-        function createSimulationUsageChart() {
+        function createSimulationUsageChart(analyticsData) {
             const canvas = document.getElementById('usageChartCanvas');
             if (!canvas) return;
-            
+
             const ctx = canvas.getContext('2d');
-            
+
+            const sims = analyticsData?.simulationUsage || [];
+            const labels = sims.length > 0 ? sims.map(s => s.name) : ['No data yet'];
+            const data = sims.length > 0 ? sims.map(s => s.count) : [0];
+
             window.usageChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Force Visualizer', 'Circuit Builder', 'Chemical Reactions', 'Math Grapher', 'Cell Explorer', 'Wave Simulator'],
+                    labels,
                     datasets: [{
-                        label: 'Usage Count',
-                        data: [45, 38, 32, 28, 25, 22],
+                        label: 'Challenges Created',
+                        data,
                         backgroundColor: '#00d4ff',
                         borderColor: '#007acc',
                         borderWidth: 1,
@@ -4053,16 +4151,14 @@ th, td {
                     responsive: true,
                     maintainAspectRatio: false,
                     indexAxis: 'y',
-                    plugins: {
-                        legend: { display: false }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
-                        x: { 
+                        x: {
                             beginAtZero: true,
                             grid: { color: 'rgba(255,255,255,0.1)' },
-                            ticks: { color: '#888' }
+                            ticks: { color: '#888', precision: 0 }
                         },
-                        y: { 
+                        y: {
                             grid: { display: false },
                             ticks: { color: '#888' }
                         }
@@ -4078,22 +4174,29 @@ th, td {
                     btn.classList.add('active');
                 }
             });
-            
+
             if (window.trendChart) {
-                const periodData = {
-                    7: [65, 72, 68, 75, 80, 78, 82],
-                    30: [65, 72, 68, 75],
-                    90: [65, 72, 68]
-                };
-                
-                const labels = {
-                    7: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    30: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                    90: ['Month 1', 'Month 2', 'Month 3']
-                };
-                
-                window.trendChart.data.labels = labels[days];
-                window.trendChart.data.datasets[0].data = periodData[days];
+                const allActivity = window._teacherAnalyticsData?.recentActivity || [];
+                let sliced, labels, data;
+                if (days === 7) {
+                    sliced = allActivity.slice(-7);
+                    labels = sliced.map(r => new Date(r._id).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                    data = sliced.map(r => r.count);
+                } else if (days === 30) {
+                    // Aggregate into weeks
+                    const weeks = [0, 0, 0, 0];
+                    allActivity.slice(-28).forEach((r, i) => { weeks[Math.floor(i / 7)] += r.count; });
+                    labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+                    data = weeks;
+                } else {
+                    // 90-day: show monthly
+                    const months = [0, 0, 0];
+                    allActivity.slice(-30).forEach((r, i) => { months[Math.floor(i / 10)] += r.count; });
+                    labels = ['Month 1', 'Month 2', 'Month 3'];
+                    data = months;
+                }
+                window.trendChart.data.labels = labels.length ? labels : ['No data'];
+                window.trendChart.data.datasets[0].data = data.length ? data : [0];
                 window.trendChart.update();
             }
         }
@@ -4102,31 +4205,65 @@ th, td {
         // ANALYTICS CHARTS - CHART.JS                 //
         // ============================================ //
 
-        function createAdvancedAnalyticsCharts() {
+        async function createAdvancedAnalyticsCharts() {
             if (!document.getElementById('analytics').classList.contains('active')) {
                 return;
             }
-            
+
+            // Reuse cached data or fetch fresh
+            let analyticsData = window._teacherAnalyticsData;
+            if (!analyticsData) {
+                try {
+                    const resp = await apiCall('/teacher/analytics/overview');
+                    if (resp?.success) {
+                        analyticsData = resp.data;
+                        window._teacherAnalyticsData = analyticsData;
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Could not load analytics data for advanced charts:', e);
+                }
+            }
+
             setTimeout(() => {
-                createEngagementTrendChart();
-                createSubjectPerformanceChart();
-                createDifficultySuccessChart();
+                createEngagementTrendChart(analyticsData);
+                createSubjectPerformanceChart(analyticsData);
+                createDifficultySuccessChart(analyticsData);
             }, 100);
         }
 
-        function createEngagementTrendChart() {
+        function createEngagementTrendChart(analyticsData) {
             const canvas = document.getElementById('engagementChartCanvas');
             if (!canvas) return;
-            
+
             const ctx = canvas.getContext('2d');
-            
+
+            // Aggregate daily activity into weekly totals
+            const allActivity = (analyticsData?.recentActivity || []);
+            let labels, data;
+            if (allActivity.length > 0) {
+                // Group into chunks of 7 days for weekly view
+                const chunks = [];
+                for (let i = 0; i < allActivity.length; i += 7) {
+                    const chunk = allActivity.slice(i, i + 7);
+                    chunks.push({
+                        label: `Week ${chunks.length + 1}`,
+                        count: chunk.reduce((sum, r) => sum + r.count, 0)
+                    });
+                }
+                labels = chunks.map(c => c.label);
+                data = chunks.map(c => c.count);
+            } else {
+                labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+                data = [0, 0, 0, 0];
+            }
+
             window.engagementChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7'],
+                    labels,
                     datasets: [{
-                        label: 'Student Engagement %',
-                        data: [65, 72, 80, 75, 85, 78, 90],
+                        label: 'Challenges per Week',
+                        data,
                         borderColor: '#00d4ff',
                         backgroundColor: 'rgba(0, 212, 255, 0.1)',
                         borderWidth: 3,
@@ -4143,10 +4280,7 @@ th, td {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: true,
-                            labels: { color: '#fff', font: { size: 12 } }
-                        },
+                        legend: { display: true, labels: { color: '#fff', font: { size: 12 } } },
                         tooltip: {
                             backgroundColor: '#252526',
                             titleColor: '#fff',
@@ -4158,14 +4292,11 @@ th, td {
                     scales: {
                         y: {
                             beginAtZero: true,
-                            max: 100,
                             grid: { color: 'rgba(255, 255, 255, 0.1)' },
                             ticks: {
                                 color: '#888',
-                                stepSize: 25,
-                                callback: function(value) {
-                                    return value + '%';
-                                }
+                                precision: 0,
+                                callback: function(value) { return value; }
                             },
                             title: {
                                 display: true,
@@ -4183,21 +4314,27 @@ th, td {
             });
         }
 
-        function createSubjectPerformanceChart() {
+        function createSubjectPerformanceChart(analyticsData) {
             const canvas = document.getElementById('subjectChartCanvas');
             if (!canvas) return;
-            
+
             const ctx = canvas.getContext('2d');
-            
+
+            const sims = analyticsData?.simulationUsage || [];
+            const colors = ['#007accCC', '#28a745CC', '#ff6b6bCC', '#20c997CC', '#6f42c1CC', '#fd7e14CC'];
+            const borderColors = ['#007acc', '#28a745', '#ff6b6b', '#20c997', '#6f42c1', '#fd7e14'];
+            const labels = sims.length > 0 ? sims.map(s => s.name) : ['No data yet'];
+            const data = sims.length > 0 ? sims.map(s => s.count) : [0];
+
             window.subjectChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Physics', 'Mathematics', 'Chemistry', 'Biology', 'Computer Science'],
+                    labels,
                     datasets: [{
-                        label: 'Average Performance %',
-                        data: [78, 85, 72, 68, 90],
-                        backgroundColor: ['#007accCC', '#28a745CC', '#ff6b6bCC', '#20c997CC', '#6f42c1CC'],
-                        borderColor: ['#007acc', '#28a745', '#ff6b6b', '#20c997', '#6f42c1'],
+                        label: 'Challenges Created',
+                        data,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderColor: borderColors.slice(0, labels.length),
                         borderWidth: 1,
                         borderRadius: 6,
                         barPercentage: 0.7,
@@ -4208,10 +4345,7 @@ th, td {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: true,
-                            labels: { color: '#fff', font: { size: 12 } }
-                        },
+                        legend: { display: true, labels: { color: '#fff', font: { size: 12 } } },
                         tooltip: {
                             backgroundColor: '#252526',
                             titleColor: '#fff',
@@ -4220,7 +4354,7 @@ th, td {
                             borderWidth: 1,
                             callbacks: {
                                 label: function(context) {
-                                    return `Performance: ${context.raw}%`;
+                                    return `Challenges: ${context.raw}`;
                                 }
                             }
                         }
@@ -4228,18 +4362,14 @@ th, td {
                     scales: {
                         y: {
                             beginAtZero: true,
-                            max: 100,
                             grid: { color: 'rgba(255, 255, 255, 0.1)' },
                             ticks: {
                                 color: '#888',
-                                stepSize: 20,
-                                callback: function(value) {
-                                    return value + '%';
-                                }
+                                precision: 0
                             },
                             title: {
                                 display: true,
-                                text: 'Performance Score',
+                                text: 'Challenges Created',
                                 color: '#888',
                                 font: { size: 11 }
                             }
@@ -4258,21 +4388,38 @@ th, td {
             });
         }
 
-        function createDifficultySuccessChart() {
+        function createDifficultySuccessChart(analyticsData) {
             const canvas = document.getElementById('difficultyChartCanvas');
             if (!canvas) return;
-            
+
             const ctx = canvas.getContext('2d');
-            
+
+            const diffStats = analyticsData?.difficultyStats || [];
+            const diffColors = { easy: '#28a745CC', medium: '#f39c12CC', hard: '#e74c3cCC', advanced: '#9b59b6CC' };
+            const diffBorders = { easy: '#28a745', medium: '#f39c12', hard: '#e74c3c', advanced: '#9b59b6' };
+
+            let labels, data, bgColors, bdColors;
+            if (diffStats.length > 0) {
+                labels = diffStats.map(d => d.difficulty.charAt(0).toUpperCase() + d.difficulty.slice(1));
+                data = diffStats.map(d => d.successRate);
+                bgColors = diffStats.map(d => diffColors[d.difficulty] || '#888888CC');
+                bdColors = diffStats.map(d => diffBorders[d.difficulty] || '#888888');
+            } else {
+                labels = ['Easy', 'Medium', 'Hard', 'Advanced'];
+                data = [0, 0, 0, 0];
+                bgColors = ['#28a745CC', '#f39c12CC', '#e74c3cCC', '#9b59b6CC'];
+                bdColors = ['#28a745', '#f39c12', '#e74c3c', '#9b59b6'];
+            }
+
             window.difficultyChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Easy', 'Medium', 'Hard', 'Advanced'],
+                    labels,
                     datasets: [{
                         label: 'Success Rate %',
-                        data: [92, 78, 45, 32],
-                        backgroundColor: ['#28a745CC', '#f39c12CC', '#e74c3cCC', '#9b59b6CC'],
-                        borderColor: ['#28a745', '#f39c12', '#e74c3c', '#9b59b6'],
+                        data,
+                        backgroundColor: bgColors,
+                        borderColor: bdColors,
                         borderWidth: 1,
                         borderRadius: 6,
                         barPercentage: 0.6,
@@ -4283,10 +4430,7 @@ th, td {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: true,
-                            labels: { color: '#fff', font: { size: 12 } }
-                        },
+                        legend: { display: true, labels: { color: '#fff', font: { size: 12 } } },
                         tooltip: {
                             backgroundColor: '#252526',
                             titleColor: '#fff',
@@ -4295,7 +4439,9 @@ th, td {
                             borderWidth: 1,
                             callbacks: {
                                 label: function(context) {
-                                    return `Success Rate: ${context.raw}%`;
+                                    const idx = context.dataIndex;
+                                    const stat = diffStats[idx] || {};
+                                    return [`Success Rate: ${context.raw}%`, `Passed: ${stat.passed || 0}/${stat.total || 0}`];
                                 }
                             }
                         }

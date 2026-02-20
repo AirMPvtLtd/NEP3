@@ -928,7 +928,7 @@ const changePassword = async (req, res) => {
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
     const isValid = await user.comparePassword(currentPassword);
-    if (!isValid) return res.status(401).json({ success: false, message: 'Current password is incorrect' });
+    if (!isValid) return res.status(400).json({ success: false, message: 'Current password is incorrect' });
 
     user[passwordField] = newPassword;
     await user.save();

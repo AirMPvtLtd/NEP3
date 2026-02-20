@@ -1465,8 +1465,8 @@ async function loadAnalytics() {
         
         if (response.ok) {
             const result = await response.json();
-            const analytics = result.analytics || result;
-            
+            const analytics = result.data?.analytics || result.analytics || result;
+
             renderAnalytics(analytics);
         } else {
             renderDemoAnalytics();

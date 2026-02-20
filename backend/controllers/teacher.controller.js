@@ -1598,7 +1598,68 @@ exports.getAnalyticsOverview = async (req, res) => {
     ]);
 
     // --------------------------------------------------
-    // 6️⃣ RESPONSE
+    // 6️⃣ SIMULATION USAGE (TOP 6 SIMULATION TYPES)
+    // --------------------------------------------------
+    const simUsageAgg = await Challenge.aggregate([
+      { $match: { teacherId } },
+      { $group: { _id: '$simulationType', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 6 }
+    ]);
+    const simulationUsage = simUsageAgg.map(s => ({
+      name: s._id || 'General',
+      count: s.count
+    }));
+
+    // --------------------------------------------------
+    // 7️⃣ DIFFICULTY SUCCESS RATES
+    // --------------------------------------------------
+    const diffAgg = await Challenge.aggregate([
+      { $match: { teacherId } },
+      {
+        $group: {
+          _id: '$difficulty',
+          total: { $sum: 1 },
+          passed: { $sum: { $cond: [{ $eq: ['$results.passed', true] }, 1, 0] } }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+    const difficultyStats = diffAgg.map(d => ({
+      difficulty: d._id || 'medium',
+      total: d.total,
+      passed: d.passed,
+      successRate: d.total > 0 ? Math.round((d.passed / d.total) * 100) : 0
+    }));
+
+    // --------------------------------------------------
+    // 8️⃣ PERFORMANCE DISTRIBUTION (SPI BUCKETS)
+    // --------------------------------------------------
+    let performanceDistribution = [
+      { range: 'Needs Help (0-49)', count: 0 },
+      { range: 'Average (50-69)', count: 0 },
+      { range: 'Good (70-89)', count: 0 },
+      { range: 'Excellent (90-100)', count: 0 }
+    ];
+
+    if (studentIds.length > 0) {
+      const latestSPIs = await SPIRecord.aggregate([
+        { $match: { studentId: { $in: studentIds } } },
+        { $sort: { calculatedAt: -1 } },
+        { $group: { _id: '$studentId', spi: { $first: '$spi' } } }
+      ]);
+
+      latestSPIs.forEach(r => {
+        const spi = r.spi || 0;
+        if (spi < 50) performanceDistribution[0].count++;
+        else if (spi < 70) performanceDistribution[1].count++;
+        else if (spi < 90) performanceDistribution[2].count++;
+        else performanceDistribution[3].count++;
+      });
+    }
+
+    // --------------------------------------------------
+    // 9️⃣ RESPONSE
     // --------------------------------------------------
     return res.json({
       success: true,
@@ -1609,7 +1670,10 @@ exports.getAnalyticsOverview = async (req, res) => {
           averagePerformance
         },
         challengesByStatus,
-        recentActivity
+        recentActivity,
+        simulationUsage,
+        difficultyStats,
+        performanceDistribution
       }
     });
 

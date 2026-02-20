@@ -244,6 +244,13 @@ router.post('/reports/:reportId/narrate', adminController.narrateInstitutionalRe
 router.get('/reports/:reportId/download', adminController.downloadReport);
 
 /**
+ * @route   GET /api/admin/analytics
+ * @desc    Get combined analytics for dashboard charts
+ * @access  Private (Admin)
+ */
+router.get('/analytics', adminController.getAnalytics);
+
+/**
  * @route   GET /api/admin/analytics/overview
  * @desc    Get analytics overview
  * @access  Private (Admin)
