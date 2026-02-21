@@ -22,6 +22,8 @@ const CANONICAL_MAP = {
   '/spyral':      `${DOMAIN}/spyral`,
   '/contact':     `${DOMAIN}/contact`,
   '/developer':   `${DOMAIN}/developer`,
+  '/terms':       `${DOMAIN}/terms`,
+  '/feedback':    `${DOMAIN}/feedback`,
 };
 
 /**

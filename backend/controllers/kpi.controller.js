@@ -31,6 +31,7 @@ const {
   SPIRecord,
   NEPReport,
   BayesianNetwork,
+  SimulationSession,
 } = require('../models');
 
 // ── Shared helpers ─────────────────────────────────────────────────────────────
@@ -208,7 +209,12 @@ exports.getEngagementKPIs = async (req, res) => {
     const day7ago   = since(7);
     const day30ago  = since(30);
 
-    const [dau, wau, mau, challengesDAU, challengesWAU, challengesMAU] = await Promise.all([
+    const [
+      dau, wau, mau,
+      challengesDAU, challengesWAU, challengesMAU,
+      sessionTimeAgg, sessionTimeAgg30d,
+      loginStats,
+    ] = await Promise.all([
       // Active students: submitted a challenge in window
       Challenge.distinct('studentId', { createdAt: { $gte: day1ago } }),
       Challenge.distinct('studentId', { createdAt: { $gte: day7ago } }),
@@ -216,6 +222,30 @@ exports.getEngagementKPIs = async (req, res) => {
       Challenge.countDocuments({ createdAt: { $gte: day1ago } }),
       Challenge.countDocuments({ createdAt: { $gte: day7ago } }),
       Challenge.countDocuments({ createdAt: { $gte: day30ago } }),
+
+      // Average simulation session time (all completed sessions, seconds)
+      SimulationSession.aggregate([
+        { $match: { status: 'completed', timeTaken: { $gt: 0 } } },
+        { $group: { _id: null, avgSecs: { $avg: '$timeTaken' }, total: { $sum: 1 } } },
+      ]),
+
+      // Average simulation session time last 30 days
+      SimulationSession.aggregate([
+        { $match: { status: 'completed', timeTaken: { $gt: 0 }, completedAt: { $gte: day30ago } } },
+        { $group: { _id: null, avgSecs: { $avg: '$timeTaken' }, total: { $sum: 1 } } },
+      ]),
+
+      // Login counts (24h / 7d / 30d) from Activity model
+      Activity.aggregate([
+        { $match: { activityType: 'login', timestamp: { $gte: day30ago } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
     ]);
 
     const totalStudents = await Student.countDocuments({});
@@ -225,14 +255,26 @@ exports.getEngagementKPIs = async (req, res) => {
       { $match: { createdAt: { $gte: day7ago } } },
       {
         $group: {
-          _id: {
-            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
-          },
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
           count: { $sum: 1 },
         },
       },
       { $sort: { _id: 1 } },
     ]);
+
+    const sessAll  = sessionTimeAgg[0]  || { avgSecs: 0, total: 0 };
+    const sess30d  = sessionTimeAgg30d[0] || { avgSecs: 0, total: 0 };
+
+    // Compute login counts for sub-windows from the daily aggregation
+    const now30dStr = day30ago.toISOString().slice(0, 10);
+    const now7dStr  = day7ago.toISOString().slice(0, 10);
+    const now1dStr  = day1ago.toISOString().slice(0, 10);
+    let logins30d = 0, logins7d = 0, logins24h = 0;
+    loginStats.forEach(({ _id: date, count }) => {
+      if (date >= now30dStr) logins30d += count;
+      if (date >= now7dStr)  logins7d  += count;
+      if (date >= now1dStr)  logins24h += count;
+    });
 
     return res.json({
       success: true,
@@ -240,18 +282,30 @@ exports.getEngagementKPIs = async (req, res) => {
         category: 'engagement',
         asOf:     now.toISOString(),
         activeStudents: {
-          dau:       dau.length,
-          wau:       wau.length,
-          mau:       mau.length,
-          dauRate:   pct(dau.length, totalStudents),
-          mauRate:   pct(mau.length, totalStudents),
-          // Engagement quality: users active multiple days per month
+          dau:         dau.length,
+          wau:         wau.length,
+          mau:         mau.length,
+          dauRate:     pct(dau.length, totalStudents),
+          mauRate:     pct(mau.length, totalStudents),
           dauMauRatio: mau.length ? round2(dau.length / mau.length) : 0,
         },
         challenges: {
-          last24h:   challengesDAU,
-          last7d:    challengesWAU,
-          last30d:   challengesMAU,
+          last24h: challengesDAU,
+          last7d:  challengesWAU,
+          last30d: challengesMAU,
+        },
+        sessionTime: {
+          avgSecsAllTime: round2(sessAll.avgSecs),
+          avgMinsAllTime: round2(sessAll.avgSecs / 60),
+          avgSecs30d:     round2(sess30d.avgSecs),
+          avgMins30d:     round2(sess30d.avgSecs / 60),
+          totalSessions:  sessAll.total,
+        },
+        logins: {
+          last24h: logins24h,
+          last7d:  logins7d,
+          last30d: logins30d,
+          dailyTrend: loginStats.map(l => ({ date: l._id, count: l.count })),
         },
         activityHeatmap: heatmap.map(h => ({ date: h._id, challenges: h.count })),
       },
@@ -440,6 +494,112 @@ exports.getReportKPIs = async (req, res) => {
   } catch (err) {
     logger.error('[kpi] getReportKPIs error:', err);
     return res.status(500).json({ success: false, message: 'Error fetching report KPIs.' });
+  }
+};
+
+/**
+ * GET /api/kpi/traffic
+ * Web traffic metrics: API calls, unique IPs, page views, logins — from Activity log.
+ */
+exports.getTrafficKPIs = async (req, res) => {
+  try {
+    const day1ago  = since(1);
+    const day7ago  = since(7);
+    const day30ago = since(30);
+
+    const [
+      apiCalls30d,
+      apiCalls7d,
+      apiCalls24h,
+      // Unique IPs
+      uniqueIPs30d,
+      uniqueIPs24h,
+      // Login events
+      logins30d,
+      logins7d,
+      logins24h,
+      // Daily traffic trend (30d)
+      dailyTrend,
+      // Top routes
+      topRoutes,
+      // Error rate (5xx)
+      errors30d,
+    ] = await Promise.all([
+      Activity.countDocuments({ activityType: 'api_call', timestamp: { $gte: day30ago } }),
+      Activity.countDocuments({ activityType: 'api_call', timestamp: { $gte: day7ago  } }),
+      Activity.countDocuments({ activityType: 'api_call', timestamp: { $gte: day1ago  } }),
+
+      Activity.distinct('ipAddress', { activityType: 'api_call', timestamp: { $gte: day30ago } }),
+      Activity.distinct('ipAddress', { activityType: 'api_call', timestamp: { $gte: day1ago  } }),
+
+      Activity.countDocuments({ activityType: 'login', timestamp: { $gte: day30ago } }),
+      Activity.countDocuments({ activityType: 'login', timestamp: { $gte: day7ago  } }),
+      Activity.countDocuments({ activityType: 'login', timestamp: { $gte: day1ago  } }),
+
+      // Daily API call counts for last 30 days
+      Activity.aggregate([
+        { $match: { activityType: 'api_call', timestamp: { $gte: day30ago } } },
+        {
+          $group: {
+            _id:   { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+            calls: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
+
+      // Top 10 API paths by request count (30d)
+      Activity.aggregate([
+        { $match: { activityType: 'api_call', timestamp: { $gte: day30ago } } },
+        { $group: { _id: '$path', count: { $sum: 1 }, avgMs: { $avg: '$responseTimeMs' } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 },
+      ]),
+
+      // 5xx errors in last 30d
+      Activity.countDocuments({
+        activityType: 'api_call',
+        timestamp: { $gte: day30ago },
+        statusCode:  { $gte: 500 },
+      }),
+    ]);
+
+    const errorRate30d = apiCalls30d ? pct(errors30d, apiCalls30d) : 0;
+
+    return res.json({
+      success: true,
+      data: {
+        category: 'traffic',
+        asOf:     new Date().toISOString(),
+        apiCalls: {
+          last24h: apiCalls24h,
+          last7d:  apiCalls7d,
+          last30d: apiCalls30d,
+        },
+        uniqueVisitors: {
+          last24h: uniqueIPs24h.length,
+          last30d: uniqueIPs30d.length,
+        },
+        logins: {
+          last24h: logins24h,
+          last7d:  logins7d,
+          last30d: logins30d,
+        },
+        errors: {
+          count30d:    errors30d,
+          errorRate30d,
+        },
+        dailyTrend: dailyTrend.map(d => ({ date: d._id, calls: d.calls })),
+        topRoutes:  topRoutes.map(r => ({
+          path:    r._id || 'unknown',
+          count:   r.count,
+          avgMs:   round2(r.avgMs),
+        })),
+      },
+    });
+  } catch (err) {
+    logger.error('[kpi] getTrafficKPIs error:', err);
+    return res.status(500).json({ success: false, message: 'Error fetching traffic KPIs.' });
   }
 };
 

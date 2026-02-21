@@ -87,6 +87,8 @@ services:
       - certbot-webroot:/var/www/certbot:ro
       - certbot-certs:/etc/letsencrypt:ro
       - nginx-logs:/var/log/nginx
+      # Mount frontend so nginx can serve static assets directly (no Node.js hop)
+      - ./frontend:/srv/frontend:ro
 
     networks:
       - internal

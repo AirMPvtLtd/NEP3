@@ -281,14 +281,7 @@ const errorHandler = async (error, req, res, next) => {
     res.setHeader('Retry-After', error.retryAfter);
   }
   
-  // Include stack trace in development
-  if (process.env.NODE_ENV === 'development') {
-    errorResponse.stack = error.stack;
-    errorResponse.details = {
-      name: error.name,
-      isOperational: error.isOperational
-    };
-  }
+  // Never include stack trace or internals in responses
   
   // Send error response
   res.status(statusCode).json(errorResponse);

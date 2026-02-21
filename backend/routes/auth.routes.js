@@ -17,15 +17,30 @@ const authController = require('../controllers/auth.controller');
 const { validateRequest } = require('../middleware/validation.middleware');
 const { protect } = require('../middleware/auth.middleware');
 
-// Rate limiter - always enabled (disable only in explicit unit-test runner, not via NODE_ENV)
-let loginRateLimit;
+// Rate limiters
+let loginRateLimit, forgotPasswordLimit, signupLimit;
 try {
   const rateLimiter = require('../middleware/rateLimiter');
-  loginRateLimit = rateLimiter.loginRateLimit || rateLimiter.login || ((req, res, next) => next());
+  const rateLimit   = require('express-rate-limit');
+  loginRateLimit      = rateLimiter.loginRateLimit || ((req, res, next) => next());
+  forgotPasswordLimit = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many password reset requests, please try again in an hour' },
+  });
+  signupLimit = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many registrations from this IP, please try again later' },
+  });
 } catch (error) {
   const logger = require('../utils/logger');
   logger.warn('Rate limiter not available, continuing without it');
-  loginRateLimit = (req, res, next) => next();
+  loginRateLimit = forgotPasswordLimit = signupLimit = (req, res, next) => next();
 }
 
 // ============================================================================
@@ -39,6 +54,7 @@ try {
  */
 router.post(
   '/signup',
+  signupLimit,
   validateRequest('signup'),
   authController.signup
 );
@@ -82,6 +98,7 @@ router.get(
  */
 router.post(
   '/resend-verification',
+  forgotPasswordLimit,
   authController.resendVerification
 );
 
@@ -92,6 +109,7 @@ router.post(
  */
 router.post(
   '/forgot-password',
+  forgotPasswordLimit,
   authController.forgotPassword
 );
 

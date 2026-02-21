@@ -415,6 +415,11 @@
                     <label for="studentRememberMe">Remember me</label>
                 </div>
 
+                <div class="checkbox-group">
+                    <input type="checkbox" id="studentTerms" required>
+                    <label for="studentTerms">I accept the <a href="/terms" target="_blank" style="color:#00d4ff;text-decoration:none;">Terms &amp; Conditions</a></label>
+                </div>
+
                 <button type="submit" class="btn" id="studentLoginBtn">
                     <i class="fas fa-sign-in-alt"></i> Student Login
                 </button>
@@ -553,6 +558,11 @@
                     <label for="teacherRememberMe">Remember me</label>
                 </div>
 
+                <div class="checkbox-group">
+                    <input type="checkbox" id="teacherTerms" required>
+                    <label for="teacherTerms">I accept the <a href="/terms" target="_blank" style="color:#00d4ff;text-decoration:none;">Terms &amp; Conditions</a></label>
+                </div>
+
                 <button type="submit" class="btn" id="teacherLoginBtn">
                     <i class="fas fa-sign-in-alt"></i> Faculty Login
                 </button>
@@ -605,6 +615,11 @@
                 <div class="checkbox-group">
                     <input type="checkbox" id="adminRememberMe">
                     <label for="adminRememberMe">Remember me</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="adminTerms" required>
+                    <label for="adminTerms">I accept the <a href="/terms" target="_blank" style="color:#00d4ff;text-decoration:none;">Terms &amp; Conditions</a></label>
                 </div>
 
                 <button type="submit" class="btn" id="adminLoginBtn">
@@ -742,6 +757,11 @@
                 <div class="checkbox-group">
                     <input type="checkbox" id="parentRememberMe">
                     <label for="parentRememberMe">Remember me</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="parentTerms" required>
+                    <label for="parentTerms">I accept the <a href="/terms" target="_blank" style="color:#00d4ff;text-decoration:none;">Terms &amp; Conditions</a></label>
                 </div>
 
                 <button type="submit" class="btn" id="parentLoginBtn">
@@ -1015,7 +1035,12 @@
                 showError('teacher', 'Password is required');
                 return;
             }
-            
+
+            if (!document.getElementById('teacherTerms').checked) {
+                showError('teacher', 'Please accept the Terms & Conditions to continue');
+                return;
+            }
+
             // Teacher ID format validation (TCH-XXXXX)
             if (!teacherId.match(/^TCH-[A-Z0-9]{5}$/)) {
                 showError('teacher', 'Invalid Teacher ID format. Format: TCH-XXXXX');
@@ -1130,7 +1155,12 @@
                 showError(role, 'Password is required');
                 return;
             }
-            
+
+            if (!document.getElementById(`${role}Terms`).checked) {
+                showError(role, 'Please accept the Terms & Conditions to continue');
+                return;
+            }
+
             // Disable button and show loading
             btn.disabled = true;
             btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Logging in...`;
@@ -1583,16 +1613,15 @@
 
         function openAuthActionModal(role, mode) {
             const isForgot = mode === 'forgot';
-            const isTeacher = role === 'teacher';
             const roleName = role.charAt(0).toUpperCase() + role.slice(1);
             _aamRole = role;
             _aamMode = mode;
             document.getElementById('aamTitle').textContent = isForgot ? 'Forgot Password' : 'Resend Verification Email';
             document.getElementById('aamDesc').textContent = isForgot
-                ? 'Enter your ' + (isTeacher ? 'Teacher ID' : 'registered email') + ' and we\'ll send password reset instructions.'
-                : 'Enter your ' + (isTeacher ? 'Teacher ID' : 'registered email') + ' to resend the account verification link.';
-            document.getElementById('aamLabel').textContent = isTeacher ? 'Teacher ID' : roleName + ' Email';
-            document.getElementById('aamInput').placeholder = isTeacher ? 'e.g. TCH-AB123' : 'Enter your email address';
+                ? 'Enter your registered email address and we\'ll send password reset instructions.'
+                : 'Enter your registered email address to resend the account verification link.';
+            document.getElementById('aamLabel').textContent = roleName + ' Email';
+            document.getElementById('aamInput').placeholder = 'Enter your email address';
             document.getElementById('aamInput').value = '';
             document.getElementById('aamError').style.display = 'none';
             document.getElementById('aamSubmit').disabled = false;
@@ -1621,27 +1650,17 @@
                 errorEl.style.display = 'block';
                 return;
             }
-            if (role === 'teacher') {
-                if (!value.match(/^TCH-[A-Z0-9]{5}$/)) {
-                    errorEl.textContent = 'Invalid Teacher ID format. Use: TCH-XXXXX';
-                    errorEl.style.display = 'block';
-                    return;
-                }
-            } else {
-                if (!validateEmail(value)) {
-                    errorEl.textContent = 'Please enter a valid email address.';
-                    errorEl.style.display = 'block';
-                    return;
-                }
+            if (!validateEmail(value)) {
+                errorEl.textContent = 'Please enter a valid email address.';
+                errorEl.style.display = 'block';
+                return;
             }
 
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
 
             const endpoint = mode === 'forgot' ? '/auth/forgot-password' : '/auth/resend-verification';
-            const body = role === 'teacher'
-                ? { teacherId: value, userType: role }
-                : { email: value, userType: role };
+            const body = { email: value, userType: role };
 
             try {
                 const response = await fetch(`${API_BASE_URL}${endpoint}`, {

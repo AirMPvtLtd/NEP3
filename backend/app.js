@@ -2093,11 +2093,10 @@ app.use(cors({
       ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
       : ['http://localhost:3000'];
 
-    // In production, reject requests without an Origin header (non-browser clients)
-    if (!origin) {
-      if (isProduction) return cb(new Error('CORS: missing Origin header'));
-      return cb(null, true);
-    }
+    // Allow requests with no Origin header (server-to-server, health checks,
+    // monitoring tools, curl). CORS only protects browsers — non-browser
+    // clients don't send Origin and can't be stopped by CORS anyway.
+    if (!origin) return cb(null, true);
     if (allowed.includes(origin)) return cb(null, true);
     cb(new Error('CORS blocked'));
   },
@@ -2105,9 +2104,10 @@ app.use(cors({
 }));
 
 app.use(mongoSanitize());
-app.use(compression());
-app.use(express.json({limit:'10mb'}));
-app.use(express.urlencoded({extended:true,limit:'10mb'}));
+// compression disabled at app level — nginx handles gzip, doing it twice wastes CPU
+// app.use(compression());
+app.use(express.json({limit:'100kb'}));
+app.use(express.urlencoded({extended:true,limit:'100kb'}));
 app.use(cookieParser());
 
 // ============================================================================
@@ -2215,6 +2215,7 @@ app.use(`${API_PREFIX}/spi`,loadRoute('spi','./routes/spi.routes.js'));
 app.use(`${API_PREFIX}/reports`,loadRoute('reports','./routes/report.routes.js'));
 app.use(`${API_PREFIX}/public`,loadRoute('public','./routes/public.routes.js'));
 app.use(`${API_PREFIX}/developer`,loadRoute('developer','./routes/developer.routes.js'));
+app.use(`${API_PREFIX}/kpi`,loadRoute('kpi','./routes/kpi.routes.js'));
 
 // ============================================================================
 // SEO ROUTES  (sitemap.xml, sitemap-index.xml — must be at domain root)
@@ -2256,7 +2257,9 @@ try{
   app.use(errorHandler);
 }catch{
   app.use((err,req,res,next)=>{
-    res.status(500).json({message:err.message});
+    const code = err.statusCode || err.status || 500;
+    const msg  = err.isOperational ? err.message : 'Internal server error';
+    res.status(code).json({ success: false, message: msg });
   });
 }
 

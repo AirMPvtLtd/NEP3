@@ -12,14 +12,18 @@
 'use strict';
 
 const express    = require('express');
+const path       = require('path');
 const router     = express.Router();
 const seoCtrl    = require('../controllers/seo.controller');
+
+const FRONTEND = path.join(__dirname, '../../frontend');
 
 /**
  * @route GET /sitemap.xml
  * @desc  XML sitemap for all public indexable pages
  * @cache 24h
  */
+router.get('/robots.txt',  (_req, res) => res.sendFile(path.join(FRONTEND, 'robots.txt')));
 router.get('/sitemap.xml', seoCtrl.getSitemap);
 
 /**

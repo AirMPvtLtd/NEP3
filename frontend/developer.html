@@ -873,7 +873,7 @@ print(timeline[<span style="color:#a8d8a8">"data"</span>][<span style="color:#a8
       <tr class="error-row"><td>403</td><td>PERMISSION_DENIED</td><td>Key lacks required permission (e.g. canExportFullDataset)</td></tr>
       <tr class="error-row"><td>400</td><td>—</td><td>Missing required parameter (message explains which)</td></tr>
       <tr class="error-row"><td>429</td><td>—</td><td>Rate limit exceeded — back off and retry</td></tr>
-      <tr class="error-row"><td>500</td><td>—</td><td>Internal error — contact support@tryspyral.com</td></tr>
+      <tr class="error-row"><td>500</td><td>—</td><td>Internal error — contact info@tryspyral.com</td></tr>
     </tbody>
   </table>
 
@@ -954,11 +954,11 @@ print(timeline[<span style="color:#a8d8a8">"data"</span>][<span style="color:#a8
         <label>Organisation type *</label>
         <select name="orgType" required>
           <option value="">Select…</option>
-          <option>University / Research Institute</option>
-          <option>Government / Ministry</option>
-          <option>Ed-Tech Company</option>
-          <option>NGO / Non-profit</option>
-          <option>Independent Researcher</option>
+          <option value="university">University / Research Institute</option>
+          <option value="government">Government / Ministry</option>
+          <option value="edtech">Ed-Tech Company</option>
+          <option value="ngo">NGO / Non-profit</option>
+          <option value="other">Independent Researcher</option>
         </select>
       </div>
     </div>
@@ -1032,17 +1032,18 @@ async function submitKeyRequest(e) {
   btn.textContent = 'Submitting…';
 
   const fd = new FormData(form);
+  const permissions = [];
+  if (fd.get('perm_longitudinal')) permissions.push('longitudinal');
+  if (fd.get('perm_rawData'))      permissions.push('listSchools');
+  if (fd.get('perm_export'))       permissions.push('exportDataset');
+
   const body = {
     name:         fd.get('name'),
     email:        fd.get('email'),
     organisation: fd.get('organisation'),
     orgType:      fd.get('orgType'),
     intendedUse:  fd.get('intendedUse'),
-    permissions: {
-      longitudinal: !!fd.get('perm_longitudinal'),
-      rawData:      !!fd.get('perm_rawData'),
-      export:       !!fd.get('perm_export'),
-    }
+    permissions,
   };
 
   try {
@@ -1057,7 +1058,8 @@ async function submitKeyRequest(e) {
       document.getElementById('form-success').style.display = 'block';
     } else {
       const err = await res.json();
-      alert(err.message || 'Submission failed. Email us at sales@tryspyral.com');
+      const detail = err.errors && err.errors.length ? '\n• ' + err.errors.join('\n• ') : '';
+      alert((err.message || 'Submission failed. Email us at sales@tryspyral.com') + detail);
       btn.disabled = false;
       btn.textContent = 'Submit access request';
     }

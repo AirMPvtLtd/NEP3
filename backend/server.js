@@ -50,12 +50,23 @@ const startServer = async () => {
 
     // 3️⃣ START HTTP SERVER
     const server = app.listen(PORT, () => {
+      // ── HTTP server hardening for high-concurrency ────────────────────────
+      // keepAliveTimeout must be > nginx keepalive_timeout (65s) to avoid
+      // nginx getting a "connection reset" when it reuses a keep-alive socket.
+      server.keepAliveTimeout  = 70 * 1000;   // 70s  (nginx keepalive_timeout is 65s)
+      server.headersTimeout    = 75 * 1000;   // 75s  (must be > keepAliveTimeout)
+      server.requestTimeout    = 120 * 1000;  // 120s max per request
+      server.maxConnections    = 4096;        // hard cap per process (2 processes = 8192 total)
+      server.timeout           = 120 * 1000;  // socket inactivity timeout
+
       logger.info('Server started successfully', {
         port: PORT,
         environment: NODE_ENV,
         nodeVersion: process.version,
         platform: process.platform,
-        pid: process.pid
+        pid: process.pid,
+        keepAliveTimeout: server.keepAliveTimeout,
+        maxConnections: server.maxConnections
       });
 
       console.log('\n' + '='.repeat(70));

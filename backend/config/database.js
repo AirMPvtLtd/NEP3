@@ -22,11 +22,15 @@ mongoose.set('bufferTimeoutMS', 0);
  * MongoDB Connection Options
  */
 const options = {
-  maxPoolSize: parseInt(process.env.DB_MAX_POOL_SIZE) || 10,
-  minPoolSize: parseInt(process.env.DB_MIN_POOL_SIZE) || 2,
+  maxPoolSize:   parseInt(process.env.DB_MAX_POOL_SIZE)  || 100,  // was 10 — 10 connections crash at ~50 users
+  minPoolSize:   parseInt(process.env.DB_MIN_POOL_SIZE)  || 10,   // was 2  — warm pool ready for burst
 
-  socketTimeoutMS: 45000,
-  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS:           20000,  // was 45000 — fail faster, free sockets sooner
+  serverSelectionTimeoutMS:  10000,  // was 5000  — slightly more tolerant of transient issues
+  connectTimeoutMS:          15000,  // new — max time to establish a new connection
+  waitQueueTimeoutMS:        30000,  // new — max time a request waits for a pool slot before error
+  maxIdleTimeMS:             60000,  // new — close idle connections after 60s to reclaim resources
+  heartbeatFrequencyMS:      10000,  // new — detect dead connections faster
 
   autoIndex: process.env.NODE_ENV !== 'production',
   retryWrites: true,

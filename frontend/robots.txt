@@ -9,6 +9,8 @@ Allow: /workbench$
 Allow: /nep$
 Allow: /spyral$
 Allow: /contact$
+Allow: /terms$
+Allow: /feedback$
 
 # Block private / authenticated app pages
 Disallow: /login

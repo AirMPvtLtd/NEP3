@@ -971,7 +971,7 @@ function showDocumentation() {
 }
 
 function reportBug() {
-    alert('Report a Bug:\n\nEmail: support@tryspyral.com');
+    alert('Report a Bug:\n\nEmail: info@tryspyral.com');
     closeMenus();
 }
 

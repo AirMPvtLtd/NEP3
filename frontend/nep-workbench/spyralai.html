@@ -86,8 +86,11 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 20px;
+            flex-wrap: nowrap;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 900;
         }
 
         .logo {
@@ -467,101 +470,350 @@
             font-size: 1rem;
         }
 
-        /* RESPONSIVE DESIGN */
+        /* ── HAMBURGER MENU ─────────────────────────────────────────────────── */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            z-index: 1100;
+            order: 3;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 26px;
+            height: 3px;
+            background: #ccc;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+        .hamburger.active span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+        .hamburger.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+        .nav-close {
+            display: none;
+            background: none;
+            border: none;
+            color: #ccc;
+            font-size: 1.6rem;
+            cursor: pointer;
+            padding: 10px;
+            align-self: flex-end;
+            transition: color 0.3s;
+        }
+
+        .nav-close:hover { color: #00d4ff; }
+
+        .nav-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 998;
+        }
+
+        .nav-overlay.active { display: block; }
+
+        /* ── TABLE SCROLL WRAPPER ────────────────────────────────────────────── */
+        .table-scroll-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 10px;
+        }
+
+        /* ── RESPONSIVE DESIGN ───────────────────────────────────────────────── */
+
+        /* Large desktops */
         @media (max-width: 1400px) {
             .graph-section {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 25px;
             }
-            
+
             .benefits-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
 
+        /* Small desktops / large tablets landscape */
         @media (max-width: 1200px) {
             .graph-section {
                 grid-template-columns: 1fr;
             }
-            
+
             .benefits-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
 
-        @media (max-width: 768px) {
+        /* Tablets */
+        @media (max-width: 1024px) {
             .header {
-                padding: 15px 20px;
-                flex-direction: column;
-                text-align: center;
+                padding: 12px 25px;
             }
-            
-            .nav-links {
-                justify-content: center;
-                gap: 15px;
-            }
-            
+
             .spyral-container {
-                padding: 20px;
+                padding: 30px 20px;
             }
-            
-            .spyral-header h1 {
-                font-size: 2.2rem;
-            }
-            
-            .section {
-                padding: 25px 20px;
-            }
-            
-            .benefits-grid {
-                grid-template-columns: 1fr;
-            }
-            
+
             .graph-container {
-                height: 350px;
-                padding: 20px;
+                height: 360px;
             }
-            
-            .comparison-table {
-                display: block;
-                overflow-x: auto;
+
+            .section {
+                padding: 28px 22px;
+            }
+
+            .benefits-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
 
-        @media (max-width: 480px) {
-            .logo {
-                font-size: 1.5rem;
+        /* Mobile landscape / small tablets */
+        @media (max-width: 768px) {
+            /* Show hamburger, hide inline nav */
+            .hamburger {
+                display: flex;
             }
-            
+
+            .header {
+                padding: 12px 18px;
+                flex-wrap: nowrap;
+            }
+
             .nav-links {
-                gap: 10px;
+                display: none;
+                position: fixed;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                width: min(300px, 85vw);
+                background: #1e1e22;
+                border-left: 1px solid #464647;
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: stretch;
+                gap: 0;
+                padding: 20px;
+                z-index: 1000;
+                overflow-y: auto;
+                box-shadow: -8px 0 30px rgba(0, 0, 0, 0.5);
+                transition: transform 0.3s ease;
             }
-            
-            .nav-links a {
-                font-size: 0.85rem;
-                padding: 5px 10px;
+
+            .nav-links.active {
+                display: flex;
             }
-            
-            .spyral-header h1 {
-                font-size: 1.8rem;
+
+            .nav-close {
+                display: block;
+                margin-bottom: 15px;
             }
-            
+
+            .nav-links a:not(.btn) {
+                color: #ccc;
+                padding: 14px 5px;
+                font-size: 1.05rem;
+                border-bottom: 1px solid rgba(255,255,255,0.07);
+                white-space: normal;
+            }
+
+            .nav-links .btn {
+                margin-top: 12px;
+                text-align: center;
+                padding: 13px 20px;
+                font-size: 1rem;
+            }
+
+            .spyral-container {
+                padding: 20px 14px;
+            }
+
+            .spyral-header {
+                margin-bottom: 28px;
+                padding-bottom: 20px;
+            }
+
+            .spyral-header .subtitle {
+                font-size: 1.05rem;
+            }
+
+            .spyral-header .tagline {
+                font-size: 0.93rem;
+            }
+
+            .section {
+                padding: 20px 14px;
+                margin-bottom: 22px;
+            }
+
+            .section-header {
+                margin-bottom: 18px;
+                padding-bottom: 12px;
+            }
+
             .section-title {
+                font-size: 1.2rem;
+            }
+
+            .content-box {
+                padding: 16px 13px;
+                margin-bottom: 18px;
+            }
+
+            .content-box h3 {
+                font-size: 1.1rem;
+            }
+
+            .benefits-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .graph-container {
+                height: 290px;
+                padding: 14px;
+            }
+
+            .graph-title {
+                font-size: 1.05rem;
+                margin-bottom: 12px;
+            }
+
+            .graph-section {
+                gap: 16px;
+                margin: 20px 0;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 12px 10px;
+                font-size: 0.88rem;
+            }
+
+            .summary-box {
+                padding: 25px 16px;
+            }
+
+            .summary-quote {
                 font-size: 1.3rem;
             }
-            
-            .graph-container {
-                height: 300px;
-                padding: 15px;
+
+            .footer {
+                padding: 22px 16px;
+                margin-top: 40px;
             }
-            
-            .summary-quote {
-                font-size: 1.4rem;
+
+            .footer-links {
+                gap: 16px;
             }
-            
-            .btn {
-                padding: 12px 20px;
+        }
+
+        /* Mobile portrait */
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 1.3rem;
+            }
+
+            .spyral-container {
+                padding: 15px 10px;
+            }
+
+            .section {
+                padding: 16px 11px;
+                margin-bottom: 18px;
+            }
+
+            .section-header {
+                align-items: flex-start;
+            }
+
+            .section-number {
+                width: 30px;
+                height: 30px;
+                font-size: 1rem;
+                flex-shrink: 0;
+            }
+
+            .section-title {
+                font-size: 1.1rem;
+                line-height: 1.3;
+            }
+
+            .content-box {
+                padding: 13px 10px;
+            }
+
+            .highlight-box {
+                padding: 14px;
                 font-size: 0.9rem;
+            }
+
+            .graph-container {
+                height: 255px;
+                padding: 11px;
+            }
+
+            .graph-title {
+                font-size: 0.95rem;
+                margin-bottom: 10px;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 10px 8px;
+                font-size: 0.82rem;
+            }
+
+            .summary-quote {
+                font-size: 1.1rem;
+            }
+
+            .summary-box {
+                padding: 18px 12px;
+                margin-top: 24px;
+            }
+
+            .benefit-card {
+                padding: 18px 13px;
+            }
+
+            .benefit-icon {
+                font-size: 2rem;
+                margin-bottom: 14px;
+            }
+
+            .btn {
+                padding: 10px 18px;
+                font-size: 0.88rem;
+            }
+
+            .footer-links {
+                gap: 12px;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Extra small */
+        @media (max-width: 360px) {
+            .logo {
+                font-size: 1.15rem;
+            }
+
+            .graph-container {
+                height: 220px;
+            }
+
+            .section-title {
+                font-size: 1rem;
             }
         }
 
@@ -587,6 +839,59 @@
         .section:nth-child(5) { animation-delay: 0.4s; }
         .section:nth-child(6) { animation-delay: 0.5s; }
     </style>
+
+    <!-- ── Hreflang ────────────────────────────────────────────────────────── -->
+    <link rel="alternate" hreflang="en-in"     href="https://tryspyral.com/spyral">
+    <link rel="alternate" hreflang="en"        href="https://tryspyral.com/spyral">
+    <link rel="alternate" hreflang="x-default" href="https://tryspyral.com/spyral">
+
+    <!-- ── Geo targeting ──────────────────────────────────────────────────── -->
+    <meta name="geo.region"     content="IN">
+    <meta name="geo.placename"  content="India">
+    <meta name="language"       content="English">
+    <meta name="revisit-after"  content="7 days">
+
+    <!-- ── FAQPage Schema ─────────────────────────────────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is SPYRAL AI and how does it work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "SPYRAL AI is a keyword-first intelligence architecture that powers the NEP Workbench learning platform. Unlike prompt-based AI systems, SPYRAL uses deterministic, constrained reasoning pipelines — meaning outputs are predictable, auditable, and production-grade. It combines a Kalman filter for Student Performance Index tracking, Bayesian competency networks for knowledge state estimation, Item Response Theory (IRT) for question calibration, and Hidden Markov Models (HMM) for learning-state modelling."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does SPYRAL track student performance using AI?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "SPYRAL tracks student performance using a Kalman filter algorithm that continuously updates the Student Performance Index (SPI) in real-time. Every time a student answers a challenge, the system considers accuracy, response time, difficulty level (calibrated via IRT), and competency domain to compute a posterior SPI estimate. The Bayesian competency network then updates the student's knowledge state across all NEP 2020 competency nodes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What makes SPYRAL different from other AI education tools?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "SPYRAL differs from other AI education tools in three key ways: (1) Deterministic outputs — no hallucinations or unpredictable responses; (2) Full audit traceability — every learning decision has a logged, explainable reason; (3) NEP 2020 alignment — built specifically for India's National Education Policy 2020 competency framework, not a generic global platform adapted for India."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is SPYRAL AI safe and reliable for school students?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. SPYRAL AI is designed for safe use in schools. It uses constrained reasoning — AI never generates open-ended, uncontrolled content. All AI outputs pass through keyword-first validation pipelines. Student data is stored securely in India-hosted servers with JWT authentication, rate limiting, and industry-standard security practices."
+          }
+        }
+      ]
+    }
+    </script>
 </head>
 <body>
     <!-- HEADER - EXACT COPY FROM ORIGINAL HOME PAGE -->
@@ -595,13 +900,20 @@
             <i class="fas fa-graduation-cap"></i>
             NEP WORKBENCH
         </div>
-        <div class="nav-links">
-            <a href="/workbench">Home</a>
-            <a href="/nep">About NEP 2020</a>
-            <a href="/contact">Contact</a>
-            <a href="/login" class="btn btn-outline">Login</a>
-            <a href="/login?signup=true" class="btn btn-primary">Sign Up</a>
-        </div>
+        <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <nav class="nav-links" id="navLinks">
+            <button class="nav-close" id="navClose" aria-label="Close menu"><i class="fas fa-times"></i></button>
+            <a href="/workbench" onclick="closeNav()">Home</a>
+            <a href="/nep" onclick="closeNav()">About NEP 2020</a>
+            <a href="/contact" onclick="closeNav()">Contact</a>
+            <a href="/login" class="btn btn-outline" onclick="closeNav()">Login</a>
+            <a href="/login?signup=true" class="btn btn-primary" onclick="closeNav()">Sign Up</a>
+        </nav>
+        <div class="nav-overlay" id="navOverlay"></div>
     </div>
 
     <div class="spyral-container">
@@ -697,6 +1009,7 @@
             <div class="content-box">
                 <p>Generic LLMs are <strong>content generators</strong>. SPYRAL AI is a <strong>controlled execution system</strong>.</p>
                 
+                <div class="table-scroll-wrapper">
                 <table class="comparison-table">
                     <thead>
                         <tr>
@@ -738,6 +1051,7 @@
                         </tr>
                     </tbody>
                 </table>
+                </div>
                 
                 <div class="graph-container" style="height: 350px; margin-top: 30px;">
                     <div class="graph-title">Capability Comparison: LLM vs SPYRAL AI</div>
@@ -854,6 +1168,11 @@
     <!-- FOOTER - EXACT COPY FROM ORIGINAL HOME PAGE -->
     <div class="footer">
         <p>&copy; 2026 AIRM. Aligned with National Education Policy 2020.</p>
+        <div class="footer-links" style="margin-top:10px;">
+            <a href="/terms">Terms &amp; Conditions</a>
+            <a href="/feedback">Feedback</a>
+            <a href="/contact">Contact</a>
+        </div>
     </div>
 
     <script>
@@ -867,6 +1186,9 @@
             }
 
             console.log('Chart.js loaded, initializing charts...');
+
+            const isMobile = () => window.innerWidth <= 768;
+            const isSmall = () => window.innerWidth <= 480;
 
             // Chart 1: Daily Usage Distribution
             const usageCtx = document.getElementById('usageChart').getContext('2d');
@@ -893,13 +1215,12 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'right',
+                            position: isMobile() ? 'bottom' : 'right',
                             labels: {
                                 color: '#ddd',
-                                padding: 15,
-                                font: {
-                                    size: 12
-                                }
+                                padding: isSmall() ? 8 : 12,
+                                font: { size: isSmall() ? 10 : 12 },
+                                boxWidth: isSmall() ? 12 : 16
                             }
                         }
                     }
@@ -1088,10 +1409,13 @@
 
             // Chart 5: Capability Comparison
             const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
+            const compLabels = isMobile()
+                ? ['Context', 'Noise', 'Stability', 'Classroom', 'Policy', 'Explain']
+                : ['Context Awareness', 'Noise Handling', 'Learning Stability', 'Classroom Fit', 'Policy Alignment', 'Explainability'];
             new Chart(comparisonCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Context Awareness', 'Noise Handling', 'Learning Stability', 'Classroom Fit', 'Policy Alignment', 'Explainability'],
+                    labels: compLabels,
                     datasets: [
                         {
                             label: 'SPYRAL AI',
@@ -1161,7 +1485,39 @@
             initializeCharts();
         }
 
-        // Smooth scrolling for anchor links
+        // ── HAMBURGER MENU TOGGLE ─────────────────────────────────────────────
+        const hamburger = document.getElementById('hamburger');
+        const navLinks  = document.getElementById('navLinks');
+        const navOverlay = document.getElementById('navOverlay');
+
+        function openNav() {
+            hamburger.classList.add('active');
+            navLinks.classList.add('active');
+            navOverlay.classList.add('active');
+            hamburger.setAttribute('aria-expanded', 'true');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeNav() {
+            hamburger.classList.remove('active');
+            navLinks.classList.remove('active');
+            navOverlay.classList.remove('active');
+            hamburger.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+        }
+
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.contains('active') ? closeNav() : openNav();
+        });
+
+        document.getElementById('navClose').addEventListener('click', closeNav);
+        navOverlay.addEventListener('click', closeNav);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeNav();
+        });
+
+        // ── SMOOTH SCROLLING FOR ANCHOR LINKS ────────────────────────────────
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 if(this.getAttribute('href') === '#') return;

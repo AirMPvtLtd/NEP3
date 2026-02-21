@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback | SPYRAL NEP Workbench</title>
+
+    <meta name="description" content="Share your feedback about SPYRAL NEP Workbench. Help us improve the platform for students, teachers, and schools across India.">
+    <meta name="keywords" content="SPYRAL feedback, NEP workbench feedback, improve education platform, report issue SPYRAL">
+    <meta name="author" content="SPYRAL Technologies">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#7877c6">
+    <link rel="canonical" href="https://tryspyral.com/feedback">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="SPYRAL">
+    <meta property="og:title" content="Feedback | SPYRAL NEP Workbench">
+    <meta property="og:description" content="Share your thoughts. Help us improve the SPYRAL NEP Workbench platform.">
+    <meta property="og:url" content="https://tryspyral.com/feedback">
+    <meta property="og:locale" content="en_IN">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d30 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        .header {
+            background: #333337;
+            border-bottom: 1px solid #464647;
+            padding: 15px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .nav-links a:hover { color: #00d4ff; }
+
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 122, 204, 0.4);
+        }
+
+        /* FOOTER */
+        .footer {
+            background: #333337;
+            border-top: 1px solid #464647;
+            padding: 30px 40px;
+            text-align: center;
+            color: #888;
+            margin-top: auto;
+            width: 100%;
+        }
+
+        .footer a { color: #00d4ff; text-decoration: none; margin: 0 10px; }
+        .footer a:hover { text-decoration: underline; }
+
+        /* MAIN */
+        .page-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 40px;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* HERO */
+        .page-hero {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .page-hero h1 {
+            font-size: clamp(2.2rem, 5vw, 3.2rem);
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #ffffff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .page-hero p {
+            font-size: 1.1rem;
+            color: #aaa;
+            line-height: 1.7;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* WHY FEEDBACK */
+        .why-feedback {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 50px;
+        }
+
+        .why-card {
+            background: rgba(51,51,55,0.8);
+            border: 1px solid #464647;
+            border-radius: 12px;
+            padding: 25px 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .why-card:hover {
+            border-color: #007acc;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0,122,204,0.15);
+        }
+
+        .why-icon {
+            font-size: 2rem;
+            color: #00d4ff;
+            margin-bottom: 12px;
+        }
+
+        .why-card h3 { font-size: 1rem; color: #fff; margin-bottom: 6px; }
+        .why-card p  { font-size: 0.85rem; color: #aaa; line-height: 1.5; }
+
+        /* FORM CARD */
+        .form-card {
+            background: rgba(51,51,55,0.9);
+            border: 1px solid #464647;
+            border-radius: 16px;
+            padding: 45px;
+        }
+
+        .form-card h2 {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .form-card h2 i { color: #00d4ff; }
+
+        /* FORM ELEMENTS */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group label span.required { color: #ff6b6b; margin-left: 3px; }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: rgba(30,30,30,0.8);
+            border: 1px solid #464647;
+            border-radius: 8px;
+            color: #fff;
+            padding: 13px 16px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #007acc;
+            box-shadow: 0 0 0 3px rgba(0,122,204,0.15);
+        }
+
+        .form-group select option {
+            background: #2d2d30;
+            color: #fff;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 130px;
+        }
+
+        /* STAR RATING */
+        .star-group label {
+            display: block;
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .star-group label span.required { color: #ff6b6b; margin-left: 3px; }
+
+        .stars {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+
+        .star-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 2rem;
+            color: #444;
+            transition: color 0.15s, transform 0.15s;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .star-btn:hover,
+        .star-btn.active { color: #f59e0b; }
+
+        .star-btn:hover { transform: scale(1.2); }
+
+        .rating-label {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 8px;
+            min-height: 1.2em;
+            transition: color 0.2s;
+        }
+
+        /* CHAR COUNT */
+        .char-count {
+            font-size: 0.8rem;
+            color: #666;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        /* SUBMIT BUTTON */
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,122,204,0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .submit-btn .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: none;
+        }
+
+        .submit-btn.loading .spinner { display: inline-block; }
+        .submit-btn.loading .btn-text { display: none; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* MESSAGES */
+        .form-message {
+            display: none;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .form-message.error {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #fca5a5;
+            display: flex;
+        }
+
+        .form-message.success {
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.3);
+            color: #86efac;
+            display: flex;
+        }
+
+        /* SUCCESS STATE */
+        .success-state {
+            display: none;
+            text-align: center;
+            padding: 60px 30px;
+        }
+
+        .success-state.visible { display: block; }
+
+        .success-icon {
+            font-size: 4rem;
+            color: #22c55e;
+            margin-bottom: 20px;
+            animation: pop 0.4s ease;
+        }
+
+        @keyframes pop {
+            0%   { transform: scale(0); opacity: 0; }
+            70%  { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .success-state h3 {
+            font-size: 1.8rem;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .success-state p { color: #aaa; font-size: 1rem; line-height: 1.6; margin-bottom: 25px; }
+
+        .success-state .back-btn {
+            background: linear-gradient(135deg, #007acc, #00d4ff);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        .success-state .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,122,204,0.4);
+        }
+
+        .success-state .back-btn.outline {
+            background: transparent;
+            border: 2px solid #007acc;
+            color: #00d4ff;
+        }
+
+        /* FIELD ERROR */
+        .field-error {
+            font-size: 0.82rem;
+            color: #fca5a5;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .field-error.visible { display: block; }
+
+        .form-group input.invalid,
+        .form-group select.invalid,
+        .form-group textarea.invalid {
+            border-color: rgba(239,68,68,0.5);
+        }
+
+        @media (max-width: 768px) {
+            .header { padding: 15px 20px; }
+            .page-container { padding: 40px 20px; }
+            .form-card { padding: 30px 25px; }
+            .form-row { grid-template-columns: 1fr; }
+            .why-feedback { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="header">
+        <a href="/" class="logo">SPYRAL</a>
+        <nav class="nav-links">
+            <a href="/workbench">Workbench</a>
+            <a href="/spyral">Architecture</a>
+            <a href="/nep">NEP 2020</a>
+            <a href="/developer">Docs</a>
+            <a href="/contact">Contact</a>
+            <a href="/login" class="btn btn-primary">Sign In</a>
+        </nav>
+    </header>
+
+    <!-- MAIN -->
+    <main class="page-container">
+
+        <!-- HERO -->
+        <div class="page-hero">
+            <h1>Share Your Feedback</h1>
+            <p>Your experience shapes the platform. Whether it's a feature idea, a bug, or a compliment — we want to hear it.</p>
+        </div>
+
+        <!-- WHY FEEDBACK -->
+        <div class="why-feedback">
+            <div class="why-card">
+                <div class="why-icon"><i class="fas fa-lightbulb"></i></div>
+                <h3>Shape Features</h3>
+                <p>Your suggestions directly influence our product roadmap.</p>
+            </div>
+            <div class="why-card">
+                <div class="why-icon"><i class="fas fa-bug"></i></div>
+                <h3>Fix Issues</h3>
+                <p>Report bugs so we can resolve them quickly for everyone.</p>
+            </div>
+            <div class="why-card">
+                <div class="why-icon"><i class="fas fa-graduation-cap"></i></div>
+                <h3>Improve Learning</h3>
+                <p>Help us make NEP 2020 implementation better for all schools.</p>
+            </div>
+        </div>
+
+        <!-- FORM CARD -->
+        <div class="form-card" id="formCard">
+            <h2><i class="fas fa-comment-dots"></i> Tell Us What You Think</h2>
+
+            <!-- Alert Messages -->
+            <div class="form-message" id="errorMsg">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorText">Something went wrong. Please try again.</span>
+            </div>
+
+            <!-- THE FORM -->
+            <form id="feedbackForm" novalidate>
+
+                <!-- Name & Email -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Your Name <span class="required">*</span></label>
+                        <input type="text" id="name" name="name" placeholder="e.g. Priya Sharma" maxlength="100" autocomplete="name">
+                        <div class="field-error" id="nameError">Please enter your name.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address <span class="required">*</span></label>
+                        <input type="email" id="email" name="email" placeholder="e.g. priya@school.edu.in" maxlength="200" autocomplete="email">
+                        <div class="field-error" id="emailError">Please enter a valid email address.</div>
+                    </div>
+                </div>
+
+                <!-- Role & Category -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="role">I am a <span class="required">*</span></label>
+                        <select id="role" name="role">
+                            <option value="" disabled selected>Select your role</option>
+                            <option value="student">Student</option>
+                            <option value="teacher">Teacher</option>
+                            <option value="parent">Parent</option>
+                            <option value="school_admin">School Administrator</option>
+                            <option value="researcher">Researcher / Developer</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <div class="field-error" id="roleError">Please select your role.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Feedback Category <span class="required">*</span></label>
+                        <select id="category" name="category">
+                            <option value="" disabled selected>Select a category</option>
+                            <option value="feature_request">Feature Request</option>
+                            <option value="bug_report">Bug Report</option>
+                            <option value="ux_feedback">User Experience (UX)</option>
+                            <option value="content_quality">Content / Curriculum Quality</option>
+                            <option value="performance">Performance / Speed</option>
+                            <option value="general">General Feedback</option>
+                        </select>
+                        <div class="field-error" id="categoryError">Please select a category.</div>
+                    </div>
+                </div>
+
+                <!-- Star Rating -->
+                <div class="star-group">
+                    <label>Overall Experience <span class="required">*</span></label>
+                    <div class="stars" id="starContainer" role="group" aria-label="Rating">
+                        <button type="button" class="star-btn" data-value="1" title="1 - Poor" aria-label="1 star">&#9733;</button>
+                        <button type="button" class="star-btn" data-value="2" title="2 - Fair" aria-label="2 stars">&#9733;</button>
+                        <button type="button" class="star-btn" data-value="3" title="3 - Good" aria-label="3 stars">&#9733;</button>
+                        <button type="button" class="star-btn" data-value="4" title="4 - Very Good" aria-label="4 stars">&#9733;</button>
+                        <button type="button" class="star-btn" data-value="5" title="5 - Excellent" aria-label="5 stars">&#9733;</button>
+                    </div>
+                    <div class="rating-label" id="ratingLabel">Click a star to rate</div>
+                    <div class="field-error" id="ratingError">Please provide a rating.</div>
+                </div>
+
+                <!-- Message -->
+                <div class="form-group">
+                    <label for="message">Your Feedback <span class="required">*</span></label>
+                    <textarea id="message" name="message" placeholder="Tell us what's working well, what could be better, or anything else on your mind..." maxlength="2000"></textarea>
+                    <div class="char-count"><span id="charCount">0</span> / 2000</div>
+                    <div class="field-error" id="messageError">Please enter your feedback (at least 20 characters).</div>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <div class="spinner"></div>
+                    <span class="btn-text"><i class="fas fa-paper-plane"></i> &nbsp;Submit Feedback</span>
+                </button>
+
+            </form>
+
+            <!-- SUCCESS STATE (hidden initially) -->
+            <div class="success-state" id="successState">
+                <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+                <h3>Thank you for your feedback!</h3>
+                <p>We've received your message and will review it shortly.<br>Your input genuinely helps us build a better platform for students across India.</p>
+                <a href="/" class="back-btn">Back to Home</a>
+                <a href="/workbench" class="back-btn outline">Explore Workbench</a>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>
+            <a href="/">Home</a>
+            <a href="/terms">Terms &amp; Conditions</a>
+            <a href="/feedback">Feedback</a>
+            <a href="/contact">Contact</a>
+            <a href="/workbench">Workbench</a>
+        </p>
+        <p style="margin-top: 12px;">© 2026 SPYRAL Technologies. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // ── Star Rating ──────────────────────────────────────────────────────
+        let selectedRating = 0;
+        const ratingLabels = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+        const stars = document.querySelectorAll('.star-btn');
+        const ratingLabel = document.getElementById('ratingLabel');
+
+        function setStars(value, preview = false) {
+            stars.forEach(star => {
+                const v = parseInt(star.dataset.value);
+                star.classList.toggle('active', v <= value);
+            });
+            ratingLabel.textContent = value > 0 ? ratingLabels[value] : 'Click a star to rate';
+            ratingLabel.style.color = value > 0 ? '#f59e0b' : '#888';
+        }
+
+        stars.forEach(star => {
+            star.addEventListener('mouseenter', () => setStars(parseInt(star.dataset.value), true));
+            star.addEventListener('mouseleave', () => setStars(selectedRating));
+            star.addEventListener('click', () => {
+                selectedRating = parseInt(star.dataset.value);
+                setStars(selectedRating);
+                document.getElementById('ratingError').classList.remove('visible');
+            });
+        });
+
+        // ── Char Counter ─────────────────────────────────────────────────────
+        const msgArea = document.getElementById('message');
+        const charCount = document.getElementById('charCount');
+        msgArea.addEventListener('input', () => {
+            charCount.textContent = msgArea.value.length;
+        });
+
+        // ── Validation ───────────────────────────────────────────────────────
+        function showFieldError(fieldId, errorId, show) {
+            const field = document.getElementById(fieldId);
+            const err   = document.getElementById(errorId);
+            field.classList.toggle('invalid', show);
+            err.classList.toggle('visible', show);
+        }
+
+        function validateForm() {
+            let valid = true;
+            const name     = document.getElementById('name').value.trim();
+            const email    = document.getElementById('email').value.trim();
+            const role     = document.getElementById('role').value;
+            const category = document.getElementById('category').value;
+            const message  = document.getElementById('message').value.trim();
+
+            showFieldError('name', 'nameError', name.length === 0);
+            if (!name) valid = false;
+
+            const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            showFieldError('email', 'emailError', !emailOk);
+            if (!emailOk) valid = false;
+
+            showFieldError('role', 'roleError', !role);
+            if (!role) valid = false;
+
+            showFieldError('category', 'categoryError', !category);
+            if (!category) valid = false;
+
+            if (selectedRating === 0) {
+                document.getElementById('ratingError').classList.add('visible');
+                valid = false;
+            }
+
+            showFieldError('message', 'messageError', message.length < 20);
+            if (message.length < 20) valid = false;
+
+            return valid;
+        }
+
+        // ── Form Submit ──────────────────────────────────────────────────────
+        document.getElementById('feedbackForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Hide old error
+            const errMsg = document.getElementById('errorMsg');
+            errMsg.classList.remove('error');
+            errMsg.style.display = 'none';
+
+            if (!validateForm()) return;
+
+            const btn = document.getElementById('submitBtn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            const payload = {
+                name:     document.getElementById('name').value.trim(),
+                email:    document.getElementById('email').value.trim(),
+                role:     document.getElementById('role').value,
+                category: document.getElementById('category').value,
+                rating:   selectedRating,
+                message:  document.getElementById('message').value.trim()
+            };
+
+            try {
+                const res = await fetch('/api/public/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    // Show success
+                    document.getElementById('feedbackForm').style.display = 'none';
+                    document.getElementById('successState').classList.add('visible');
+                    document.querySelector('.form-card h2').style.display = 'none';
+                } else {
+                    throw new Error(data.message || 'Submission failed');
+                }
+            } catch (err) {
+                document.getElementById('errorText').textContent = err.message || 'Something went wrong. Please try again.';
+                errMsg.style.display = 'flex';
+                errMsg.classList.add('error');
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        });
+
+        // ── Clear error on input ─────────────────────────────────────────────
+        ['name', 'email', 'role', 'category', 'message'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                document.getElementById(id).classList.remove('invalid');
+            });
+        });
+
+        // ── Animate why-cards ────────────────────────────────────────────────
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }, i * 100);
+                }
+            });
+        }, { threshold: 0.2 });
+
+        document.querySelectorAll('.why-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            observer.observe(card);
+        });
+    </script>
+
+</body>
+</html>

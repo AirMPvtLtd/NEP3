@@ -42,6 +42,16 @@ const STATIC_PAGES = [
     priority:   '0.5',
   },
   {
+    loc:        '/terms',
+    changefreq: 'yearly',
+    priority:   '0.3',
+  },
+  {
+    loc:        '/feedback',
+    changefreq: 'yearly',
+    priority:   '0.3',
+  },
+  {
     loc:        '/developer',
     changefreq: 'monthly',
     priority:   '0.6',

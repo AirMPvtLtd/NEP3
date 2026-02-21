@@ -102,12 +102,13 @@ exports.requestAccess = async (req, res) => {
     if (!intendedUse || String(intendedUse).trim().length < 20)
       errors.push('intendedUse is required (min 20 chars)');
 
-    if (!Array.isArray(permissions) || permissions.length === 0)
+    if (!Array.isArray(permissions) || permissions.length === 0) {
       errors.push('at least one endpoint permission must be selected');
-
-    const invalidPerms = permissions.filter(p => !VALID_PERMISSIONS.includes(p));
-    if (invalidPerms.length)
-      errors.push(`unknown permissions: ${invalidPerms.join(', ')}`);
+    } else {
+      const invalidPerms = permissions.filter(p => !VALID_PERMISSIONS.includes(p));
+      if (invalidPerms.length)
+        errors.push(`unknown permissions: ${invalidPerms.join(', ')}`);
+    }
 
     if (errors.length) {
       return res.status(400).json({ success: false, message: 'Validation failed', errors });

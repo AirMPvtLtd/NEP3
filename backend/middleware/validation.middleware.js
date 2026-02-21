@@ -194,7 +194,7 @@ const validateLogin = (req, res, next) => {
   const { userType, email, teacherId, studentId, password } = req.body;
 
   // User type validation
-  const validUserTypes = ['student', 'teacher', 'parent', 'admin'];
+  const validUserTypes = ['student', 'teacher', 'parent', 'admin', 'superadmin'];
   if (!userType || !validUserTypes.includes(userType)) {
     return res
       .status(400)
@@ -204,6 +204,18 @@ const validateLogin = (req, res, next) => {
           `User type must be one of: ${validUserTypes.join(', ')}`
         )
       );
+  }
+
+  // Superadmin: only needs email + password — skip all other checks
+  if (userType === 'superadmin') {
+    if (!email) {
+      return res.status(400).json(validationError('email', 'Email is required'));
+    }
+    if (!isValidEmail(email)) {
+      return res.status(400).json(validationError('email', 'Invalid email format'));
+    }
+    req.body.email = validator.normalizeEmail(email);
+    return next();
   }
 
   // Password required for all

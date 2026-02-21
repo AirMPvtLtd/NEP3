@@ -410,6 +410,37 @@ const login = async (req, res) => {
     // 3️⃣ Model & query selection
     let Model, query, passwordField;
 
+    // ── Superadmin: env-var credentials, no DB lookup ──────────────────────
+    if (userType === 'superadmin') {
+      if (!email) {
+        return res.status(400).json({ success: false, message: 'Email required' });
+      }
+      const crypto = require('crypto');
+      const opsEmail = process.env.OPS_ADMIN_EMAIL || '';
+      const opsPass  = process.env.OPS_ADMIN_PASSWORD || '';
+      const eA = Buffer.from(email.toLowerCase());
+      const eB = Buffer.from(opsEmail.toLowerCase());
+      const pA = Buffer.from(password);
+      const pB = Buffer.from(opsPass);
+      const emailOk = eA.length === eB.length && crypto.timingSafeEqual(eA, eB);
+      const passOk  = pA.length === pB.length && crypto.timingSafeEqual(pA, pB);
+      if (!emailOk || !passOk) {
+        return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      }
+      const accessToken  = generateAccessToken({ userId: 'ops-admin', role: 'superadmin', email: email.toLowerCase() });
+      const refreshToken = generateRefreshToken({ userId: 'ops-admin', role: 'superadmin' });
+      logger.info('Superadmin login successful', { email });
+      return res.json({
+        success: true,
+        message: 'Login successful',
+        data: {
+          user: { email: email.toLowerCase(), name: 'Ops Admin', role: 'superadmin' },
+          accessToken,
+          refreshToken,
+        },
+      });
+    }
+
     switch (userType) {
       case 'admin':
         Model = School;

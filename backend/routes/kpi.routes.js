@@ -75,4 +75,10 @@ router.get('/ai', kpiController.getAIKPIs);
  */
 router.get('/reports', kpiController.getReportKPIs);
 
+/**
+ * @route GET /api/kpi/traffic
+ * @desc  Web traffic: API call volume, unique IPs, login counts, top routes, error rate
+ */
+router.get('/traffic', kpiController.getTrafficKPIs);
+
 module.exports = router;

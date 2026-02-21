@@ -82,44 +82,75 @@ const sendEmail = async (options) => {
 // SPECIFIC EMAIL TYPES
 // ======================================================
 
+// ── Shared email wrapper ────────────────────────────────────────────────────
+function emailShell(bodyHtml) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SPYRAL</title></head>
+<body style="margin:0;padding:0;background:#f4f5f7;font-family:Inter,Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f7;padding:32px 0">
+  <tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08)">
+      <!-- Header -->
+      <tr><td style="background:#7877c6;padding:28px 40px;text-align:center">
+        <span style="font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.5px">SPYRAL</span>
+        <p style="margin:4px 0 0;color:#ddd6fe;font-size:13px">NEP 2020 Learning Platform</p>
+      </td></tr>
+      <!-- Body -->
+      <tr><td style="padding:36px 40px;color:#1a1a2e;font-size:15px;line-height:1.6">
+        ${bodyHtml}
+      </td></tr>
+      <!-- Footer -->
+      <tr><td style="background:#f8f8fc;padding:20px 40px;text-align:center;border-top:1px solid #ebebf5">
+        <p style="margin:0;color:#9999b3;font-size:12px">
+          &copy; ${new Date().getFullYear()} SPYRAL &mdash; tryspyral.com<br>
+          This is an automated message. Please do not reply to this email.
+        </p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+}
+
 const sendVerificationEmail = async ({ to, name, verificationUrl }) => {
-  const subject = 'Verify Your Email - NEP Workbench';
+  const subject = 'Verify your email — SPYRAL';
+  const safeName = String(name || 'there').replace(/[<>]/g, '');
 
-  const html = `
-  <h2>Welcome ${name}!</h2>
-  <p>Please verify your email by clicking below:</p>
-  <a href="${verificationUrl}">Verify Email</a>
-  <p>This link expires in 24 hours.</p>
-  `;
+  const html = emailShell(`
+    <p style="margin:0 0 16px;font-size:18px;font-weight:600;color:#1a1a2e">Welcome to SPYRAL, ${safeName}!</p>
+    <p style="margin:0 0 24px;color:#4a4a6a">Thanks for signing up. Please verify your email address to activate your account.</p>
+    <p style="text-align:center;margin:0 0 28px">
+      <a href="${verificationUrl}" style="display:inline-block;background:#7877c6;color:#ffffff;font-weight:600;font-size:15px;padding:14px 32px;border-radius:8px;text-decoration:none">Verify Email Address</a>
+    </p>
+    <p style="margin:0 0 8px;color:#6b6b8a;font-size:13px">Or copy this link into your browser:</p>
+    <p style="margin:0 0 24px;word-break:break-all;font-size:12px;color:#9999b3">${verificationUrl}</p>
+    <p style="margin:0;color:#9999b3;font-size:13px">This link expires in <strong>24 hours</strong>. If you did not create an account, you can safely ignore this email.</p>
+  `);
 
-  const text = `
-  Welcome ${name},
-  Verify your email here:
-  ${verificationUrl}
-  `;
-
+  const text = `Welcome to SPYRAL, ${safeName}!\n\nVerify your email:\n${verificationUrl}\n\nThis link expires in 24 hours.`;
   return await sendEmail({ to, subject, html, text });
 };
 
 const sendPasswordResetEmail = async ({ to, name, resetUrl, ipAddress }) => {
-  const subject = 'Password Reset Request - NEP Workbench';
+  const subject = 'Reset your SPYRAL password';
+  const safeName = String(name || 'there').replace(/[<>]/g, '');
 
-  const html = `
-  <h2>Password Reset</h2>
-  <p>Hi ${name},</p>
-  <p>Click below to reset your password:</p>
-  <a href="${resetUrl}">Reset Password</a>
-  <p>This link expires in 1 hour.</p>
-  <p>IP Address: ${ipAddress || 'Unknown'}</p>
-  `;
+  const html = emailShell(`
+    <p style="margin:0 0 16px;font-size:18px;font-weight:600;color:#1a1a2e">Reset your password</p>
+    <p style="margin:0 0 24px;color:#4a4a6a">Hi ${safeName}, we received a request to reset your SPYRAL password. Click the button below to choose a new one.</p>
+    <p style="text-align:center;margin:0 0 28px">
+      <a href="${resetUrl}" style="display:inline-block;background:#7877c6;color:#ffffff;font-weight:600;font-size:15px;padding:14px 32px;border-radius:8px;text-decoration:none">Reset Password</a>
+    </p>
+    <p style="margin:0 0 8px;color:#6b6b8a;font-size:13px">Or copy this link:</p>
+    <p style="margin:0 0 24px;word-break:break-all;font-size:12px;color:#9999b3">${resetUrl}</p>
+    <p style="margin:0 0 8px;color:#9999b3;font-size:13px">This link expires in <strong>1 hour</strong>.</p>
+    ${ipAddress ? `<p style="margin:0;color:#c0c0d0;font-size:12px">Request from IP: ${ipAddress}</p>` : ''}
+    <p style="margin:16px 0 0;color:#9999b3;font-size:13px">If you did not request a password reset, you can safely ignore this email — your password will not change.</p>
+  `);
 
-  const text = `
-  Hi ${name},
-  Reset your password:
-  ${resetUrl}
-  This link expires in 1 hour.
-  `;
-
+  const text = `Hi ${safeName},\n\nReset your SPYRAL password:\n${resetUrl}\n\nThis link expires in 1 hour.\n\nIf you didn't request this, ignore this email.`;
   return await sendEmail({ to, subject, html, text });
 };
 

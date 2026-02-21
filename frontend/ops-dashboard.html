@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ops Dashboard | SPYRAL Platform KPIs</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:       #0a0a0f;
+      --bg2:      #111118;
+      --bg3:      #16161f;
+      --bg4:      #1c1c28;
+      --border:   rgba(255,255,255,0.07);
+      --purple:   #7877c6;
+      --blue:     #4a90e2;
+      --green:    #4caf87;
+      --orange:   #e2934a;
+      --red:      #e24a4a;
+      --yellow:   #e2c94a;
+      --text:     #ededf2;
+      --dim:      #9999b3;
+      --dimmer:   #5f5f7a;
+      --sidebar:  240px;
+      --radius:   10px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      font-size: 14px;
+    }
+
+    /* ── Sidebar ─────────────────────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar);
+      min-width: var(--sidebar);
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar-logo {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-logo .brand { font-size: 1.1rem; font-weight: 700; color: var(--purple); }
+    .sidebar-logo .sub   { font-size: 0.72rem; color: var(--dimmer); margin-top: 2px; }
+
+    .sidebar-nav { padding: 12px 0; flex: 1; }
+    .nav-section { padding: 8px 16px 4px; font-size: 0.65rem; font-weight: 600;
+                   text-transform: uppercase; letter-spacing: 0.08em; color: var(--dimmer); }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 20px;
+      color: var(--dim);
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+      font-size: 0.82rem;
+    }
+    .nav-item:hover  { color: var(--text); background: rgba(255,255,255,0.04); }
+    .nav-item.active { color: var(--purple); border-left-color: var(--purple);
+                       background: rgba(120,119,198,0.08); }
+    .nav-item i { width: 16px; text-align: center; font-size: 0.85rem; }
+
+    .sidebar-footer {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      font-size: 0.72rem;
+      color: var(--dimmer);
+    }
+
+    /* ── Main ────────────────────────────────────────────────────────────── */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .topbar-title { font-size: 1rem; font-weight: 600; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+
+    .refresh-btn {
+      background: rgba(120,119,198,0.15);
+      border: 1px solid rgba(120,119,198,0.3);
+      color: var(--purple);
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s;
+    }
+    .refresh-btn:hover { background: rgba(120,119,198,0.25); }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    .last-updated { font-size: 0.72rem; color: var(--dimmer); }
+
+    /* ── Content area ────────────────────────────────────────────────────── */
+    .content { padding: 24px 28px; flex: 1; }
+
+    /* Sections */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title i { color: var(--purple); }
+
+    /* ── Stat cards ──────────────────────────────────────────────────────── */
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-bottom: 24px; }
+
+    .card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: rgba(120,119,198,0.3); }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+    .card.purple::before { background: var(--purple); }
+    .card.blue::before   { background: var(--blue); }
+    .card.green::before  { background: var(--green); }
+    .card.orange::before { background: var(--orange); }
+    .card.red::before    { background: var(--red); }
+    .card.yellow::before { background: var(--yellow); }
+
+    .card-icon {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+    .card.purple .card-icon { background: rgba(120,119,198,0.15); color: var(--purple); }
+    .card.blue   .card-icon { background: rgba(74,144,226,0.15);  color: var(--blue); }
+    .card.green  .card-icon { background: rgba(76,175,135,0.15);  color: var(--green); }
+    .card.orange .card-icon { background: rgba(226,147,74,0.15);  color: var(--orange); }
+    .card.red    .card-icon { background: rgba(226,74,74,0.15);   color: var(--red); }
+    .card.yellow .card-icon { background: rgba(226,201,74,0.15);  color: var(--yellow); }
+
+    .card-label { font-size: 0.72rem; color: var(--dimmer); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .card-value { font-size: 1.6rem; font-weight: 700; line-height: 1; color: var(--text); }
+    .card-sub   { font-size: 0.72rem; color: var(--dim); margin-top: 4px; }
+
+    /* ── Charts ──────────────────────────────────────────────────────────── */
+    .charts { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .chart-wide { grid-column: 1 / -1; }
+
+    .chart-box {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+    .chart-box h3 { font-size: 0.82rem; font-weight: 600; color: var(--dim); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .chart-box canvas { max-height: 220px; }
+
+    /* ── Table ───────────────────────────────────────────────────────────── */
+    .table-box {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .table-box h3 {
+      font-size: 0.82rem; font-weight: 600; color: var(--dim);
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 18px; text-align: left; font-size: 0.82rem; }
+    th { color: var(--dimmer); font-weight: 500; border-bottom: 1px solid var(--border); }
+    tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    /* ── Loading skeleton ────────────────────────────────────────────────── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg3) 25%, var(--bg4) 50%, var(--bg3) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* ── Badge ───────────────────────────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 0.68rem;
+      font-weight: 600;
+    }
+    .badge-green  { background: rgba(76,175,135,0.15); color: var(--green); }
+    .badge-red    { background: rgba(226,74,74,0.15);  color: var(--red); }
+    .badge-blue   { background: rgba(74,144,226,0.15); color: var(--blue); }
+    .badge-orange { background: rgba(226,147,74,0.15); color: var(--orange); }
+    .badge-purple { background: rgba(120,119,198,0.15); color: var(--purple); }
+
+    /* ── Competency bars ─────────────────────────────────────────────────── */
+    .comp-list { display: flex; flex-direction: column; gap: 10px; padding: 4px 0; }
+    .comp-row  { display: flex; flex-direction: column; gap: 4px; }
+    .comp-label { display: flex; justify-content: space-between; font-size: 0.78rem; }
+    .comp-name  { color: var(--dim); text-transform: capitalize; }
+    .comp-val   { color: var(--text); font-weight: 600; }
+    .comp-bar   { height: 4px; background: var(--bg4); border-radius: 2px; overflow: hidden; }
+    .comp-fill  { height: 100%; background: var(--purple); border-radius: 2px; transition: width 0.6s ease; }
+
+    /* ── Heatmap ─────────────────────────────────────────────────────────── */
+    .heatmap { display: flex; gap: 6px; flex-wrap: wrap; padding: 4px 0; }
+    .heat-day {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .heat-cell {
+      width: 32px; height: 32px;
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 600;
+      cursor: default;
+    }
+    .heat-date { font-size: 0.6rem; color: var(--dimmer); }
+
+    /* ── Error state ─────────────────────────────────────────────────────── */
+    .error-banner {
+      background: rgba(226,74,74,0.1);
+      border: 1px solid rgba(226,74,74,0.3);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      color: var(--red);
+      font-size: 0.82rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    /* ── Login prompt overlay ────────────────────────────────────────────── */
+    #loginOverlay {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+    #loginOverlay h2 { color: var(--purple); font-size: 1.4rem; }
+    #loginOverlay p  { color: var(--dim); font-size: 0.85rem; }
+    #loginOverlay input {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 0.9rem;
+      width: 280px;
+      outline: none;
+    }
+    #loginOverlay input:focus { border-color: var(--purple); }
+    #loginOverlay button {
+      background: var(--purple);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 28px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 280px;
+      transition: opacity 0.15s;
+    }
+    #loginOverlay button:hover { opacity: 0.85; }
+    #loginOverlay .login-err { color: var(--red); font-size: 0.78rem; display: none; }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .cards { grid-template-columns: repeat(2, 1fr); }
+      .charts { grid-template-columns: 1fr; }
+      .content { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Login overlay (JWT required) ─────────────────────────────────────── -->
+<div id="loginOverlay">
+  <i class="fas fa-chart-line" style="font-size:2.5rem;color:var(--purple)"></i>
+  <h2>SPYRAL Ops Dashboard</h2>
+  <p>Sign in with your superadmin credentials</p>
+  <input type="email"    id="loginEmail" placeholder="Email"    autocomplete="email">
+  <input type="password" id="loginPass"  placeholder="Password" autocomplete="current-password">
+  <button onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+  <span class="login-err" id="loginErr"></span>
+</div>
+
+<!-- ── Sidebar ───────────────────────────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">SPYRAL</div>
+    <div class="sub">Ops Dashboard</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" onclick="showSection('overview',this)">
+      <i class="fas fa-tachometer-alt"></i> Summary
+    </div>
+
+    <div class="nav-section">KPI Modules</div>
+    <div class="nav-item" onclick="showSection('platform',this)">
+      <i class="fas fa-school"></i> Platform
+    </div>
+    <div class="nav-item" onclick="showSection('traffic',this)">
+      <i class="fas fa-globe"></i> Web Traffic
+    </div>
+    <div class="nav-item" onclick="showSection('engagement',this)">
+      <i class="fas fa-users"></i> Engagement
+    </div>
+    <div class="nav-item" onclick="showSection('learning',this)">
+      <i class="fas fa-brain"></i> Learning
+    </div>
+    <div class="nav-item" onclick="showSection('revenue',this)">
+      <i class="fas fa-rupee-sign"></i> Revenue
+    </div>
+    <div class="nav-item" onclick="showSection('ai',this)">
+      <i class="fas fa-robot"></i> AI Usage
+    </div>
+    <div class="nav-item" onclick="showSection('reports',this)">
+      <i class="fas fa-file-alt"></i> Reports
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    Auto-refreshes every 5 min<br>
+    <span id="sidebarUser" style="color:var(--purple)"></span>
+  </div>
+</aside>
+
+<!-- ── Main ─────────────────────────────────────────────────────────────── -->
+<div class="main">
+  <div class="topbar">
+    <span class="topbar-title"><i class="fas fa-chart-line" style="color:var(--purple);margin-right:8px"></i>Platform KPIs</span>
+    <div class="topbar-right">
+      <span class="status-dot" title="Live"></span>
+      <span class="last-updated" id="lastUpdated">Loading…</span>
+      <button class="refresh-btn" onclick="loadAll()"><i class="fas fa-sync-alt"></i> Refresh</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="error-banner" id="errBanner"><i class="fas fa-exclamation-triangle"></i> <span id="errMsg"></span></div>
+
+    <!-- ── OVERVIEW ─────────────────────────────────────────────────── -->
+    <div class="section active" id="sec-overview">
+      <div class="section-title"><i class="fas fa-tachometer-alt"></i> Platform Summary</div>
+
+      <div class="cards" id="overviewCards">
+        <div class="card purple"><div class="card-icon"><i class="fas fa-school"></i></div><div class="card-label">Active Schools</div><div class="card-value" id="ov-schools">—</div><div class="card-sub">all time</div></div>
+        <div class="card blue"><div class="card-icon"><i class="fas fa-user-graduate"></i></div><div class="card-label">Total Students</div><div class="card-value" id="ov-students">—</div><div class="card-sub" id="ov-students-sub">—</div></div>
+        <div class="card green"><div class="card-icon"><i class="fas fa-users"></i></div><div class="card-label">DAU</div><div class="card-value" id="ov-dau">—</div><div class="card-sub" id="ov-dau-sub">—</div></div>
+        <div class="card orange"><div class="card-icon"><i class="fas fa-chart-bar"></i></div><div class="card-label">Challenges (30d)</div><div class="card-value" id="ov-challenges">—</div><div class="card-sub" id="ov-pass">—</div></div>
+        <div class="card yellow"><div class="card-icon"><i class="fas fa-star"></i></div><div class="card-label">Avg SPI</div><div class="card-value" id="ov-spi">—</div><div class="card-sub">platform average</div></div>
+        <div class="card purple"><div class="card-icon"><i class="fas fa-rupee-sign"></i></div><div class="card-label">Est. MRR</div><div class="card-value" id="ov-mrr">—</div><div class="card-sub" id="ov-paid">—</div></div>
+        <div class="card blue"><div class="card-icon"><i class="fas fa-globe"></i></div><div class="card-label">API Calls (30d)</div><div class="card-value" id="ov-apicalls">—</div><div class="card-sub" id="ov-apierr">—</div></div>
+        <div class="card green"><div class="card-icon"><i class="fas fa-robot"></i></div><div class="card-label">AI Ops (30d)</div><div class="card-value" id="ov-aiops">—</div><div class="card-sub" id="ov-aicost">—</div></div>
+      </div>
+
+      <div class="charts">
+        <div class="chart-box chart-wide">
+          <h3><i class="fas fa-fire" style="color:var(--orange)"></i> 7-Day Challenge Heatmap</h3>
+          <div class="heatmap" id="heatmapContainer"></div>
+        </div>
+        <div class="chart-box chart-wide">
+          <h3><i class="fas fa-chart-area" style="color:var(--blue)"></i> API Calls &amp; Logins — 30 days</h3>
+          <canvas id="ovTrendChart"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3><i class="fas fa-chart-pie" style="color:var(--purple)"></i> Plan Distribution</h3>
+          <canvas id="ovPlanChart"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3><i class="fas fa-robot" style="color:var(--green)"></i> AI Operations (30d)</h3>
+          <canvas id="ovAiChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PLATFORM ──────────────────────────────────────────────────── -->
+    <div class="section" id="sec-platform">
+      <div class="section-title"><i class="fas fa-school"></i> Platform KPIs</div>
+      <div class="cards">
+        <div class="card purple"><div class="card-icon"><i class="fas fa-school"></i></div><div class="card-label">Total Schools</div><div class="card-value" id="p-schools">—</div></div>
+        <div class="card green"><div class="card-icon"><i class="fas fa-check-circle"></i></div><div class="card-label">Active Schools</div><div class="card-value" id="p-active">—</div></div>
+        <div class="card blue"><div class="card-icon"><i class="fas fa-user-graduate"></i></div><div class="card-label">Students</div><div class="card-value" id="p-students">—</div></div>
+        <div class="card orange"><div class="card-icon"><i class="fas fa-chalkboard-teacher"></i></div><div class="card-label">Teachers</div><div class="card-value" id="p-teachers">—</div></div>
+        <div class="card purple"><div class="card-icon"><i class="fas fa-user-friends"></i></div><div class="card-label">Parents</div><div class="card-value" id="p-parents">—</div></div>
+        <div class="card green"><div class="card-icon"><i class="fas fa-user-plus"></i></div><div class="card-label">New Students (30d)</div><div class="card-value" id="p-new30">—</div></div>
+        <div class="card blue"><div class="card-icon"><i class="fas fa-user-plus"></i></div><div class="card-label">New Students (7d)</div><div class="card-value" id="p-new7">—</div></div>
+        <div class="card orange"><div class="card-icon"><i class="fas fa-building"></i></div><div class="card-label">New Schools (30d)</div><div class="card-value" id="p-newsch">—</div></div>
+      </div>
+    </div>
+
+    <!-- ── TRAFFIC ───────────────────────────────────────────────────── -->
+    <div class="section" id="sec-traffic">
+      <div class="section-title"><i class="fas fa-globe"></i> Web Traffic</div>
+      <div class="cards">
+        <div class="card blue"><div class="card-icon"><i class="fas fa-exchange-alt"></i></div><div class="card-label">API Calls (24h)</div><div class="card-value" id="t-24h">—</div></div>
+        <div class="card purple"><div class="card-icon"><i class="fas fa-exchange-alt"></i></div><div class="card-label">API Calls (7d)</div><div class="card-value" id="t-7d">—</div></div>
+        <div class="card green"><div class="card-icon"><i class="fas fa-exchange-alt"></i></div><div class="card-label">API Calls (30d)</div><div class="card-value" id="t-30d">—</div></div>
+        <div class="card orange"><div class="card-icon"><i class="fas fa-fingerprint"></i></div><div class="card-label">Unique IPs (24h)</div><div class="card-value" id="t-uip24">—</div></div>
+        <div class="card blue"><div class="card-icon"><i class="fas fa-fingerprint"></i></div><div class="card-label">Unique IPs (30d)</div><div class="card-value" id="t-uip30">—</div></div>
+        <div class="card green"><div class="card-icon"><i class="fas fa-sign-in-alt"></i></div><div class="card-label">Logins (24h)</div><div class="card-value" id="t-l24">—</div></div>
+        <div class="card purple"><div class="card-icon"><i class="fas fa-sign-in-alt"></i></div><div class="card-label">Logins (7d)</div><div class="card-value" id="t-l7">—</div></div>
+        <div class="card red"><div class="card-icon"><i class="fas fa-exclamation-circle"></i></div><div class="card-label">Error Rate (30d)</div><div class="card-value" id="t-err">—</div><div class="card-sub" id="t-errcnt">—</div></div>
+      </div>
+
+      <div class="charts">
+        <div class="chart-box chart-wide">
+          <h3><i class="fas fa-chart-area" style="color:var(--blue)"></i> Daily API Calls (30 days)</h3>
+          <canvas id="trafficChart"></canvas>
+        </div>
+      </div>
+
+      <div class="table-box">
+        <h3><i class="fas fa-list" style="color:var(--purple)"></i> Top Routes (30d)</h3>
+        <table>
+          <thead><tr><th>Route</th><th>Requests</th><th>Avg Response (ms)</th></tr></thead>
+          <tbody id="routesTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── ENGAGEMENT ────────────────────────────────────────────────── -->
+    <div class="section" id="sec-engagement">
+      <div class="section-title"><i class="fas fa-users"></i> Engagement</div>
+      <div class="cards">
+        <div class="card blue"><div class="card-icon"><i class="fas fa-user-clock"></i></div><div class="card-label">DAU</div><div class="card-value" id="e-dau">—</div><div class="card-sub" id="e-daur">—</div></div>
+        <div class="card purple"><div class="card-icon"><i class="fas fa-users"></i></div><div class="card-label">WAU</div><div class="card-value" id="e-wau">—</div></div>
+        <div class="card green"><div class="card-icon"><i class="fas fa-users"></i></div><div class="card-label">MAU</div><div class="card-value" id="e-mau">—</div><div class="card-sub" id="e-maur">—</div></div>
+        <div class="card orange"><div class="card-icon"><i class="fas fa-chart-pie"></i></div><div class="card-label">DAU/MAU Ratio</div><div class="card-value" id="e-ratio">—</div><div class="card-sub">stickiness</div></div>
+        <div class="card blue"><div class="card-icon"><i class="fas fa-sign-in-alt"></i></div><div class="card-label">Logins (24h)</div><div class="card-value" id="e-l24">—</div></div>
+        <div class="card purple"><div class="card-icon"><i class="fas fa-sign-in-alt"></i></div><div class="card-label">Logins (30d)</div><div class="card-value" id="e-l30">—</div></div>
+        <div class="card green"><div class="card-icon"><i class="fas fa-clock"></i></div><div class="card-label">Avg Session (30d)</div><div class="card-value" id="e-sess30">—</div><div class="card-sub">minutes</div></div>
+        <div class="card orange"><div class="card-icon"><i class="fas fa-bolt"></i></div><div class="card-label">Challenges (30d)</div><div class="card-value" id="e-chal30">—</div></div>
+      </div>
+
+      <div class="charts">
+        <div class="chart-box">
+          <h3><i class="fas fa-sign-in-alt" style="color:var(--green)"></i> Daily Logins (30d)</h3>
+          <canvas id="loginChart"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3><i class="fas fa-fire" style="color:var(--orange)"></i> Challenge Activity (7d)</h3>
+          <canvas id="chalChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LEARNING ───────────────────────────────────────────────────── -->
+    <div class="section" id="sec-learning">
+      <div class="section-title"><i class="fas fa-brain"></i> Learning Outcomes</div>
+      <div class="cards">
+        <div class="card purple"><div class="card-icon"><i class="fas fa-star"></i></div><div class="card-label">Avg SPI</div><div class="card-value" id="l-spi">—</div><div class="card-sub" id="l-spicnt">—</div></div>
+        <div class="card blue"><div class="card-icon"><i class="fas fa-tasks"></i></div><div class="card-label">Challenges (30d)</div><div class="card-value" id="l-chal">—</div></div>
+        <div class="card green"><div class="card-icon"><i class="fas fa-check"></i></div><div class="card-label">Completion Rate</div><div class="card-value" id="l-comp">—</div></div>
+        <div class="card orange"><div class="card-icon"><i class="fas fa-trophy"></i></div><div class="card-label">Pass Rate (30d)</div><div class="card-value" id="l-pass">—</div></div>
+        <div class="card blue"><div class="card-icon"><i class="fas fa-percentage"></i></div><div class="card-label">Avg Score (30d)</div><div class="card-value" id="l-score">—</div></div>
+        <div class="card purple"><div class="card-icon"><i class="fas fa-infinity"></i></div><div class="card-label">Total Evaluated</div><div class="card-value" id="l-total">—</div></div>
+      </div>
+
+      <div class="charts">
+        <div class="chart-box">
+          <h3><i class="fas fa-brain" style="color:var(--purple)"></i> Competency Mastery</h3>
+          <canvas id="competencyChart"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3><i class="fas fa-chart-pie" style="color:var(--green)"></i> Challenge Outcomes (30d)</h3>
+          <canvas id="outcomeChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── REVENUE ───────────────────────────────────────────────────── -->
+    <div class="section" id="sec-revenue">
+      <div class="section-title"><i class="fas fa-rupee-sign"></i> Revenue</div>
+      <div class="cards">
+        <div class="card green"><div class="card-icon"><i class="fas fa-rupee-sign"></i></div><div class="card-label">Est. MRR</div><div class="card-value" id="r-mrr">—</div><div class="card-sub">INR / month</div></div>
+        <div class="card blue"><div class="card-icon"><i class="fas fa-chart-line"></i></div><div class="card-label">Est. ARR</div><div class="card-value" id="r-arr">—</div><div class="card-sub">INR / year</div></div>
+        <div class="card purple"><div class="card-icon"><i class="fas fa-building"></i></div><div class="card-label">ARPU</div><div class="card-value" id="r-arpu">—</div><div class="card-sub">per paid school/mo</div></div>
+        <div class="card orange"><div class="card-icon"><i class="fas fa-exchange-alt"></i></div><div class="card-label">Conversion Rate</div><div class="card-value" id="r-conv">—</div><div class="card-sub">free → paid</div></div>
+        <div class="card green"><div class="card-icon"><i class="fas fa-crown"></i></div><div class="card-label">Paid Schools</div><div class="card-value" id="r-paid">—</div></div>
+        <div class="card blue"><div class="card-icon"><i class="fas fa-gift"></i></div><div class="card-label">Free Schools</div><div class="card-value" id="r-free">—</div></div>
+      </div>
+
+      <div class="charts">
+        <div class="chart-box">
+          <h3><i class="fas fa-chart-pie" style="color:var(--purple)"></i> Plan Distribution</h3>
+          <canvas id="planChart"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3><i class="fas fa-tag" style="color:var(--green)"></i> Plan Pricing</h3>
+          <div id="pricingTable" style="padding:8px 0"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AI ────────────────────────────────────────────────────────── -->
+    <div class="section" id="sec-ai">
+      <div class="section-title"><i class="fas fa-robot"></i> AI Usage</div>
+      <div class="cards">
+        <div class="card purple"><div class="card-icon"><i class="fas fa-robot"></i></div><div class="card-label">Operations (30d)</div><div class="card-value" id="ai-ops30">—</div></div>
+        <div class="card blue"><div class="card-icon"><i class="fas fa-coins"></i></div><div class="card-label">Tokens (30d)</div><div class="card-value" id="ai-tok30">—</div></div>
+        <div class="card green"><div class="card-icon"><i class="fas fa-dollar-sign"></i></div><div class="card-label">Cost (30d)</div><div class="card-value" id="ai-cost30">—</div><div class="card-sub">USD</div></div>
+        <div class="card orange"><div class="card-icon"><i class="fas fa-robot"></i></div><div class="card-label">Operations (7d)</div><div class="card-value" id="ai-ops7">—</div></div>
+        <div class="card blue"><div class="card-icon"><i class="fas fa-coins"></i></div><div class="card-label">Tokens (7d)</div><div class="card-value" id="ai-tok7">—</div></div>
+        <div class="card red"><div class="card-icon"><i class="fas fa-dollar-sign"></i></div><div class="card-label">Proj. Monthly Cost</div><div class="card-value" id="ai-proj">—</div><div class="card-sub">USD</div></div>
+      </div>
+
+      <div class="charts">
+        <div class="chart-box">
+          <h3><i class="fas fa-chart-bar" style="color:var(--purple)"></i> Operations by Type (30d)</h3>
+          <canvas id="aiOpsChart"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3><i class="fas fa-coins" style="color:var(--yellow)"></i> Token Usage by Type (30d)</h3>
+          <canvas id="aiTokChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── REPORTS ───────────────────────────────────────────────────── -->
+    <div class="section" id="sec-reports">
+      <div class="section-title"><i class="fas fa-file-alt"></i> NEP Reports</div>
+      <div class="cards">
+        <div class="card purple"><div class="card-icon"><i class="fas fa-file-alt"></i></div><div class="card-label">Total Reports</div><div class="card-value" id="rep-total">—</div></div>
+        <div class="card green"><div class="card-icon"><i class="fas fa-calendar"></i></div><div class="card-label">Generated (30d)</div><div class="card-value" id="rep-30d">—</div></div>
+        <div class="card blue"><div class="card-icon"><i class="fas fa-check-double"></i></div><div class="card-label">Verified</div><div class="card-value" id="rep-ver">—</div></div>
+        <div class="card orange"><div class="card-icon"><i class="fas fa-percentage"></i></div><div class="card-label">Verification Rate</div><div class="card-value" id="rep-rate">—</div></div>
+      </div>
+
+      <div class="charts">
+        <div class="chart-box">
+          <h3><i class="fas fa-chart-pie" style="color:var(--blue)"></i> Report Status Breakdown</h3>
+          <canvas id="reportStatusChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+'use strict';
+
+// ── Auth ───────────────────────────────────────────────────────────────────────
+let token = sessionStorage.getItem('ops_token') || '';
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const err   = document.getElementById('loginErr');
+  err.style.display = 'none';
+  try {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass, userType: 'superadmin' }),
+    });
+    const text = await r.text();
+    let d;
+    try { d = JSON.parse(text); } catch { throw new Error(text || 'Server error'); }
+    if (!r.ok || !d.data?.accessToken) throw new Error(d.message || 'Login failed');
+    token = d.data.accessToken;
+    sessionStorage.setItem('ops_token', token);
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('sidebarUser').textContent = email.split('@')[0];
+    loadAll();
+  } catch (e) {
+    err.textContent = e.message;
+    err.style.display = 'block';
+  }
+}
+
+// Allow Enter key in login form
+['loginEmail','loginPass'].forEach(id =>
+  document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); })
+);
+
+// ── Navigation ─────────────────────────────────────────────────────────────────
+function showSection(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── Fetch helper ──────────────────────────────────────────────────────────────
+async function kpiFetch(path) {
+  const r = await fetch(path, { headers: { Authorization: 'Bearer ' + token } });
+  if (r.status === 401) { sessionStorage.removeItem('ops_token'); location.reload(); }
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const d = await r.json();
+  return d.data;
+}
+
+// ── Format helpers ────────────────────────────────────────────────────────────
+const fmt  = n => n == null ? '—' : Number(n).toLocaleString('en-IN');
+const fmtp = n => n == null ? '—' : n + '%';
+const fmtINR = n => n == null ? '—' : '₹' + Number(n).toLocaleString('en-IN');
+const fmtUSD = n => n == null ? '—' : '$' + Number(n).toFixed(2);
+
+// ── Chart palette ─────────────────────────────────────────────────────────────
+const COLORS = ['#7877c6','#4a90e2','#4caf87','#e2934a','#e24a4a','#e2c94a','#a855f7','#06b6d4'];
+const gridColor = 'rgba(255,255,255,0.05)';
+const tickColor = '#5f5f7a';
+const chartDefaults = {
+  responsive: true,
+  maintainAspectRatio: true,
+  plugins: { legend: { labels: { color: '#9999b3', font: { size: 11 } } } },
+  scales: {
+    x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } } },
+    y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } } },
+  },
+};
+const noScales = {
+  responsive: true,
+  maintainAspectRatio: true,
+  plugins: { legend: { position: 'right', labels: { color: '#9999b3', font: { size: 11 }, boxWidth: 12 } } },
+};
+
+// ── No-data placeholder ───────────────────────────────────────────────────────
+function noData(id, msg = 'No data yet') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el._chart) { el._chart.destroy(); el._chart = null; }
+  el.style.display = 'none';
+  if (!el.parentElement.querySelector('.no-data-msg')) {
+    const p = Object.assign(document.createElement('p'), { className: 'no-data-msg', textContent: msg });
+    p.style.cssText = 'color:var(--dimmer);font-size:.8rem;text-align:center;padding:40px 0;margin:0';
+    el.parentElement.appendChild(p);
+  }
+}
+
+// ── Charts ────────────────────────────────────────────────────────────────────
+function _chartReset(id) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  el.style.display = '';
+  el.parentElement.querySelector('.no-data-msg')?.remove();
+  if (el._chart) el._chart.destroy();
+  return el;
+}
+
+function mkLineChart(id, labels, datasets) {
+  const ctx = _chartReset(id);
+  if (!ctx) return;
+  ctx._chart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: datasets.map((d, i) => ({
+      label: d.label,
+      data: d.data,
+      borderColor: COLORS[i % COLORS.length],
+      backgroundColor: COLORS[i % COLORS.length] + '22',
+      fill: true,
+      tension: 0.4,
+      pointRadius: 3,
+    })) },
+    options: { ...chartDefaults, plugins: { ...chartDefaults.plugins, legend: { display: datasets.length > 1, labels: { color: tickColor, font: { size: 10 } } } } },
+  });
+}
+
+function mkBarChart(id, labels, datasets, horizontal = false) {
+  const ctx = _chartReset(id);
+  if (!ctx) return;
+  ctx._chart = new Chart(ctx, {
+    type: horizontal ? 'bar' : 'bar',
+    data: { labels, datasets: datasets.map((d, i) => ({
+      label: d.label,
+      data: d.data,
+      backgroundColor: (Array.isArray(d.colors) ? d.colors : COLORS.map(c => c + 'bb')),
+      borderRadius: 4,
+    })) },
+    options: {
+      ...chartDefaults,
+      indexAxis: horizontal ? 'y' : 'x',
+      plugins: { ...chartDefaults.plugins, legend: { display: false } },
+    },
+  });
+}
+
+function mkDoughnut(id, labels, data) {
+  const ctx = _chartReset(id);
+  if (!ctx) return;
+  ctx._chart = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: COLORS.map(c => c + 'cc'), borderWidth: 1, borderColor: '#16161f' }] },
+    options: { ...noScales, cutout: '60%' },
+  });
+}
+
+// ── Set helper ────────────────────────────────────────────────────────────────
+function set(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val ?? '—';
+}
+
+// ── Heatmap ───────────────────────────────────────────────────────────────────
+function renderHeatmap(data) {
+  const cont = document.getElementById('heatmapContainer');
+  if (!cont) return;
+  const max = Math.max(...data.map(d => d.challenges), 1);
+  cont.innerHTML = data.map(({ date, challenges }) => {
+    const pct = challenges / max;
+    const bg  = pct === 0 ? '#16161f'
+              : pct < 0.3 ? '#2d2b4e'
+              : pct < 0.6 ? '#4f4d8a'
+              : pct < 0.85 ? '#7877c6'
+              : '#a8a7e0';
+    const label = date.slice(5); // MM-DD
+    return `<div class="heat-day">
+      <div class="heat-cell" style="background:${bg}" title="${date}: ${challenges} challenges">${challenges || ''}</div>
+      <div class="heat-date">${label}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Load all data ─────────────────────────────────────────────────────────────
+async function loadAll() {
+  set('lastUpdated', 'Refreshing…');
+  const errBanner = document.getElementById('errBanner');
+  errBanner.style.display = 'none';
+
+  try {
+    const [summary, platform, traffic, engagement, learning, revenue, ai, reports] = await Promise.all([
+      kpiFetch('/api/kpi/summary'),
+      kpiFetch('/api/kpi/platform'),
+      kpiFetch('/api/kpi/traffic'),
+      kpiFetch('/api/kpi/engagement'),
+      kpiFetch('/api/kpi/learning'),
+      kpiFetch('/api/kpi/revenue'),
+      kpiFetch('/api/kpi/ai'),
+      kpiFetch('/api/kpi/reports'),
+    ]);
+
+    // ── Overview cards
+    set('ov-schools',   fmt(summary.platform?.activeSchools));
+    set('ov-students',  fmt(summary.platform?.totalStudents));
+    set('ov-students-sub', `+${fmt(summary.platform?.newStudents30d)} in 30d`);
+    set('ov-dau',       fmt(summary.engagement?.dau));
+    set('ov-dau-sub',   `${fmtp(summary.engagement?.dauRate)} of students`);
+    set('ov-challenges',fmt(summary.learning?.challenges30d));
+    set('ov-pass',      `${fmtp(summary.learning?.passRate30d)} pass rate`);
+    set('ov-spi',       summary.learning?.avgSPI ?? '—');
+    set('ov-mrr',       fmtINR(summary.revenue?.estimatedMRR));
+    set('ov-paid',      `${fmt(summary.revenue?.paidSchools)} paid schools`);
+    set('ov-apicalls',  fmt(traffic?.apiCalls?.last30d));
+    set('ov-apierr',    `${fmtp(traffic?.errors?.errorRate30d)} error rate`);
+    set('ov-aiops',     fmt(summary.ai?.operations30d));
+    set('ov-aicost',    `${fmtUSD(summary.ai?.estimatedCost30d)}`);
+
+    // Heatmap
+    if (engagement?.activityHeatmap?.length) renderHeatmap(engagement.activityHeatmap);
+
+    // ── Overview charts ────────────────────────────────────────────────────
+    if (traffic.dailyTrend?.length) {
+      const loginByDate = {};
+      (engagement.logins?.dailyTrend || []).forEach(d => { loginByDate[d.date] = d.count; });
+      mkLineChart('ovTrendChart',
+        traffic.dailyTrend.map(d => d.date.slice(5)),
+        [
+          { label: 'API Calls', data: traffic.dailyTrend.map(d => d.calls) },
+          { label: 'Logins',    data: traffic.dailyTrend.map(d => loginByDate[d.date] || 0) },
+        ]
+      );
+    } else noData('ovTrendChart', 'No traffic data yet');
+
+    if (revenue.planDistribution) {
+      const pEntries = Object.entries(revenue.planDistribution).filter(([, v]) => v > 0);
+      if (pEntries.length) mkDoughnut('ovPlanChart', pEntries.map(p => p[0]), pEntries.map(p => p[1]));
+      else noData('ovPlanChart', 'No schools enrolled yet');
+    }
+
+    if (ai.byOperation?.length) {
+      mkBarChart('ovAiChart',
+        ai.byOperation.map(o => o.operation.replace(/_/g, ' ')),
+        [{ label: 'Ops', data: ai.byOperation.map(o => o.count) }]
+      );
+    } else noData('ovAiChart', 'No AI operations logged yet');
+
+    // ── Platform
+    set('p-schools',  fmt(platform.schools?.total));
+    set('p-active',   fmt(platform.schools?.active));
+    set('p-students', fmt(platform.users?.students));
+    set('p-teachers', fmt(platform.users?.teachers));
+    set('p-parents',  fmt(platform.users?.parents));
+    set('p-new30',    fmt(platform.users?.new30d));
+    set('p-new7',     fmt(platform.users?.new7d));
+    set('p-newsch',   fmt(platform.schools?.new30d));
+
+    // ── Traffic
+    set('t-24h',    fmt(traffic.apiCalls?.last24h));
+    set('t-7d',     fmt(traffic.apiCalls?.last7d));
+    set('t-30d',    fmt(traffic.apiCalls?.last30d));
+    set('t-uip24',  fmt(traffic.uniqueVisitors?.last24h));
+    set('t-uip30',  fmt(traffic.uniqueVisitors?.last30d));
+    set('t-l24',    fmt(traffic.logins?.last24h));
+    set('t-l7',     fmt(traffic.logins?.last7d));
+    set('t-err',    fmtp(traffic.errors?.errorRate30d));
+    set('t-errcnt', `${fmt(traffic.errors?.count30d)} errors in 30d`);
+
+    if (traffic.dailyTrend?.length) {
+      mkLineChart('trafficChart',
+        traffic.dailyTrend.map(d => d.date.slice(5)),
+        [{ label: 'API Calls', data: traffic.dailyTrend.map(d => d.calls) }]
+      );
+    } else noData('trafficChart');
+
+    const tbody = document.getElementById('routesTable');
+    if (tbody && traffic.topRoutes) {
+      tbody.innerHTML = traffic.topRoutes.map(r =>
+        `<tr><td style="font-family:monospace;font-size:0.78rem;color:var(--dim)">${r.path}</td>
+             <td><span class="badge badge-blue">${fmt(r.count)}</span></td>
+             <td>${fmt(r.avgMs)} ms</td></tr>`
+      ).join('');
+    }
+
+    // ── Engagement
+    set('e-dau',  fmt(engagement.activeStudents?.dau));
+    set('e-daur', `${fmtp(engagement.activeStudents?.dauRate)} of students`);
+    set('e-wau',  fmt(engagement.activeStudents?.wau));
+    set('e-mau',  fmt(engagement.activeStudents?.mau));
+    set('e-maur', `${fmtp(engagement.activeStudents?.mauRate)} of students`);
+    set('e-ratio',engagement.activeStudents?.dauMauRatio ?? '—');
+    set('e-l24',  fmt(engagement.logins?.last24h));
+    set('e-l30',  fmt(engagement.logins?.last30d));
+    set('e-sess30', engagement.sessionTime?.avgMins30d ?? '—');
+    set('e-chal30', fmt(engagement.challenges?.last30d));
+
+    if (engagement.logins?.dailyTrend?.length) {
+      mkLineChart('loginChart',
+        engagement.logins.dailyTrend.map(d => d.date.slice(5)),
+        [{ label: 'Logins', data: engagement.logins.dailyTrend.map(d => d.count) }]
+      );
+    } else noData('loginChart');
+    if (engagement.activityHeatmap?.length) {
+      mkBarChart('chalChart',
+        engagement.activityHeatmap.map(d => d.date.slice(5)),
+        [{ label: 'Challenges', data: engagement.activityHeatmap.map(d => d.challenges) }]
+      );
+    } else noData('chalChart');
+
+    // ── Learning
+    set('l-spi',   learning.spi?.platformAverage ?? '—');
+    set('l-spicnt',`${fmt(learning.spi?.studentsWithSPI)} students tracked`);
+    set('l-chal',  fmt(learning.challenges?.total30d));
+    set('l-comp',  fmtp(learning.challenges?.completionRate30d));
+    set('l-pass',  fmtp(learning.challenges?.passRate30d));
+    set('l-score', learning.challenges?.avgScore30d ?? '—');
+    set('l-total', fmt(learning.challenges?.totalEvaluatedAllTime));
+
+    if (learning.competencyMastery?.length) {
+      const top = learning.competencyMastery.slice(0, 8);
+      mkBarChart('competencyChart',
+        top.map(c => c.competency.replace(/-/g,' ')),
+        [{ label: 'Avg Mastery', data: top.map(c => c.avgMastery), colors: top.map((_,i) => COLORS[i % COLORS.length] + 'bb') }],
+        true
+      );
+    } else noData('competencyChart');
+    if (learning.challenges?.passRate30d != null) {
+      mkDoughnut('outcomeChart',
+        ['Passed', 'Failed / Incomplete'],
+        [learning.challenges.passRate30d, 100 - learning.challenges.passRate30d]
+      );
+    } else noData('outcomeChart');
+
+    // ── Revenue
+    set('r-mrr',  fmtINR(revenue.revenue?.estimatedMRR));
+    set('r-arr',  fmtINR(revenue.revenue?.estimatedARR));
+    set('r-arpu', fmtINR(revenue.revenue?.arpu));
+    set('r-conv', fmtp(revenue.schools?.conversionRate));
+    set('r-paid', fmt(revenue.schools?.paid));
+    set('r-free', fmt(revenue.schools?.free));
+
+    if (revenue.planDistribution) {
+      const plans = Object.entries(revenue.planDistribution);
+      mkDoughnut('planChart', plans.map(p => p[0]), plans.map(p => p[1]));
+      const pt = document.getElementById('pricingTable');
+      if (pt) pt.innerHTML = Object.entries(revenue.planPricing || {}).map(([plan, price]) =>
+        `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.82rem">
+           <span style="text-transform:capitalize;color:var(--dim)">${plan}</span>
+           <span class="badge badge-purple">${price}</span>
+         </div>`
+      ).join('');
+    }
+
+    // ── AI
+    set('ai-ops30',  fmt(ai.last30d?.operations));
+    set('ai-tok30',  fmt(ai.last30d?.tokensUsed));
+    set('ai-cost30', fmtUSD(ai.last30d?.estimatedCost));
+    set('ai-ops7',   fmt(ai.last7d?.operations));
+    set('ai-tok7',   fmt(ai.last7d?.tokensUsed));
+    set('ai-proj',   fmtUSD(ai.projectedMonthly?.estimatedCost));
+
+    if (ai.byOperation?.length) {
+      mkBarChart('aiOpsChart', ai.byOperation.map(o => o.operation.replace(/_/g,' ')), [{ label: 'Ops', data: ai.byOperation.map(o => o.count) }]);
+      mkBarChart('aiTokChart', ai.byOperation.map(o => o.operation.replace(/_/g,' ')), [{ label: 'Tokens', data: ai.byOperation.map(o => o.tokens) }]);
+    } else {
+      noData('aiOpsChart');
+      noData('aiTokChart');
+    }
+
+    // ── Reports
+    set('rep-total', fmt(reports.totals?.allTime));
+    set('rep-30d',   fmt(reports.totals?.last30d));
+    set('rep-ver',   fmt(reports.totals?.verified));
+    set('rep-rate',  fmtp(reports.totals?.verifyRate));
+    if (reports.byStatus && Object.keys(reports.byStatus).length) {
+      const entries = Object.entries(reports.byStatus);
+      mkDoughnut('reportStatusChart', entries.map(e => e[0]), entries.map(e => e[1]));
+    } else noData('reportStatusChart');
+
+    set('lastUpdated', 'Updated: ' + new Date().toLocaleTimeString());
+
+  } catch (err) {
+    document.getElementById('errMsg').textContent = err.message;
+    errBanner.style.display = 'block';
+    set('lastUpdated', 'Error — see banner');
+  }
+}
+
+// ── Bootstrap ─────────────────────────────────────────────────────────────────
+if (token) {
+  document.getElementById('loginOverlay').style.display = 'none';
+  loadAll();
+} // else: overlay is visible, user must log in
+
+// Auto-refresh every 5 minutes
+setInterval(() => { if (token) loadAll(); }, 5 * 60 * 1000);
+</script>
+</body>
+</html>

@@ -56,6 +56,9 @@
     }
     </script>
 
+    <!-- ── Preconnect to CDN origins so the TLS handshake is done before the stylesheet is needed ── -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -633,6 +636,109 @@
             animation-delay: 0.5s;
         }
     </style>
+
+    <!-- ── Hreflang ────────────────────────────────────────────────────────── -->
+    <link rel="alternate" hreflang="en-in"     href="https://tryspyral.com/workbench">
+    <link rel="alternate" hreflang="en"        href="https://tryspyral.com/workbench">
+    <link rel="alternate" hreflang="x-default" href="https://tryspyral.com/workbench">
+
+    <!-- ── Geo targeting ──────────────────────────────────────────────────── -->
+    <meta name="geo.region"     content="IN">
+    <meta name="geo.placename"  content="India">
+    <meta name="language"       content="English">
+    <meta name="revisit-after"  content="7 days">
+    <meta name="classification" content="Education, Technology">
+    <meta name="category"       content="Education">
+
+    <!-- ── FAQPage Schema ─────────────────────────────────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is NEP Workbench?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "NEP Workbench is an AI-powered online learning platform for students, teachers, schools, and parents in India — built to fully implement National Education Policy 2020 (NEP 2020). It includes adaptive AI challenges, a Student Performance Index (SPI), 30+ math and physics simulations, a project builder, inquiry lab, vocational skills studio, and real-time analytics dashboards for teachers and parents."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the Student Performance Index (SPI) work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The Student Performance Index (SPI) in SPYRAL NEP Workbench is an AI-computed score from 0 to 100 that tracks a student's holistic learning progress. It uses a Kalman filter algorithm to update in real-time based on challenge results, time taken, difficulty level, and competency coverage across NEP 2020 learning outcomes. SPI reflects mastery, not just marks."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is NEP Workbench available for all Indian schools?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. NEP Workbench by SPYRAL is available for all Indian schools, government and private. School administrators can register their institution, add teachers and students, and start using the platform. The platform supports students from Grade 6 to Grade 12 and is aligned with NEP 2020 curriculum frameworks."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What AI tools does SPYRAL NEP Workbench provide for teachers?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "SPYRAL NEP Workbench gives teachers an AI-powered toolkit including: (1) AI notes builder — generate NEP 2020-aligned lesson notes; (2) AI question builder — create competency-mapped question papers; (3) AI simulator builder — create custom simulations; (4) Real-time student analytics dashboard with SPI trends; (5) Class-wide competency gap reports; (6) Student progress tracking across all subjects and NEP 2020 outcomes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What subjects and simulations are included in NEP Workbench?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "NEP Workbench includes 16+ interactive math simulations (calculus, algebra, geometry, trigonometry, probability, vectors) and 18+ physics simulations (gravity, electric fields, circuits, sound waves, projectile motion, optics) — all usable on any device. AI challenges cover Mathematics, Science, Social Science, and Language for Grades 6–12, mapped to NEP 2020 competency outcomes."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- ── Course / SoftwareApplication Schema ────────────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "SPYRAL NEP Workbench",
+      "url": "https://tryspyral.com/workbench",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" },
+      "audience": {
+        "@type": "EducationalAudience",
+        "educationalRole": ["student", "teacher", "school administrator", "parent"],
+        "audienceType": "Indian school students Grades 6–12"
+      },
+      "featureList": [
+        "AI-Adaptive Challenges mapped to NEP 2020",
+        "Student Performance Index (SPI) tracking",
+        "16+ Math Simulations",
+        "18+ Physics Simulations",
+        "AI Notes Builder for teachers",
+        "AI Question Paper Builder",
+        "Inquiry Hypothesis Lab",
+        "Vocational Skills Studio",
+        "Project Builder",
+        "Reflection Journal",
+        "Parent Dashboard",
+        "Real-time Competency Analytics"
+      ],
+      "datePublished": "2024-01-01",
+      "inLanguage": ["en-IN"],
+      "availableOnDevice": "Desktop, Mobile, Tablet",
+      "provider": {
+        "@type": "Organization",
+        "name": "SPYRAL Technologies",
+        "url": "https://tryspyral.com"
+      }
+    }
+    </script>
 </head>
 <body>
     <div class="header">
@@ -643,7 +749,7 @@
         <div class="nav-links">
             <a href="/spyral">SPYRAL AI</a>
             <a href="/nep">About NEP 2020</a>
-            <a href="#contact">Contact</a>
+            <a href="/contact">Contact</a>
             <a href="/login" class="btn btn-outline">Login</a>
             <a href="/login?signup=true" class="btn btn-primary">Sign Up</a>
         </div>
@@ -769,6 +875,11 @@
 
     <div class="footer">
         <p>&copy; 2026 AIRM. Aligned with National Education Policy 2020.</p>
+        <div class="footer-links" style="margin-top:10px;">
+            <a href="/terms">Terms &amp; Conditions</a>
+            <a href="/feedback">Feedback</a>
+            <a href="/contact">Contact</a>
+        </div>
     </div>
 
     <script>

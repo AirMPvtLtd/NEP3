@@ -22,14 +22,20 @@ module.exports = {
       // 2 workers. Adjust to a fixed number if you need to reserve a core for
       // nginx / MongoDB Atlas proxy.
       exec_mode: 'cluster',
-      instances: 'max',
+      instances: 2,                     // one per CPU core (2 vCPU) — was 'max' but PM2 defaulted to fork
+
+      // ── Node.js performance flags ────────────────────────────────────────────
+      node_args: [
+        '--max-old-space-size=350',     // cap V8 heap per worker at 350MB (2×350=700MB total)
+        '--optimize-for-size',          // reduce memory footprint
+      ],
 
       // ── Restart policy ──────────────────────────────────────────────────────
       autorestart: true,
       watch: false,                     // never watch in production
-      max_memory_restart: '512M',       // restart if a worker leaks past 512 MB
+      max_memory_restart: '380M',       // was 512M — restart before OOM kills the whole server
       restart_delay: 3000,              // wait 3 s before restart
-      max_restarts: 10,                 // stop trying after 10 crashes in a row
+      max_restarts: 15,                 // was 10
       min_uptime: '10s',                // must stay up 10 s to count as "stable"
 
       // ── Logs ────────────────────────────────────────────────────────────────

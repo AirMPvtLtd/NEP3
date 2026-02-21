@@ -8,6 +8,7 @@ const express = require('express');
 const router  = express.Router();
 const { callMistralAPI } = require('../services/mistral.service');
 const { freeClassTools } = require('../middleware/rateLimiter');
+const { sendEmail }      = require('../services/email.service');
 const logger = require('../utils/logger');
 
 // ── Notes Builder ────────────────────────────────────────────────────────────
@@ -143,6 +144,95 @@ router.post('/class-tools/simulator', freeClassTools, async (req, res) => {
   } catch (error) {
     logger.error('public generateSimulator error:', error);
     return res.status(500).json({ success: false, message: 'Error generating simulator' });
+  }
+});
+
+// ── Feedback Submission ──────────────────────────────────────────────────────
+const ROLE_LABELS = {
+  student:      'Student',
+  teacher:      'Teacher',
+  parent:       'Parent',
+  school_admin: 'School Administrator',
+  researcher:   'Researcher / Developer',
+  other:        'Other',
+};
+
+const CATEGORY_LABELS = {
+  feature_request: 'Feature Request',
+  bug_report:      'Bug Report',
+  ux_feedback:     'User Experience (UX)',
+  content_quality: 'Content / Curriculum Quality',
+  performance:     'Performance / Speed',
+  general:         'General Feedback',
+};
+
+router.post('/feedback', async (req, res) => {
+  try {
+    const { name, email, role, category, rating, message } = req.body;
+
+    // Basic validation
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      return res.status(400).json({ success: false, message: 'Name is required.' });
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ success: false, message: 'A valid email address is required.' });
+    }
+    if (!role || !ROLE_LABELS[role]) {
+      return res.status(400).json({ success: false, message: 'A valid role is required.' });
+    }
+    if (!category || !CATEGORY_LABELS[category]) {
+      return res.status(400).json({ success: false, message: 'A valid category is required.' });
+    }
+    const ratingNum = parseInt(rating, 10);
+    if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+      return res.status(400).json({ success: false, message: 'Rating must be between 1 and 5.' });
+    }
+    if (!message || typeof message !== 'string' || message.trim().length < 20) {
+      return res.status(400).json({ success: false, message: 'Feedback message must be at least 20 characters.' });
+    }
+
+    const stars     = '★'.repeat(ratingNum) + '☆'.repeat(5 - ratingNum);
+    const roleLabel = ROLE_LABELS[role];
+    const catLabel  = CATEGORY_LABELS[category];
+    const ts        = new Date().toISOString();
+
+    // Log to server logs
+    logger.info('feedback_received', {
+      name: name.trim(),
+      email,
+      role,
+      category,
+      rating: ratingNum,
+      ts,
+    });
+
+    // Send notification email to support
+    await sendEmail({
+      to:      process.env.SUPPORT_EMAIL || 'support@tryspyral.com',
+      subject: `[Feedback] ${catLabel} — ${stars} (${roleLabel})`,
+      html: `
+        <div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#1e1e1e;color:#fff;padding:30px;border-radius:12px;">
+          <h2 style="color:#00d4ff;margin-bottom:20px;">New Platform Feedback</h2>
+          <table style="width:100%;border-collapse:collapse;font-size:15px;">
+            <tr><td style="padding:10px;color:#aaa;width:140px;">From</td><td style="padding:10px;color:#fff;">${name.trim()} &lt;${email}&gt;</td></tr>
+            <tr><td style="padding:10px;color:#aaa;">Role</td><td style="padding:10px;color:#fff;">${roleLabel}</td></tr>
+            <tr><td style="padding:10px;color:#aaa;">Category</td><td style="padding:10px;color:#fff;">${catLabel}</td></tr>
+            <tr><td style="padding:10px;color:#aaa;">Rating</td><td style="padding:10px;color:#f59e0b;font-size:20px;">${stars} (${ratingNum}/5)</td></tr>
+            <tr><td style="padding:10px;color:#aaa;">Submitted</td><td style="padding:10px;color:#fff;">${ts}</td></tr>
+          </table>
+          <div style="margin-top:20px;padding:20px;background:#2d2d30;border-left:4px solid #007acc;border-radius:8px;">
+            <p style="color:#aaa;font-size:13px;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Message</p>
+            <p style="color:#fff;line-height:1.7;white-space:pre-wrap;">${message.trim().replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+          </div>
+          <p style="margin-top:20px;color:#666;font-size:12px;">SPYRAL NEP Workbench — Automated Feedback Notification</p>
+        </div>`,
+      text: `New Feedback\n\nFrom: ${name.trim()} <${email}>\nRole: ${roleLabel}\nCategory: ${catLabel}\nRating: ${ratingNum}/5\nSubmitted: ${ts}\n\n${message.trim()}`,
+    });
+
+    return res.json({ success: true, message: 'Thank you! Your feedback has been received.' });
+  } catch (error) {
+    logger.error('feedback submission error:', error);
+    return res.status(500).json({ success: false, message: 'Error submitting feedback. Please try again.' });
   }
 });
 

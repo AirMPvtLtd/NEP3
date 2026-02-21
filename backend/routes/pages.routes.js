@@ -26,7 +26,9 @@ router.get('/', (_req, res) => res.sendFile(path.join(FRONTEND, 'home.html')));
 // AUTH
 // ============================================================================
 router.get('/login',          page('login.html'));
-router.get('/reset-password', page('password-reset.html'));
+router.get('/verify-email/:token', page('verify-email.html'));
+router.get('/reset-password',        page('password-reset.html'));
+router.get('/reset-password/:token', page('password-reset.html'));
 router.get('/contact',        page('contact.html'));
 
 // ============================================================================
@@ -70,6 +72,9 @@ router.get('/workbench',  page('index.html'));
 router.get('/nep',        page('nep.html'));
 router.get('/spyral',     page('spyralai.html'));
 router.get('/developer',  (_req, res) => res.sendFile(path.join(FRONTEND, 'developer.html')));
+router.get('/terms',      page('terms.html'));
+router.get('/feedback',   page('feedback.html'));
+router.get('/ops',        (_req, res) => res.sendFile(path.join(FRONTEND, 'ops-dashboard.html')));
 
 // ============================================================================
 // MATH SIMULATIONS  →  /sim/math/:tool
