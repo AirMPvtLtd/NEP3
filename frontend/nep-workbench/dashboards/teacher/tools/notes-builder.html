@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes-Builder | SPYRAL Class Tools</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0f0f17;
+            --panel: #16161f;
+            --border: rgba(255,255,255,0.08);
+            --primary: #7877c6;
+            --mid: #4a90e2;
+            --text: #ededf2;
+            --dim: #9090a8;
+            --success: #27ae60;
+            --error: #e74c3c;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Header ── */
+        header {
+            background: rgba(10,10,20,0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 0.9rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        .back-link {
+            color: var(--dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: var(--text); }
+        .tool-header-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--mid));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .tool-header-badge {
+            margin-left: auto;
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            background: rgba(120,119,198,0.15);
+            border: 1px solid rgba(120,119,198,0.3);
+            border-radius: 20px;
+            color: var(--primary);
+        }
+
+        /* ── Main layout ── */
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 0;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 1.5rem;
+        }
+
+        /* ── Panel ── */
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.8rem;
+        }
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #c8c8e0;
+        }
+        .panel-title i { color: var(--primary); }
+
+        /* ── Form ── */
+        .form-group { margin-bottom: 1.1rem; }
+        label {
+            display: block;
+            font-size: 0.83rem;
+            color: var(--dim);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        select, input[type="text"], textarea {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            padding: 0.6rem 0.85rem;
+            font-size: 0.9rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        select:focus, input[type="text"]:focus, textarea:focus {
+            border-color: rgba(120,119,198,0.5);
+        }
+        select option { background: #1e1e2e; }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.88rem;
+            color: var(--dim);
+            cursor: pointer;
+        }
+        .checkbox-label input { width: auto; cursor: pointer; }
+
+        /* ── Button ── */
+        .btn-generate {
+            width: 100%;
+            padding: 0.85rem;
+            background: linear-gradient(135deg, var(--primary), var(--mid));
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: opacity 0.2s, transform 0.15s;
+            margin-top: 1.4rem;
+        }
+        .btn-generate:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* ── Output panel ── */
+        .output-panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .output-header {
+            padding: 1.2rem 1.8rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .output-header h2 { font-size: 1rem; font-weight: 600; color: #c8c8e0; }
+        .output-body { flex: 1; padding: 1.8rem; overflow-y: auto; }
+
+        /* ── Empty state ── */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 300px;
+            text-align: center;
+            color: var(--dim);
+        }
+        .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+        .empty-state p { font-size: 0.95rem; }
+
+        /* ── Notes output ── */
+        .notes-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 20%, var(--primary) 90%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.2rem;
+        }
+        .objectives-list {
+            background: rgba(120,119,198,0.08);
+            border: 1px solid rgba(120,119,198,0.2);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 1.4rem;
+        }
+        .objectives-list h4 { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 0.6rem; }
+        .objectives-list ul { list-style: none; }
+        .objectives-list li { font-size: 0.9rem; color: var(--dim); padding: 3px 0; }
+        .objectives-list li::before { content: '→ '; color: var(--primary); }
+
+        .section-block { margin-bottom: 1.5rem; }
+        .section-block h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #aaaacc;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 0.7rem;
+        }
+        .section-block p { font-size: 0.92rem; color: var(--dim); line-height: 1.65; }
+
+        .tags-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1rem; }
+        .tag {
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            background: rgba(74,144,226,0.1);
+            border: 1px solid rgba(74,144,226,0.25);
+            border-radius: 20px;
+            color: var(--mid);
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 0.8rem 1.4rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 999;
+            animation: slideUp 0.3s ease;
+            display: none;
+        }
+        .toast.success { background: rgba(39,174,96,0.9); color: #fff; }
+        .toast.error   { background: rgba(231,76,60,0.9); color: #fff; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Auth overlay ── */
+        .auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(5,5,15,0.96);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+            text-align: center;
+            gap: 1rem;
+        }
+        .auth-overlay i { font-size: 3rem; color: var(--primary); }
+        .auth-overlay h2 { font-size: 1.4rem; }
+        .auth-overlay p { color: var(--dim); max-width: 400px; }
+        .auth-overlay a {
+            margin-top: 0.5rem;
+            padding: 0.7rem 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--mid));
+            color: #fff;
+            text-decoration: none;
+            border-radius: 40px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 800px) {
+            main { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Auth overlay (shown if not logged in) -->
+<div class="auth-overlay" id="authOverlay" style="display:none;">
+    <i class="fas fa-lock"></i>
+    <h2>Teacher Access Required</h2>
+    <p>Notes-Builder is available to authenticated teachers. Please sign in to continue.</p>
+    <a href="/login">Sign in</a>
+</div>
+
+<header>
+    <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    <span class="tool-header-title">📝 Notes-Builder</span>
+    <span class="tool-header-badge">Class Tools</span>
+    <span class="tool-header-badge" id="guestBadge" style="display:none;background:rgba(39,174,96,0.15);border-color:rgba(39,174,96,0.3);color:#4ecb80">Free · <span id="usesLeft">10</span>/10 today</span>
+</header>
+
+<main>
+    <!-- Config panel -->
+    <div class="panel">
+        <div class="panel-title"><i class="fas fa-sliders-h"></i> Configure Notes</div>
+
+        <div class="form-group">
+            <label>Subject</label>
+            <select id="notes-subject">
+                <option value="">Select Subject</option>
+                <option value="physics">Physics</option>
+                <option value="chemistry">Chemistry</option>
+                <option value="mathematics">Mathematics</option>
+                <option value="biology">Biology</option>
+                <option value="computer">Computer Science</option>
+                <option value="history">History</option>
+                <option value="geography">Geography</option>
+                <option value="economics">Economics</option>
+                <option value="english">English</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Class / Grade</label>
+            <select id="notes-class">
+                <option value="6">Class 6</option>
+                <option value="7">Class 7</option>
+                <option value="8">Class 8</option>
+                <option value="9">Class 9</option>
+                <option value="10" selected>Class 10</option>
+                <option value="11">Class 11</option>
+                <option value="12">Class 12</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Topic / Chapter</label>
+            <input type="text" id="notes-topic" placeholder="e.g., Newton's Laws of Motion">
+        </div>
+
+        <div class="form-group">
+            <label>Notes Format</label>
+            <select id="notes-format">
+                <option value="detailed">Detailed Notes</option>
+                <option value="summary">Summary Points</option>
+                <option value="vocational">Vocational Exposure</option>
+                <option value="mindmap">Mind Map</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Learning Objectives (optional)</label>
+            <textarea id="learning-objectives" rows="3" placeholder="What students should learn from this lesson..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="include-examples" checked>
+                Include real-world examples
+            </label>
+        </div>
+
+        <div class="form-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="include-misconceptions">
+                Address common misconceptions
+            </label>
+        </div>
+
+        <button class="btn-generate" id="generateBtn" onclick="generateNotes()">
+            <i class="fas fa-magic"></i> Generate Notes
+        </button>
+    </div>
+
+    <!-- Output panel -->
+    <div class="output-panel">
+        <div class="output-header">
+            <i class="fas fa-file-alt" style="color:var(--primary)"></i>
+            <h2>Generated Notes</h2>
+        </div>
+        <div class="output-body" id="outputBody">
+            <div class="empty-state">
+                <i class="fas fa-file-alt"></i>
+                <p>Configure your lesson settings and click <strong>Generate Notes</strong> to get started.</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    const API_BASE = '/api';
+
+    // ── Guest mode (accessed from home page with ?guest=1) ────────────────
+    const isGuest = new URLSearchParams(window.location.search).get('guest') === '1';
+
+    // ── Auth check (skipped in guest mode) ───────────────────────────────
+    const token = localStorage.getItem('authToken');
+    const role  = localStorage.getItem('userRole');
+    if (!isGuest && (!token || role !== 'TEACHER')) {
+        document.getElementById('authOverlay').style.display = 'flex';
+    }
+
+    // ── Guest usage counter (display only; enforcement is server-side) ───
+    if (isGuest) {
+        const TODAY = 'guestClassToolUses_' + new Date().toDateString();
+        const used  = parseInt(localStorage.getItem(TODAY) || '0');
+        document.getElementById('guestBadge').style.display = 'inline-flex';
+        document.getElementById('usesLeft').textContent = Math.max(0, 10 - used);
+    }
+
+    function _incrementGuestUse() {
+        const TODAY = 'guestClassToolUses_' + new Date().toDateString();
+        const used  = parseInt(localStorage.getItem(TODAY) || '0') + 1;
+        localStorage.setItem(TODAY, used);
+        document.getElementById('usesLeft').textContent = Math.max(0, 10 - used);
+    }
+
+    // ── Toast helper ──────────────────────────────────────────────────────
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = `toast ${type}`;
+        t.style.display = 'block';
+        setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+
+    // ── Generate notes ────────────────────────────────────────────────────
+    async function generateNotes() {
+        const subject = document.getElementById('notes-subject').value;
+        const grade   = document.getElementById('notes-class').value;
+        const topic   = document.getElementById('notes-topic').value.trim();
+        const format  = document.getElementById('notes-format').value;
+
+        if (!topic) { showToast('Please enter a topic', 'error'); return; }
+
+        const btn = document.getElementById('generateBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        btn.disabled = true;
+
+        try {
+            const endpoint = isGuest
+                ? `${API_BASE}/public/class-tools/notes`
+                : `${API_BASE}/teacher/studio/notes`;
+            const headers = { 'Content-Type': 'application/json' };
+            if (!isGuest) headers['Authorization'] = `Bearer ${token}`;
+
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ subject, grade, topic, format })
+            });
+
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message || 'Generation failed');
+
+            if (isGuest) _incrementGuestUse();
+            renderNotes(data.notes, topic);
+            showToast('Notes generated successfully!', 'success');
+        } catch (err) {
+            showToast('Error: ' + err.message, 'error');
+        } finally {
+            btn.innerHTML = '<i class="fas fa-magic"></i> Generate Notes';
+            btn.disabled = false;
+        }
+    }
+
+    // ── Render notes output ───────────────────────────────────────────────
+    function renderNotes(notes, topic) {
+        const body = document.getElementById('outputBody');
+
+        const sectionsHtml = (notes.sections || []).map(s => `
+            <div class="section-block">
+                <h3>${escHtml(s.heading)}</h3>
+                <p>${escHtml(s.content)}</p>
+            </div>
+        `).join('');
+
+        const objectivesHtml = notes.objectives?.length ? `
+            <div class="objectives-list">
+                <h4>Learning Objectives</h4>
+                <ul>${notes.objectives.map(o => `<li>${escHtml(o)}</li>`).join('')}</ul>
+            </div>` : '';
+
+        const formulasHtml = notes.formulas?.length ? `
+            <div style="margin-top:1.2rem">
+                <div class="panel-title" style="font-size:0.82rem;text-transform:uppercase;letter-spacing:1px;color:var(--primary);margin-bottom:0.6rem;">Key Formulas</div>
+                <div class="tags-row">${notes.formulas.map(f => `<span class="tag">${escHtml(f)}</span>`).join('')}</div>
+            </div>` : '';
+
+        const appsHtml = notes.applications?.length ? `
+            <div style="margin-top:1.2rem">
+                <div class="panel-title" style="font-size:0.82rem;text-transform:uppercase;letter-spacing:1px;color:var(--primary);margin-bottom:0.6rem;">Real-world Applications</div>
+                <div class="tags-row">${notes.applications.map(a => `<span class="tag" style="border-color:rgba(39,174,96,0.3);color:#4ecb80">${escHtml(a)}</span>`).join('')}</div>
+            </div>` : '';
+
+        const misHtml = notes.misconceptions?.length ? `
+            <div style="margin-top:1.2rem">
+                <div class="panel-title" style="font-size:0.82rem;text-transform:uppercase;letter-spacing:1px;color:#e06c75;margin-bottom:0.6rem;">Common Misconceptions</div>
+                <ul style="list-style:none;padding:0">${notes.misconceptions.map(m => `<li style="font-size:0.9rem;color:var(--dim);padding:4px 0">⚠ ${escHtml(m)}</li>`).join('')}</ul>
+            </div>` : '';
+
+        body.innerHTML = `
+            <div class="notes-title">${escHtml(notes.title || topic)}</div>
+            ${objectivesHtml}
+            ${sectionsHtml}
+            ${formulasHtml}
+            ${appsHtml}
+            ${misHtml}
+        `;
+    }
+
+    function escHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+</script>
+</body>
+</html>

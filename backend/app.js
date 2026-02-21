@@ -2213,6 +2213,8 @@ app.use(`${API_PREFIX}/admin`,loadRoute('admin','./routes/admin.routes.js'));
 app.use(`${API_PREFIX}/subscription`,loadRoute('subscription','./routes/subscription.routes.js'));
 app.use(`${API_PREFIX}/spi`,loadRoute('spi','./routes/spi.routes.js'));
 app.use(`${API_PREFIX}/reports`,loadRoute('reports','./routes/report.routes.js'));
+app.use(`${API_PREFIX}/public`,loadRoute('public','./routes/public.routes.js'));
+app.use(`${API_PREFIX}/developer`,loadRoute('developer','./routes/developer.routes.js'));
 
 // ============================================================================
 // SEO ROUTES  (sitemap.xml, sitemap-index.xml — must be at domain root)

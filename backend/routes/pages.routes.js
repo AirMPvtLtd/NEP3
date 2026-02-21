@@ -56,6 +56,14 @@ router.get('/journal',     page('dashboards/student/reflection-journal/Reflectio
 router.get('/vocational',  page('dashboards/student/vocational-skills-studio/VocationalSkillsStudio.html'));
 
 // ============================================================================
+// CLASS TOOLS (teacher-facing, auth enforced client-side)
+// ============================================================================
+const TOOLS = path.join(NEP, 'dashboards/teacher/tools');
+router.get('/class-tools/notes-builder',     (_req, res) => res.sendFile(path.join(TOOLS, 'notes-builder.html')));
+router.get('/class-tools/question-builder',  (_req, res) => res.sendFile(path.join(TOOLS, 'question-builder.html')));
+router.get('/class-tools/simulator-builder', (_req, res) => res.sendFile(path.join(TOOLS, 'simulator-builder.html')));
+
+// ============================================================================
 // INFO / MARKETING PAGES
 // ============================================================================
 router.get('/workbench',  page('index.html'));

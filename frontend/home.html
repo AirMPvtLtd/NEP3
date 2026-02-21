@@ -392,6 +392,7 @@
         /* hero – new headline + tagline (keyword-first) */
         .hero {
             min-height: 90vh;
+            position: relative;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -790,7 +791,26 @@
         .footer-bottom { text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-light); color: var(--text-dimmer); }
 
         /* ── Responsive ──────────────────────────────────────── */
+
+        /* ── ≤ 1200px : large tablets & small laptops ───────── */
+        @media (max-width: 1200px) {
+            nav { padding: 1rem 2rem; }
+            .hero h1 { font-size: 4.5rem; }
+            .hero .tagline { font-size: 1.85rem; }
+            .hero .subtitle { font-size: 1.15rem; }
+            .section { padding: 0 2.5rem; margin: 5.5rem auto; }
+            .section-title { font-size: 2.7rem; }
+            .section-subtitle { font-size: 1.15rem; }
+            .layered-arch { padding: 2.8rem; border-radius: 36px; }
+            .comparison { padding: 3rem 2.5rem; border-radius: 36px; }
+            .cta-section h2 { font-size: 3rem; }
+            .cta-section p { font-size: 1.2rem; }
+            footer { padding: 3.5rem 2.5rem 2rem; }
+        }
+
+        /* ── ≤ 900px : tablet portrait / mobile landscape ───── */
         @media (max-width: 900px) {
+            /* nav */
             nav { padding: 1rem 1.5rem; }
             .nav-hamburger { display: flex; }
             .cta-button { display: none; }
@@ -800,13 +820,16 @@
                 top: 62px;
                 left: 0;
                 right: 0;
+                max-height: calc(100vh - 62px);
+                overflow-y: auto;
                 background: rgba(8, 8, 20, 0.98);
                 border-bottom: 1px solid var(--border-light);
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 0;
-                padding: 12px 0 16px;
+                padding: 8px 0 16px;
                 z-index: 190;
+                -webkit-overflow-scrolling: touch;
             }
             .nav-links.mobile-open { display: flex; }
             .nav-links > li { width: 100%; }
@@ -818,7 +841,8 @@
             }
             .nav-links > li > a::after,
             .nav-links > li > .dropdown-toggle::after { display: none; }
-            .has-dropdown:hover .dropdown-menu,
+            /* on mobile, only open-class controls dropdown (no hover) */
+            .has-dropdown:hover .dropdown-menu { display: none; }
             .has-dropdown.open .dropdown-menu { display: block; }
             .dropdown-menu {
                 position: static;
@@ -834,22 +858,154 @@
             }
             .dropdown-menu::before,
             .dropdown-menu::after { display: none; }
-            .dropdown-item { padding: 12px 36px; }
-        }
+            .dropdown-item { padding: 12px 40px; }
 
-        @media (max-width: 600px) {
-            .stats { grid-template-columns: 1fr 1fr; }
-            .footer-content { grid-template-columns: 1fr 1fr; }
-            .hero h1 { font-size: 3rem; }
-            .hero .tagline { font-size: 1.5rem; }
+            /* hero */
+            .hero { padding: 7rem 1.5rem 3.5rem; min-height: unset; }
+            .hero h1 { font-size: 3.6rem; letter-spacing: 2px; }
+            .hero .tagline { font-size: 1.55rem; }
             .hero .subtitle { font-size: 1rem; }
-            .comparison-grid { grid-template-columns: 1fr; }
-            .benefits-container { grid-template-columns: 1fr; }
+            .scroll-indicator { display: none; }
+
+            /* stats */
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.2rem;
+                margin: 3rem auto 4rem;
+            }
+
+            /* sections */
+            .section { padding: 0 1.5rem; margin: 4rem auto; }
+            .section-title { font-size: 2.2rem; }
+            .section-subtitle { font-size: 1.05rem; margin-bottom: 2.5rem; }
+
+            /* grids */
+            .problem-grid,
+            .solution-grid { grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+            .problem-card,
+            .solution-card { padding: 1.8rem 1.4rem; border-radius: 24px; }
+            .problem-card h3 { font-size: 1.4rem; }
+            .solution-card h3 { font-size: 1.5rem; }
+
+            /* benefits */
+            .benefits-container { grid-template-columns: 1fr; gap: 1.2rem; }
+            .benefit-item h4 { font-size: 1.35rem; }
+            .benefit-item p { font-size: 0.95rem; }
+
+            /* arch */
+            .layered-arch { padding: 2rem 1.5rem; border-radius: 28px; margin: 2rem 0; }
+            .arch-layer { flex: 1 1 140px; min-width: 130px; padding: 1.4rem; }
+            .arch-layer h4 { font-size: 1.2rem; }
+
+            /* comparison */
+            .comparison { padding: 2.5rem 1.8rem; border-radius: 28px; margin-top: 2.5rem; }
+            .comparison-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .comparison-column h3 { font-size: 1.55rem; }
+            .comparison-item { font-size: 0.95rem; padding: 0.9rem 1.3rem; }
+
+            /* cta */
+            .cta-section { padding: 5rem 1.5rem; margin-top: 3rem; }
+            .cta-section h2 { font-size: 2.4rem; }
+            .cta-section p { font-size: 1.1rem; }
+
+            /* footer */
+            footer { padding: 3rem 1.5rem 2rem; }
+            .footer-content { grid-template-columns: 1fr 1fr; gap: 2rem; }
         }
 
+        /* ── ≤ 600px : mobile portrait ──────────────────────── */
+        @media (max-width: 600px) {
+            /* hero */
+            .hero { padding: 5.5rem 1.2rem 2.5rem; }
+            .hero h1 { font-size: 2.8rem; letter-spacing: 1px; }
+            .hero .tagline { font-size: 1.25rem; }
+            .hero .subtitle { font-size: 0.95rem; max-width: 100%; }
+            .hero-buttons {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+                width: 100%;
+                max-width: 320px;
+            }
+            .primary-btn,
+            .secondary-btn {
+                padding: 0.85rem 1.5rem;
+                font-size: 1rem;
+                text-align: center;
+            }
+
+            /* stats */
+            .stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+                padding: 0 1.2rem;
+                margin: 2.5rem auto 3rem;
+            }
+            .stat-item { padding: 1.8rem 0.6rem; border-radius: 20px; }
+            .stat-number { font-size: 2.2rem; }
+            .stat-label { font-size: 0.82rem; letter-spacing: 0; }
+
+            /* sections */
+            .section { padding: 0 1.2rem; margin: 3rem auto; }
+            .section-title { font-size: 1.8rem; }
+            .section-subtitle { font-size: 0.95rem; margin-bottom: 1.8rem; }
+
+            /* grids */
+            .problem-grid,
+            .solution-grid { grid-template-columns: 1fr; gap: 1rem; }
+            .problem-card,
+            .solution-card { border-radius: 20px; padding: 1.5rem 1.2rem; }
+            .problem-card h3 { font-size: 1.3rem; }
+            .solution-card h3 { font-size: 1.35rem; }
+            .problem-icon,
+            .solution-icon { font-size: 2.2rem; }
+
+            /* benefits */
+            .benefit-item { border-radius: 18px; padding: 1.4rem 1.2rem; }
+            .benefit-item h4 { font-size: 1.1rem; gap: 0.4rem; }
+            .benefit-number { width: 32px; height: 32px; font-size: 1rem; min-width: 32px; margin-right: 0.6rem; }
+            .benefit-item p { font-size: 0.9rem; }
+
+            /* arch */
+            .arch-grid { gap: 0.8rem; }
+            .arch-layer { flex: 1 1 100%; min-width: 0; border-radius: 16px; padding: 1.2rem; }
+            .arch-layer h4 { font-size: 1.1rem; }
+            .arch-layer p { font-size: 0.88rem; }
+
+            /* comparison */
+            .comparison { padding: 1.5rem 1rem; border-radius: 20px; }
+            .comparison-column h3 { font-size: 1.3rem; margin-bottom: 1.2rem; }
+            .comparison-item { font-size: 0.9rem; padding: 0.8rem 1rem; border-radius: 12px; }
+
+            /* cta */
+            .cta-section { padding: 4rem 1.2rem; }
+            .cta-section h2 { font-size: 1.9rem; }
+            .cta-section p { font-size: 0.98rem; }
+            .cta-section .primary-btn { font-size: 1rem; padding: 0.9rem 2rem; }
+
+            /* footer */
+            footer { padding: 2.5rem 1.2rem 1.5rem; }
+            .footer-content { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+            .footer-section h4 { font-size: 1rem; margin-bottom: 0.8rem; }
+            .footer-section li { margin-bottom: 0.5rem; }
+        }
+
+        /* ── ≤ 400px : small mobile ─────────────────────────── */
         @media (max-width: 400px) {
-            .stats { grid-template-columns: 1fr; }
-            .hero h1 { font-size: 2.4rem; }
+            .logo { font-size: 1.6rem; }
+            .hero { padding: 5rem 1rem 2rem; }
+            .hero h1 { font-size: 2.2rem; }
+            .hero .tagline { font-size: 1.1rem; }
+            .hero .subtitle { font-size: 0.9rem; }
+            .stats { grid-template-columns: 1fr; gap: 0.9rem; padding: 0 1rem; }
+            .stat-item { padding: 1.5rem 1rem; }
+            .stat-number { font-size: 2rem; }
+            .section { padding: 0 1rem; margin: 2.5rem auto; }
+            .section-title { font-size: 1.55rem; }
+            .layered-arch { padding: 1.4rem 1rem; border-radius: 18px; }
+            .comparison { padding: 1.2rem 0.8rem; }
+            .footer-content { grid-template-columns: 1fr; gap: 1.2rem; }
+            .cta-section h2 { font-size: 1.65rem; }
         }
     </style>
 </head>
@@ -890,6 +1046,27 @@
                         <span class="item-label">AI Workbench</span>
                         <span class="dropdown-badge">Soon</span>
                     </span>
+                </div>
+            </li>
+
+            <!-- Class Tools dropdown -->
+            <li class="has-dropdown" id="classToolsDropdown">
+                <span class="dropdown-toggle" tabindex="0">
+                    Class Tools <span class="dropdown-arrow">▾</span>
+                </span>
+                <div class="dropdown-menu">
+                    <a href="/class-tools/notes-builder?guest=1" class="dropdown-item">
+                        <span class="item-icon">📝</span>
+                        <span class="item-label">Notes-Builder</span>
+                    </a>
+                    <a href="/class-tools/question-builder?guest=1" class="dropdown-item">
+                        <span class="item-icon">❓</span>
+                        <span class="item-label">Question-Builder</span>
+                    </a>
+                    <a href="/class-tools/simulator-builder?guest=1" class="dropdown-item">
+                        <span class="item-icon">🔬</span>
+                        <span class="item-label">Simulator-Builder</span>
+                    </a>
                 </div>
             </li>
 
@@ -1087,7 +1264,25 @@
         // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
             if (!workbenchDd.contains(e.target)) workbenchDd.classList.remove('open');
+            if (classToolsDd && !classToolsDd.contains(e.target)) classToolsDd.classList.remove('open');
         });
+
+        // ── Class Tools dropdown ──────────────────────────────────────────
+        const classToolsDd = document.getElementById('classToolsDropdown');
+        if (classToolsDd) {
+            const ctToggle = classToolsDd.querySelector('.dropdown-toggle');
+            ctToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                classToolsDd.classList.toggle('open');
+            });
+            ctToggle.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    classToolsDd.classList.toggle('open');
+                }
+                if (e.key === 'Escape') classToolsDd.classList.remove('open');
+            });
+        }
 
         createParticles();
     </script>

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question-Builder | SPYRAL Class Tools</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0f0f17;
+            --panel: #16161f;
+            --border: rgba(255,255,255,0.08);
+            --primary: #7877c6;
+            --mid: #4a90e2;
+            --text: #ededf2;
+            --dim: #9090a8;
+            --success: #27ae60;
+            --error: #e74c3c;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(10,10,20,0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 0.9rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        .back-link {
+            color: var(--dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: var(--text); }
+        .tool-header-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--mid));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .tool-header-badge {
+            margin-left: auto;
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            background: rgba(120,119,198,0.15);
+            border: 1px solid rgba(120,119,198,0.3);
+            border-radius: 20px;
+            color: var(--primary);
+        }
+
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 1.5rem;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.8rem;
+        }
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #c8c8e0;
+        }
+        .panel-title i { color: var(--primary); }
+
+        .form-group { margin-bottom: 1.1rem; }
+        label {
+            display: block;
+            font-size: 0.83rem;
+            color: var(--dim);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        select, input[type="text"], input[type="number"] {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            padding: 0.6rem 0.85rem;
+            font-size: 0.9rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        select:focus, input:focus { border-color: rgba(120,119,198,0.5); }
+        select option { background: #1e1e2e; }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--primary);
+        }
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            color: var(--dim);
+            margin-top: 4px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.88rem;
+            color: var(--dim);
+            cursor: pointer;
+        }
+        .checkbox-label input { width: auto; cursor: pointer; }
+
+        .btn-generate {
+            width: 100%;
+            padding: 0.85rem;
+            background: linear-gradient(135deg, var(--primary), var(--mid));
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: opacity 0.2s, transform 0.15s;
+            margin-top: 1.4rem;
+        }
+        .btn-generate:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .btn-save {
+            margin-top: 0.6rem;
+            width: 100%;
+            padding: 0.6rem;
+            background: transparent;
+            border: 1px solid rgba(120,119,198,0.4);
+            border-radius: 12px;
+            color: var(--primary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-save:hover { background: rgba(120,119,198,0.1); }
+
+        .output-panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .output-header {
+            padding: 1.2rem 1.8rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .output-header h2 { font-size: 1rem; font-weight: 600; color: #c8c8e0; flex: 1; }
+        .q-count {
+            font-size: 0.8rem;
+            color: var(--dim);
+        }
+        .output-body { flex: 1; padding: 1.8rem; overflow-y: auto; }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 300px;
+            text-align: center;
+            color: var(--dim);
+        }
+        .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+        .empty-state p { font-size: 0.95rem; }
+
+        /* ── Question cards ── */
+        .question-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.2rem 1.4rem;
+            margin-bottom: 1rem;
+        }
+        .question-meta {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 0.7rem;
+            flex-wrap: wrap;
+        }
+        .q-badge {
+            font-size: 0.72rem;
+            padding: 2px 9px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .q-badge.type { background: rgba(120,119,198,0.15); color: var(--primary); border: 1px solid rgba(120,119,198,0.3); }
+        .q-badge.diff-easy { background: rgba(39,174,96,0.1); color: #4ecb80; border: 1px solid rgba(39,174,96,0.25); }
+        .q-badge.diff-medium { background: rgba(243,156,18,0.1); color: #f0b040; border: 1px solid rgba(243,156,18,0.25); }
+        .q-badge.diff-hard { background: rgba(231,76,60,0.1); color: #e87070; border: 1px solid rgba(231,76,60,0.25); }
+        .q-badge.blooms { background: rgba(74,144,226,0.1); color: var(--mid); border: 1px solid rgba(74,144,226,0.25); }
+
+        .question-text {
+            font-size: 0.95rem;
+            color: var(--text);
+            line-height: 1.55;
+            margin-bottom: 0.8rem;
+        }
+        .options-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 0.8rem;
+        }
+        .option-item {
+            font-size: 0.88rem;
+            color: var(--dim);
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+        }
+        .option-item.correct {
+            background: rgba(39,174,96,0.1);
+            border-color: rgba(39,174,96,0.3);
+            color: #4ecb80;
+        }
+        .answer-block {
+            font-size: 0.85rem;
+            color: var(--dim);
+            padding-top: 0.7rem;
+            border-top: 1px solid var(--border);
+        }
+        .answer-block strong { color: var(--primary); }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 0.8rem 1.4rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 999;
+            animation: slideUp 0.3s ease;
+            display: none;
+        }
+        .toast.success { background: rgba(39,174,96,0.9); color: #fff; }
+        .toast.error   { background: rgba(231,76,60,0.9); color: #fff; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(5,5,15,0.96);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+            text-align: center;
+            gap: 1rem;
+        }
+        .auth-overlay i { font-size: 3rem; color: var(--primary); }
+        .auth-overlay h2 { font-size: 1.4rem; }
+        .auth-overlay p { color: var(--dim); max-width: 400px; }
+        .auth-overlay a {
+            margin-top: 0.5rem;
+            padding: 0.7rem 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--mid));
+            color: #fff;
+            text-decoration: none;
+            border-radius: 40px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 800px) {
+            main { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="auth-overlay" id="authOverlay" style="display:none;">
+    <i class="fas fa-lock"></i>
+    <h2>Teacher Access Required</h2>
+    <p>Question-Builder is available to authenticated teachers. Please sign in to continue.</p>
+    <a href="/login">Sign in</a>
+</div>
+
+<header>
+    <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    <span class="tool-header-title">❓ Question-Builder</span>
+    <span class="tool-header-badge">Class Tools</span>
+    <span class="tool-header-badge" id="guestBadge" style="display:none;background:rgba(39,174,96,0.15);border-color:rgba(39,174,96,0.3);color:#4ecb80">Free · <span id="usesLeft">10</span>/10 today</span>
+</header>
+
+<main>
+    <!-- Config panel -->
+    <div class="panel">
+        <div class="panel-title"><i class="fas fa-sliders-h"></i> Configure Questions</div>
+
+        <div class="form-group">
+            <label>Subject</label>
+            <select id="q-subject">
+                <option value="">Select Subject</option>
+                <option value="physics">Physics</option>
+                <option value="chemistry">Chemistry</option>
+                <option value="mathematics">Mathematics</option>
+                <option value="biology">Biology</option>
+                <option value="computer">Computer Science</option>
+                <option value="history">History</option>
+                <option value="geography">Geography</option>
+                <option value="economics">Economics</option>
+                <option value="english">English</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Class / Grade</label>
+            <select id="q-grade">
+                <option value="6">Class 6</option>
+                <option value="7">Class 7</option>
+                <option value="8">Class 8</option>
+                <option value="9">Class 9</option>
+                <option value="10" selected>Class 10</option>
+                <option value="11">Class 11</option>
+                <option value="12">Class 12</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Topic (optional)</label>
+            <input type="text" id="q-topic" placeholder="e.g., Photosynthesis">
+        </div>
+
+        <div class="form-group">
+            <label>Question Type</label>
+            <select id="q-type">
+                <option value="mcq">Multiple Choice (MCQ)</option>
+                <option value="truefalse">True / False</option>
+                <option value="fillblank">Fill in the Blanks</option>
+                <option value="short">Short Answer</option>
+                <option value="long">Long Answer</option>
+                <option value="numerical">Numerical Problem</option>
+                <option value="casestudy">Case Study</option>
+                <option value="critical">Critical Thinking</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Difficulty Level</label>
+            <select id="q-difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Number of Questions: <strong id="count-label">3</strong></label>
+            <input type="range" id="q-count" min="1" max="5" value="3"
+                   oninput="document.getElementById('count-label').textContent=this.value">
+            <div class="range-labels"><span>1</span><span>5</span></div>
+        </div>
+
+        <div class="form-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="include-answers" checked>
+                Show answer key
+            </label>
+        </div>
+
+        <button class="btn-generate" id="generateBtn" onclick="generateQuestions()">
+            <i class="fas fa-magic"></i> Generate Questions
+        </button>
+
+        <button class="btn-save" id="saveBtn" onclick="saveToBank()" style="display:none;">
+            <i class="fas fa-save"></i> Save to Question Bank
+        </button>
+    </div>
+
+    <!-- Output panel -->
+    <div class="output-panel">
+        <div class="output-header">
+            <i class="fas fa-question-circle" style="color:var(--primary)"></i>
+            <h2>Generated Questions</h2>
+            <span class="q-count" id="qCount"></span>
+        </div>
+        <div class="output-body" id="outputBody">
+            <div class="empty-state">
+                <i class="fas fa-question-circle"></i>
+                <p>Configure your question settings and click <strong>Generate Questions</strong>.</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    const API_BASE = '/api';
+
+    // ── Guest mode (accessed from home page with ?guest=1) ────────────────
+    const isGuest = new URLSearchParams(window.location.search).get('guest') === '1';
+
+    const token = localStorage.getItem('authToken');
+    const role  = localStorage.getItem('userRole');
+
+    if (!isGuest && (!token || role !== 'TEACHER')) {
+        document.getElementById('authOverlay').style.display = 'flex';
+    }
+
+    // ── Guest usage counter ───────────────────────────────────────────────
+    if (isGuest) {
+        const TODAY = 'guestClassToolUses_' + new Date().toDateString();
+        const used  = parseInt(localStorage.getItem(TODAY) || '0');
+        document.getElementById('guestBadge').style.display = 'inline-flex';
+        document.getElementById('usesLeft').textContent = Math.max(0, 10 - used);
+        // Hide "Save to Question Bank" in guest mode (requires auth)
+        document.getElementById('saveBtn').style.display = 'none';
+    }
+
+    function _incrementGuestUse() {
+        const TODAY = 'guestClassToolUses_' + new Date().toDateString();
+        const used  = parseInt(localStorage.getItem(TODAY) || '0') + 1;
+        localStorage.setItem(TODAY, used);
+        document.getElementById('usesLeft').textContent = Math.max(0, 10 - used);
+    }
+
+    let lastQuestions = [];
+    let lastConfig = {};
+
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = `toast ${type}`;
+        t.style.display = 'block';
+        setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+
+    async function generateQuestions() {
+        const subject = document.getElementById('q-subject').value;
+        const grade   = document.getElementById('q-grade').value;
+        const topic   = document.getElementById('q-topic').value.trim();
+        const questionType = document.getElementById('q-type').value;
+        const difficulty   = document.getElementById('q-difficulty').value;
+        const count = parseInt(document.getElementById('q-count').value);
+
+        lastConfig = { subject, grade, topic, questionType, difficulty };
+
+        const btn = document.getElementById('generateBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        btn.disabled = true;
+
+        try {
+            const endpoint = isGuest
+                ? `${API_BASE}/public/class-tools/questions`
+                : `${API_BASE}/teacher/studio/questions/generate`;
+            const headers = { 'Content-Type': 'application/json' };
+            if (!isGuest) headers['Authorization'] = `Bearer ${token}`;
+
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ subject, grade, topic, questionType, difficulty, count })
+            });
+
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message || 'Generation failed');
+
+            lastQuestions = data.questions || [];
+            if (isGuest) _incrementGuestUse();
+            renderQuestions(lastQuestions);
+            // Only show Save button for authenticated teachers
+            if (!isGuest) {
+                document.getElementById('saveBtn').style.display = lastQuestions.length ? 'block' : 'none';
+            }
+            showToast(`${lastQuestions.length} question(s) generated!`, 'success');
+        } catch (err) {
+            showToast('Error: ' + err.message, 'error');
+        } finally {
+            btn.innerHTML = '<i class="fas fa-magic"></i> Generate Questions';
+            btn.disabled = false;
+        }
+    }
+
+    function renderQuestions(questions) {
+        const body = document.getElementById('outputBody');
+        const showAnswers = document.getElementById('include-answers').checked;
+
+        document.getElementById('qCount').textContent = `${questions.length} question(s)`;
+
+        if (!questions.length) {
+            body.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation"></i><p>No questions returned. Try again.</p></div>';
+            return;
+        }
+
+        body.innerHTML = questions.map((q, i) => {
+            const diffClass = q.difficulty === 'easy' ? 'diff-easy' : q.difficulty === 'hard' ? 'diff-hard' : 'diff-medium';
+            const optionsHtml = (q.options || []).length
+                ? `<ul class="options-list">${q.options.map((o, idx) => {
+                    const isCorrect = showAnswers && (o === q.correctAnswer);
+                    return `<li class="option-item ${isCorrect ? 'correct' : ''}">${String.fromCharCode(65+idx)}. ${escHtml(o)}</li>`;
+                  }).join('')}</ul>` : '';
+
+            const answerHtml = showAnswers && q.correctAnswer
+                ? `<div class="answer-block">
+                    <strong>Answer:</strong> ${escHtml(q.correctAnswer)}<br>
+                    ${q.explanation ? `<span style="margin-top:4px;display:block">${escHtml(q.explanation)}</span>` : ''}
+                   </div>` : '';
+
+            return `
+                <div class="question-card">
+                    <div class="question-meta">
+                        <span class="q-badge type">${escHtml(q.bloomsLevel || lastConfig.questionType || '')}</span>
+                        <span class="q-badge ${diffClass}">${escHtml(q.difficulty || lastConfig.difficulty)}</span>
+                        ${q.marks ? `<span class="q-badge blooms">${q.marks} mark${q.marks>1?'s':''}</span>` : ''}
+                    </div>
+                    <div class="question-text"><strong>Q${i+1}.</strong> ${escHtml(q.questionText)}</div>
+                    ${optionsHtml}
+                    ${answerHtml}
+                </div>`;
+        }).join('');
+    }
+
+    async function saveToBank() {
+        if (!lastQuestions.length) return;
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true;
+
+        let saved = 0;
+        for (const q of lastQuestions) {
+            try {
+                await fetch(`${API_BASE}/teacher/studio/questions/save`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        questionText: q.questionText,
+                        questionType: lastConfig.questionType,
+                        subject: lastConfig.subject,
+                        grade: lastConfig.grade,
+                        topic: lastConfig.topic,
+                        options: q.options || [],
+                        correctAnswer: q.correctAnswer,
+                        marks: q.marks || 1,
+                        difficulty: q.difficulty || lastConfig.difficulty,
+                        bloomsLevel: q.bloomsLevel,
+                        aiGenerated: true
+                    })
+                });
+                saved++;
+            } catch (_) {}
+        }
+
+        showToast(`${saved} question(s) saved to bank!`, 'success');
+        btn.disabled = false;
+    }
+
+    function escHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+</script>
+</body>
+</html>

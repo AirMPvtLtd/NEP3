@@ -23,6 +23,7 @@ const subscriptionRoutes = require('./subscription.routes');
 const researchRoutes     = require('./research.routes');
 const kpiRoutes          = require('./kpi.routes');
 const developerRoutes    = require('./developer.routes');
+const publicRoutes       = require('./public.routes');
 
 // ============================================================================
 // ROUTE MOUNTING
@@ -106,6 +107,12 @@ router.use('/kpi', kpiRoutes);
  * @desc    Developer portal — API key request form (public, no auth)
  */
 router.use('/developer', developerRoutes);
+
+/**
+ * @route   /api/public/*
+ * @desc    Public class tools — no auth, 10 uses/day per IP
+ */
+router.use('/public', publicRoutes);
 
 // ============================================================================
 // API ROOT - UPDATED WITH NEW FEATURES

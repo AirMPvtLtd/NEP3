@@ -37,6 +37,15 @@ const challengeRateLimit = rateLimit({
   message: 'Too many challenge generation attempts, please slow down'
 });
 
+// Free class-tools rate limiter (public, no login — 10 uses per IP per day)
+const freeClassTools = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000, // 24 hours
+  max: 10,
+  message: JSON.stringify({ success: false, message: 'Free daily limit of 10 uses reached. Sign up for unlimited access.' }),
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // API rate limiter
 const api = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
@@ -49,5 +58,6 @@ module.exports = {
   auth,
   api,
   loginRateLimit,
-  challengeRateLimit  // ADDED
+  challengeRateLimit,
+  freeClassTools
 };

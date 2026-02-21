@@ -6207,3 +6207,85 @@
 {"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-21 00:18:41"}
 {"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.19.0","pid":41251,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-21 00:18:41"}
 {"level":"info","message":"SIGINT received — starting graceful shutdown","service":"nep-workbench","timestamp":"2026-02-21 00:26:41"}
+{"level":"info","message":"✅ Brevo initialized","service":"nep-workbench","timestamp":"2026-02-20 19:06:31"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-20 19:06:32"}
+{"level":"info","message":"[backup.job] Incremental backup scheduled: 0 2 * * *","service":"nep-workbench","timestamp":"2026-02-20 19:06:32"}
+{"level":"info","message":"[backup.job] Full backup scheduled:        0 3 * * 0","service":"nep-workbench","timestamp":"2026-02-20 19:06:32"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-20 19:06:32"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-20 19:06:32"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-20 19:06:32"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-20 19:06:32"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-20 19:06:32"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-20 19:06:32"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.20.0","pid":47874,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-20 19:06:32"}
+{"level":"info","message":"Login successful","service":"nep-workbench","timestamp":"2026-02-20 19:10:35","userId":"698f02b40683fb52d67c1232","userType":"teacher"}
+{"level":"info","message":"SIGINT received — starting graceful shutdown","service":"nep-workbench","timestamp":"2026-02-20 19:26:59"}
+{"level":"info","message":"✅ Brevo initialized","service":"nep-workbench","timestamp":"2026-02-20 19:27:01"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-20 19:27:01"}
+{"level":"info","message":"[backup.job] Incremental backup scheduled: 0 2 * * *","service":"nep-workbench","timestamp":"2026-02-20 19:27:01"}
+{"level":"info","message":"[backup.job] Full backup scheduled:        0 3 * * 0","service":"nep-workbench","timestamp":"2026-02-20 19:27:01"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-20 19:27:01"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-20 19:27:01"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-20 19:27:01"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-20 19:27:01"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-20 19:27:01"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-20 19:27:01"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.20.0","pid":48606,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-20 19:27:01"}
+{"level":"info","message":"SIGINT received — starting graceful shutdown","service":"nep-workbench","timestamp":"2026-02-20 19:38:07"}
+{"level":"info","message":"✅ Brevo initialized","service":"nep-workbench","timestamp":"2026-02-20 19:38:08"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-20 19:38:09"}
+{"level":"info","message":"[backup.job] Incremental backup scheduled: 0 2 * * *","service":"nep-workbench","timestamp":"2026-02-20 19:38:09"}
+{"level":"info","message":"[backup.job] Full backup scheduled:        0 3 * * 0","service":"nep-workbench","timestamp":"2026-02-20 19:38:09"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-20 19:38:09"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-20 19:38:09"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-20 19:38:09"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-20 19:38:09"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-20 19:38:09"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-20 19:38:09"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.20.0","pid":48817,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-20 19:38:09"}
+{"level":"info","message":"Login successful","service":"nep-workbench","timestamp":"2026-02-20 19:39:30","userId":"698f02b40683fb52d67c1232","userType":"teacher"}
+{"level":"info","message":"Login successful","service":"nep-workbench","timestamp":"2026-02-20 20:07:24","userId":"698f034c0683fb52d67c1261","userType":"student"}
+{"customTopic":"N/A","difficulty":"medium","level":"info","message":"🎯 Challenge Generation Request","numberOfQuestions":3,"service":"nep-workbench","simulationType":"gas-properties-simulator","subject":"physics","timestamp":"2026-02-20 20:07:43"}
+{"difficulty":"medium","ferrariEngine":false,"hasMetadata":false,"level":"info","message":"🤖 Mistral AI: Challenge generation started","numberOfQuestions":3,"service":"nep-workbench","subject":"physics","timestamp":"2026-02-20 20:07:43","topic":"gas-properties-simulator"}
+{"level":"info","message":"✅ Mistral AI responded in 11266ms","service":"nep-workbench","timestamp":"2026-02-20 20:07:54"}
+{"level":"info","message":"✅ Successfully parsed AI response","service":"nep-workbench","timestamp":"2026-02-20 20:07:54"}
+{"level":"info","message":"✅ Validated 3 questions","service":"nep-workbench","timestamp":"2026-02-20 20:07:54"}
+{"MCQ":1,"NUMERICAL":1,"SHORT_ANSWER":1,"level":"info","message":"📊 Question type distribution:","service":"nep-workbench","timestamp":"2026-02-20 20:07:54"}
+{"level":"info","message":"[backup.job] Starting incremental backup...","service":"nep-workbench","timestamp":"2026-02-20 20:30:00"}
+{"level":"info","message":"[backup.job] [dotenv@17.2.4] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }","service":"nep-workbench","timestamp":"2026-02-20 20:30:00"}
+{"level":"info","message":"[backup.job] === NEP3 Database Backup [INCREMENTAL] ===","service":"nep-workbench","timestamp":"2026-02-20 20:30:00"}
+{"level":"info","message":"[backup.job] Started: 2026-02-20T20:30:00.363Z","service":"nep-workbench","timestamp":"2026-02-20 20:30:00"}
+{"level":"info","message":"[backup.job] No prior manifest found — falling back to full backup.","service":"nep-workbench","timestamp":"2026-02-20 20:30:00"}
+{"level":"info","message":"[backup.job] Connected to MongoDB.","service":"nep-workbench","timestamp":"2026-02-20 20:30:00"}
+{"level":"info","message":"[backup.job] Collections to back up: 35","service":"nep-workbench","timestamp":"2026-02-20 20:30:00"}
+{"level":"info","message":"[backup.job]   Backing up: activities                         ","service":"nep-workbench","timestamp":"2026-02-20 20:30:00"}
+{"level":"info","message":"Running daily IRT calibration...","service":"nep-workbench","timestamp":"2026-02-21 02:00:00"}
+{"level":"info","message":"Starting IRT calibration job...","service":"nep-workbench","timestamp":"2026-02-21 02:00:00"}
+{"level":"info","message":"IRT calibration complete: 0 calibrated, 1 insufficient data","service":"nep-workbench","timestamp":"2026-02-21 02:00:00"}
+{"level":"info","message":"SIGINT received — starting graceful shutdown","service":"nep-workbench","timestamp":"2026-02-21 06:10:21"}
+{"level":"info","message":"✅ Brevo initialized","service":"nep-workbench","timestamp":"2026-02-21 06:10:23"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-21 06:10:23"}
+{"level":"info","message":"[backup.job] Incremental backup scheduled: 0 2 * * *","service":"nep-workbench","timestamp":"2026-02-21 06:10:23"}
+{"level":"info","message":"[backup.job] Full backup scheduled:        0 3 * * 0","service":"nep-workbench","timestamp":"2026-02-21 06:10:23"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-21 06:10:23"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-21 06:10:23"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-21 06:10:24"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-21 06:10:24"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-21 06:10:24"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-21 06:10:24"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.20.0","pid":49916,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-21 06:10:24"}
+{"level":"info","message":"SIGINT received — starting graceful shutdown","service":"nep-workbench","timestamp":"2026-02-21 06:23:13"}
+{"level":"info","message":"✅ Brevo initialized","service":"nep-workbench","timestamp":"2026-02-21 06:23:14"}
+{"level":"info","message":"✅ IRT calibration jobs scheduled","service":"nep-workbench","timestamp":"2026-02-21 06:23:15"}
+{"level":"info","message":"[backup.job] Incremental backup scheduled: 0 2 * * *","service":"nep-workbench","timestamp":"2026-02-21 06:23:15"}
+{"level":"info","message":"[backup.job] Full backup scheduled:        0 3 * * 0","service":"nep-workbench","timestamp":"2026-02-21 06:23:15"}
+{"level":"info","message":"Attempting to connect to MongoDB...","service":"nep-workbench","timestamp":"2026-02-21 06:23:15"}
+{"level":"info","message":"Mongoose connected","service":"nep-workbench","timestamp":"2026-02-21 06:23:15"}
+{"level":"info","message":"✅ MongoDB connected successfully","service":"nep-workbench","timestamp":"2026-02-21 06:23:15"}
+{"level":"info","message":"📦 Database: nep-workbench","service":"nep-workbench","timestamp":"2026-02-21 06:23:15"}
+{"level":"info","message":"🌐 Host: 127.0.0.1","service":"nep-workbench","timestamp":"2026-02-21 06:23:15"}
+{"level":"info","message":"🔢 Port: 27017","service":"nep-workbench","timestamp":"2026-02-21 06:23:15"}
+{"environment":"test","level":"info","message":"Server started successfully","nodeVersion":"v20.20.0","pid":50301,"platform":"linux","port":"3000","service":"nep-workbench","timestamp":"2026-02-21 06:23:15"}
+{"error":"permissions.filter is not a function","level":"error","message":"developer.requestAccess error","service":"nep-workbench","timestamp":"2026-02-21 06:23:39"}
+{"error":"permissions.filter is not a function","level":"error","message":"developer.requestAccess error","service":"nep-workbench","timestamp":"2026-02-21 06:23:54"}
+{"error":"permissions.filter is not a function","level":"error","message":"developer.requestAccess error","service":"nep-workbench","timestamp":"2026-02-21 06:24:03"}
